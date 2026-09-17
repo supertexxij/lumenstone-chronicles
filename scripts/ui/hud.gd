@@ -748,3 +748,15 @@ func _update_landmark_tick(yaw: float) -> void:
 	var tip: Vector2 = Vector2(0, -ring_r).rotated(screen_ang)
 	_landmark_tick.position = center + tip - Vector2(3, 5)
 	_landmark_tick.rotation = screen_ang
+	# Wave 56: clearer compass tick pulse when near a landmark (RuneScape-chunky, wholesome)
+	if best_d < 28.0:
+		var near_u: float = clampf((28.0 - best_d) / 24.0, 0.0, 1.0)
+		var breath: float = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.0058))
+		_landmark_tick.modulate = Color(1.0, 0.92, 0.45, lerpf(0.78, breath, near_u))
+		var sc: float = lerpf(1.0, 1.0 + 0.42 * breath, near_u)
+		_landmark_tick.scale = Vector2(sc, sc)
+		_landmark_tick.size = Vector2(lerpf(6, 8, near_u), lerpf(10, 14, near_u))
+	else:
+		_landmark_tick.modulate = Color(1.0, 0.85, 0.35, 0.95)
+		_landmark_tick.scale = Vector2.ONE
+		_landmark_tick.size = Vector2(6, 10)

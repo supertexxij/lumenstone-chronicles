@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 56 overnight (v1.56.0-overnight)
+- Soft **leaf fall denser in Maple Copse** — warmer autumn flakes gather at the northwest maple stand (RuneScape-chunky, wholesome)
+- Clearer **compass tick pulse near landmarks** — soft gold tick breathes when you are close (no cheesy combat labels)
+- Soft **quest mastery toast with week number** — `Quest mastered · Week N · Title`
+- New wilds foe **Lemon Lemming** — plump oval body, tiny rounded ears, short blunt snout, stubby tufted tail, gentle “snugged” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika)
+- Travel QoL: **★ fav sits at top** of Travel (T) list; last-visited stays sticky when no fav (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 55 overnight (v1.55.0-overnight)
 - Soft **campfire ember pop SFX** — occasional warm crackle ticks near the plaza hearth (respects mute; RuneScape-chunky, wholesome)
 - Clearer **Year chip when week unlocks** — longer cream-gold flash + soft scale bloom on campaign week unlock

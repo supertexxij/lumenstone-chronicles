@@ -54,6 +54,7 @@ var seen_wave_52_toast: bool = false  # Wave 52: once-per-save polish tip toast 
 var seen_wave_53_toast: bool = false  # Wave 53: once-per-save polish tip toast on load
 var seen_wave_54_toast: bool = false  # Wave 54: once-per-save polish tip toast on load
 var seen_wave_55_toast: bool = false  # Wave 55: once-per-save polish tip toast on load
+var seen_wave_56_toast: bool = false  # Wave 56: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
@@ -134,6 +135,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_53_toast = false
 	seen_wave_54_toast = false
 	seen_wave_55_toast = false
+	seen_wave_56_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
@@ -322,6 +324,7 @@ func save_game() -> void:
 		"seen_wave_53_toast": seen_wave_53_toast,
 		"seen_wave_54_toast": seen_wave_54_toast,
 		"seen_wave_55_toast": seen_wave_55_toast,
+		"seen_wave_56_toast": seen_wave_56_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
@@ -385,6 +388,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_53_toast = bool(data.get("seen_wave_53_toast", false))
 	seen_wave_54_toast = bool(data.get("seen_wave_54_toast", false))
 	seen_wave_55_toast = bool(data.get("seen_wave_55_toast", false))
+	seen_wave_56_toast = bool(data.get("seen_wave_56_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -694,6 +698,15 @@ func maybe_wave_55_toast() -> void:
 	save_game()
 
 
+func maybe_wave_56_toast() -> void:
+	## Wave 56: once-per-save toast (PIN stays 1234; mastery ≥80%).
+	if seen_wave_56_toast:
+		return
+	seen_wave_56_toast = true
+	toast.emit("Wave 56 polish · denser maple leaf fall at Maple Copse · compass tick pulses near landmarks · mastery toasts name the week · ★ fav sits atop Travel · Lemon Lemming in the wilds.")
+	save_game()
+
+
 
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
@@ -990,7 +1003,9 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 			if (not is_food) and req > 0 and combat_level < req:
 				continue
 			unlock_item(str(iid))
-		toast.emit("Quest mastered: %s" % quest.get("title", quest_id))
+		# Wave 56: quest mastery toast with week number (RuneScape-chunky, wholesome)
+		var week_n: int = int(quest.get("week", unlocked_week))
+		toast.emit("Quest mastered · Week %d · %s" % [week_n, quest.get("title", quest_id)])
 		quest_mastered.emit(quest_id)
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()

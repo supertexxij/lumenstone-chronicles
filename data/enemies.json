@@ -375,7 +375,7 @@
       "accuracy": 0.21,
       "combat_xp": 174,
       "respawn_sec": 74.0,
-      "description": "A chunky beaver of the magnolia wilds — settle it gently with a careful step!"
+      "description": "A chunky beaver of the magnolia wilds \u2014 settle it gently with a careful step!"
     },
     "olive_owl": {
       "kind": "olive_owl",
@@ -385,10 +385,10 @@
       "accent": "#c8d4a0",
       "max_hp": 194,
       "damage": 32,
-      "accuracy": 0.20,
+      "accuracy": 0.2,
       "combat_xp": 180,
       "respawn_sec": 76.0,
-      "description": "A round owl of the olive wilds — hush it gently with a careful step!"
+      "description": "A round owl of the olive wilds \u2014 hush it gently with a careful step!"
     },
     "palm_pika": {
       "kind": "palm_pika",
@@ -401,7 +401,20 @@
       "accuracy": 0.19,
       "combat_xp": 186,
       "respawn_sec": 78.0,
-      "description": "A round pika of the palm wilds — ease it gently with a careful step!"
+      "description": "A round pika of the palm wilds \u2014 ease it gently with a careful step!"
+    },
+    "lemon_lemming": {
+      "kind": "lemon_lemming",
+      "name": "Lemon Lemming",
+      "defeat_verb": "snugged",
+      "color": "#c8b84a",
+      "accent": "#f0e8b0",
+      "max_hp": 206,
+      "damage": 34,
+      "accuracy": 0.18,
+      "combat_xp": 192,
+      "respawn_sec": 80.0,
+      "description": "A soft lemming of the lemon wilds \u2014 snug it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1322,6 +1335,36 @@
       "kind": "palm_pika",
       "x": -48,
       "z": -120
+    },
+    {
+      "id": "e154",
+      "kind": "lemon_lemming",
+      "x": -122,
+      "z": 20
+    },
+    {
+      "id": "e155",
+      "kind": "lemon_lemming",
+      "x": 104,
+      "z": -124
+    },
+    {
+      "id": "e156",
+      "kind": "lemon_lemming",
+      "x": -80,
+      "z": 124
+    },
+    {
+      "id": "e157",
+      "kind": "lemon_lemming",
+      "x": 124,
+      "z": 72
+    },
+    {
+      "id": "e158",
+      "kind": "lemon_lemming",
+      "x": -56,
+      "z": -124
     }
   ],
   "base_combat": {

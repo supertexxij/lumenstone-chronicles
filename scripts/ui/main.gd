@@ -282,15 +282,30 @@ func _play_travel_open_flourish() -> void:
 	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
 
 func _refresh_travel_list() -> void:
-	## Wave 39/45: search/filter by name + group counts in section headers + distance estimate in rows (PIN 1234; mastery ≥80%).
+	## Wave 39/45/56: search/filter + group counts + distance + ★ fav hoisted to top (PIN 1234; mastery ≥80%).
 	var all_dests: Array = _travel_destinations()
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList") if travel_panel else null
 	if list == null:
 		return
-	# Count matching non-group items per section (respects search filter)
+	var filt := _travel_filter
+	var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
+	var fav_lbl: String = str(GameState.favorite_landmark) if "favorite_landmark" in GameState else ""
+	# Wave 56: resolve ★ fav destination so it can sit at the top of Travel
+	var fav_dest: Dictionary = {}
+	if fav_lbl != "":
+		for d0 in all_dests:
+			if bool(d0.get("group", false)):
+				continue
+			if str(d0["label"]) != fav_lbl:
+				continue
+			var nl0: String = str(d0["label"]).to_lower()
+			if filt != "" and filt not in nl0:
+				break
+			fav_dest = d0
+			break
+	# Count matching non-group items per section (respects search filter; fav counted in its section still, but listed at top)
 	var section_counts: Dictionary = {}
 	var cur_sec := ""
-	var filt := _travel_filter
 	for d in all_dests:
 		if bool(d.get("group", false)):
 			cur_sec = str(d.get("section", d["label"]))
@@ -299,14 +314,23 @@ func _refresh_travel_list() -> void:
 			var name_l0: String = str(d["label"]).to_lower()
 			if filt != "" and filt not in name_l0:
 				continue
+			# Exclude hoisted fav from section count so headers stay accurate
+			if fav_lbl != "" and str(d["label"]) == fav_lbl and not fav_dest.is_empty():
+				continue
 			section_counts[cur_sec] = int(section_counts.get(cur_sec, 0)) + 1
 	_travel_dests = []
 	list.clear()
 	var first_sel := -1
-	var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
-	var fav_lbl: String = str(GameState.favorite_landmark) if "favorite_landmark" in GameState else ""
 	var fav_sel: int = -1
 	var last_sel := -1
+	# Wave 56: show ★ fav at top of travel list
+	if not fav_dest.is_empty():
+		var key_f: String = (" [%s]" % fav_dest["key"]) if str(fav_dest.get("key", "")) != "" else ""
+		var dist_f: String = _travel_distance_label(fav_dest.get("pos", Vector3.ZERO))
+		fav_sel = list.add_item("%s%s%s ★ fav" % [fav_dest["label"], key_f, dist_f])
+		list.set_item_custom_fg_color(fav_sel, Color(1.0, 0.88, 0.35))
+		_travel_dests.append(fav_dest)
+		first_sel = fav_sel
 	cur_sec = ""
 	var pending_header: Dictionary = {}
 	for d in all_dests:
@@ -323,6 +347,9 @@ func _refresh_travel_list() -> void:
 		var name_l: String = str(d["label"]).to_lower()
 		if filt != "" and filt not in name_l:
 			continue
+		# Skip fav here — already listed at top (Wave 56)
+		if fav_lbl != "" and str(d["label"]) == fav_lbl and not fav_dest.is_empty():
+			continue
 		if not pending_header.is_empty():
 			var gi: int = list.add_item(str(pending_header["label"]))
 			list.set_item_disabled(gi, true)
@@ -331,19 +358,13 @@ func _refresh_travel_list() -> void:
 			pending_header = {}
 		var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
 		var mark: String = ""
-		var is_fav: bool = fav_lbl != "" and str(d["label"]) == fav_lbl
 		var is_last: bool = last_lbl != "" and str(d["label"]) == last_lbl
-		if is_fav:
-			mark = " ★ fav"  # Wave 51: pin/favorite landmark
-		elif is_last:
-			mark = " ★ last"  # Wave 34: mark last-visited landmark
+		if is_last:
+			mark = " ★ last"  # Wave 34: mark last-visited landmark (sticky select below)
 		var dist_s: String = _travel_distance_label(d.get("pos", Vector3.ZERO))  # Wave 45
 		var ii: int = list.add_item("%s%s%s%s" % [d["label"], key_s, dist_s, mark])
 		_travel_dests.append(d)
-		if is_fav:
-			fav_sel = ii
-			list.set_item_custom_fg_color(ii, Color(1.0, 0.88, 0.35))
-		elif is_last:
+		if is_last:
 			last_sel = ii
 			list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
 		if first_sel < 0:
@@ -351,7 +372,7 @@ func _refresh_travel_list() -> void:
 	if fav_sel >= 0:
 		list.select(fav_sel)
 	elif last_sel >= 0:
-		list.select(last_sel)
+		list.select(last_sel)  # last-visited stays sticky when no fav
 	elif first_sel >= 0:
 		list.select(first_sel)
 
@@ -635,6 +656,9 @@ func _enter_world() -> void:
 	# Wave 55: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_55_toast"):
 		GameState.maybe_wave_55_toast()
+	# Wave 56: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_56_toast"):
+		GameState.maybe_wave_56_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

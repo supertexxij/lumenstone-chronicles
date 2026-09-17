@@ -32,6 +32,7 @@ var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
+var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Copse
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -1669,6 +1670,7 @@ func _setup_weather() -> void:
 	_setup_fog_mist()
 	_setup_edge_fog_banks()
 	_setup_wind_leaves()
+	_setup_maple_leaves()
 	_setup_dusk_fireflies()
 	_setup_garden_fireflies()
 	_setup_brook_sparkle()
@@ -1866,6 +1868,11 @@ func _update_weather(delta: float) -> void:
 		else:
 			_wind_leaves.emitting = false
 			_wind_leaves.visible = false
+	# Wave 56: denser soft leaf fall at Maple Copse (RuneScape-chunky, wholesome)
+	if _maple_leaves:
+		var maple_out := (_inside_hall == "")
+		_maple_leaves.emitting = maple_out
+		_maple_leaves.visible = maple_out
 	if player and _dusk_fireflies:
 		# Wave 39: soft firefly sparkles at dusk/night outdoors only
 		var dusk_on := _inside_hall == "" and _is_dusk_firefly_time()
@@ -3190,6 +3197,39 @@ func _setup_wind_leaves() -> void:
 	HeadlessGuard.guard_particles(_wind_leaves)
 
 
+
+
+
+func _setup_maple_leaves() -> void:
+	## Wave 56: denser soft autumn leaf fall fixed at Maple Copse (player-visible feel).
+	_maple_leaves = CPUParticles3D.new()
+	_maple_leaves.name = "MapleCopseLeaves"
+	_maple_leaves.emitting = true
+	_maple_leaves.amount = 56
+	_maple_leaves.lifetime = 5.8
+	_maple_leaves.preprocess = 2.8
+	_maple_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_maple_leaves.emission_box_extents = Vector3(9.5, 3.2, 9.5)
+	_maple_leaves.direction = Vector3(0.35, -0.55, 0.18)
+	_maple_leaves.spread = 48.0
+	_maple_leaves.initial_velocity_min = 0.25
+	_maple_leaves.initial_velocity_max = 0.95
+	_maple_leaves.gravity = Vector3(0, -0.55, 0)
+	_maple_leaves.angular_velocity_min = -55.0
+	_maple_leaves.angular_velocity_max = 55.0
+	_maple_leaves.scale_amount_min = 0.4
+	_maple_leaves.scale_amount_max = 1.0
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.26, 0.035, 0.16)
+	_maple_leaves.mesh = lm
+	var lmat := StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.82, 0.38, 0.16, 0.78)
+	lmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_maple_leaves.material_override = lmat
+	_maple_leaves.position = Vector3(-48.0, 3.2, -48.0)
+	add_child(_maple_leaves)
+	HeadlessGuard.guard_particles(_maple_leaves)
 
 
 func _setup_garden_fireflies() -> void:
