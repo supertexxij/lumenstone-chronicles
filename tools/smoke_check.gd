@@ -541,7 +541,7 @@ func _initialize():
 	print("NO_DAY_CASH_W57", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
-	print("VERSION_158", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_158", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("PLUM_PORCUPINE", '"plum_porcupine"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_porcupine" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e168"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("THISTLE_SWAY_W58", "_update_thistle_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 58: soft thistle sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("REED_SWAY_REG_W58", "_reed_sway_nodes.append" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
@@ -554,6 +554,20 @@ func _initialize():
 	print("PIN_STILL_1234_W58", "const DEFAULT_PIN := \"1234\"" in gs58 or 'DEFAULT_PIN := "1234"' in gs58)
 	print("MASTERY_80_W58", "MASTERY_PCT := 0.8" in gs58 or "0.8" in gs58)
 	print("NO_DAY_CASH_W58", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
+	print("VERSION_159", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("PEACH_PUFFIN", '"peach_puffin"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_puffin" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e173"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("KNOLL_DUSK_GLOW_W59", "_update_knoll_dusk_glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 59: soft amber knoll glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_WEATHER_W59", "Wave 59: clearer mute unmute with weather note" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Muted · soft hush · %s" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("XP_STACK_W59", "Wave 59: combat XP float stack" in FileAccess.get_file_as_string("res://scripts/combat/hitsplat.gd") or "_xp_stack_i" in FileAccess.get_file_as_string("res://scripts/combat/hitsplat.gd"))
+	print("FAV_PACES_HUD_W59", "_refresh_fav_paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "★ %s · ~%d paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE59_TOAST", "maybe_wave_59_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_59_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs59 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W59", "const DEFAULT_PIN := \"1234\"" in gs59 or 'DEFAULT_PIN := "1234"' in gs59)
+	print("MASTERY_80_W59", "MASTERY_PCT := 0.8" in gs59 or "0.8" in gs59)
+	print("NO_DAY_CASH_W59", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
 	print("CHECK_OK")

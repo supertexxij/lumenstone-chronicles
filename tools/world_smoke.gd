@@ -469,7 +469,17 @@ func _finish():
 	print("WARDROBE_SPARKLE_SRC", "Wave 58: stronger wardrobe equip sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
 	print("PARENT_YEAR_PCT_SRC", "Wave 58: show year %" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("WAVE58_TOAST_SRC", "maybe_wave_58_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_158_SRC", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_158_SRC", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+
+	print("PEACH_PUFFIN_SRC", '"peach_puffin"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("KNOLL_DUSK_GLOW_SRC", "_update_knoll_dusk_glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_WEATHER_SRC", "Wave 59: clearer mute unmute with weather note" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("XP_STACK_SRC", "_xp_stack_i" in FileAccess.get_file_as_string("res://scripts/combat/hitsplat.gd"))
+	print("FAV_PACES_SRC", "_refresh_fav_paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE59_TOAST_SRC", "maybe_wave_59_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_159_SRC", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("WORLD_SMOKE_OK")

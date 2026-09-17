@@ -48,6 +48,8 @@ var _landmark_chip: Label = null
 var _landmark_chip_panel: PanelContainer = null  # Wave 46: near-landmark name chip
 var _foe_count_lbl: Label = null  # Wave 50: compact foe count near minimap
 var _foe_count_panel: PanelContainer = null
+var _fav_paces_lbl: Label = null  # Wave 59: paces to ★ fav on HUD when far
+var _fav_paces_panel: PanelContainer = null
 var _mute_style_on: StyleBoxFlat = null
 var _mute_style_off: StyleBoxFlat = null
 var _vignette_edges: Array = []
@@ -78,6 +80,7 @@ func _ready() -> void:
 	_ensure_save_chip()
 	_ensure_landmark_chip()
 	_ensure_foe_count()
+	_ensure_fav_paces()
 	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
@@ -94,10 +97,20 @@ func set_world(world: Node) -> void:
 func _on_mute(m: bool) -> void:
 	_refresh_mute_label()
 	# Wave 45: clearer mute / unmute toast (RuneScape-chunky, wholesome)
+	# Wave 59: clearer mute unmute with weather note
+	var wx := ""
+	if _world != null and _world.has_method("get_weather_label"):
+		wx = str(_world.get_weather_label()).strip_edges()
 	if m:
-		GameState.toast.emit("Muted · soft hush. Press M to hear the village again.")
+		if wx != "":
+			GameState.toast.emit("Muted · soft hush · %s. Press M to hear the village again." % wx)
+		else:
+			GameState.toast.emit("Muted · soft hush. Press M to hear the village again.")
 	else:
-		GameState.toast.emit("Unmuted · village sounds return.")
+		if wx != "":
+			GameState.toast.emit("Unmuted · village sounds return · %s." % wx)
+		else:
+			GameState.toast.emit("Unmuted · village sounds return.")
 
 func _refresh_mute_label() -> void:
 	## Wave 38: clearer mute indicator — warm plate + bold Muted label when silent.
@@ -189,6 +202,7 @@ func _process(delta: float) -> void:
 	if minimap and minimap.has_method("set_data"):
 		minimap.set_data(_map_data)
 	_refresh_foe_count()
+	_refresh_fav_paces()
 	_refresh_food_lbl()
 
 func _update_compass() -> void:
@@ -760,3 +774,106 @@ func _update_landmark_tick(yaw: float) -> void:
 		_landmark_tick.modulate = Color(1.0, 0.85, 0.35, 0.95)
 		_landmark_tick.scale = Vector2.ONE
 		_landmark_tick.size = Vector2(6, 10)
+
+
+func _ensure_fav_paces() -> void:
+	## Wave 59: show paces to ★ fav on HUD when far (PIN stays 1234; mastery ≥80%).
+	if _fav_paces_lbl != null and is_instance_valid(_fav_paces_lbl):
+		return
+	if has_node("FavPacesPanel"):
+		_fav_paces_panel = $FavPacesPanel
+		_fav_paces_lbl = _fav_paces_panel.get_node_or_null("FavPaces")
+		if _fav_paces_lbl != null:
+			return
+	_fav_paces_panel = PanelContainer.new()
+	_fav_paces_panel.name = "FavPacesPanel"
+	_fav_paces_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fav_paces_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_fav_paces_panel.offset_left = 12.0
+	_fav_paces_panel.offset_top = 150.0
+	_fav_paces_panel.offset_right = 220.0
+	_fav_paces_panel.offset_bottom = 184.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.16, 0.14, 0.10, 0.82)
+	style.border_color = Color(0.95, 0.82, 0.38, 0.85)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 3
+	style.content_margin_bottom = 3
+	_fav_paces_panel.add_theme_stylebox_override("panel", style)
+	_fav_paces_lbl = Label.new()
+	_fav_paces_lbl.name = "FavPaces"
+	_fav_paces_lbl.add_theme_font_size_override("font_size", 13)
+	_fav_paces_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fav_paces_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_fav_paces_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fav_paces_lbl.modulate = Color(1.0, 0.92, 0.55, 1.0)
+	_fav_paces_lbl.text = "★ fav · —"
+	_fav_paces_panel.add_child(_fav_paces_lbl)
+	_fav_paces_panel.visible = false
+	add_child(_fav_paces_panel)
+
+
+func _fav_landmark_pos(label: String) -> Vector3:
+	## Match Travel (T) destination labels to world positions for ★ fav paces.
+	var lab := label.strip_edges()
+	var table := {
+		"Village Fountain": Vector3(0, 0, 12),
+		"Lantern Glade": Vector3(0.5, 0, -46),
+		"Pine Ridge": Vector3(-20, 0, -50),
+		"Prayer Garden": Vector3(30, 0, 18),
+		"Lookout Rock": Vector3(40, 0, 34),
+		"Mill Bridge": Vector3(-36, 0, 30),
+		"Cedar Hollow": Vector3(38, 0, -36),
+		"Willow Bend": Vector3(-38, 0, -34),
+		"Reed Pool": Vector3(-20, 0, 48),
+		"Quiet Cross": Vector3(48, 0, 8),
+		"Stone Arch": Vector3(-48, 0, 8),
+		"Amber Knoll": Vector3(48, 0, -22),
+		"Birch Rest": Vector3(-42, 0, -20),
+		"Fern Dell": Vector3(22, 0, 48),
+		"Heather Heath": Vector3(-48, 0, 42),
+		"Thistle Rise": Vector3(48, 0, 42),
+		"Maple Copse": Vector3(-48, 0, -48),
+		"Lantern Glade center": Vector3(0.5, 0, -48),
+		"Pine Ridge stand": Vector3(-24, 0, -54),
+		"Builder's Hall (door)": Vector3(22, 0, 2.5),
+		"Scribe's Hall (door)": Vector3(-22, 0, 2.5),
+		"Creation Hall (door)": Vector3(0, 0, -18),
+		"Chronicle Hall (door)": Vector3(0, 0, 28),
+		"Worship Hall (door)": Vector3(0, 0, -2),
+	}
+	if lab in table:
+		return table[lab]
+	return Vector3(1.0e30, 1.0e30, 1.0e30)
+
+
+func _refresh_fav_paces() -> void:
+	## Wave 59: paces to ★ fav on HUD when far (PIN stays 1234; mastery ≥80%).
+	_ensure_fav_paces()
+	if _fav_paces_lbl == null or _fav_paces_panel == null:
+		return
+	var fav := ""
+	if "favorite_landmark" in GameState:
+		fav = str(GameState.favorite_landmark).strip_edges()
+	if fav == "":
+		_fav_paces_panel.visible = false
+		return
+	var pos: Vector3 = _fav_landmark_pos(fav)
+	if pos.x > 1.0e20:
+		_fav_paces_panel.visible = false
+		return
+	var px: float = float(_map_data.get("player", {}).get("x", 0))
+	var pz: float = float(_map_data.get("player", {}).get("z", 0))
+	var dist: float = Vector2(pos.x - px, pos.z - pz).length()
+	var paces: int = maxi(1, int(round(dist / 1.15)))
+	# Show when far (~25+ paces); hide when already close
+	if paces < 25:
+		_fav_paces_panel.visible = false
+		return
+	_fav_paces_lbl.text = "★ %s · ~%d paces" % [fav, paces]
+	_fav_paces_lbl.tooltip_text = "Distance to your Travel ★ fav (Pin ★ Fav in Travel)"
+	_fav_paces_panel.visible = true
+

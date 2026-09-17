@@ -441,6 +441,19 @@
       "combat_xp": 204,
       "respawn_sec": 84.0,
       "description": "A gentle porcupine of the plum wilds \u2014 nestle it kindly with a careful step!"
+    },
+    "peach_puffin": {
+      "kind": "peach_puffin",
+      "name": "Peach Puffin",
+      "defeat_verb": "tucked",
+      "color": "#e89068",
+      "accent": "#f8e0c8",
+      "max_hp": 224,
+      "damage": 37,
+      "accuracy": 0.17,
+      "combat_xp": 210,
+      "respawn_sec": 86.0,
+      "description": "A chunky puffin of the peach wilds \u2014 tuck it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1451,6 +1464,36 @@
       "kind": "plum_porcupine",
       "x": -32,
       "z": -132
+    },
+    {
+      "id": "e169",
+      "kind": "peach_puffin",
+      "x": -125,
+      "z": -40
+    },
+    {
+      "id": "e170",
+      "kind": "peach_puffin",
+      "x": 110,
+      "z": 125
+    },
+    {
+      "id": "e171",
+      "kind": "peach_puffin",
+      "x": -80,
+      "z": -125
+    },
+    {
+      "id": "e172",
+      "kind": "peach_puffin",
+      "x": 128,
+      "z": -70
+    },
+    {
+      "id": "e173",
+      "kind": "peach_puffin",
+      "x": -40,
+      "z": 128
     }
   ],
   "base_combat": {

@@ -2,6 +2,9 @@ class_name Hitsplat
 extends RefCounted
 ## Clear RuneScape-like floating damage / heal numbers (wholesome — no gore).
 
+static var _xp_stack_i: int = 0  # Wave 59: combat XP float stack when multi-foe
+static var _xp_stack_msec: int = 0
+
 static func spawn(parent: Node, dmg: int, is_player_hit: bool, y: float = 2.15, strong: bool = false) -> void:
 	var kind := "damage" if not is_player_hit else "hit_foe"
 	if strong and dmg > 0:
@@ -13,13 +16,27 @@ static func spawn_heal(parent: Node, amount: int, y: float = 2.15) -> void:
 
 static func spawn_xp(parent: Node, amount: int, y: float = 2.35) -> void:
 	## Wave 40: quiet soft cream XP float on foe defeat (wholesome, no cheesy combat labels).
-	_spawn(parent, amount, "xp", y)
+	## Wave 59: stack floats when multi-foe defeats land close together (RuneScape-chunky, no cheesy combat labels).
+	var now: int = Time.get_ticks_msec()
+	if now - _xp_stack_msec > 950:
+		_xp_stack_i = 0
+	else:
+		_xp_stack_i += 1
+	_xp_stack_msec = now
+	var y_stack: float = y + float(_xp_stack_i) * 0.38
+	_spawn(parent, amount, "xp", y_stack, _xp_stack_i)
 
-static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
+static func _spawn(parent: Node, amount: int, kind: String, y: float, stack_i: int = 0) -> void:
 	if parent == null or not is_instance_valid(parent):
 		return
 	var root := Node3D.new()
-	root.position = Vector3(randf_range(-0.35, 0.35), y, randf_range(-0.15, 0.15))
+	# Wave 59: XP float stack — slight lateral stagger so multi-foe XP reads as a clean column
+	var x_off: float = randf_range(-0.35, 0.35)
+	var z_off: float = randf_range(-0.15, 0.15)
+	if kind == "xp" and stack_i > 0:
+		x_off = 0.12 * float((stack_i % 2) * 2 - 1) * float(int((stack_i + 1) / 2))
+		z_off = 0.04 * float(stack_i)
+	root.position = Vector3(x_off, y, z_off)
 	parent.add_child(root)
 
 	# Soft disc behind the number

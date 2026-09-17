@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 59 overnight (v1.59.0-overnight)
+- Soft **amber knoll glow at dusk** — warm honey OmniLight on Amber Knoll crest (RuneScape-chunky, wholesome)
+- Clearer **mute / unmute with weather note** — toast names Clear/Fog/Rain so hush state reads with the sky
+- Combat **XP float stack when multi-foe** — floats cascade in a clean column on quick multi-defeats (no cheesy combat labels)
+- New wilds foe **Peach Puffin** — plump upright body, chunky striped beak, short stubby wings, paddle feet, gentle “tucked” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine)
+- Travel QoL: **paces to ★ fav on HUD when far** (~25+ paces) (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 58 overnight (v1.58.0-overnight)
 - Soft **thistle sway at Thistle Rise** — spiky purple clumps lean gently in the wind (RuneScape-chunky, wholesome); reed sway registration fixed so Reed Pool also breathes
 - Clearer **soft-aggro mid-telegraph toast** — `Name · soft yellow mid · ~Ns — step back now` (no cheesy combat labels)

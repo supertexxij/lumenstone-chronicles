@@ -35,6 +35,7 @@ var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoor
 var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Copse
 var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
 var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Rise
+var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -991,6 +992,7 @@ func _update_day_night(delta: float) -> void:
 	_update_brook_sparkle()
 	_update_hall_wind_chime()
 	_update_village_dusk_lamps(dayness)
+	_update_knoll_dusk_glow(dayness)  # Wave 59: soft amber knoll glow at dusk
 	_update_plaza_campfire(dayness)
 
 
@@ -1210,6 +1212,28 @@ func _update_village_dusk_lamps(dayness: float) -> void:
 		light.light_energy = e
 		light.visible = e > 0.04
 		i += 1
+
+func _update_knoll_dusk_glow(dayness: float) -> void:
+	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
+	if _knoll_dusk_lights.is_empty():
+		return
+	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
+	var t_ms: float = float(Time.get_ticks_msec())
+	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0020))
+	var energy: float = dusk * 1.85 * pulse
+	var i: int = 0
+	for light in _knoll_dusk_lights:
+		if light == null or not is_instance_valid(light):
+			continue
+		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.017 + float(i) * 1.1)
+		var e: float = energy * clampf(phase, 0.88, 1.12)
+		# Rim light a touch softer than crest
+		if "Rim" in str(light.name):
+			e *= 0.55
+		light.light_energy = e
+		light.visible = e > 0.04
+		i += 1
+
 
 func _build_interiors() -> void:
 	## Simple enterable guild-hall volumes: walk into the door, teleport to a cozy interior.
@@ -2836,6 +2860,27 @@ func _build_amber_knoll() -> void:
 	_mi(_cyl(1.1, 1.1, 0.4), Vector3(48.0, 0.95, -22.0), root, _mats["amber_dark"], "KnollCap")
 	# Soft honey-glow lantern stone on the crest
 	_mi(_sphere(0.28, 0.32), Vector3(48.0, 1.35, -22.0), root, _mats["lantern_glow"], "AmberGlow")
+	# Wave 59: soft amber knoll glow at dusk — warm OmniLight on the crest (RuneScape-chunky, wholesome)
+	var knoll_light := OmniLight3D.new()
+	knoll_light.name = "KnollDuskGlow"
+	knoll_light.light_color = Color(1.0, 0.78, 0.42)
+	knoll_light.light_energy = 0.0
+	knoll_light.omni_range = 9.5
+	knoll_light.omni_attenuation = 1.2
+	knoll_light.shadow_enabled = false
+	knoll_light.position = Vector3(48.0, 1.55, -22.0)
+	root.add_child(knoll_light)
+	_knoll_dusk_lights.append(knoll_light)
+	var knoll_rim := OmniLight3D.new()
+	knoll_rim.name = "KnollDuskRim"
+	knoll_rim.light_color = Color(1.0, 0.72, 0.35)
+	knoll_rim.light_energy = 0.0
+	knoll_rim.omni_range = 6.0
+	knoll_rim.omni_attenuation = 1.4
+	knoll_rim.shadow_enabled = false
+	knoll_rim.position = Vector3(48.0, 0.85, -22.0)
+	root.add_child(knoll_rim)
+	_knoll_dusk_lights.append(knoll_rim)
 	_add_lantern_post(Vector3(44.2, 0, -19.5))
 	_add_lantern_post(Vector3(51.5, 0, -24.8))
 	_add_lantern_post(Vector3(28.0, 0, -10.0))

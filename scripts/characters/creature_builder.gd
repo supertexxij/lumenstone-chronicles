@@ -139,6 +139,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_chinchilla(bob)
 		"plum_porcupine":
 			_build_porcupine(bob)
+		"peach_puffin":
+			_build_puffin(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1268,4 +1270,45 @@ static func _build_porcupine(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.016, 0.018, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.038, 0.012, 0.042)), Vector3(0, -0.07, 0.01), leg, "Foot")
+
+static func _build_puffin(bob: Node3D) -> void:
+	## Soft peach-wilds puffin — plump body, chunky striped beak, upright stance, short stubby wings, paddle feet (distinct from Poplar Dove / Rowan Robin / Willow Wren / Alder Duck / Olive Owl / Ash Sparrow / Hickory Quail / Juniper Jay).
+	# Plump upright body
+	_mi(_sphere(0.17, 0.24), Vector3(0, 0.42, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.10, 0.14), Vector3(0, 0.38, 0.08), bob, "Belly")
+	# Round head
+	_mi(_sphere(0.12), Vector3(0, 0.64, 0.06), bob, "Head")
+	# Soft eyes
+	_mi(_sphere(0.024), Vector3(-0.045, 0.66, 0.14), bob, "EyeL")
+	_mi(_sphere(0.024), Vector3(0.045, 0.66, 0.14), bob, "EyeR")
+	_mi(_sphere(0.01), Vector3(-0.045, 0.665, 0.155), bob, "PupilL")
+	_mi(_sphere(0.01), Vector3(0.045, 0.665, 0.155), bob, "PupilR")
+	# Chunky striped beak (signature — wider/taller than dove/robin beaks)
+	var beak := Node3D.new()
+	beak.name = "Beak"
+	beak.position = Vector3(0, 0.60, 0.18)
+	bob.add_child(beak)
+	_mi(_box(Vector3(0.10, 0.055, 0.14)), Vector3(0, 0.01, 0.04), beak, "BeakBase")
+	_mi(_box(Vector3(0.08, 0.03, 0.06)), Vector3(0, 0.04, 0.10), beak, "BeakTip")
+	_mi(_box(Vector3(0.09, 0.012, 0.10)), Vector3(0, -0.01, 0.05), beak, "BeakStripe")
+	# Short stubby folded wings
+	var lw := _mi(_box(Vector3(0.16, 0.04, 0.18)), Vector3(-0.14, 0.44, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(10, 0, 28)
+	var rw := _mi(_box(Vector3(0.16, 0.04, 0.18)), Vector3(0.14, 0.44, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(10, 0, -28)
+	# Short upright tail tuft
+	var tail := _mi(_box(Vector3(0.08, 0.04, 0.10)), Vector3(0, 0.48, -0.16), bob, "Tail")
+	tail.rotation_degrees = Vector3(-40, 0, 0)
+	# Paddle feet (signature — broader than songbird perch feet)
+	for info in [
+		["FL", Vector3(-0.05, 0.18, 0.04)],
+		["FR", Vector3(0.05, 0.18, 0.04)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.014, 0.018, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.07, 0.014, 0.08)), Vector3(0, -0.08, 0.02), leg, "Paddle")
 
