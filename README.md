@@ -82,15 +82,17 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 |--------|--------|
 | Move | **Click** ground, or **WASD** / arrows |
 | Rotate camera | **Q** / **E**, or right-drag |
+| Zoom camera | **Scroll wheel**, or **=** / **-** (also **]** / **[**) |
 | Talk to NPC | **Click** NPC, or walk near and press **F** |
 | Inventory / equip | **I** or HUD button |
 | Quest journal | **J** or HUD button |
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
-| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · soft aggro in wilds |
+| Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
+| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull |
 | Parent dashboard | **Parent** · PIN `1234` |
 
-Camera is elevated oblique (RuneScape-like). Soft defeat respawns at the village fountain; unlocks and gear are kept.
+Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compass (top) aid village/wilds orientation. Soft defeat respawns at the village fountain; unlocks and gear are kept.
 
 ## Campaign content (Weeks 1–36 — Campaigns I–IV)
 
@@ -165,12 +167,18 @@ Camera is elevated oblique (RuneScape-like). Soft defeat respawns at the village
 - Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
 - Character customize (skin / hair / cape / outfit) with **humanoid** player mesh
-- Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory attach** on character when equipped
+- Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + weapon mesh** attach when equipped
 - **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
 - RuneScape-style **tick combat** with clearer hitsplats, player weapon swing pose, enemy flinch + death dissolve, soft wild aggro, wholesome defeat verbs, soft respawn
 - Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem
-- **Procedural audio** (footstep, hit/miss, swing, UI click, quest complete, soft ambient drone) + **mute toggle (M)** — no copyrighted music
+- **Camera zoom** (scroll / `=` `-`) + **entity-first click targeting** (props no longer steal enemy/NPC/ground clicks)
+- **Weapon mesh variants** on equip: practice sword, oak axe, shepherd staff, yew bow (cosmetic), flint dagger
+- **Minimap + compass** + day/dusk/night label for village/wilds orientation
+- **Subtle day–night tint** (readable nights; steady indoor lighting in halls)
+- **Enterable guild halls** — door volumes teleport to simple interior rooms with exit glow
+- Soft-aggro **yellow telegraph** ring + “is watching…” toast before pull
+- **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
 - Parent dashboard (PIN **1234**) with progress, week unlock, skills-by-week, **Needs Help** list
 - Saves to `user://lumenstone_save_v1.json`
 
@@ -198,12 +206,12 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 ## Limitations
 
 - Chunky low-poly **humanoid** characters (head, torso, arms, legs, feet) — RuneScape-adjacent, not photoreal
-- Equipped hat / cape / weapon / belt / **accessory** show on the player model; NPCs share the same humanoid base
+- Equipped hat / cape / weapon (sword/axe/staff/bow/dagger meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
 - One region (village + wild edges); not a full world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
-- Audio is short procedural SFX + soft drone (intentionally no copyrighted songs)
+- Audio is short procedural SFX + soft drone + original village loop (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only
 - Learning challenges are in guild quest UI overlays, not mid-fight quizzes
 

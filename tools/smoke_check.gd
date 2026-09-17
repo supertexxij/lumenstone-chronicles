@@ -8,8 +8,8 @@ func _initialize():
 	var j = load("res://scripts/ui/journal_panel.gd")
 	var h = load("res://scripts/combat/hitsplat.gd")
 	var hb = load("res://scripts/characters/humanoid_builder.gd")
-	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null)
-	# Build humanoid
+	var mm = load("res://scripts/ui/minimap.gd")
+	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null, mm!=null)
 	var root = Node3D.new()
 	root.name = "T"
 	get_root().add_child(root)
@@ -17,6 +17,8 @@ func _initialize():
 	print("PARTS", parts.has("accessory"), parts.has("weapon"), parts.has("l_arm"))
 	HumanoidBuilder.style_accessory(parts, {"id":"brass_lantern","name":"Brass Lantern","color":"#f4a261"})
 	print("ACCESSORY_OK")
-	# Audio streams
+	for mesh in ["sword", "axe", "staff", "bow", "dagger"]:
+		HumanoidBuilder.style_weapon(parts, {"id":"t_"+mesh,"name":mesh,"mesh":mesh,"color":"#a67c52"})
+		print("WEAPON_", mesh.to_upper(), parts.get("weapon_mesh"), parts.get("blade")!=null)
 	print("CHECK_OK")
 	quit(0)
