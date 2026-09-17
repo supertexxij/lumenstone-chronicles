@@ -557,7 +557,7 @@ func _initialize():
 
 
 
-	print("VERSION_159", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_159", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("PEACH_PUFFIN", '"peach_puffin"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_puffin" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e173"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("KNOLL_DUSK_GLOW_W59", "_update_knoll_dusk_glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 59: soft amber knoll glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("MUTE_WEATHER_W59", "Wave 59: clearer mute unmute with weather note" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Muted · soft hush · %s" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
@@ -571,7 +571,7 @@ func _initialize():
 
 
 
-	print("VERSION_160", 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_160", 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("FIG_FINCH", '"fig_finch"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_finch" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e178"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("FESTIVAL_CONFETTI_W60", "play_wave60_festival_confetti" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave60FestivalConfetti" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("LANDMARK_PACES_W60", "Wave 60: clearer landmark approach with paces" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "~%d paces" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
@@ -582,6 +582,22 @@ func _initialize():
 	print("PIN_STILL_1234_W60", "const DEFAULT_PIN := \"1234\"" in gs60 or 'DEFAULT_PIN := "1234"' in gs60)
 	print("MASTERY_80_W60", "MASTERY_PCT := 0.8" in gs60 or "0.8" in gs60)
 	print("NO_DAY_CASH_W60", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
+	print("VERSION_161", 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("GRAPE_GECKO", '"grape_gecko"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_gecko" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e183"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("WILLOW_SWAY_W61", "_update_willow_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 61: soft willow weep sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("FOOD_EMPTY_H_W61", "press H for Fountain to refill" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("DEFEAT_CAM_LONGER_W61", "settle_sec" in FileAccess.get_file_as_string("res://scripts/player/player.gd") and "0.92" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("UNEQUIP_ALL_W61", "unequip_all_slots" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "_on_unequip_all" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "Confirm?" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("LOCKED_WEEK_W61", "Week %d · unlock" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") or "Locked · Week" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("WAVE61_TOAST", "maybe_wave_61_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_61_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs61 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W61", "const DEFAULT_PIN := \"1234\"" in gs61 or 'DEFAULT_PIN := "1234"' in gs61)
+	print("MASTERY_80_W61", "MASTERY_PCT := 0.8" in gs61 or "0.8" in gs61)
+	print("NO_DAY_CASH_W61", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 
 
 	print("CHECK_OK")

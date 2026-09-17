@@ -467,6 +467,19 @@
       "combat_xp": 216,
       "respawn_sec": 88.0,
       "description": "A plump finch of the fig wilds \u2014 perch it gently with a careful step!"
+    },
+    "grape_gecko": {
+      "kind": "grape_gecko",
+      "name": "Grape Gecko",
+      "defeat_verb": "basked",
+      "color": "#6b4a7a",
+      "accent": "#a8c878",
+      "max_hp": 236,
+      "damage": 39,
+      "accuracy": 0.17,
+      "combat_xp": 222,
+      "respawn_sec": 90.0,
+      "description": "A soft gecko of the grape wilds \u2014 bask it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1537,6 +1550,36 @@
       "kind": "fig_finch",
       "x": -95,
       "z": 118
+    },
+    {
+      "id": "e179",
+      "kind": "grape_gecko",
+      "x": -125,
+      "z": -40
+    },
+    {
+      "id": "e180",
+      "kind": "grape_gecko",
+      "x": 110,
+      "z": 95
+    },
+    {
+      "id": "e181",
+      "kind": "grape_gecko",
+      "x": -80,
+      "z": 130
+    },
+    {
+      "id": "e182",
+      "kind": "grape_gecko",
+      "x": 140,
+      "z": -95
+    },
+    {
+      "id": "e183",
+      "kind": "grape_gecko",
+      "x": -42,
+      "z": -145
     }
   ],
   "base_combat": {

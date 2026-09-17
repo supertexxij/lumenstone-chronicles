@@ -125,6 +125,9 @@ func _ready() -> void:
 		"plum_porcupine":
 			if label: label.position.y = 1.5
 			hp_bar.position.y = 1.25
+		"grape_gecko":
+			if label: label.position.y = 1.2
+			hp_bar.position.y = 0.95
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -754,6 +757,23 @@ func _idle_anim(delta: float) -> void:
 			var ptail := creature_bob.get_node_or_null("Tail")
 			if ptail:
 				ptail.rotation.y = sin(t * 0.85) * 0.15
+		"grape_gecko":
+			# Soft bask-bob — big eyes blink-scale, plump tail sway, sticky pads flex (Wave 61)
+			creature_bob.position.y = 0.01 + abs(sin(t * 1.15)) * 0.022
+			creature_bob.rotation.y = sin(t * 0.4) * 0.09
+			var gel := creature_bob.get_node_or_null("EyeL")
+			var ger := creature_bob.get_node_or_null("EyeR")
+			if gel:
+				gel.scale = Vector3.ONE * (1.0 + sin(t * 1.6) * 0.05)
+			if ger:
+				ger.scale = Vector3.ONE * (1.0 + sin(t * 1.6 + 0.3) * 0.05)
+			var gtail := creature_bob.get_node_or_null("Tail")
+			if gtail:
+				gtail.rotation.y = sin(t * 1.05) * 0.16
+				gtail.rotation.x = deg_to_rad(70) + sin(t * 0.8) * 0.05
+			var ghead := creature_bob.get_node_or_null("Head")
+			if ghead:
+				ghead.rotation.y = sin(t * 0.75) * 0.07
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

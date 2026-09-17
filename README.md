@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 61 overnight (v1.61.0-overnight)
+- Soft **willow weep sway at Willow Bend** — weeping canopies lean gently in the wind (RuneScape-chunky, wholesome)
+- Clearer **food empty toast with H hint** — `press H for Fountain to refill your stacks`
+- Soft-defeat **camera settle longer** — fountain rest eases ~0.92s (no cheesy combat labels)
+- New wilds foe **Grape Gecko** — plump low body, big soft eyes, sticky toe pads, short plump tail, gentle “basked” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch)
+- Inventory QoL: **Unequip all** with confirm + clearer locked gear **Week N** labels (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 60 overnight (v1.60.0-overnight)
 - Soft **festival confetti on load** once per save for v1.60 (RuneScape-chunky, wholesome)
 - Clearer **landmark approach with paces** — approach toasts name ~N paces; plaza hearth flicker syncs with village dusk lanterns

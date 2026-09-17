@@ -35,6 +35,7 @@ var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoor
 var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Copse
 var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
 var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Rise
+var _willow_sway_nodes: Array = []  # Wave 61: soft willow weep sway at Willow Bend
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
@@ -489,12 +490,18 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		_mi(_sphere(0.72, 1.3), Vector3(0, trunk_h + 1.05, 0), body, _mats["leaf_cedar"], "Leaves2")
 		_mi(_sphere(0.45, 0.9), Vector3(0, trunk_h + 1.65, 0), body, _mats["leaf"], "Leaves3")
 	elif style == 3:
-		# Willow — soft weeping canopy (Wave 21)
-		_mi(_sphere(1.15, 1.5), Vector3(0, trunk_h + 0.55, 0), body, _mats["leaf_willow"], "Leaves")
-		_mi(_sphere(0.55, 1.1), Vector3(-0.55, trunk_h + 0.05, 0.15), body, _mats["leaf_willow"], "WeepL")
-		_mi(_sphere(0.55, 1.1), Vector3(0.55, trunk_h + 0.05, -0.1), body, _mats["leaf_willow"], "WeepR")
-		_mi(_sphere(0.45, 0.95), Vector3(0.1, trunk_h - 0.15, 0.55), body, _mats["leaf_willow"], "WeepF")
-		_mi(_sphere(0.4, 0.85), Vector3(-0.05, trunk_h - 0.1, -0.5), body, _mats["leaf_alt"], "WeepB")
+		# Willow — soft weeping canopy (Wave 21); Wave 61: weep sway parent for soft wind lean
+		var canopy := Node3D.new()
+		canopy.name = "WillowCanopy"
+		body.add_child(canopy)
+		_mi(_sphere(1.15, 1.5), Vector3(0, trunk_h + 0.55, 0), canopy, _mats["leaf_willow"], "Leaves")
+		_mi(_sphere(0.55, 1.1), Vector3(-0.55, trunk_h + 0.05, 0.15), canopy, _mats["leaf_willow"], "WeepL")
+		_mi(_sphere(0.55, 1.1), Vector3(0.55, trunk_h + 0.05, -0.1), canopy, _mats["leaf_willow"], "WeepR")
+		_mi(_sphere(0.45, 0.95), Vector3(0.1, trunk_h - 0.15, 0.55), canopy, _mats["leaf_willow"], "WeepF")
+		_mi(_sphere(0.4, 0.85), Vector3(-0.05, trunk_h - 0.1, -0.5), canopy, _mats["leaf_alt"], "WeepB")
+		canopy.set_meta("sway_phase", float(hash(str(pos)) % 1000) * 0.006283)
+		canopy.set_meta("sway_amp", 0.028)
+		_willow_sway_nodes.append(canopy)
 	else:
 		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
 		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
@@ -757,6 +764,7 @@ func _process(delta: float) -> void:
 	_update_ambient_critters(delta)
 	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
 	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
+	_update_willow_sway(delta)  # Wave 61: soft willow weep sway at Willow Bend
 
 
 func _landmark_zones() -> Array:
@@ -2697,6 +2705,21 @@ func _update_thistle_sway(_delta: float) -> void:
 		var lean := sin(t * 1.05 + phase) * amp
 		thistle.rotation.z = lean
 		thistle.rotation.x = cos(t * 0.88 + phase * 0.65) * amp * 0.5
+
+
+func _update_willow_sway(_delta: float) -> void:
+	## Wave 61: soft willow weep sway at Willow Bend — gentle canopy lean (RuneScape-chunky, wholesome).
+	if _willow_sway_nodes.is_empty():
+		return
+	var t := Time.get_ticks_msec() * 0.001
+	for canopy in _willow_sway_nodes:
+		if canopy == null or not is_instance_valid(canopy):
+			continue
+		var phase := float(canopy.get_meta("sway_phase", 0.0))
+		var amp := float(canopy.get_meta("sway_amp", 0.028))
+		var lean := sin(t * 0.72 + phase) * amp
+		canopy.rotation.z = lean
+		canopy.rotation.x = cos(t * 0.58 + phase * 0.7) * amp * 0.55
 
 
 

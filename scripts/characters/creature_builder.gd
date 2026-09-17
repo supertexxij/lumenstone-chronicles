@@ -143,6 +143,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_puffin(bob)
 		"fig_finch":
 			_build_finch(bob)
+		"grape_gecko":
+			_build_gecko(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1355,4 +1357,39 @@ static func _build_finch(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.01, 0.012, 0.12), Vector3(0, -0.03, 0), leg, "Shin")
 		_mi(_box(Vector3(0.035, 0.01, 0.04)), Vector3(0, -0.09, 0.01), leg, "Perch")
+
+static func _build_gecko(bob: Node3D) -> void:
+	## Soft grape-wilds gecko — plump low body, big soft eyes, sticky toe pads, short plump tail (distinct from Sycamore Skink / Fir Frog / Cypress Turtle / Chestnut Toad).
+	# Plump low oval body (chunkier / shorter than skink capsule)
+	var body := _mi(_sphere(0.16, 0.22), Vector3(0, 0.26, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.09, 0.12), Vector3(0, 0.20, 0.04), bob, "Belly")
+	# Round head with big soft eyes (signature vs skink tiny beads)
+	_mi(_sphere(0.11), Vector3(0, 0.32, 0.28), bob, "Head")
+	_mi(_sphere(0.045), Vector3(-0.05, 0.36, 0.36), bob, "EyeL")
+	_mi(_sphere(0.045), Vector3(0.05, 0.36, 0.36), bob, "EyeR")
+	_mi(_sphere(0.018), Vector3(-0.05, 0.365, 0.39), bob, "PupilL")
+	_mi(_sphere(0.018), Vector3(0.05, 0.365, 0.39), bob, "PupilR")
+	# Soft blunt snout
+	_mi(_box(Vector3(0.05, 0.035, 0.06)), Vector3(0, 0.30, 0.40), bob, "Snout")
+	# Soft grape-tone cheek patch
+	_mi(_sphere(0.035), Vector3(-0.08, 0.30, 0.22), bob, "CheekL")
+	_mi(_sphere(0.035), Vector3(0.08, 0.30, 0.22), bob, "CheekR")
+	# Short sturdy legs with sticky toe pads (signature)
+	for info in [
+		["FL", Vector3(-0.09, 0.12, 0.14)],
+		["FR", Vector3(0.09, 0.12, 0.14)],
+		["BL", Vector3(-0.09, 0.12, -0.12)],
+		["BR", Vector3(0.09, 0.12, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.016, 0.018, 0.09), Vector3(0, -0.015, 0), leg, "Shin")
+		_mi(_box(Vector3(0.055, 0.014, 0.07)), Vector3(0, -0.07, 0.015), leg, "Pad")
+	# Short plump tail (signature — shorter than skink taper)
+	var tail := _mi(_cyl(0.055, 0.02, 0.28), Vector3(0, 0.24, -0.28), bob, "Tail")
+	tail.rotation_degrees = Vector3(70, 0, 0)
+	_mi(_sphere(0.035), Vector3(0, 0.18, -0.48), bob, "TailTip")
 

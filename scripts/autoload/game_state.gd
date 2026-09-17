@@ -59,6 +59,7 @@ var seen_wave_57_toast: bool = false  # Wave 57: once-per-save polish tip toast 
 var seen_wave_58_toast: bool = false  # Wave 58: once-per-save polish tip toast on load
 var seen_wave_59_toast: bool = false  # Wave 59: once-per-save polish tip toast on load
 var seen_wave_60_toast: bool = false  # Wave 60: once-per-save polish tip toast on load
+var seen_wave_61_toast: bool = false  # Wave 61: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
@@ -144,6 +145,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_58_toast = false
 	seen_wave_59_toast = false
 	seen_wave_60_toast = false
+	seen_wave_61_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
@@ -337,6 +339,7 @@ func save_game() -> void:
 		"seen_wave_58_toast": seen_wave_58_toast,
 		"seen_wave_59_toast": seen_wave_59_toast,
 		"seen_wave_60_toast": seen_wave_60_toast,
+		"seen_wave_61_toast": seen_wave_61_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
@@ -405,6 +408,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_58_toast = bool(data.get("seen_wave_58_toast", false))
 	seen_wave_59_toast = bool(data.get("seen_wave_59_toast", false))
 	seen_wave_60_toast = bool(data.get("seen_wave_60_toast", false))
+	seen_wave_61_toast = bool(data.get("seen_wave_61_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -527,6 +531,28 @@ func unequip_slot(slot: String) -> void:
 		equipped[slot] = null
 		if prev_name != "":
 			toast.emit("Unequipped %s." % prev_name)
+	state_changed.emit()
+	save_game()
+
+func unequip_all_slots() -> void:
+	## Wave 61: unequip all worn gear with Travel Cape fallback (PIN 1234; mastery ≥80% unchanged).
+	var cleared: Array = []
+	for slot in ["head", "cape", "accessory", "weapon", "belt"]:
+		var cur = equipped.get(slot)
+		if cur == null or str(cur) == "":
+			continue
+		if slot == "cape" and str(cur) == "default_cape":
+			continue
+		var nm := str(ItemDB.get_item(str(cur)).get("name", str(cur)))
+		if slot == "cape":
+			equipped["cape"] = "default_cape"
+		else:
+			equipped[slot] = null
+		cleared.append(nm)
+	if cleared.is_empty():
+		toast.emit("Nothing to unequip — Travel Cape already on.")
+	else:
+		toast.emit("Unequipped all · %d item(s) · Travel Cape restored." % cleared.size())
 	state_changed.emit()
 	save_game()
 
@@ -761,6 +787,16 @@ func maybe_wave_60_toast() -> bool:
 	return true
 
 
+func maybe_wave_61_toast() -> bool:
+	## Wave 61: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_61_toast:
+		return false
+	seen_wave_61_toast = true
+	toast.emit("Wave 61 polish · willows weep-sway at Willow Bend · clearer empty pantry H hint · Unequip all confirm · Grape Gecko in the wilds.")
+	save_game()
+	return true
+
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -891,7 +927,7 @@ func use_consumable(item_id: String) -> bool:
 	_ensure_pantry_defaults()
 	var left: int = int(consumable_charges.get(item_id, 0))
 	if left <= 0:
-		toast.emit("%s pantry empty — fountain (H) refills your stacks." % item.get("name", item_id))  # Wave 39
+		toast.emit("%s pantry empty — press H for Fountain to refill your stacks." % item.get("name", item_id))  # Wave 61: clearer food empty toast with H hint
 		return false
 	if consumable_cd > 0.05:
 		toast.emit("Give it a moment (%.1fs)." % consumable_cd)

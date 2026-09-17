@@ -14,6 +14,9 @@ signal closed
 @onready var loadout_soft: Label = $Panel/VBox/Loadout/SoftArmor
 
 var selected_id: String = ""
+var unequip_all_btn: Button = null
+var _unequip_all_armed: bool = false
+var _unequip_all_arm_t: float = 0.0
 var _cd_label_was: float = -1.0
 
 const SLOT_LABELS := {
@@ -70,11 +73,27 @@ func _ready() -> void:
 	list.item_selected.connect(_on_select)
 	equip_btn.pressed.connect(_on_equip)
 	unequip_btn.pressed.connect(_on_unequip)
+	# Wave 61: Unequip all with confirm (PIN 1234; mastery ≥80% unchanged)
+	unequip_all_btn = $Panel/VBox/HBox.get_node_or_null("UnequipAllBtn")
+	if unequip_all_btn == null:
+		unequip_all_btn = Button.new()
+		unequip_all_btn.name = "UnequipAllBtn"
+		unequip_all_btn.text = "Unequip all"
+		unequip_all_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		$Panel/VBox/HBox.add_child(unequip_all_btn)
+		$Panel/VBox/HBox.move_child(unequip_all_btn, unequip_btn.get_index() + 1)
+	unequip_all_btn.pressed.connect(_on_unequip_all)
 	if use_btn:
 		use_btn.pressed.connect(_on_use)
 
 func _process(_delta: float) -> void:
 	## Live cooldown ticks while inventory is open (Bread / Water / Trail Rations).
+	if _unequip_all_armed:
+		_unequip_all_arm_t -= _delta
+		if _unequip_all_arm_t <= 0.0:
+			_unequip_all_armed = false
+			if unequip_all_btn:
+				unequip_all_btn.text = "Unequip all"
 	if not visible:
 		return
 	if selected_id == "":
@@ -94,6 +113,10 @@ func _process(_delta: float) -> void:
 func refresh() -> void:
 	list.clear()
 	selected_id = ""
+	_unequip_all_armed = false
+	_unequip_all_arm_t = 0.0
+	if unequip_all_btn:
+		unequip_all_btn.text = "Unequip all"
 	_cd_label_was = -1.0
 	# Wave 43: sort bag by type (weapon/armor/belt/food), then name
 	var bag_ids: Array = []
@@ -279,8 +302,13 @@ func _refresh_detail_only() -> void:
 	var uqid: String = str(item.get("unlock_quest_id", ""))
 	if uqid != "":
 		var qtitle: String = _unlock_quest_title(uqid)
+		var qweek: int = int(QuestDB.get_quest(uqid).get("week", 0))
 		if selected_id not in GameState.unlocked_items:
-			extra += "\n🔒 Unlock via quest: %s" % qtitle
+			# Wave 61: clearer locked gear week number in detail
+			if qweek > 0:
+				extra += "\n🔒 Locked · Week %d · unlock via: %s" % [qweek, qtitle]
+			else:
+				extra += "\n🔒 Unlock via quest: %s" % qtitle
 		else:
 			extra += "\nFrom quest: %s" % qtitle
 	if slot == "weapon":
@@ -344,6 +372,25 @@ func _on_unequip() -> void:
 		return
 	AudioBus.play_ui()
 	GameState.unequip_slot(slot)
+	refresh()
+
+
+func _on_unequip_all() -> void:
+	## Wave 61: Unequip all confirmation — first press arms, second confirms (PIN 1234; mastery ≥80%).
+	AudioBus.play_ui()
+	if not _unequip_all_armed:
+		_unequip_all_armed = true
+		_unequip_all_arm_t = 4.0
+		if unequip_all_btn:
+			unequip_all_btn.text = "Confirm?"
+		GameState.toast.emit("Unequip all worn gear? Press Confirm? again — or wait to cancel.")
+		return
+	_unequip_all_armed = false
+	_unequip_all_arm_t = 0.0
+	if unequip_all_btn:
+		unequip_all_btn.text = "Unequip all"
+	if GameState.has_method("unequip_all_slots"):
+		GameState.unequip_all_slots()
 	refresh()
 
 func _on_use() -> void:
@@ -474,7 +521,7 @@ func _append_locked_gear_hints() -> void:
 		var item: Dictionary = row["item"]
 		var iid: String = str(row["id"])
 		var qtitle: String = _unlock_quest_title(str(row["uqid"]))
-		list.add_item("🔒 %s  (unlock: %s)" % [item.get("name", iid), qtitle])
+		list.add_item("🔒 %s  (Week %d · unlock: %s)" % [item.get("name", iid), int(row["week"]), qtitle])  # Wave 61: clearer locked gear week number
 		var idx: int = list.item_count - 1
 		list.set_item_metadata(idx, "locked:" + iid)
 		list.set_item_icon(idx, _icon_for_item(item))
