@@ -281,7 +281,7 @@ func _build_streams() -> void:
 	_streams["rain"] = _soft_rain(6.0, 0.065)  # Wave 33: softer rain mix
 	_streams["drip"] = _indoor_drip(5.0, 0.14)
 	_streams["day_birds"] = _day_birds_loop(7.0, 0.07)
-	_streams["night_hush"] = _night_hush_loop(8.0, 0.06)
+	_streams["night_hush"] = _night_cricket_hush(8.0, 0.055)  # Wave 43: soft night cricket hush outdoors
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
@@ -341,7 +341,7 @@ func set_brook_murmur(on: bool) -> void:
 
 
 func set_day_night_audio(dayness: float) -> void:
-	## Wave 26: soft day bird chirps vs night hush (respects mute). Hysteresis avoids flicker.
+	## Wave 26/43: soft day bird chirps vs night cricket hush outdoors (respects mute). Hysteresis avoids flicker.
 	var want_day: bool = dayness >= 0.48
 	var mode: int = 1 if want_day else 0
 	if mode == _last_day_audio:
@@ -866,20 +866,35 @@ func _day_birds_loop(dur: float, amp: float) -> AudioStreamWAV:
 
 
 func _night_hush_loop(dur: float, amp: float) -> AudioStreamWAV:
-	## Soft night hush — low drone with sparse gentle ticks.
+	## Soft night hush — low drone with sparse gentle ticks (kept for fallback).
+	return _night_cricket_hush(dur, amp)
+
+
+func _night_cricket_hush(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 43: soft night cricket hush outdoors — warm low bed + sparse gentle cricket chirps (RuneScape-chunky, wholesome).
 	var rate := 22050
 	var n := int(dur * rate)
 	var samples := PackedFloat32Array()
 	samples.resize(n)
 	for i in n:
 		var tsec := float(i) / float(rate)
-		var bed := sin(TAU * 72.0 * tsec) * 0.35 + sin(TAU * 96.0 * tsec) * 0.22
-		var breathe := 0.7 + 0.3 * sin(TAU * 0.08 * tsec)
+		var bed := sin(TAU * 68.0 * tsec) * 0.28 + sin(TAU * 92.0 * tsec) * 0.18
+		var breathe := 0.72 + 0.28 * sin(TAU * 0.07 * tsec)
+		# Soft cricket chirp bursts — high, brief, spaced (not harsh)
+		var chirp := 0.0
+		var chirp_slot := int(tsec * 2.4)
+		if chirp_slot % 5 == 0 or chirp_slot % 7 == 3:
+			var u := fmod(tsec * 2.4, 1.0)
+			if u < 0.18:
+				var pulse := sin(TAU * (3200.0 + 400.0 * sin(TAU * 18.0 * tsec)) * u)
+				var env := exp(-u * 14.0) * (0.55 + 0.45 * sin(TAU * 55.0 * u))
+				chirp = pulse * env * 0.085
+		# Very soft secondary hush tick
 		var tick := 0.0
-		if int(tsec * 7.0) % 11 == 0:
-			var u := fmod(tsec, 0.12)
-			tick = sin(TAU * 1400.0 * u) * exp(-u * 50.0) * 0.06
-		samples[i] = (bed * breathe + tick) * amp
+		if int(tsec * 5.0) % 13 == 0:
+			var v := fmod(tsec, 0.1)
+			tick = sin(TAU * 1100.0 * v) * exp(-v * 45.0) * 0.035
+		samples[i] = (bed * breathe + chirp + tick) * amp
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

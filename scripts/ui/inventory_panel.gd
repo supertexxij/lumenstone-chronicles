@@ -33,6 +33,16 @@ const SLOT_TAGS := {
 	"belt": "[Belt]",
 }
 
+## Wave 43: bag sort order by type (weapon → armor → belt → food → other).
+const SLOT_SORT := {
+	"weapon": 0,
+	"head": 1,
+	"cape": 2,
+	"accessory": 3,
+	"belt": 4,
+	"consumable": 5,
+}
+
 var _icon_head: Texture2D
 var _icon_cape: Texture2D
 var _icon_gear: Texture2D
@@ -85,7 +95,20 @@ func refresh() -> void:
 	list.clear()
 	selected_id = ""
 	_cd_label_was = -1.0
+	# Wave 43: sort bag by type (weapon/armor/belt/food), then name
+	var bag_ids: Array = []
 	for id in GameState.unlocked_items:
+		bag_ids.append(id)
+	bag_ids.sort_custom(func(a, b):
+		var ia: Dictionary = ItemDB.get_item(str(a))
+		var ib: Dictionary = ItemDB.get_item(str(b))
+		var sa: int = int(SLOT_SORT.get(str(ia.get("slot", "")), 9))
+		var sb: int = int(SLOT_SORT.get(str(ib.get("slot", "")), 9))
+		if sa != sb:
+			return sa < sb
+		return str(ia.get("name", a)).to_lower() < str(ib.get("name", b)).to_lower()
+	)
+	for id in bag_ids:
 		var item := ItemDB.get_item(id)
 		var equipped_mark := ""
 		var worn_slot := ""
@@ -125,8 +148,10 @@ func refresh() -> void:
 			list.set_item_custom_fg_color(idx, Color(0.55, 0.55, 0.58, 0.95))
 		elif worn_slot != "":
 			list.set_item_custom_fg_color(idx, Color(0.85, 0.92, 0.55, 1.0))
+	# Wave 43: show nearby locked gear with unlock-quest hint (PIN 1234; mastery ≥80% unchanged)
+	_append_locked_gear_hints()
 	_update_loadout()
-	detail.text = "Select gear to see armor & defense, or food to Use."
+	detail.text = "Select gear to see armor & defense, or food to Use. Locked rows show unlock quests."
 
 func _slot_label(slot: String) -> String:
 	return str(SLOT_LABELS.get(slot, slot.capitalize()))
@@ -243,6 +268,13 @@ func _refresh_detail_only() -> void:
 			extra = "\nUnequippable yet — need Combat Lv %d (you are %d)." % [req, GameState.combat_level]
 		else:
 			extra = "\nCombat Lv req: %d — ready to equip." % req
+	var uqid: String = str(item.get("unlock_quest_id", ""))
+	if uqid != "":
+		var qtitle: String = _unlock_quest_title(uqid)
+		if selected_id not in GameState.unlocked_items:
+			extra += "\n🔒 Unlock via quest: %s" % qtitle
+		else:
+			extra += "\nFrom quest: %s" % qtitle
 	if slot == "weapon":
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
 	var def_n: int = int(item.get("defense", 0))
@@ -262,7 +294,11 @@ func _refresh_detail_only() -> void:
 	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name", ""), item.get("description", ""), slot_txt, extra]
 
 func _on_select(idx: int) -> void:
-	selected_id = str(list.get_item_metadata(idx))
+	var meta: String = str(list.get_item_metadata(idx))
+	if meta.begins_with("locked:"):
+		selected_id = meta.substr(7)
+	else:
+		selected_id = meta
 	_cd_label_was = -1.0
 	_refresh_detail_only()
 	if use_btn:
@@ -274,7 +310,8 @@ func _on_select(idx: int) -> void:
 		var slot: String = str(it_sel.get("slot", ""))
 		var req_sel: int = int(it_sel.get("combat_level_req", 0))
 		var under: bool = req_sel > 0 and GameState.combat_level < req_sel
-		equip_btn.disabled = slot == "" or slot == "consumable" or under
+		var not_owned: bool = selected_id not in GameState.unlocked_items
+		equip_btn.disabled = slot == "" or slot == "consumable" or under or not_owned
 	if unequip_btn:
 		var slot2: String = str(ItemDB.get_item(selected_id).get("slot", ""))
 		var worn: bool = slot2 != "" and slot2 != "consumable" and str(GameState.equipped.get(slot2, "")) == selected_id
@@ -382,3 +419,57 @@ func _make_slot_icon(base: Color, kind: String) -> Texture2D:
 				for x in range(6, 10):
 					img.set_pixel(x, y, base.darkened(0.35))
 	return ImageTexture.create_from_image(img)
+
+func _unlock_quest_title(qid: String) -> String:
+	## Wave 43: plain quest title for locked-gear unlock hints.
+	if qid == "":
+		return "(quest)"
+	var q: Dictionary = QuestDB.get_quest(qid)
+	var title: String = str(q.get("title", ""))
+	if title == "":
+		return qid
+	return title
+
+
+func _append_locked_gear_hints() -> void:
+	## Show a short list of locked (not-yet-unlocked) gear with unlock-quest hints.
+	var locked: Array = []
+	for it in ItemDB.all_items():
+		if typeof(it) != TYPE_DICTIONARY:
+			continue
+		var iid: String = str(it.get("id", ""))
+		if iid == "" or iid in GameState.unlocked_items:
+			continue
+		if bool(it.get("starter", false)):
+			continue
+		var slot: String = str(it.get("slot", ""))
+		if slot == "" or slot == "consumable":
+			continue
+		var uqid: String = str(it.get("unlock_quest_id", ""))
+		if uqid == "":
+			continue
+		# Prefer gear from near the current unlocked week (avoid dumping the whole catalog)
+		var q: Dictionary = QuestDB.get_quest(uqid)
+		var qw: int = int(q.get("week", 99))
+		if qw > int(GameState.unlocked_week) + 1:
+			continue
+		locked.append({"id": iid, "item": it, "week": qw, "uqid": uqid})
+	locked.sort_custom(func(a, b):
+		if int(a["week"]) != int(b["week"]):
+			return int(a["week"]) < int(b["week"])
+		return str(a["item"].get("name", "")) < str(b["item"].get("name", ""))
+	)
+	var shown: int = 0
+	for row in locked:
+		if shown >= 8:
+			break
+		var item: Dictionary = row["item"]
+		var iid: String = str(row["id"])
+		var qtitle: String = _unlock_quest_title(str(row["uqid"]))
+		list.add_item("🔒 %s  (unlock: %s)" % [item.get("name", iid), qtitle])
+		var idx: int = list.item_count - 1
+		list.set_item_metadata(idx, "locked:" + iid)
+		list.set_item_icon(idx, _icon_for_item(item))
+		list.set_item_custom_fg_color(idx, Color(0.58, 0.56, 0.52, 0.9))
+		shown += 1
+

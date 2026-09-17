@@ -25,6 +25,8 @@ var _pending_clear_slot: int = -1
 var _pending_overwrite_slot: int = -1
 var _reset_confirm_armed: bool = false
 var _hit_pausing: bool = false
+var _travel_fading: bool = false
+var _travel_fade: ColorRect = null
 
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
@@ -333,6 +335,49 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if world_scene.player.global_position.x >= 90.0:
 		GameState.toast.emit("Exit the hall first, then travel to %s." % label)
 		return
+	if _travel_fading:
+		return
+	_soft_travel_with_fade(pos, label)
+
+
+func _ensure_travel_fade() -> void:
+	## Wave 43: clearer soft-travel fade overlay (cream hush, wholesome).
+	if _travel_fade != null and is_instance_valid(_travel_fade):
+		return
+	_travel_fade = ColorRect.new()
+	_travel_fade.name = "SoftTravelFade"
+	_travel_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_travel_fade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_travel_fade.color = Color(0.12, 0.10, 0.08, 0.0)
+	_travel_fade.z_index = 80
+	_travel_fade.visible = false
+	var ui := get_node_or_null("UI")
+	if ui:
+		ui.add_child(_travel_fade)
+	else:
+		add_child(_travel_fade)
+
+
+func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
+	## Wave 43: soft cream fade out → teleport → fade in (RuneScape-chunky, wholesome).
+	_travel_fading = true
+	_ensure_travel_fade()
+	if _travel_fade:
+		_travel_fade.visible = true
+		_travel_fade.color = Color(0.14, 0.12, 0.09, 0.0)
+		var tw := create_tween()
+		tw.tween_property(_travel_fade, "color:a", 0.62, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		await tw.finished
+	_apply_soft_travel_arrival(pos, label)
+	if _travel_fade:
+		var tw2 := create_tween()
+		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		await tw2.finished
+		_travel_fade.visible = false
+	_travel_fading = false
+
+
+func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
 	world_scene.player.global_position = pos
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false

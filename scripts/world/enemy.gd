@@ -95,6 +95,9 @@ func _ready() -> void:
 		"fir_frog":
 			if label: label.position.y = 1.25
 			hp_bar.position.y = 1.0
+		"cypress_turtle":
+			if label: label.position.y = 1.3
+			hp_bar.position.y = 1.05
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -509,6 +512,25 @@ func _idle_anim(delta: float) -> void:
 				bl.rotation.x = sin(t * 0.95) * 0.12
 			if br:
 				br.rotation.x = -sin(t * 0.95) * 0.12
+		"cypress_turtle":
+			# Soft shell-settle — head peeks, legs paddle slowly, shell bob (Wave 43)
+			creature_bob.position.y = abs(sin(t * 0.55)) * 0.02
+			creature_bob.rotation.y = sin(t * 0.28) * 0.06
+			var head := creature_bob.get_node_or_null("Head")
+			if head:
+				head.position.z = 0.28 + sin(t * 0.7) * 0.02
+			var shell := creature_bob.get_node_or_null("Shell")
+			if shell:
+				shell.scale = Vector3.ONE * (1.0 + sin(t * 0.9) * 0.015)
+			var tleg := creature_bob.get_node_or_null("LegFL")
+			if tleg:
+				tleg.rotation.x = sin(t * 0.8) * 0.08
+			var tleg2 := creature_bob.get_node_or_null("LegBR")
+			if tleg2:
+				tleg2.rotation.x = -sin(t * 0.8) * 0.08
+			var ttail := creature_bob.get_node_or_null("Tail")
+			if ttail:
+				ttail.rotation.y = sin(t * 0.6) * 0.1
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

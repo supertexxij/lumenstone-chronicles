@@ -107,6 +107,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_duck(bob)
 		"fir_frog":
 			_build_frog(bob)
+		"cypress_turtle":
+			_build_turtle(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -659,3 +661,31 @@ static func _build_frog(bob: Node3D) -> void:
 	# Soft stubby tail nub
 	_mi(_sphere(0.05), Vector3(0, 0.34, -0.20), bob, "Nub")
 
+static func _build_turtle(bob: Node3D) -> void:
+	## Soft cypress-wilds turtle — dome shell, gentle head, stubby legs, short tail (distinct from frog/duck/mole).
+	# Domed shell (signature)
+	_mi(_sphere(0.32, 0.22), Vector3(0, 0.42, 0), bob, "Shell")
+	_mi(_box(Vector3(0.42, 0.06, 0.36)), Vector3(0, 0.30, 0), bob, "Plastron")
+	# Soft shell scute ridges
+	_mi(_box(Vector3(0.18, 0.04, 0.22)), Vector3(0, 0.52, 0.02), bob, "Scute")
+	# Gentle head peeking out
+	_mi(_sphere(0.11), Vector3(0, 0.38, 0.28), bob, "Head")
+	_mi(_sphere(0.03), Vector3(-0.04, 0.42, 0.36), bob, "EyeL")
+	_mi(_sphere(0.03), Vector3(0.04, 0.42, 0.36), bob, "EyeR")
+	# Beak nub
+	_mi(_box(Vector3(0.06, 0.03, 0.05)), Vector3(0, 0.36, 0.38), bob, "Beak")
+	# Four stubby legs
+	for info in [
+		["FL", Vector3(-0.16, 0.18, 0.14)],
+		["FR", Vector3(0.16, 0.18, 0.14)],
+		["BL", Vector3(-0.16, 0.18, -0.14)],
+		["BR", Vector3(0.16, 0.18, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.045, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.09, 0.03, 0.1)), Vector3(0, -0.10, 0.02), leg, "Foot")
+	# Short stubby tail
+	_mi(_sphere(0.06, 0.08), Vector3(0, 0.28, -0.28), bob, "Tail")

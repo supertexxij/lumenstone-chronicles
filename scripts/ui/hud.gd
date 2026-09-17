@@ -42,6 +42,7 @@ var _save_chip_panel: PanelContainer = null  # Wave 38: slot nickname chip
 var _mute_style_on: StyleBoxFlat = null
 var _mute_style_off: StyleBoxFlat = null
 var _vignette_edges: Array = []
+var _hit_edge_flash_t: float = -1.0  # Wave 43: soft brief edge flash on player hurt
 var _landmark_tick: ColorRect = null
 var _def_flash_t: float = 0.0
 var _def_flash_active: bool = false
@@ -144,6 +145,11 @@ func _ensure_clear_hp_text(hp_txt: Label) -> void:
 	hp_txt.set_meta("wave35_hp_styled", true)
 
 func _process(delta: float) -> void:
+	if _hit_edge_flash_t >= 0.0:
+		_hit_edge_flash_t = maxf(_hit_edge_flash_t - delta, 0.0)
+		_update_hurt_vignette(GameState.hp, GameState.max_hp)
+		if _hit_edge_flash_t <= 0.0:
+			_hit_edge_flash_t = -1.0
 	if _food_ready_flash_t > 0.0:
 		_food_ready_flash_t = maxf(0.0, _food_ready_flash_t - delta)
 	if _def_flash_t > 0.0:
@@ -306,17 +312,25 @@ func _update_hurt_vignette(cur: int, mx: int) -> void:
 	var ratio: float = 1.0
 	if mx > 0:
 		ratio = float(cur) / float(mx)
-	# Fade in below ~45% HP; stronger under ~25%. Soft rose, never opaque.
+	# Wave 43: softer low-HP rose wash (never harsh); brief hit edge flash blends in.
 	var alpha: float = 0.0
 	if ratio < 0.45:
-		alpha = clampf((0.45 - ratio) / 0.45, 0.0, 1.0) * 0.38
+		alpha = clampf((0.45 - ratio) / 0.45, 0.0, 1.0) * 0.28
 		if ratio < 0.25:
-			alpha = clampf(alpha + (0.25 - ratio) * 0.55, 0.0, 0.52)
+			alpha = clampf(alpha + (0.25 - ratio) * 0.35, 0.0, 0.38)
+	var flash: float = 0.0
+	if _hit_edge_flash_t > 0.0:
+		flash = clampf(_hit_edge_flash_t / 0.28, 0.0, 1.0) * 0.22
+	var a: float = clampf(alpha + flash, 0.0, 0.48)
+	# Softer cream-rose (less pure red) — wholesome, RuneScape-chunky
+	var col := Color(0.82, 0.42, 0.40, a)
+	if flash > 0.01:
+		col = Color(0.88, 0.55, 0.48, a)
 	for r in _vignette_edges:
 		if r == null or not is_instance_valid(r):
 			continue
-		r.color = Color(0.78, 0.32, 0.36, alpha)
-	_hurt_vignette.visible = alpha > 0.01
+		r.color = col
+	_hurt_vignette.visible = a > 0.01
 
 
 
@@ -454,6 +468,10 @@ func _refresh_save_chip() -> void:
 
 func _on_hurt_def_flash(_amount: int) -> void:
 	## Wave 25 QoL: when soft armor is active, flash Def on the combat line after a hit.
+	## Wave 43: soft brief screen-edge flash on hit (cream-rose, wholesome).
+	if _amount > 0:
+		_hit_edge_flash_t = 0.28
+		_update_hurt_vignette(GameState.hp, GameState.max_hp)
 	var def_n: int = 0
 	if GameState.has_method("get_defense"):
 		def_n = int(GameState.get_defense())

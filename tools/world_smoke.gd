@@ -55,6 +55,7 @@ func _finish():
 	var chipmunks := 0
 	var ducks := 0
 	var frogs := 0
+	var turtles := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -82,6 +83,8 @@ func _finish():
 			ducks += 1
 		if str(foe.get("kind")) == "fir_frog":
 			frogs += 1
+		if str(foe.get("kind")) == "cypress_turtle":
+			turtles += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -96,6 +99,7 @@ func _finish():
 	print("CHIPMUNKS", chipmunks)
 	print("DUCKS", ducks)
 	print("FROGS", frogs)
+	print("TURTLES", turtles)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -288,6 +292,13 @@ func _finish():
 	print("WARDROBE_SPARKLE_SRC", "_play_wardrobe_equip_sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
 	print("JOURNAL_PROGRESS_SRC", "_campaign_progress_fraction" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("VERSION_142_SRC", 'config/version="1.42.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("CYPRESS_TURTLE_SRC", '"cypress_turtle"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CRICKET_HUSH_SRC", "_night_cricket_hush" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("TRAVEL_FADE_SRC", "_soft_travel_with_fade" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("HIT_EDGE_SOFT_SRC", "_hit_edge_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("INV_SORT_UNLOCK_SRC", "SLOT_SORT" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "_append_locked_gear_hints" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("VERSION_143_SRC", 'config/version="1.43.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

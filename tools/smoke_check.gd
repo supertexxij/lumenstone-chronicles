@@ -330,5 +330,16 @@ func _initialize():
 	print("MASTERY_80_W42", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("NO_DAY_CASH_W42", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+	print("VERSION_143", 'config/version="1.43.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("CYPRESS_TURTLE", '"cypress_turtle"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_turtle" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e93"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CRICKET_HUSH_W43", "_night_cricket_hush" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "Wave 43: soft night cricket hush" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("TRAVEL_FADE_W43", "_soft_travel_with_fade" in FileAccess.get_file_as_string("res://scripts/ui/main.gd") and "SoftTravelFade" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("HIT_EDGE_SOFT_W43", "_hit_edge_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Wave 43: soft brief screen-edge flash" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	var inv43 = FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd")
+	print("INV_SORT_UNLOCK_W43", "SLOT_SORT" in inv43 and "_append_locked_gear_hints" in inv43 and "Unlock via quest" in inv43)
+	print("PIN_STILL_1234_W43", "const DEFAULT_PIN := \"1234\"" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or 'DEFAULT_PIN := "1234"' in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("MASTERY_80_W43", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("NO_DAY_CASH_W43", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

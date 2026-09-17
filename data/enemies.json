@@ -233,6 +233,19 @@
       "combat_xp": 108,
       "respawn_sec": 52.0,
       "description": "A plump frog of the fir wilds \u2014 cushion it gently with a careful step!"
+    },
+    "cypress_turtle": {
+      "kind": "cypress_turtle",
+      "name": "Cypress Turtle",
+      "defeat_verb": "sheltered",
+      "color": "#4a6a4a",
+      "accent": "#c4a86a",
+      "max_hp": 128,
+      "damage": 21,
+      "accuracy": 0.34,
+      "combat_xp": 114,
+      "respawn_sec": 54.0,
+      "description": "A shelled turtle of the cypress wilds \u2014 shelter it gently with a careful step!"
     }
   },
   "spawns": [
@@ -763,6 +776,36 @@
       "kind": "fir_frog",
       "x": 18,
       "z": -80
+    },
+    {
+      "id": "e89",
+      "kind": "cypress_turtle",
+      "x": -78,
+      "z": 18
+    },
+    {
+      "id": "e90",
+      "kind": "cypress_turtle",
+      "x": 70,
+      "z": -78
+    },
+    {
+      "id": "e91",
+      "kind": "cypress_turtle",
+      "x": -40,
+      "z": 80
+    },
+    {
+      "id": "e92",
+      "kind": "cypress_turtle",
+      "x": 80,
+      "z": 28
+    },
+    {
+      "id": "e93",
+      "kind": "cypress_turtle",
+      "x": -12,
+      "z": -82
     }
   ],
   "base_combat": {
