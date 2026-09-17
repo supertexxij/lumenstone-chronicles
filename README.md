@@ -80,7 +80,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 
 | Action | Input |
 |--------|--------|
-| Move | **Click** ground, or **WASD** / arrows |
+| Move | **Click** ground (yellow ring), or **WASD** / arrows |
 | Rotate camera | **Q** / **E**, or right-drag |
 | Zoom camera | **Scroll wheel**, or **=** / **-** (also **]** / **[**) |
 | Talk to NPC | **Click** NPC, or walk near and press **F** |
@@ -231,6 +231,12 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - HUD **pantry stacks / next-food** readout beside HP (V hotkey target + cooldown)
 - Indoor nav bake `agent_radius` aligned to `cell_size` (quiets precision warning)
 - Bugfix: weapons/gear with `combat_level_req` no longer unlock from quest mastery alone (AND gate); food stays OR
+
+### Wave 12 overnight (v1.12.0-overnight)
+- Headless quieting: skip **Label3D** in headless; clear mesh RIDs on exit (`HeadlessGuard`) to cut `mesh_get_surface_count` spam
+- Parent dashboard: **collapsible week rows** inside campaign tabs (expand current week by default)
+- Feel polish: soft **yellow click-to-move marker** (RuneScape-style destination ring)
+- Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
 ### Architecture
 

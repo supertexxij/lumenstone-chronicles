@@ -106,7 +106,25 @@ func _mi(mesh: Mesh, pos: Vector3, parent: Node, mat: Material, name: String = "
 	n.position = pos
 	n.material_override = mat
 	parent.add_child(n)
+	HeadlessGuard.guard_mesh(n)
 	return n
+
+func _make_label3d() -> Label3D:
+	return HeadlessGuard.make_label3d()
+
+func _place_label3d(parent: Node, text: String, font_size: int, pos: Vector3, outline: int = 6, modulate: Color = Color(1, 1, 1, 1)) -> Label3D:
+	## Creates a billboard Label3D, or returns null in headless (no dummy-renderer spam).
+	var lbl := _make_label3d()
+	if lbl == null or parent == null:
+		return null
+	lbl.text = text
+	lbl.font_size = font_size
+	lbl.position = pos
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lbl.outline_size = outline
+	lbl.modulate = modulate
+	parent.add_child(lbl)
+	return lbl
 
 func _box(size: Vector3) -> BoxMesh:
 	var m := BoxMesh.new()
@@ -134,6 +152,7 @@ func _build_ground() -> void:
 	ground.material_override = _mats["grass"]
 	ground.position.y = -0.01
 	static_world.add_child(ground)
+	HeadlessGuard.guard_mesh(ground)
 	# Thin floor collider — outdoor click-to-move NavigationMesh bake + footing
 	var floor_body := StaticBody3D.new()
 	floor_body.name = "GroundBody"
@@ -158,6 +177,7 @@ func _build_ground() -> void:
 		var ang := i * TAU / 10.0
 		patch.position = Vector3(cos(ang) * 36.0, 0.015, sin(ang) * 36.0)
 		static_world.add_child(patch)
+		HeadlessGuard.guard_mesh(patch)
 
 func _build_paths() -> void:
 	# Central plaza ring
@@ -170,6 +190,7 @@ func _build_paths() -> void:
 	path.material_override = _mats["dirt"]
 	path.position = Vector3(0, 0.02, 6)
 	static_world.add_child(path)
+	HeadlessGuard.guard_mesh(path)
 	# Inner trim ring
 	var trim := MeshInstance3D.new()
 	var tc := CylinderMesh.new()
@@ -180,6 +201,7 @@ func _build_paths() -> void:
 	trim.material_override = _mats["dirt_trim"]
 	trim.position = Vector3(0, 0.018, 6)
 	static_world.add_child(trim)
+	HeadlessGuard.guard_mesh(trim)
 	# Spokes toward guild halls
 	var spokes := [
 		Vector3(18, 0, 2), Vector3(-18, 0, 2), Vector3(0, 0, -14),
@@ -198,6 +220,7 @@ func _build_paths() -> void:
 		plank.position = Vector3(dx * 0.45, 0.025, 6.0 + dz * 0.45)
 		plank.rotation.y = ang
 		static_world.add_child(plank)
+		HeadlessGuard.guard_mesh(plank)
 
 func _build_buildings() -> void:
 	for b in world_data.get("buildings", []):
@@ -229,6 +252,7 @@ func _build_buildings() -> void:
 		roof.position.y = h + 0.75
 		roof.material_override = _mats["roof"]
 		body.add_child(roof)
+		HeadlessGuard.guard_mesh(roof)
 		# Chimney
 		_mi(_box(Vector3(0.55, 1.4, 0.55)), Vector3(w * 0.28, h + 1.4, -d * 0.15), body, _mats["stone_dark"], "Chimney")
 		# Collision for main box only
@@ -238,13 +262,7 @@ func _build_buildings() -> void:
 		col.shape = shape
 		col.position.y = h * 0.5
 		body.add_child(col)
-		var lbl := Label3D.new()
-		lbl.text = b["label"]
-		lbl.font_size = 64
-		lbl.position = Vector3(0, h + 2.6, 0)
-		lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		lbl.outline_size = 6
-		body.add_child(lbl)
+		_place_label3d(body, str(b["label"]), 64, Vector3(0, h + 2.6, 0), 6)
 		# Small lantern by door
 		_add_lantern(body, Vector3(-1.0, 2.2, d * 0.5 + 0.35))
 		static_world.add_child(body)
@@ -352,6 +370,7 @@ func _add_rock_cluster(pos: Vector3, rng: RandomNumberGenerator) -> void:
 		rock.position = Vector3(rng.randf_range(-0.6, 0.6), sm.height * 0.35, rng.randf_range(-0.6, 0.6))
 		rock.scale = Vector3(rng.randf_range(0.8, 1.3), rng.randf_range(0.6, 1.0), rng.randf_range(0.8, 1.2))
 		root.add_child(rock)
+		HeadlessGuard.guard_mesh(rock)
 	static_world.add_child(root)
 
 func _add_bush(pos: Vector3, rng: RandomNumberGenerator) -> void:
@@ -375,12 +394,7 @@ func _build_fountain() -> void:
 	for i in 6:
 		var ang := i * TAU / 6.0
 		_mi(_cyl(0.12, 0.14, 0.55), Vector3(cos(ang) * 2.7, 0.28, sin(ang) * 2.7), root, _mats["stone"], "Post%d" % i)
-	var lbl := Label3D.new()
-	lbl.text = "Fountain"
-	lbl.font_size = 48
-	lbl.position = Vector3(0, 2.5, 0)
-	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(lbl)
+	_place_label3d(root, "Fountain", 48, Vector3(0, 2.5, 0))
 	# Soft pantry refill when walking near the fountain
 	var refill := Area3D.new()
 	refill.name = "PantryRefill"
@@ -618,12 +632,7 @@ func _add_door_volume(b: Dictionary) -> void:
 	var mat := _mat(Color(0.95, 0.9, 0.55, 0.35), 0.5)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_mi(_box(Vector3(1.2, 2.0, 0.15)), Vector3(0, 0.1, 0), area, mat, "DoorGlow")
-	var tip := Label3D.new()
-	tip.text = "Enter"
-	tip.font_size = 36
-	tip.position = Vector3(0, 1.5, 0)
-	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	area.add_child(tip)
+	_place_label3d(area, "Enter", 36, Vector3(0, 1.5, 0))
 	area.body_entered.connect(func(body: Node):
 		if body.is_in_group("player"):
 			_enter_hall(str(b.get("id", "")), str(b.get("label", "Hall")), body)
@@ -683,12 +692,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_add_chair(room, Vector3(-0.9, 0, -2.2), 0.4)  # seat at quest desk
 	# Wall plaque near desk
 	_mi(_box(Vector3(1.1, 0.7, 0.06)), Vector3(-2.2, 1.8, -5.7), room, _mat(col.darkened(0.25)), "Plaque")
-	var plaque := Label3D.new()
-	plaque.text = "Mastery Desk"
-	plaque.font_size = 26
-	plaque.position = Vector3(-2.2, 2.35, -5.5)
-	plaque.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	room.add_child(plaque)
+	_place_label3d(room, "Mastery Desk", 26, Vector3(-2.2, 2.35, -5.5))
 	# Benches along walls (with snug collision)
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(-2.5, 0.55, 4.2), room, _mats["bench"], "BenchL")
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(2.5, 0.55, 4.2), room, _mats["bench"], "BenchR")
@@ -703,12 +707,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_mi(_box(Vector3(0.65, 0.5, 0.65)), Vector3(4.4, 0.28, 3.4), room, _mats["wood_light"], "Crate")
 	_add_wall_col(room, Vector3(0.6, 0.55, 0.6), Vector3(4.4, 0.3, 3.4))
 	_mi(_box(Vector3(1.6, 1.1, 0.08)), Vector3(0, 1.6, 5.5), room, _mat(col.darkened(0.35)), "NoticeBoard")
-	var notice := Label3D.new()
-	notice.text = "Notices"
-	notice.font_size = 28
-	notice.position = Vector3(0, 2.3, 5.5)
-	notice.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	room.add_child(notice)
+	_place_label3d(room, "Notices", 28, Vector3(0, 2.3, 5.5))
 	# Warm indoor lanterns + real omni lights (stronger, cozy halls)
 	_add_lantern(room, Vector3(-3.5, 2.6, -4.0), true)
 	_add_lantern(room, Vector3(3.5, 2.6, -4.0), true)
@@ -717,12 +716,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_add_lantern(room, Vector3(0, 2.8, 0.2), true)  # center fill
 	_mi(_box(Vector3(2.8, 1.1, 0.08)), Vector3(0, 2.5, -5.7), room, _mat(col.darkened(0.2)), "Banner")
 	_add_guild_theme_props(room, str(b.get("guild", "")), col)
-	var lbl := Label3D.new()
-	lbl.text = "%s Hall" % b.get("label", "Guild")
-	lbl.font_size = 56
-	lbl.position = Vector3(0, 3.15, 0)
-	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	room.add_child(lbl)
+	_place_label3d(room, "%s Hall" % b.get("label", "Guild"), 56, Vector3(0, 3.15, 0))
 	# Indoor attendant NPC (same quests as outdoor mentor)
 	_spawn_indoor_attendant(room, b)
 	# Exit volume near south wall
@@ -740,12 +734,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	var emat := _mat(Color(0.6, 0.85, 0.95, 0.4), 0.5)
 	emat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_mi(_box(Vector3(1.5, 2.0, 0.12)), Vector3(0, 0.1, 0), exit_area, emat, "ExitGlow")
-	var elbl := Label3D.new()
-	elbl.text = "Exit to green"
-	elbl.font_size = 32
-	elbl.position = Vector3(0, 1.4, 0)
-	elbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	exit_area.add_child(elbl)
+	_place_label3d(exit_area, "Exit to green", 32, Vector3(0, 1.4, 0))
 	exit_area.body_entered.connect(func(body: Node):
 		if body.is_in_group("player"):
 			_exit_hall(body)
@@ -787,14 +776,9 @@ func _add_quest_desk(room: Node3D, pos: Vector3, guild_col: Color, guild: String
 	box.size = Vector3(2.4, 2.0, 1.6)
 	col.shape = box
 	area.add_child(col)
-	var tip := Label3D.new()
-	tip.name = "DeskTip"
-	tip.text = "Quest Desk (F)"
-	tip.font_size = 30
-	tip.position = Vector3(0, 1.5, 0)
-	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	tip.modulate = Color(1, 1, 1, 0.55)
-	area.add_child(tip)
+	var tip := _place_label3d(area, "Quest Desk (F)", 30, Vector3(0, 1.5, 0), 6, Color(1, 1, 1, 0.55))
+	if tip:
+		tip.name = "DeskTip"
 	var glow_mat := _mat(Color(guild_col.r, guild_col.g, guild_col.b, 0.18), 0.5)
 	glow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	var glow_mi := _mi(_box(Vector3(2.0, 0.05, 1.2)), Vector3(0, -0.7, 0), area, glow_mat, "DeskGlow")
@@ -961,12 +945,7 @@ func _build_lantern_glade() -> void:
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 2.0), Vector3(0, 1.0, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.4, 0.7, 0.1)), Vector3(0, 1.8, 0), sign, _mats["wood_light"], "Board")
-	var sl := Label3D.new()
-	sl.text = "Lantern Glade"
-	sl.font_size = 42
-	sl.position = Vector3(0, 2.5, 0)
-	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign.add_child(sl)
+	_place_label3d(sign, "Lantern Glade", 42, Vector3(0, 2.5, 0))
 	# Framing props kept outside corridor (side >= 4.5)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 91
@@ -983,12 +962,7 @@ func _build_lantern_glade() -> void:
 	for i in 5:
 		var ang := i * TAU / 5.0
 		_add_lantern_post(Vector3(0.5 + cos(ang) * 5.0, 0, -48.0 + sin(ang) * 5.0))
-	var glade_lbl := Label3D.new()
-	glade_lbl.text = "Lantern Glade"
-	glade_lbl.font_size = 56
-	glade_lbl.position = Vector3(0.5, 3.2, -48)
-	glade_lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(glade_lbl)
+	_place_label3d(root, "Lantern Glade", 56, Vector3(0.5, 3.2, -48))
 
 func _setup_weather() -> void:
 	_rain = CPUParticles3D.new()
@@ -1014,6 +988,7 @@ func _setup_weather() -> void:
 	_rain.material_override = rmat
 	_rain.position = Vector3(0, 14, 6)
 	add_child(_rain)
+	HeadlessGuard.guard_particles(_rain)
 	_apply_weather_visuals()
 
 func _update_weather(delta: float) -> void:
@@ -1085,12 +1060,12 @@ func _update_quest_desk_highlights() -> void:
 	## Soft pulse when the player stands at a quest desk.
 	for area in get_tree().get_nodes_in_group("quest_desks"):
 		var near: bool = bool(area.get_meta("player_near", false))
-		var tip: Label3D = area.get_meta("tip") if area.has_meta("tip") else null
+		var tip = area.get_meta("tip") if area.has_meta("tip") else null
 		var glow_mi: MeshInstance3D = area.get_meta("glow_mi") if area.has_meta("glow_mi") else null
 		var ring_mi: MeshInstance3D = area.get_meta("ring_mi") if area.has_meta("ring_mi") else null
 		var gc: Color = area.get_meta("guild_col") if area.has_meta("guild_col") else Color(1, 0.9, 0.5)
 		var pulse: float = 0.35 + 0.35 * abs(sin(Time.get_ticks_msec() * 0.004))
-		if tip:
+		if tip != null and is_instance_valid(tip) and tip is Label3D:
 			tip.modulate = Color(1, 1, 0.85, 0.95 if near else 0.5)
 			tip.font_size = 36 if near else 30
 		if glow_mi and glow_mi.material_override is StandardMaterial3D:
@@ -1171,12 +1146,7 @@ func _build_pine_ridge() -> void:
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.9), Vector3(0, 0.95, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.5, 0.65, 0.1)), Vector3(0, 1.7, 0), sign, _mats["wood_light"], "Board")
-	var sl := Label3D.new()
-	sl.text = "Pine Ridge"
-	sl.font_size = 40
-	sl.position = Vector3(0, 2.4, 0)
-	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign.add_child(sl)
+	_place_label3d(sign, "Pine Ridge", 40, Vector3(0, 2.4, 0))
 	# Pines kept off the ford corridor
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 113
@@ -1189,12 +1159,7 @@ func _build_pine_ridge() -> void:
 		_add_pine(p, rng)
 	for i in 4:
 		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.2, 0, -58.0 - (i % 2)), rng)
-	var ridge_lbl := Label3D.new()
-	ridge_lbl.text = "Pine Ridge"
-	ridge_lbl.font_size = 52
-	ridge_lbl.position = Vector3(-24, 3.4, -54)
-	ridge_lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(ridge_lbl)
+	_place_label3d(root, "Pine Ridge", 52, Vector3(-24, 3.4, -54))
 
 func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	if _in_travel_corridor(pos):
@@ -1253,18 +1218,8 @@ func _build_prayer_garden() -> void:
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.5, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
-	var sl := Label3D.new()
-	sl.text = "Prayer Garden"
-	sl.font_size = 40
-	sl.position = Vector3(0, 2.3, 0)
-	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign.add_child(sl)
-	var lbl := Label3D.new()
-	lbl.text = "Prayer Garden"
-	lbl.font_size = 52
-	lbl.position = Vector3(30, 3.2, 18)
-	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(lbl)
+	_place_label3d(sign, "Prayer Garden", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "Prayer Garden", 52, Vector3(30, 3.2, 18))
 
 
 
@@ -1314,25 +1269,9 @@ func _build_lookout_rock() -> void:
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.6, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
-	var sl := Label3D.new()
-	sl.text = "Lookout Rock"
-	sl.font_size = 40
-	sl.position = Vector3(0, 2.3, 0)
-	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign.add_child(sl)
-	var tip := Label3D.new()
-	tip.text = "See the village green"
-	tip.font_size = 28
-	tip.modulate = Color(1, 1, 1, 0.75)
-	tip.position = Vector3(40, 4.15, 34)
-	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(tip)
-	var lbl := Label3D.new()
-	lbl.text = "Lookout Rock"
-	lbl.font_size = 52
-	lbl.position = Vector3(40, 3.6, 34)
-	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(lbl)
+	_place_label3d(sign, "Lookout Rock", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "See the village green", 28, Vector3(40, 4.15, 34), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Lookout Rock", 52, Vector3(40, 3.6, 34))
 
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
@@ -1433,25 +1372,9 @@ func _build_mill_bridge() -> void:
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.7, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
-	var sl := Label3D.new()
-	sl.text = "Mill Bridge"
-	sl.font_size = 40
-	sl.position = Vector3(0, 2.3, 0)
-	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	sign.add_child(sl)
-	var tip := Label3D.new()
-	tip.text = "Creek mill & bridge"
-	tip.font_size = 28
-	tip.modulate = Color(1, 1, 1, 0.75)
-	tip.position = Vector3(-36.0, 3.95, 30.0)
-	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(tip)
-	var lbl := Label3D.new()
-	lbl.text = "Mill Bridge"
-	lbl.font_size = 52
-	lbl.position = Vector3(-36.0, 3.4, 30.0)
-	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	root.add_child(lbl)
+	_place_label3d(sign, "Mill Bridge", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "Creek mill & bridge", 28, Vector3(-36.0, 3.95, 30.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Mill Bridge", 52, Vector3(-36.0, 3.4, 30.0))
 
 func _setup_outdoor_navigation() -> void:
 	## Lightweight outdoor NavigationRegion3D bake (static colliders + ground).

@@ -52,20 +52,23 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		outline_col = Color(1, 1, 1)
 	disc.material_override = dmat
 	root.add_child(disc)
+	HeadlessGuard.guard_mesh(disc)
 
-	var splat := Label3D.new()
-	splat.text = label_text
-	splat.font_size = font_sz
-	splat.modulate = text_col
-	splat.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	splat.outline_size = 10
-	splat.outline_modulate = outline_col
-	splat.position = Vector3(0, 0.02, 0.02)
-	root.add_child(splat)
+	var splat := HeadlessGuard.make_label3d()
+	if splat:
+		splat.text = label_text
+		splat.font_size = font_sz
+		splat.modulate = text_col
+		splat.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		splat.outline_size = 10
+		splat.outline_modulate = outline_col
+		splat.position = Vector3(0, 0.02, 0.02)
+		root.add_child(splat)
 
 	var tw := parent.get_tree().create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(root, "position:y", y + 1.1, 0.85).set_ease(Tween.EASE_OUT)
-	tw.tween_property(splat, "modulate:a", 0.0, 0.85)
+	if splat:
+		tw.tween_property(splat, "modulate:a", 0.0, 0.85)
 	tw.tween_property(dmat, "albedo_color:a", 0.0, 0.85)
 	tw.chain().tween_callback(root.queue_free)

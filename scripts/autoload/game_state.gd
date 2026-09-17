@@ -516,6 +516,8 @@ func use_consumable(item_id: String) -> bool:
 	var gained: int = heal(heal_amt)
 	consumable_charges[item_id] = left - 1
 	consumable_cd = float(item.get("cooldown", 1.5))
+	if gained > 0:
+		heal_tick.emit(gained)
 	# Starter food stays unlocked; stacks refill at the fountain.
 	toast.emit("Used %s (+%d HP) · %d left." % [item.get("name", item_id), gained, int(consumable_charges[item_id])])
 	AudioBus.play_ui()

@@ -18,7 +18,8 @@ var _reset_btn: Button
 var _reset_armed: bool = false
 var _hint_lbl: Label
 var _campaign_tabs: TabContainer
-var _campaign_labels: Array = []  # RichTextLabel per campaign
+var _campaign_week_roots: Array = []  # VBoxContainer per campaign tab
+var _expanded_weeks: Dictionary = {}  # week int -> bool
 
 const CAMPAIGN_RANGES := [
 	{"title": "I · Kindling (1–9)", "lo": 1, "hi": 9},
@@ -105,7 +106,7 @@ func _refresh() -> void:
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]
-	lines += "\nUse the [b]campaign tabs[/b] below for week-by-week skills (✓ mastered · open · – locked)."
+	lines += "\nUse the [b]campaign tabs[/b] below — click a week row to expand skills (✓ mastered · open · – locked)."
 	summary.text = lines
 	_refresh_campaign_tabs(uw)
 	help_list.clear()
@@ -129,44 +130,39 @@ func _refresh() -> void:
 func _ensure_campaign_tabs() -> void:
 	if content.get_node_or_null("CampaignTabs") != null:
 		_campaign_tabs = content.get_node("CampaignTabs")
-		_campaign_labels.clear()
+		_campaign_week_roots.clear()
 		for i in range(_campaign_tabs.get_tab_count()):
 			var sc: ScrollContainer = _campaign_tabs.get_child(i)
-			var rtl: RichTextLabel = sc.get_child(0) if sc.get_child_count() > 0 else null
-			_campaign_labels.append(rtl)
+			var vbox: VBoxContainer = sc.get_child(0) if sc.get_child_count() > 0 else null
+			_campaign_week_roots.append(vbox)
 		return
 	var title := Label.new()
 	title.name = "CampaignTabsTitle"
-	title.text = "Skills / quests by campaign"
+	title.text = "Skills / quests by campaign — click a week to expand"
 	content.add_child(title)
 	content.move_child(title, summary.get_index() + 1)
 	_campaign_tabs = TabContainer.new()
 	_campaign_tabs.name = "CampaignTabs"
-	_campaign_tabs.custom_minimum_size = Vector2(0, 200)
+	_campaign_tabs.custom_minimum_size = Vector2(0, 220)
 	_campaign_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(_campaign_tabs)
 	content.move_child(_campaign_tabs, title.get_index() + 1)
-	# Shrink overview Summary so tabs get room
 	summary.custom_minimum_size = Vector2(0, 140)
-	_campaign_labels.clear()
+	_campaign_week_roots.clear()
 	for camp in CAMPAIGN_RANGES:
 		var scroll := ScrollContainer.new()
 		scroll.name = str(camp["title"]).replace(" ", "_")
 		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		var rtl := RichTextLabel.new()
-		rtl.bbcode_enabled = true
-		rtl.fit_content = true
-		rtl.scroll_active = false
-		rtl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		rtl.custom_minimum_size = Vector2(0, 160)
-		scroll.add_child(rtl)
+		var vbox := VBoxContainer.new()
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		vbox.add_theme_constant_override("separation", 4)
+		scroll.add_child(vbox)
 		_campaign_tabs.add_child(scroll)
 		_campaign_tabs.set_tab_title(_campaign_tabs.get_tab_count() - 1, str(camp["title"]))
-		_campaign_labels.append(rtl)
+		_campaign_week_roots.append(vbox)
 
 func _refresh_campaign_tabs(uw: int) -> void:
 	_ensure_campaign_tabs()
-	# Select tab for current campaign
 	var tab_idx := 0
 	if uw <= 9:
 		tab_idx = 0
@@ -178,31 +174,74 @@ func _refresh_campaign_tabs(uw: int) -> void:
 		tab_idx = 3
 	if _campaign_tabs:
 		_campaign_tabs.current_tab = tab_idx
+	# Default: expand only the current week (first open)
+	if not _expanded_weeks.has(uw):
+		_expanded_weeks[uw] = true
 	for i in range(CAMPAIGN_RANGES.size()):
 		var camp: Dictionary = CAMPAIGN_RANGES[i]
 		var lo: int = int(camp["lo"])
 		var hi: int = int(camp["hi"])
-		var body := ""
+		if i >= _campaign_week_roots.size() or _campaign_week_roots[i] == null:
+			continue
+		var vbox: VBoxContainer = _campaign_week_roots[i]
+		while vbox.get_child_count() > 0:
+			var ch: Node = vbox.get_child(0)
+			vbox.remove_child(ch)
+			ch.free()
 		for w in range(lo, hi + 1):
-			var titles: Array = []
-			var done_n := 0
-			var total_n := 0
-			for q in QuestDB.quests:
-				if int(q.get("week", 1)) != w:
-					continue
-				total_n += 1
-				var qid: String = str(q["id"])
-				var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")
-				if qid in GameState.completed_quests:
-					done_n += 1
-				titles.append("%s %s" % [mark, q.get("title", qid)])
-			var lock: String = "" if w <= uw else " [locked]"
-			var head: String = "Week %d (%d/%d)%s" % [w, done_n, total_n, lock]
-			if w == uw:
-				head = "[b]%s ← current[/b]" % head
-			body += "%s: %s\n" % [head, ", ".join(titles)]
-		if i < _campaign_labels.size() and _campaign_labels[i] != null:
-			_campaign_labels[i].text = body
+			_add_week_row(vbox, w, uw)
+
+func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
+	var titles: Array = []
+	var done_n := 0
+	var total_n := 0
+	for q in QuestDB.quests:
+		if int(q.get("week", 1)) != w:
+			continue
+		total_n += 1
+		var qid: String = str(q["id"])
+		var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")
+		if qid in GameState.completed_quests:
+			done_n += 1
+		titles.append("%s %s" % [mark, q.get("title", qid)])
+	var lock: String = "" if w <= uw else " [locked]"
+	var expanded: bool = bool(_expanded_weeks.get(w, false))
+	var arrow: String = "▾" if expanded else "▸"
+	var head: String = "%s Week %d (%d/%d)%s" % [arrow, w, done_n, total_n, lock]
+	if w == uw:
+		head += "  ← current"
+	var row := VBoxContainer.new()
+	row.add_theme_constant_override("separation", 2)
+	var btn := Button.new()
+	btn.toggle_mode = true
+	btn.button_pressed = expanded
+	btn.text = head
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var detail := RichTextLabel.new()
+	detail.bbcode_enabled = true
+	detail.fit_content = true
+	detail.scroll_active = false
+	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	detail.custom_minimum_size = Vector2(0, 8)
+	if titles.is_empty():
+		detail.text = "  (no quests listed)"
+	else:
+		detail.text = "  " + "\n  ".join(titles)
+	detail.visible = expanded
+	var week_num := w
+	btn.toggled.connect(func(on: bool) -> void:
+		_expanded_weeks[week_num] = on
+		detail.visible = on
+		var a2: String = "▾" if on else "▸"
+		var h2: String = "%s Week %d (%d/%d)%s" % [a2, week_num, done_n, total_n, lock]
+		if week_num == uw:
+			h2 += "  ← current"
+		btn.text = h2
+	)
+	row.add_child(btn)
+	row.add_child(detail)
+	parent.add_child(row)
 
 func _campaign_name(week: int) -> String:
 	if week <= 9:

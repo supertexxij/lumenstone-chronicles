@@ -11,7 +11,7 @@ extends StaticBody3D
 signal talk_requested(npc: Node)
 
 @onready var mesh_root: Node3D = $MeshRoot
-@onready var label: Label3D = $Label3D
+var label: Label3D
 
 var parts: Dictionary = {}
 var _idle_style: int = 0
@@ -20,7 +20,13 @@ var _wave_t: float = -1.0
 
 func _ready() -> void:
 	add_to_group("npcs")
-	label.text = npc_name
+	label = get_node_or_null("Label3D") as Label3D
+	if HeadlessGuard.is_headless():
+		if label:
+			label.queue_free()
+			label = null
+	elif label:
+		label.text = npc_name
 	parts = HumanoidBuilder.build(mesh_root)
 	_ensure_nav_obstacle()
 	var skin_keys := ["fair", "light", "medium", "tan", "deep"]

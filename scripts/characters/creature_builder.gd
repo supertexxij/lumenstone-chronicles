@@ -15,6 +15,7 @@ static func _mi(mesh: Mesh, pos: Vector3, parent: Node3D, name: String, scale :=
 	n.position = pos
 	n.scale = scale
 	parent.add_child(n)
+	HeadlessGuard.guard_mesh(n)
 	return n
 
 

@@ -77,5 +77,8 @@ func _finish():
 	print("PARENT_TABS", "_ensure_campaign_tabs" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("WASD_FORCED", "set_velocity_forced" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("FOUNTAIN_REST", "func rest_at_fountain" in gs_src)
+	print("HEADLESS_GUARD", FileAccess.file_exists("res://scripts/util/headless_guard.gd"))
+	print("PARENT_WEEK_ROWS", "_add_week_row" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
+	print("CLICK_MARKER", "_show_click_marker" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

@@ -23,7 +23,7 @@ var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
 
 @onready var mesh_root: Node3D = $MeshRoot
-@onready var label: Label3D = $Label3D
+var label: Label3D
 @onready var hp_bar: MeshInstance3D = $HpBar
 
 func _ready() -> void:
@@ -32,11 +32,19 @@ func _ready() -> void:
 	def = EnemyDB.get_def(kind)
 	max_hp = int(def.get("max_hp", 10))
 	hp = max_hp
-	label.text = def.get("name", kind)
-	if hp_bar.mesh == null:
+	label = get_node_or_null("Label3D") as Label3D
+	if HeadlessGuard.is_headless():
+		if label:
+			label.queue_free()
+			label = null
+	elif label:
+		label.text = def.get("name", kind)
+	if hp_bar and hp_bar.mesh == null:
 		var box := BoxMesh.new()
 		box.size = Vector3(1.2, 0.12, 0.12)
 		hp_bar.mesh = box
+	if hp_bar:
+		HeadlessGuard.guard_mesh(hp_bar)
 	creature_bob = CreatureBuilder.build(kind, mesh_root)
 	var primary := Color(def.get("color", "#888888"))
 	var accent := Color(def.get("accent", "#aaaaaa"))
@@ -44,16 +52,16 @@ func _ready() -> void:
 	_base_scale = mesh_root.scale
 	match kind:
 		"dust_golem":
-			label.position.y = 2.4
+			if label: label.position.y = 2.4
 			hp_bar.position.y = 2.1
 		"briar_boar":
-			label.position.y = 1.6
+			if label: label.position.y = 1.6
 			hp_bar.position.y = 1.35
 		"shadow_moth":
-			label.position.y = 1.9
+			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
 		_:
-			label.position.y = 1.8
+			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
 	_update_hp_bar()
 	_ensure_telegraph()
@@ -137,6 +145,7 @@ func _ensure_telegraph() -> void:
 	cyl.bottom_radius = 1.35
 	cyl.height = 0.03
 	_telegraph.mesh = cyl
+	HeadlessGuard.guard_mesh(_telegraph)
 	var mat := StandardMaterial3D.new()
 	# Softer, more translucent ring — readable but less urgent
 	mat.albedo_color = Color(0.98, 0.92, 0.35, 0.28)
@@ -154,7 +163,8 @@ func _set_warning(on: bool) -> void:
 		_telegraph.visible = on
 	if on:
 		# Gentle warm tint — not alarm-red
-		label.modulate = Color(1.0, 0.96, 0.72)
+		if label:
+			label.modulate = Color(1.0, 0.96, 0.72)
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
 			var pulse: float = 0.18 + 0.16 * abs(sin(Time.get_ticks_msec() * 0.004))
@@ -162,7 +172,8 @@ func _set_warning(on: bool) -> void:
 			var s: float = 0.92 + 0.12 * abs(sin(Time.get_ticks_msec() * 0.0035))
 			_telegraph.scale = Vector3(s, 1.0, s)
 	else:
-		label.modulate = Color.WHITE
+		if label:
+			label.modulate = Color.WHITE
 		if _telegraph:
 			_telegraph.scale = Vector3.ONE
 
@@ -305,10 +316,13 @@ func _defeat() -> void:
 	$CollisionShape3D.disabled = true
 	GameState.set_combat_target(null)
 	var cxp: int = int(def.get("combat_xp", 5))
+	var prev_cl: int = GameState.combat_level
 	GameState.combat_xp += cxp
 	GameState.combat_level = GameState.combat_level_for_xp(GameState.combat_xp)
 	GameState.check_combat_item_unlocks()
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
+	if GameState.combat_level > prev_cl:
+		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
 	GameState.save_game()
 	GameState.state_changed.emit()
 	_dissolve_t = 0.0

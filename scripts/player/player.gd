@@ -35,6 +35,9 @@ var _assist_waypoints: Array = []
 var _manual_move: bool = false
 var _was_manual: bool = false
 var _desired_vel: Vector3 = Vector3.ZERO
+var _click_marker: MeshInstance3D = null
+var _click_marker_t: float = -1.0
+var _click_marker_mat: StandardMaterial3D = null
 
 func _ready() -> void:
 	add_to_group("player")
@@ -237,6 +240,7 @@ func _set_move_target(pos: Vector3) -> void:
 	_stuck_timer = 0.0
 	_assist_waypoints.clear()
 	_path_idx = 0
+	_show_click_marker(target_pos)
 	# Prefer NavigationAgent when navmesh is ready (outdoor + indoor hall regions)
 	if _nav_ready and _nav_agent:
 		_nav_agent.target_position = target_pos
@@ -431,6 +435,7 @@ func _physics_process(delta: float) -> void:
 	var is_moving := moving or Vector2(velocity.x, velocity.z).length() > 0.4
 	_animate_walk(is_moving and not _attacking, delta)
 	_animate_attack(delta)
+	_tick_click_marker(delta)
 
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		var dist: float = global_position.distance_to(GameState.combat_target.global_position)
@@ -443,6 +448,56 @@ func _physics_process(delta: float) -> void:
 			var to_e: Vector3 = GameState.combat_target.global_position - global_position
 			mesh_root.rotation.y = atan2(to_e.x, to_e.z)
 
+
+
+func _ensure_click_marker() -> void:
+	if _click_marker != null and is_instance_valid(_click_marker):
+		return
+	_click_marker = MeshInstance3D.new()
+	_click_marker.name = "ClickMarker"
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.55
+	cyl.bottom_radius = 0.55
+	cyl.height = 0.05
+	_click_marker.mesh = cyl
+	_click_marker_mat = StandardMaterial3D.new()
+	_click_marker_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_click_marker_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_click_marker_mat.albedo_color = Color(0.95, 0.82, 0.15, 0.8)
+	_click_marker.material_override = _click_marker_mat
+	_click_marker.visible = false
+	# World-space ring (sibling under world root when possible)
+	var host: Node = get_parent() if get_parent() else self
+	host.add_child(_click_marker)
+	HeadlessGuard.guard_mesh(_click_marker)
+
+func _show_click_marker(pos: Vector3) -> void:
+	if HeadlessGuard.is_headless():
+		return
+	_ensure_click_marker()
+	if _click_marker == null:
+		return
+	_click_marker.global_position = Vector3(pos.x, 0.05, pos.z)
+	_click_marker.scale = Vector3(0.35, 1.0, 0.35)
+	if _click_marker_mat:
+		_click_marker_mat.albedo_color = Color(0.95, 0.82, 0.15, 0.85)
+	_click_marker.visible = true
+	_click_marker_t = 0.0
+
+func _tick_click_marker(delta: float) -> void:
+	if _click_marker_t < 0.0 or _click_marker == null:
+		return
+	_click_marker_t += delta
+	var u: float = clampf(_click_marker_t / 0.7, 0.0, 1.0)
+	var s: float = lerpf(0.4, 1.2, 1.0 - pow(1.0 - u, 2.0))
+	_click_marker.scale = Vector3(s, 1.0, s)
+	if _click_marker_mat:
+		var c: Color = _click_marker_mat.albedo_color
+		c.a = lerpf(0.85, 0.0, u)
+		_click_marker_mat.albedo_color = c
+	if u >= 1.0:
+		_click_marker.visible = false
+		_click_marker_t = -1.0
 
 func _soft_avoid_entities(wish: Vector3) -> Vector3:
 	## Light sidestep around mentors / foes so click-move feels RuneScape-aware.
