@@ -71,6 +71,7 @@ func _ready() -> void:
 	if GameState.has_signal("hurt") and not GameState.hurt.is_connected(_on_hurt_def_flash):
 		GameState.hurt.connect(_on_hurt_def_flash)
 	_ensure_landmark_tick()
+	_ensure_clear_compass_n()  # Wave 39: clearer compass N marker
 	set_process(true)
 
 func set_world(world: Node) -> void:
@@ -449,6 +450,30 @@ func _on_hurt_def_flash(_amount: int) -> void:
 	if combat_lbl:
 		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d softens the hit" % [GameState.combat_level, GameState.combat_xp, def_n]
 		combat_lbl.modulate = Color(1.0, 0.92, 0.55, 1.0)
+
+
+
+func _ensure_clear_compass_n() -> void:
+	## Wave 39: chunkier gold N with soft outline + warm plate so north reads at a glance.
+	if compass_n == null:
+		return
+	compass_n.text = "N"
+	compass_n.add_theme_font_size_override("font_size", 18)
+	compass_n.add_theme_color_override("font_color", Color(1.0, 0.92, 0.42, 1.0))
+	compass_n.add_theme_color_override("font_outline_color", Color(0.12, 0.1, 0.05, 0.9))
+	compass_n.add_theme_constant_override("outline_size", 4)
+	# Soft warm plate behind N (once)
+	if compass and compass.get_node_or_null("NPlate") == null:
+		var plate := ColorRect.new()
+		plate.name = "NPlate"
+		plate.color = Color(0.18, 0.14, 0.08, 0.72)
+		plate.size = Vector2(22, 20)
+		plate.position = Vector2((compass.size.x - 22) * 0.5 if compass.size.x > 0 else 25, 2)
+		plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		compass.add_child(plate)
+		compass.move_child(plate, compass_n.get_index())
+		# Keep N on top of plate
+		compass.move_child(compass_n, plate.get_index() + 1)
 
 
 func _ensure_landmark_tick() -> void:

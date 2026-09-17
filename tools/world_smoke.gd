@@ -51,6 +51,7 @@ func _finish():
 	var hedgehogs := 0
 	var wrens := 0
 	var mice := 0
+	var moles := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -70,6 +71,8 @@ func _finish():
 			wrens += 1
 		if str(foe.get("kind")) == "maple_mouse":
 			mice += 1
+		if str(foe.get("kind")) == "spruce_mole":
+			moles += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -80,6 +83,7 @@ func _finish():
 	print("HEDGEHOGS", hedgehogs)
 	print("WRENS", wrens)
 	print("MICE", mice)
+	print("MOLES", moles)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -243,5 +247,12 @@ func _finish():
 	print("MUTE_CLEAR_SRC", "Muted · M" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("SAVE_CHIP_SRC", "_ensure_save_chip" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("VERSION_138_SRC", 'config/version="1.38.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("SPRUCE_MOLE_SRC", '"spruce_mole"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("DUSK_FIREFLIES_SRC", "_setup_dusk_fireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("COMPASS_N_SRC", "_ensure_clear_compass_n" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("TRAVEL_SEARCH_SRC", "_refresh_travel_list" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("PANTRY_EMPTY_SRC", "fountain (H)" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_139_SRC", 'config/version="1.39.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

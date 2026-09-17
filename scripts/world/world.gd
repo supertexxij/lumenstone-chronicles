@@ -31,6 +31,7 @@ var _plaza_campfire_pos: Vector3 = Vector3(6.8, 0, 9.2)  # Wave 33: crackle prox
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
+var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
 var _water_positions: Array = []  # Wave 38: brook murmur proximity
@@ -1508,6 +1509,7 @@ func _setup_weather() -> void:
 	_setup_rain_splash()
 	_setup_fog_mist()
 	_setup_wind_leaves()
+	_setup_dusk_fireflies()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1604,6 +1606,16 @@ func _update_weather(delta: float) -> void:
 		else:
 			_wind_leaves.emitting = false
 			_wind_leaves.visible = false
+	if player and _dusk_fireflies:
+		# Wave 39: soft firefly sparkles at dusk/night outdoors only
+		var dusk_on := _inside_hall == "" and _is_dusk_firefly_time()
+		if dusk_on:
+			_dusk_fireflies.global_position = Vector3(player.global_position.x, 1.6, player.global_position.z)
+			_dusk_fireflies.emitting = true
+			_dusk_fireflies.visible = true
+		else:
+			_dusk_fireflies.emitting = false
+			_dusk_fireflies.visible = false
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -2880,6 +2892,59 @@ func _setup_wind_leaves() -> void:
 	add_child(_wind_leaves)
 	HeadlessGuard.guard_particles(_wind_leaves)
 
+
+
+func _setup_dusk_fireflies() -> void:
+	## Wave 39: soft gold-green firefly sparkles that gather at dusk outdoors (RuneScape-chunky, wholesome).
+	_dusk_fireflies = CPUParticles3D.new()
+	_dusk_fireflies.name = "DuskFireflies"
+	_dusk_fireflies.emitting = false
+	_dusk_fireflies.amount = 26
+	_dusk_fireflies.lifetime = 3.8
+	_dusk_fireflies.preprocess = 1.2
+	_dusk_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_dusk_fireflies.emission_box_extents = Vector3(8.5, 1.8, 8.5)
+	_dusk_fireflies.direction = Vector3(0, 0.35, 0)
+	_dusk_fireflies.spread = 160.0
+	_dusk_fireflies.initial_velocity_min = 0.08
+	_dusk_fireflies.initial_velocity_max = 0.42
+	_dusk_fireflies.gravity = Vector3(0, 0.015, 0)
+	_dusk_fireflies.angular_velocity_min = -20.0
+	_dusk_fireflies.angular_velocity_max = 20.0
+	_dusk_fireflies.scale_amount_min = 0.45
+	_dusk_fireflies.scale_amount_max = 1.05
+	var fm := SphereMesh.new()
+	fm.radius = 0.035
+	fm.height = 0.07
+	_dusk_fireflies.mesh = fm
+	var fmat := StandardMaterial3D.new()
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.albedo_color = Color(0.92, 0.95, 0.45, 0.78)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.85, 0.92, 0.35)
+	fmat.emission_energy_multiplier = 1.4
+	_dusk_fireflies.material_override = fmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.9, 0.95, 0.4, 0.0),
+		Color(1.0, 0.98, 0.55, 0.85),
+		Color(0.85, 0.9, 0.35, 0.0),
+	])
+	_dusk_fireflies.color_ramp = ramp
+	_dusk_fireflies.position = Vector3(0, 1.6, 0)
+	add_child(_dusk_fireflies)
+	HeadlessGuard.guard_particles(_dusk_fireflies)
+
+
+func _is_dusk_firefly_time() -> bool:
+	## Soft dusk through early night — matches HUD Dusk/Night feel without harsh cutovers.
+	var phase := _day_phase
+	if phase >= 0.62 and phase <= 0.95:
+		return true
+	if phase <= 0.12:
+		return true  # deep night spill
+	return false
 
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).

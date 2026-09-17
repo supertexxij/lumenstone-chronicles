@@ -99,6 +99,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_wren(bob)
 		"maple_mouse":
 			_build_mouse(bob)
+		"spruce_mole":
+			_build_mole(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -512,3 +514,32 @@ static func _build_mouse(bob: Node3D) -> void:
 		_mi(_capsule(0.03, 0.12), Vector3(0, -0.02, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.055, 0.03, 0.07)), Vector3(0, -0.10, 0.02), leg, "Paw")
 
+static func _build_mole(bob: Node3D) -> void:
+	## Soft spruce-wilds mole — low round body, pointed snout, tiny eyes, stubby paws (distinct from mouse/hare/hedgehog).
+	_mi(_sphere(0.18, 0.26), Vector3(0, 0.28, 0), bob, "Body")
+	_mi(_sphere(0.12, 0.16), Vector3(0, 0.30, 0.22), bob, "Head")
+	# Pointed digging snout (longer than mouse)
+	var snout := _mi(_cyl(0.04, 0.02, 0.16), Vector3(0, 0.28, 0.36), bob, "Snout")
+	snout.rotation_degrees = Vector3(90, 0, 0)
+	_mi(_sphere(0.035), Vector3(0, 0.28, 0.44), bob, "Nose")
+	# Tiny near-hidden eyes
+	_mi(_sphere(0.02), Vector3(-0.05, 0.34, 0.28), bob, "EyeL")
+	_mi(_sphere(0.02), Vector3(0.05, 0.34, 0.28), bob, "EyeR")
+	# Soft digging-paw frills (accent-friendly)
+	_mi(_box(Vector3(0.14, 0.03, 0.08)), Vector3(-0.16, 0.18, 0.16), bob, "PawFrillL")
+	_mi(_box(Vector3(0.14, 0.03, 0.08)), Vector3(0.16, 0.18, 0.16), bob, "PawFrillR")
+	# Short stubby tail nub (not a long mouse tail)
+	_mi(_sphere(0.05), Vector3(0, 0.26, -0.18), bob, "TailNub")
+	# Four stubby burrow paws
+	for info in [
+		["FL", Vector3(-0.10, 0.12, 0.12)],
+		["FR", Vector3(0.10, 0.12, 0.12)],
+		["BL", Vector3(-0.10, 0.12, -0.10)],
+		["BR", Vector3(0.10, 0.12, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.035, 0.10), Vector3(0, -0.01, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.07, 0.025, 0.09)), Vector3(0, -0.08, 0.02), leg, "Paw")

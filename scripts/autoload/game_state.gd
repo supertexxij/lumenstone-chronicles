@@ -697,7 +697,7 @@ func use_consumable(item_id: String) -> bool:
 	_ensure_pantry_defaults()
 	var left: int = int(consumable_charges.get(item_id, 0))
 	if left <= 0:
-		toast.emit("%s pantry empty — visit the fountain to refill." % item.get("name", item_id))
+		toast.emit("%s pantry empty — fountain (H) refills your stacks." % item.get("name", item_id))  # Wave 39
 		return false
 	if consumable_cd > 0.05:
 		toast.emit("Give it a moment (%.1fs)." % consumable_cd)
@@ -739,7 +739,7 @@ func use_best_consumable() -> bool:
 			best_heal = heal_amt
 			best_id = str(id)
 	if best_id == "":
-		toast.emit("Pantry empty — rest at the fountain to refill.")
+		toast.emit("Pantry empty — rest at the fountain (H) to refill food & water.")  # Wave 39: clearer empty pantry toast
 		return false
 	return use_consumable(best_id)
 

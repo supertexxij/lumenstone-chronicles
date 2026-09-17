@@ -439,6 +439,16 @@ func _idle_anim(delta: float) -> void:
 			if mtail:
 				mtail.rotation.y = sin(t * 1.0) * 0.28
 				mtail.rotation.x = deg_to_rad(-20) + sin(t * 0.7) * 0.08
+		"spruce_mole":
+			# Soft dig-bob — snout dips, stubby body wiggles (Wave 39)
+			creature_bob.position.y = abs(sin(t * 0.7)) * 0.02
+			creature_bob.rotation.y = sin(t * 0.35) * 0.08
+			var sn := creature_bob.get_node_or_null("Snout")
+			if sn:
+				sn.rotation.x = deg_to_rad(90) + sin(t * 1.1) * 0.08
+			var nose := creature_bob.get_node_or_null("Nose")
+			if nose:
+				nose.position.y = 0.28 + sin(t * 1.1) * 0.01
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

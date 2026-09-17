@@ -181,6 +181,19 @@
       "combat_xp": 84,
       "respawn_sec": 44.0,
       "description": "A tiny mouse of the maple wilds \u2014 settle it gently with a careful step!"
+    },
+    "spruce_mole": {
+      "kind": "spruce_mole",
+      "name": "Spruce Mole",
+      "defeat_verb": "tucked",
+      "color": "#5a5048",
+      "accent": "#d4b896",
+      "max_hp": 104,
+      "damage": 17,
+      "accuracy": 0.42,
+      "combat_xp": 90,
+      "respawn_sec": 46.0,
+      "description": "A soft burrowing mole of the spruce wilds \u2014 tuck it gently with a careful step!"
     }
   },
   "spawns": [
@@ -591,6 +604,36 @@
       "kind": "maple_mouse",
       "x": 10,
       "z": -82
+    },
+    {
+      "id": "e69",
+      "kind": "spruce_mole",
+      "x": -72,
+      "z": 18
+    },
+    {
+      "id": "e70",
+      "kind": "spruce_mole",
+      "x": 42,
+      "z": -74
+    },
+    {
+      "id": "e71",
+      "kind": "spruce_mole",
+      "x": -28,
+      "z": 72
+    },
+    {
+      "id": "e72",
+      "kind": "spruce_mole",
+      "x": 74,
+      "z": -12
+    },
+    {
+      "id": "e73",
+      "kind": "spruce_mole",
+      "x": -8,
+      "z": -70
     }
   ],
   "base_combat": {

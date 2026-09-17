@@ -17,6 +17,8 @@ var world_scene: Node3D = null
 var toast_timer: float = 0.0
 var _pending_new_slot: int = 0
 var _travel_dests: Array = []
+var _travel_filter: String = ""
+var _travel_search: LineEdit = null
 var _confirm_dialog: ConfirmationDialog
 var _save_panel: Control
 var _pending_clear_slot: int = -1
@@ -90,6 +92,26 @@ func _setup_travel_panel() -> void:
 	var go: Button = travel_panel.get_node_or_null("Panel/VBox/GoBtn")
 	var close: Button = travel_panel.get_node_or_null("Panel/VBox/CloseBtn")
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
+	var vbox: VBoxContainer = travel_panel.get_node_or_null("Panel/VBox")
+	# Wave 39: travel menu search/filter by name (PIN stays 1234; mastery ≥80%).
+	if vbox and vbox.get_node_or_null("SearchRow") == null and list != null:
+		var row := HBoxContainer.new()
+		row.name = "SearchRow"
+		var lbl := Label.new()
+		lbl.text = "Find:"
+		lbl.custom_minimum_size = Vector2(40, 0)
+		row.add_child(lbl)
+		_travel_search = LineEdit.new()
+		_travel_search.name = "TravelSearch"
+		_travel_search.placeholder_text = "Filter landmarks by name…"
+		_travel_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_travel_search.text_changed.connect(_on_travel_filter_changed)
+		row.add_child(_travel_search)
+		var list_i: int = list.get_index()
+		vbox.add_child(row)
+		vbox.move_child(row, list_i)
+	elif vbox:
+		_travel_search = vbox.get_node_or_null("SearchRow/TravelSearch")
 	if go:
 		go.pressed.connect(_travel_go_selected)
 	if close:
@@ -99,6 +121,10 @@ func _setup_travel_panel() -> void:
 		)
 	if list:
 		list.item_activated.connect(func(_i): _travel_go_selected())
+
+func _on_travel_filter_changed(txt: String) -> void:
+	_travel_filter = txt.strip_edges().to_lower()
+	_refresh_travel_list()
 
 func _process(delta: float) -> void:
 	if toast_timer > 0:
@@ -179,9 +205,9 @@ func _unhandled_input(event: InputEvent) -> void:
 func _travel_destinations() -> Array:
 	## Wave 29: grouped landmark list (Village · Wilds · Halls) for clearer Travel (T) menu.
 	return [
-		{"label": "── Village ──", "pos": Vector3.ZERO, "key": "", "group": true},
+		{"label": "── Village ──", "base_label": "── Village ──", "section": "village", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Village Fountain", "pos": Vector3(0, 0, 12), "key": "H"},
-		{"label": "── Wilds landmarks ──", "pos": Vector3.ZERO, "key": "", "group": true},
+		{"label": "── Wilds landmarks ──", "base_label": "── Wilds landmarks ──", "section": "wilds", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Lantern Glade", "pos": Vector3(0.5, 0, -46), "key": "N"},
 		{"label": "Pine Ridge", "pos": Vector3(-20, 0, -50), "key": "B"},
 		{"label": "Prayer Garden", "pos": Vector3(30, 0, 18), "key": "G"},
@@ -200,7 +226,7 @@ func _travel_destinations() -> Array:
 		{"label": "Maple Copse", "pos": Vector3(-48, 0, -48), "key": "0"},
 		{"label": "Lantern Glade center", "pos": Vector3(0.5, 0, -48), "key": ""},
 		{"label": "Pine Ridge stand", "pos": Vector3(-24, 0, -54), "key": ""},
-		{"label": "── Guild halls ──", "pos": Vector3.ZERO, "key": "", "group": true},
+		{"label": "── Guild halls ──", "base_label": "── Guild halls ──", "section": "halls", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
@@ -214,36 +240,75 @@ func _open_travel() -> void:
 	if world_scene and world_scene.player and world_scene.player.get("ui_blocking"):
 		# Allow opening travel only if no other panel owns the block — if travel already open, ignore
 		pass
-	_travel_dests = _travel_destinations()
-	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
-	if list:
-		list.clear()
-		var first_sel := -1
-		var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
-		var last_sel := -1
-		for d in _travel_dests:
-			if bool(d.get("group", false)):
-				var gi: int = list.add_item(str(d["label"]))
-				list.set_item_disabled(gi, true)
-				list.set_item_custom_fg_color(gi, Color(0.75, 0.7, 0.45))
-				continue
-			var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
-			var mark: String = ""
-			if last_lbl != "" and str(d["label"]) == last_lbl:
-				mark = " ★ last"  # Wave 34: mark last-visited landmark
-			var ii: int = list.add_item("%s%s%s" % [d["label"], key_s, mark])
-			if mark != "":
-				last_sel = ii
-				list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
-			if first_sel < 0:
-				first_sel = ii
-		if last_sel >= 0:
-			list.select(last_sel)
-		elif first_sel >= 0:
-			list.select(first_sel)
+	if _travel_search:
+		_travel_search.text = ""
+	_travel_filter = ""
+	_refresh_travel_list()
 	travel_panel.visible = true
 	_set_player_ui_block(true)
 	AudioBus.play_ui()
+
+func _refresh_travel_list() -> void:
+	## Wave 39: search/filter by name + group counts in section headers (PIN 1234; mastery ≥80%).
+	var all_dests: Array = _travel_destinations()
+	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList") if travel_panel else null
+	if list == null:
+		return
+	# Count matching non-group items per section (respects search filter)
+	var section_counts: Dictionary = {}
+	var cur_sec := ""
+	var filt := _travel_filter
+	for d in all_dests:
+		if bool(d.get("group", false)):
+			cur_sec = str(d.get("section", d["label"]))
+			section_counts[cur_sec] = 0
+		elif cur_sec != "":
+			var name_l0: String = str(d["label"]).to_lower()
+			if filt != "" and filt not in name_l0:
+				continue
+			section_counts[cur_sec] = int(section_counts.get(cur_sec, 0)) + 1
+	_travel_dests = []
+	list.clear()
+	var first_sel := -1
+	var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
+	var last_sel := -1
+	cur_sec = ""
+	var pending_header: Dictionary = {}
+	for d in all_dests:
+		if bool(d.get("group", false)):
+			# Stash header until a child matches; include group count
+			cur_sec = str(d.get("section", "x"))
+			var cnt: int = int(section_counts.get(cur_sec, 0))
+			if cnt <= 0:
+				pending_header = {}
+				continue
+			var base_lbl: String = str(d.get("base_label", d["label"]))
+			pending_header = {"label": "%s (%d)" % [base_lbl, cnt], "pos": Vector3.ZERO, "key": "", "group": true}
+			continue
+		var name_l: String = str(d["label"]).to_lower()
+		if filt != "" and filt not in name_l:
+			continue
+		if not pending_header.is_empty():
+			var gi: int = list.add_item(str(pending_header["label"]))
+			list.set_item_disabled(gi, true)
+			list.set_item_custom_fg_color(gi, Color(0.75, 0.7, 0.45))
+			_travel_dests.append(pending_header)
+			pending_header = {}
+		var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
+		var mark: String = ""
+		if last_lbl != "" and str(d["label"]) == last_lbl:
+			mark = " ★ last"  # Wave 34: mark last-visited landmark
+		var ii: int = list.add_item("%s%s%s" % [d["label"], key_s, mark])
+		_travel_dests.append(d)
+		if mark != "":
+			last_sel = ii
+			list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
+		if first_sel < 0:
+			first_sel = ii
+	if last_sel >= 0:
+		list.select(last_sel)
+	elif first_sel >= 0:
+		list.select(first_sel)
 
 func _travel_go_selected() -> void:
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")

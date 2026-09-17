@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 39 overnight (v1.39.0-overnight)
+- Soft **firefly sparkles at dusk** outdoors — warm gold-green motes gather around the player from dusk into night (off indoors; RuneScape-chunky, wholesome)
+- Clearer **compass N marker** — chunkier gold **N** with soft outline + warm plate so north reads at a glance
+- Clearer **pantry empty toast** — names the fountain (**H**) refill
+- New wilds foe **Spruce Mole** — low round body, pointed digging snout, stubby paws, gentle “tucked” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse)
+- Travel QoL: Travel (T) menu **Find:** name search/filter + section **group counts** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 38 overnight (v1.38.0-overnight)
 - Soft **brook murmur near water landmarks** (fountain, glade brook, creek ford, mill creek, willow bend, reed pool) — respects mute; RuneScape-chunky, wholesome
 - Clearer **mute indicator** — warm amber plate + **Muted · M** when silent; clearer **quest-complete chime** (soft rising sparkle)
