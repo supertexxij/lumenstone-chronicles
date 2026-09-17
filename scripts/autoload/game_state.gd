@@ -244,6 +244,7 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		for bonus in quest.get("bonus_items", []):
 			unlock_item(str(bonus))
 		toast.emit("Quest mastered: %s" % quest.get("title", quest_id))
+		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()
 	else:
 		toast.emit("Needs practice — score %d%% (need 80%%). Retry anytime!" % int(pct * 100))
