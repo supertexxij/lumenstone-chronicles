@@ -81,6 +81,19 @@ func _try_pin() -> void:
 		_reset_btn.visible = false
 	_refresh()
 
+
+func _mask_pin_last4(pin: String) -> String:
+	## Wave 63: masked last-4 hint for PIN change success (e.g. ••••1234 or ••34).
+	var p := pin.strip_edges()
+	if p.is_empty():
+		return "••••"
+	if p.length() <= 2:
+		return "•".repeat(p.length())
+	if p.length() <= 4:
+		return "•".repeat(p.length() - 2) + p.substr(p.length() - 2)
+	return "•".repeat(p.length() - 4) + p.substr(p.length() - 4)
+
+
 func _change_pin() -> void:
 	var a: String = new_pin_edit.text.strip_edges() if new_pin_edit else ""
 	var b: String = confirm_pin_edit.text.strip_edges() if confirm_pin_edit else ""
@@ -90,9 +103,10 @@ func _change_pin() -> void:
 	if not GameState.set_parent_pin(a):
 		pin_status.text = "Use 4–8 digits only."
 		return
-	# Wave 40: clearer pin-change success toast (PIN default remains 1234 until changed)
-	pin_status.text = "PIN changed successfully — use your new PIN next time you open Parent."
-	GameState.toast.emit("Parent PIN updated successfully. Keep it safe (default was 1234).")
+	# Wave 40/63: clearer pin-change success with masked last-4 hint (PIN default remains 1234 until changed)
+	var hint := _mask_pin_last4(a)
+	pin_status.text = "PIN changed successfully — hint %s. Use your new PIN next time you open Parent." % hint
+	GameState.toast.emit("Parent PIN updated · hint %s (default was 1234)." % hint)
 	new_pin_edit.text = ""
 	confirm_pin_edit.text = ""
 	AudioBus.play_ui()
@@ -290,7 +304,8 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail.custom_minimum_size = Vector2(0, 8)
 	if titles.is_empty():
-		detail.text = "  (no quests listed)"
+		# Wave 63: friendlier empty campaign week row (PIN stays 1234; mastery ≥80%)
+		detail.text = "  No quests listed for this week yet — try another week, or check back after a curriculum update."
 	else:
 		detail.text = "  " + "\n  ".join(titles)
 	detail.visible = expanded

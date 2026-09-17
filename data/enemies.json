@@ -493,6 +493,19 @@
       "combat_xp": 228,
       "respawn_sec": 92.0,
       "description": "A plump armadillo of the apricot wilds — shell it gently with a careful step!"
+    },
+    "blueberry_bunny": {
+      "kind": "blueberry_bunny",
+      "name": "Blueberry Bunny",
+      "defeat_verb": "hopped",
+      "color": "#4a5a9a",
+      "accent": "#c8d0f0",
+      "max_hp": 248,
+      "damage": 41,
+      "accuracy": 0.17,
+      "combat_xp": 234,
+      "respawn_sec": 94.0,
+      "description": "A plump bunny of the blueberry wilds — hop it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1623,6 +1636,36 @@
       "kind": "apricot_armadillo",
       "x": -58,
       "z": 142
+    },
+    {
+      "id": "e189",
+      "kind": "blueberry_bunny",
+      "x": -145,
+      "z": 38
+    },
+    {
+      "id": "e190",
+      "kind": "blueberry_bunny",
+      "x": 125,
+      "z": -105
+    },
+    {
+      "id": "e191",
+      "kind": "blueberry_bunny",
+      "x": -95,
+      "z": -148
+    },
+    {
+      "id": "e192",
+      "kind": "blueberry_bunny",
+      "x": 155,
+      "z": 85
+    },
+    {
+      "id": "e193",
+      "kind": "blueberry_bunny",
+      "x": -65,
+      "z": 155
     }
   ],
   "base_combat": {

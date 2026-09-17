@@ -37,6 +37,8 @@ var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
 var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Rise
 var _willow_sway_nodes: Array = []  # Wave 61: soft willow weep sway at Willow Bend
 var _fern_sway_nodes: Array = []  # Wave 62: soft fern sway at Fern Dell
+var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Heath
+var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
@@ -767,6 +769,8 @@ func _process(delta: float) -> void:
 	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
 	_update_willow_sway(delta)  # Wave 61: soft willow weep sway at Willow Bend
 	_update_fern_sway(delta)  # Wave 62: soft fern sway at Fern Dell
+	_update_heather_sway(delta)  # Wave 63: soft heather sway at Heather Heath
+	_update_hall_light_dip(delta)  # Wave 63: soft hall enter/exit light dip
 
 
 func _landmark_zones() -> Array:
@@ -1579,6 +1583,7 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 				body.has_click_target = false
 			GameState.toast.emit("Entered %s Hall — desk for quests, blue glow to leave." % label)
 			GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
+			_begin_hall_light_dip()  # Wave 63: soft hall enter light dip
 			_apply_weather_visuals(false)
 			return
 
@@ -1596,6 +1601,7 @@ func _exit_hall(body: Node) -> void:
 		body.has_click_target = false
 	GameState.toast.emit("Back on the village green.")
 	GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
+	_begin_hall_light_dip()  # Wave 63: soft hall exit light dip
 	_apply_weather_visuals(false)
 
 func _build_lantern_glade() -> void:
@@ -2739,6 +2745,39 @@ func _update_fern_sway(_delta: float) -> void:
 		frond.rotation.x = cos(t * 0.92 + phase * 0.65) * amp * 0.55
 
 
+func _update_heather_sway(_delta: float) -> void:
+	## Wave 63: soft heather sway at Heather Heath — gentle tuft lean (RuneScape-chunky, wholesome).
+	if _heather_sway_nodes.is_empty():
+		return
+	var t := Time.get_ticks_msec() * 0.001
+	for tuft in _heather_sway_nodes:
+		if tuft == null or not is_instance_valid(tuft):
+			continue
+		var phase := float(tuft.get_meta("sway_phase", 0.0))
+		var amp := float(tuft.get_meta("sway_amp", 0.04))
+		var lean := sin(t * 0.95 + phase) * amp
+		tuft.rotation.z = lean
+		tuft.rotation.x = cos(t * 0.78 + phase * 0.6) * amp * 0.5
+
+
+func _begin_hall_light_dip() -> void:
+	## Wave 63: soft hall enter/exit light dip (RuneScape-chunky, wholesome).
+	_hall_light_dip_t = 0.55
+
+
+func _update_hall_light_dip(delta: float) -> void:
+	## Wave 63: brief cozy dim after crossing a guild-hall door (applied after day/night).
+	if _hall_light_dip_t <= 0.0:
+		return
+	_hall_light_dip_t = maxf(0.0, _hall_light_dip_t - delta)
+	var u := clampf(_hall_light_dip_t / 0.55, 0.0, 1.0)
+	var pulse := sin(u * PI)  # soft in-out dip
+	if _sun:
+		_sun.light_energy = maxf(0.12, _sun.light_energy * (1.0 - 0.28 * pulse))
+	if _env:
+		_env.ambient_light_energy = maxf(0.12, _env.ambient_light_energy * (1.0 - 0.32 * pulse))
+
+
 
 func _add_chunky_sign(parent: Node, pos: Vector3, title: String, yaw: float = 0.0) -> Node3D:
 	## Wave 23 feel: chunkier RuneScape-style landmark sign — thick post, framed board, clear label.
@@ -3136,16 +3175,31 @@ func _build_heather_heath() -> void:
 	_mi(_cyl(4.2, 4.2, 0.08), Vector3(-48.0, 0.04, 42.0), root, _mats["grass_dark"], "HeatherClearing")
 	_mi(_cyl(2.4, 2.4, 0.06), Vector3(-48.0, 0.08, 42.0), root, _mats["heather"], "HeatherClearingInner")
 	# Ring of heather tufts (chunky purple mounds)
+	# Wave 63: each tuft is a sway parent so soft heather sway reads at Heather Heath
 	for i in 10:
 		var ang := float(i) * TAU / 10.0 + 0.12
 		var hx := -48.0 + cos(ang) * 3.5
 		var hz := 42.0 + sin(ang) * 3.5
-		_mi(_sphere(0.32, 0.38), Vector3(hx, 0.16, hz), root, _mats["heather"], "HeatherTuft%d" % i)
-		_mi(_sphere(0.18, 0.22), Vector3(hx + cos(ang) * 0.2, 0.28, hz + sin(ang) * 0.2), root, _mats["heather"], "HeatherTip%d" % i)
-	# Inner tufts + resting stone + benches + lanterns
+		var tuft := Node3D.new()
+		tuft.name = "HeatherTuft%d" % i
+		tuft.position = Vector3(hx, 0, hz)
+		tuft.set_meta("sway_phase", ang)
+		tuft.set_meta("sway_amp", 0.038 + float(i % 3) * 0.008)
+		root.add_child(tuft)
+		_heather_sway_nodes.append(tuft)
+		_mi(_sphere(0.32, 0.38), Vector3(0, 0.16, 0), tuft, _mats["heather"], "HeatherBall")
+		_mi(_sphere(0.18, 0.22), Vector3(cos(ang) * 0.2, 0.28, sin(ang) * 0.2), tuft, _mats["heather"], "HeatherTip")
+	# Inner tufts + resting stone + benches + lanterns (Wave 63: soft sway parents too)
 	for i in 5:
 		var ang := float(i) * TAU / 5.0
-		_mi(_sphere(0.22, 0.26), Vector3(-48.0 + cos(ang) * 1.5, 0.14, 42.0 + sin(ang) * 1.5), root, _mats["heather"], "HeatherInner%d" % i)
+		var inner := Node3D.new()
+		inner.name = "HeatherInner%d" % i
+		inner.position = Vector3(-48.0 + cos(ang) * 1.5, 0, 42.0 + sin(ang) * 1.5)
+		inner.set_meta("sway_phase", ang + 0.7)
+		inner.set_meta("sway_amp", 0.032)
+		root.add_child(inner)
+		_heather_sway_nodes.append(inner)
+		_mi(_sphere(0.22, 0.26), Vector3(0, 0.14, 0), inner, _mats["heather"], "HeatherInnerBall")
 	_mi(_cyl(0.55, 0.65, 0.45), Vector3(-48.0, 0.28, 42.0), root, _mats["stone"], "HeatherStone")
 	_mi(_sphere(0.2, 0.22), Vector3(-48.0, 0.58, 42.0), root, _mats["heather"], "StoneHeather")
 	_add_bench(Vector3(-45.5, 0, 40.2), -0.4)

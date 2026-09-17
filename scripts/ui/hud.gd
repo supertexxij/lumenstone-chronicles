@@ -428,7 +428,8 @@ func _refresh_year_chip() -> void:
 	elif GameState.has_method("get_quest_mastery_progress"):
 		pct = int(GameState.get_quest_mastery_progress().get("percent", 0))
 	# Wave 32: clearer wording so the chip reads at a glance
-	_year_chip.text = "Year · %d%%" % pct
+	# Wave 63: clearer Year chip when quest mastery % — mastery word reads at a glance
+	_year_chip.text = "Year · mastery %d%%" % pct
 	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:

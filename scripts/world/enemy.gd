@@ -131,6 +131,9 @@ func _ready() -> void:
 		"apricot_armadillo":
 			if label: label.position.y = 1.25
 			hp_bar.position.y = 1.0
+		"blueberry_bunny":
+			if label: label.position.y = 1.55
+			hp_bar.position.y = 1.3
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -795,6 +798,22 @@ func _idle_anim(delta: float) -> void:
 				aear_l.rotation.z = sin(t * 1.4) * 0.08
 			if aear_r:
 				aear_r.rotation.z = -sin(t * 1.4 + 0.2) * 0.08
+		"blueberry_bunny":
+			# Soft hop-bob — long ears twitch, puff tail wiggle, gentle hop (Wave 63)
+			creature_bob.position.y = 0.01 + abs(sin(t * 1.35)) * 0.035
+			creature_bob.rotation.y = sin(t * 0.42) * 0.09
+			var bear_l := creature_bob.get_node_or_null("EarL")
+			var bear_r := creature_bob.get_node_or_null("EarR")
+			if bear_l:
+				bear_l.rotation.z = deg_to_rad(-12) + sin(t * 1.5) * 0.1
+			if bear_r:
+				bear_r.rotation.z = deg_to_rad(12) - sin(t * 1.5 + 0.25) * 0.1
+			var btail := creature_bob.get_node_or_null("Tail")
+			if btail:
+				btail.position.y = 0.30 + abs(sin(t * 1.6)) * 0.015
+			var bhead := creature_bob.get_node_or_null("Head")
+			if bhead:
+				bhead.rotation.y = sin(t * 0.8) * 0.06
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

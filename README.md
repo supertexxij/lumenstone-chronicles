@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 63 overnight (v1.63.0-overnight)
+- Soft **heather sway at Heather Heath** — purple tufts lean gently in the wind (RuneScape-chunky, wholesome)
+- Clearer **Year chip with mastery %** — reads `Year · mastery N%` so quest mastery is obvious at a glance
+- Soft **hall enter/exit light dip** — brief cozy dim when crossing a guild-hall door (no cheesy combat labels)
+- New wilds foe **Blueberry Bunny** — plump round body, long soft ears, tiny puff tail, gentle hop bob, “hopped” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo)
+- Parent QoL: **PIN change success shows masked last-4 hint**; campaign empty week row friendlier (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 62 overnight (v1.62.0-overnight)
 - Soft **fern sway at Fern Dell** — fronds lean gently in the wind (RuneScape-chunky, wholesome)
 - Clearer **soft-travel fade with landmark name** — cream hush shows the destination name mid-fade

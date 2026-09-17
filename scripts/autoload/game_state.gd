@@ -61,6 +61,7 @@ var seen_wave_59_toast: bool = false  # Wave 59: once-per-save polish tip toast 
 var seen_wave_60_toast: bool = false  # Wave 60: once-per-save polish tip toast on load
 var seen_wave_61_toast: bool = false  # Wave 61: once-per-save polish tip toast on load
 var seen_wave_62_toast: bool = false  # Wave 62: once-per-save polish tip toast on load
+var seen_wave_63_toast: bool = false  # Wave 63: once-per-save polish tip toast on load
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
@@ -149,6 +150,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_60_toast = false
 	seen_wave_61_toast = false
 	seen_wave_62_toast = false
+	seen_wave_63_toast = false
 	journal_open_only = false
 	festival_decades_seen = []
 	greeted_landmarks = []
@@ -345,6 +347,7 @@ func save_game() -> void:
 		"seen_wave_60_toast": seen_wave_60_toast,
 		"seen_wave_61_toast": seen_wave_61_toast,
 		"seen_wave_62_toast": seen_wave_62_toast,
+		"seen_wave_63_toast": seen_wave_63_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -416,6 +419,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_60_toast = bool(data.get("seen_wave_60_toast", false))
 	seen_wave_61_toast = bool(data.get("seen_wave_61_toast", false))
 	seen_wave_62_toast = bool(data.get("seen_wave_62_toast", false))
+	seen_wave_63_toast = bool(data.get("seen_wave_63_toast", false))
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
@@ -811,6 +815,16 @@ func maybe_wave_62_toast() -> bool:
 		return false
 	seen_wave_62_toast = true
 	toast.emit("Wave 62 polish · ferns sway soft at Fern Dell · clearer soft-travel fade names the landmark · denser pull-back sparkle · Open-only remembers · Apricot Armadillo in the wilds.")
+	save_game()
+	return true
+
+
+func maybe_wave_63_toast() -> bool:
+	## Wave 63: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_63_toast:
+		return false
+	seen_wave_63_toast = true
+	toast.emit("Wave 63 polish · heather sways soft at Heather Heath · clearer Year chip shows mastery % · soft hall light dip · PIN last-4 hint · Blueberry Bunny in the wilds.")
 	save_game()
 	return true
 
