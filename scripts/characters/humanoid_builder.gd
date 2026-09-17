@@ -374,6 +374,11 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 	parts["hilt"] = hilt
 	parts["pommel"] = pommel
 	parts["weapon_mesh"] = mesh_style
+	# Remember rest pose so walk bob / attack wrist-flick can return cleanly (Wave 22).
+	weapon.set_meta("rest_rx", weapon.rotation_degrees.x)
+	weapon.set_meta("rest_ry", weapon.rotation_degrees.y)
+	weapon.set_meta("rest_rz", weapon.rotation_degrees.z)
+	weapon.set_meta("rest_pos", weapon.position)
 
 	var col := Color(item.get("color", "#a67c52"))
 	set_color(blade, col)

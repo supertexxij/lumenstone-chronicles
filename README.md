@@ -89,7 +89,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **1–5** halls (outdoors only) |
+| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **1–5** halls (outdoors only) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
@@ -257,7 +257,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Re-export Linux + Windows.
 
 
-### Wave 21 overnight (v1.21.0-overnight)
+
+### Wave 22 overnight (v1.22.0-overnight)
+- Clearer **equipped gear / held-weapon** motion: cape sway + weapon tip bob on walk; attack wind-up → strike → recover with wrist flick, counter-arm, and soft torso lean (chunky RuneScape humanoid arms/legs)
+- New south wilds landmark **Reed Pool** (soft travel **Y**) with toasts, minimap mark, path corridor, reed clumps, and denser pool ambient life
+- Parent/HUD QoL: compact **Year N%** chip on the HUD; soft once-per-day checkpoint reminder toast (PIN stays **1234**)
+- Re-export Linux + Windows
+
+### Wave 21 overnight (v1.22.0-overnight)
 - Clearer **year progress %** on Parent Dashboard: keep Week unlock bar, add labeled **Year progress / quest mastery** bar (`completed_quests / QuestDB.quests`) plus combined note “Year: week unlock X% · quests mastered Y%”
 - Journal header shows the same overall year progress line
 - New northwest wilds landmark **Willow Bend** (soft travel **P**) with toasts, minimap mark, path corridor, weeping willow trees, and denser brook ambient life
@@ -334,7 +341,7 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 - Equipped hat / crown / cape or tunic / weapon held in the right hand / belt / **accessory** / cloak armor plate show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** + **Willow Bend** spurs; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** + **Willow Bend** + **Reed Pool** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
 - Audio is short procedural SFX + soft drone + original village loop + quiet rain / indoor drip loops (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only

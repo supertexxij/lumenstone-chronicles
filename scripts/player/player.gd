@@ -582,23 +582,36 @@ func _animate_walk(moving: bool, delta: float) -> void:
 	var r_arm: Node3D = parts.get("r_arm")
 	var l_leg: Node3D = parts.get("l_leg")
 	var r_leg: Node3D = parts.get("r_leg")
+	var cape: MeshInstance3D = parts.get("cape")
+	var weapon: Node3D = parts.get("weapon")
 	if bob == null:
 		return
+	var armed: bool = weapon != null and weapon.visible
 	if moving:
 		_walk_phase += delta * 10.0
-		var swing := sin(_walk_phase) * 0.55
-		var swing2 := cos(_walk_phase) * 0.15
+		# Chunky RS walk: bigger arm/leg arcs; armed right arm keeps a ready cant so the held weapon reads clearly.
+		var swing := sin(_walk_phase) * (0.62 if armed else 0.55)
+		var swing2 := cos(_walk_phase) * 0.18
 		if l_arm:
 			l_arm.rotation.x = swing
-			l_arm.rotation.z = deg_to_rad(-8) + swing2 * 0.2
+			l_arm.rotation.z = deg_to_rad(-8) + swing2 * 0.22
 		if r_arm:
-			r_arm.rotation.x = -swing
-			r_arm.rotation.z = deg_to_rad(8) - swing2 * 0.2
+			var ready := -0.22 if armed else 0.0
+			r_arm.rotation.x = ready - swing * (0.72 if armed else 1.0)
+			r_arm.rotation.z = deg_to_rad(10 if armed else 8) - swing2 * 0.22
 		if l_leg:
-			l_leg.rotation.x = -swing * 0.85
+			l_leg.rotation.x = -swing * 0.92
 		if r_leg:
-			r_leg.rotation.x = swing * 0.85
-		bob.position.y = abs(sin(_walk_phase * 2.0)) * 0.05
+			r_leg.rotation.x = swing * 0.92
+		bob.position.y = abs(sin(_walk_phase * 2.0)) * 0.06
+		bob.rotation.z = sin(_walk_phase) * 0.03
+		# Soft cape sway + weapon tip bob so equipped gear is obvious while walking.
+		if cape and cape.visible:
+			cape.rotation.y = sin(_walk_phase) * 0.12
+			cape.rotation.x = deg_to_rad(-4) + cos(_walk_phase) * 0.05
+		if armed and not _attacking:
+			weapon.rotation_degrees.x = float(weapon.get_meta("rest_rx", weapon.rotation_degrees.x)) + sin(_walk_phase) * 6.0
+			weapon.rotation_degrees.z = float(weapon.get_meta("rest_rz", weapon.rotation_degrees.z)) + cos(_walk_phase) * 4.0
 		# Footstep on phase crossings
 		var foot_gate := sin(_walk_phase)
 		if _last_foot_phase <= 0.0 and foot_gate > 0.0:
@@ -612,38 +625,78 @@ func _animate_walk(moving: bool, delta: float) -> void:
 				l_arm.rotation.x = move_toward(l_arm.rotation.x, 0.0, delta * 6.0)
 				l_arm.rotation.z = move_toward(l_arm.rotation.z, deg_to_rad(-6), delta * 6.0)
 			if r_arm:
-				r_arm.rotation.x = move_toward(r_arm.rotation.x, 0.0, delta * 6.0)
-				r_arm.rotation.z = move_toward(r_arm.rotation.z, deg_to_rad(6), delta * 6.0)
+				var idle_x := -0.18 if armed else 0.0
+				r_arm.rotation.x = move_toward(r_arm.rotation.x, idle_x, delta * 6.0)
+				r_arm.rotation.z = move_toward(r_arm.rotation.z, deg_to_rad(8 if armed else 6), delta * 6.0)
+			if cape and cape.visible:
+				cape.rotation.y = move_toward(cape.rotation.y, 0.0, delta * 4.0)
+				cape.rotation.x = move_toward(cape.rotation.x, deg_to_rad(-4), delta * 4.0)
+			if armed:
+				var rx := float(weapon.get_meta("rest_rx", weapon.rotation_degrees.x))
+				var rz := float(weapon.get_meta("rest_rz", weapon.rotation_degrees.z))
+				weapon.rotation_degrees.x = move_toward(weapon.rotation_degrees.x, rx, delta * 40.0)
+				weapon.rotation_degrees.z = move_toward(weapon.rotation_degrees.z, rz, delta * 40.0)
 		if l_leg:
 			l_leg.rotation.x = move_toward(l_leg.rotation.x, 0.0, delta * 6.0)
 		if r_leg:
 			r_leg.rotation.x = move_toward(r_leg.rotation.x, 0.0, delta * 6.0)
 		bob.position.y = sin(Time.get_ticks_msec() * 0.002) * 0.015
+		bob.rotation.z = move_toward(bob.rotation.z, 0.0, delta * 4.0)
 
 func _animate_attack(delta: float) -> void:
 	if not _attacking:
 		return
 	_attack_t += delta
+	var bob: Node3D = parts.get("bob")
+	var l_arm: Node3D = parts.get("l_arm")
 	var r_arm: Node3D = parts.get("r_arm")
 	var weapon: Node3D = parts.get("weapon")
-	# Wind-up → strike → recover (~0.45s)
+	# Wind-up → strike → recover (~0.50s) with wrist flick + torso lean (Wave 22)
 	var t := _attack_t
+	var rest_rx := 8.0
+	var rest_rz := -12.0
+	if weapon:
+		rest_rx = float(weapon.get_meta("rest_rx", weapon.rotation_degrees.x))
+		rest_rz = float(weapon.get_meta("rest_rz", weapon.rotation_degrees.z))
 	if r_arm:
 		if t < 0.12:
 			var u := t / 0.12
-			r_arm.rotation.x = lerp(0.0, -1.1, u)
-			r_arm.rotation.z = lerp(deg_to_rad(6), deg_to_rad(25), u)
-		elif t < 0.28:
-			var u := (t - 0.12) / 0.16
-			r_arm.rotation.x = lerp(-1.1, 0.85, u)
-			r_arm.rotation.z = lerp(deg_to_rad(25), deg_to_rad(-10), u)
+			r_arm.rotation.x = lerp(-0.15, -1.35, u)
+			r_arm.rotation.z = lerp(deg_to_rad(8), deg_to_rad(32), u)
+			if weapon:
+				weapon.rotation_degrees.x = lerp(rest_rx, rest_rx - 28.0, u)
+				weapon.rotation_degrees.z = lerp(rest_rz, rest_rz - 18.0, u)
+			if l_arm:
+				l_arm.rotation.x = lerp(0.0, 0.35, u)
+			if bob:
+				bob.rotation.x = lerp(0.0, -0.08, u)
+		elif t < 0.30:
+			var u := (t - 0.12) / 0.18
+			r_arm.rotation.x = lerp(-1.35, 1.05, u)
+			r_arm.rotation.z = lerp(deg_to_rad(32), deg_to_rad(-18), u)
+			if weapon:
+				weapon.rotation_degrees.x = lerp(rest_rx - 28.0, rest_rx + 42.0, u)
+				weapon.rotation_degrees.z = lerp(rest_rz - 18.0, rest_rz + 22.0, u)
+			if l_arm:
+				l_arm.rotation.x = lerp(0.35, -0.55, u)
+			if bob:
+				bob.rotation.x = lerp(-0.08, 0.12, u)
 		else:
-			var u := clampf((t - 0.28) / 0.2, 0.0, 1.0)
-			r_arm.rotation.x = lerp(0.85, 0.0, u)
-			r_arm.rotation.z = lerp(deg_to_rad(-10), deg_to_rad(6), u)
-	if t >= 0.48:
+			var u := clampf((t - 0.30) / 0.22, 0.0, 1.0)
+			r_arm.rotation.x = lerp(1.05, -0.15, u)
+			r_arm.rotation.z = lerp(deg_to_rad(-18), deg_to_rad(8), u)
+			if weapon:
+				weapon.rotation_degrees.x = lerp(rest_rx + 42.0, rest_rx, u)
+				weapon.rotation_degrees.z = lerp(rest_rz + 22.0, rest_rz, u)
+			if l_arm:
+				l_arm.rotation.x = lerp(-0.55, 0.0, u)
+			if bob:
+				bob.rotation.x = lerp(0.12, 0.0, u)
+	if t >= 0.52:
 		_attacking = false
 		_attack_t = 0.0
+		if bob:
+			bob.rotation.x = 0.0
 		# Rest weapon — re-apply mesh style pose
 		if weapon and weapon.visible:
 			var wid = GameState.equipped.get("weapon")

@@ -61,6 +61,7 @@ func _ready() -> void:
 	_build_mill_bridge()
 	_build_cedar_hollow()
 	_build_willow_bend()
+	_build_reed_pool()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -353,6 +354,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Willow Bend plaza keep-clear
 	if abs(pos.x + 38.0) < 5.0 and abs(pos.z + 34.0) < 5.0:
 		return true
+	# South path to Reed Pool (Wave 22)
+	if _near_segment_xz(pos, Vector3(-6, 0, 20), Vector3(-20, 0, 48), 3.4):
+		return true
+	# Reed Pool plaza keep-clear
+	if abs(pos.x + 20.0) < 5.0 and abs(pos.z - 48.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -621,6 +628,9 @@ func _landmark_zones() -> Array:
 		{"id": "willow", "pos": Vector3(-38, 0, -34), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Willow Bend — soft leaves trail over quiet water.",
 			"return_toast": "Back at Willow Bend — the willows still lean gently by the brook."},
+		{"id": "reed", "pos": Vector3(-20, 0, 48), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Reed Pool — tall reeds ring a quiet south pool.",
+			"return_toast": "Back at Reed Pool — the reeds still whisper by the water."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1509,6 +1519,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40"})
 	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32"})
 	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48"})
+	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1744,6 +1755,72 @@ func _build_willow_bend() -> void:
 	_place_label3d(root, "Willow Bend", 52, Vector3(-38.0, 3.4, -34.0))
 
 
+
+func _build_reed_pool() -> void:
+	## South wilds landmark — quiet reed-ringed pool (soft travel Y).
+	var root := Node3D.new()
+	root.name = "ReedPool"
+	static_world.add_child(root)
+	# Dirt spur south from the village / chronicle edge
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -6.0 + tt * (-14.0)
+		var z := 20.0 + tt * 28.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "ReedPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -8.0 + tt * (-10.0)
+		var z := 24.0 + tt * 20.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "ReedTrim")
+	# Soft bank + quiet pool
+	_mi(_cyl(4.0, 4.0, 0.05), Vector3(-20.0, 0.02, 48.0), root, _mats["grass_dark"], "ReedBed")
+	_mi(_cyl(2.8, 2.8, 0.06), Vector3(-20.0, 0.015, 48.0), root, _mats["water"], "QuietPool")
+	_mi(_cyl(1.1, 1.1, 0.04), Vector3(-22.2, 0.015, 49.6), root, _mats["water"], "PoolFoam")
+	_add_lantern_post(Vector3(-16.8, 0, 45.2))
+	_add_lantern_post(Vector3(-23.5, 0, 50.8))
+	_add_lantern_post(Vector3(-12.0, 0, 34.0))
+	_add_lantern_post(Vector3(-8.5, 0, 26.5))
+	_add_bench(Vector3(-17.2, 0, 45.0), 0.3)
+	_add_crate(Vector3(-23.0, 0, 45.6))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 622
+	# Framing reeds + soft trees outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -8.0 + tt * (-10.0)
+		var cz := 24.0 + tt * 20.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(4.5, 7.5), 0, cz + side * rng.randf_range(1.2, 3.5) * 0.4)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	# Tall reed clumps around the pool rim
+	for i in 12:
+		var ang := float(i) * TAU / 12.0
+		var rp := Vector3(-20.0 + cos(ang) * 3.6, 0, 48.0 + sin(ang) * 3.6)
+		var reed := Node3D.new()
+		reed.position = rp
+		root.add_child(reed)
+		for k in 3:
+			var h := rng.randf_range(1.1, 1.7)
+			var offset := Vector3(rng.randf_range(-0.18, 0.18), h * 0.5, rng.randf_range(-0.18, 0.18))
+			_mi(_cyl(0.035, 0.045, h), offset, reed, _mats["leaf_willow"], "ReedStem")
+			_mi(_sphere(0.07, 0.12), offset + Vector3(0, h * 0.52, 0), reed, _mats["leaf_alt"], "ReedTuft")
+		if i % 2 == 0:
+			_add_flowers(Vector3(-20.0 + cos(ang) * 4.8, 0, 48.0 + sin(ang) * 4.8), rng)
+	var sign := Node3D.new()
+	sign.position = Vector3(-16.5, 0, 48.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.7, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	_place_label3d(sign, "Reed Pool", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "Quiet reed pool", 28, Vector3(-20.0, 3.95, 48.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Reed Pool", 52, Vector3(-20.0, 3.4, 48.0))
+
+
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
 	var root := Node3D.new()
@@ -1790,6 +1867,10 @@ func _build_ambient_life() -> void:
 		# Willow Bend (Wave 21)
 		{"pos": Vector3(-38.0, 0, -34.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		{"pos": Vector3(-35.0, 0, -31.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		# Reed Pool (Wave 22)
+		{"pos": Vector3(-20.0, 0, 48.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(-17.0, 0, 45.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-23.0, 0, 50.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(-41.0, 0, -36.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},

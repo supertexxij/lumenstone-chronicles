@@ -53,6 +53,7 @@ var greeted_landmarks: Array = []
 var discovered_landmarks: Array = []
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
+var last_daily_reminder_date: String = ""
 var created_at: int = 0
 var last_played: int = 0
 var unlocked_week: int = 1
@@ -112,6 +113,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	combat_level = 1
 	checkpoint_checks = {}
 	checkpoint_date = ""
+	last_daily_reminder_date = ""
 	created_at = int(Time.get_unix_time_from_system())
 	unlocked_week = 1
 	seen_aggro_tutorial = false
@@ -299,6 +301,7 @@ func save_game() -> void:
 		"discovered_landmarks": discovered_landmarks,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
+		"last_daily_reminder_date": last_daily_reminder_date,
 		"created_at": created_at,
 		"last_played": last_played,
 		"unlocked_week": unlocked_week,
@@ -364,6 +367,7 @@ func load_game(slot: int = -1) -> bool:
 				discovered_landmarks.append(did)
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
+	last_daily_reminder_date = str(data.get("last_daily_reminder_date", ""))
 	created_at = int(data.get("created_at", 0))
 	unlocked_week = int(data.get("unlocked_week", 1))
 	slot_label = str(data.get("slot_label", ""))
@@ -559,6 +563,26 @@ func get_year_progress_note() -> String:
 	var w: Dictionary = get_week_unlock_progress()
 	var q: Dictionary = get_quest_mastery_progress()
 	return "Year: week unlock %d%% · quests mastered %d%%" % [int(w["percent"]), int(q["percent"])]
+
+
+func maybe_daily_checkpoint_reminder() -> void:
+	## Soft once-per-calendar-day toast pointing parents to the short checkpoint (PIN stays 1234).
+	var today := Time.get_date_string_from_system()
+	if last_daily_reminder_date == today:
+		return
+	last_daily_reminder_date = today
+	toast.emit("Gentle reminder: when you have a moment, open Parent for today’s short checkpoint (PIN 1234 unless you changed it).")
+	save_game()
+
+
+func get_year_progress_percent() -> int:
+	## Compact HUD chip: prefer quest mastery %, fall back to week unlock %.
+	var q: Dictionary = get_quest_mastery_progress() if has_method("get_quest_mastery_progress") else {}
+	if int(q.get("total", 0)) > 0:
+		return int(q.get("percent", 0))
+	var w: Dictionary = get_week_unlock_progress() if has_method("get_week_unlock_progress") else {}
+	return int(w.get("percent", 0))
+
 
 
 func set_combat_target(enemy: Node) -> void:

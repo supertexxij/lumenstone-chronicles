@@ -142,6 +142,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(38, 0, -36), "Cedar Hollow")
 			KEY_P:
 				_goto_landmark(Vector3(-38, 0, -34), "Willow Bend")
+			KEY_Y:
+				_goto_landmark(Vector3(-20, 0, 48), "Reed Pool")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -163,6 +165,7 @@ func _travel_destinations() -> Array:
 		{"label": "Mill Bridge", "pos": Vector3(-36, 0, 30), "key": "K"},
 		{"label": "Cedar Hollow", "pos": Vector3(38, 0, -36), "key": "O"},
 		{"label": "Willow Bend", "pos": Vector3(-38, 0, -34), "key": "P"},
+		{"label": "Reed Pool", "pos": Vector3(-20, 0, 48), "key": "Y"},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
@@ -331,6 +334,8 @@ func _enter_world() -> void:
 	if not GameState.hp_changed.is_connected(hud.set_hp):
 		GameState.hp_changed.connect(hud.set_hp)
 	AudioBus.start_ambient()
+	if GameState.has_method("maybe_daily_checkpoint_reminder"):
+		GameState.maybe_daily_checkpoint_reminder()
 
 func _open_npc(npc: Node) -> void:
 	npc_panel.open(npc)

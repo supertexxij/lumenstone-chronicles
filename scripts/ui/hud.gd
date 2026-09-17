@@ -33,6 +33,7 @@ var food_lbl: Label
 var _world: Node = null
 var _map_data: Dictionary = {}
 var _hurt_vignette: Control = null
+var _year_chip: Label = null
 var _vignette_edges: Array = []
 
 func _ready() -> void:
@@ -53,7 +54,8 @@ func _ready() -> void:
 		$BottomBar.move_child(saves_btn, parent_btn.get_index())
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
 	_ensure_food_lbl()
-	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · 1–5 halls"
+	_ensure_year_chip()
+	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
@@ -85,6 +87,7 @@ func refresh() -> void:
 	set_hp(GameState.hp, GameState.max_hp)
 	_refresh_food_lbl()
 	_refresh_mute_label()
+	_refresh_year_chip()
 
 func set_hp(cur: int, mx: int) -> void:
 	hp_bar.max_value = mx
@@ -244,3 +247,38 @@ func _update_hurt_vignette(cur: int, mx: int) -> void:
 			continue
 		r.color = Color(0.78, 0.32, 0.36, alpha)
 	_hurt_vignette.visible = alpha > 0.01
+
+
+func _ensure_year_chip() -> void:
+	## Compact year-progress chip near the day label (Wave 22).
+	if _year_chip != null and is_instance_valid(_year_chip):
+		return
+	if has_node("YearChip"):
+		_year_chip = $YearChip
+		return
+	_year_chip = Label.new()
+	_year_chip.name = "YearChip"
+	_year_chip.add_theme_font_size_override("font_size", 13)
+	_year_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_year_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_year_chip.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_year_chip.offset_left = -168.0
+	_year_chip.offset_top = 80.0
+	_year_chip.offset_right = -16.0
+	_year_chip.offset_bottom = 100.0
+	_year_chip.modulate = Color(0.92, 0.95, 0.85, 0.92)
+	add_child(_year_chip)
+
+
+func _refresh_year_chip() -> void:
+	_ensure_year_chip()
+	if _year_chip == null:
+		return
+	var pct := 0
+	if GameState.has_method("get_year_progress_percent"):
+		pct = int(GameState.get_year_progress_percent())
+	elif GameState.has_method("get_quest_mastery_progress"):
+		pct = int(GameState.get_quest_mastery_progress().get("percent", 0))
+	_year_chip.text = "Year %d%%" % pct
+	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
+
