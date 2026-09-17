@@ -7,6 +7,7 @@ signal journal_pressed
 signal mute_pressed
 signal weather_pressed
 signal travel_pressed
+signal saves_pressed
 
 @onready var name_lbl: Label = $TopBar/NameLbl
 @onready var xp_lbl: Label = $TopBar/XpLbl
@@ -20,6 +21,7 @@ signal travel_pressed
 @onready var weather_btn: Button = $BottomBar/WeatherBtn
 @onready var travel_btn: Button = $BottomBar/TravelBtn
 @onready var parent_btn: Button = $BottomBar/ParentBtn
+@onready var saves_btn: Button = $BottomBar/SavesBtn
 @onready var hint_lbl: Label = $Hint
 @onready var compass: Control = $Compass
 @onready var compass_needle: Label = $Compass/Needle
@@ -40,7 +42,14 @@ func _ready() -> void:
 	if travel_btn:
 		travel_btn.pressed.connect(func(): AudioBus.play_ui(); travel_pressed.emit())
 	parent_btn.pressed.connect(func(): AudioBus.play_ui(); parent_pressed.emit())
-	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · 1–5 halls"
+	if saves_btn == null:
+		saves_btn = Button.new()
+		saves_btn.name = "SavesBtn"
+		saves_btn.text = "Saves"
+		$BottomBar.add_child(saves_btn)
+		$BottomBar.move_child(saves_btn, parent_btn.get_index())
+	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
+	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)

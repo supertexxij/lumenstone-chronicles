@@ -247,6 +247,10 @@ text = "Weather (R)"
 layout_mode = 2
 text = "Travel (T)"
 
+[node name="SavesBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Saves"
+
 [node name="ParentBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
 text = "Parent"
@@ -405,6 +409,11 @@ text = "Equip"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Unequip"
+
+[node name="UseBtn" type="Button" parent="UI/InventoryPanel/Panel/VBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use"
 
 [node name="CloseBtn" type="Button" parent="UI/InventoryPanel/Panel/VBox/HBox"]
 layout_mode = 2
@@ -752,7 +761,7 @@ horizontal_alignment = 1
 [node name="Hint" type="Label" parent="UI/TravelPanel/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Outdoors only. Keys: H Fountain · N Glade · B Ridge · G Prayer Garden · 1–5 Halls"
+text = "Outdoors only. Keys: H Fountain · N Glade · B Ridge · G Prayer Garden · L Lookout · 1–5 Halls"
 autowrap_mode = 2
 horizontal_alignment = 1
 

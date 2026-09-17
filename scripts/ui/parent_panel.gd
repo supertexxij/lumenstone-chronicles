@@ -13,6 +13,11 @@ signal closed
 @onready var change_pin_btn: Button = $Panel/VBox/Content/ChangePinBtn
 @onready var pin_status: Label = $Panel/VBox/Content/PinStatus
 
+var _reset_edit: LineEdit
+var _reset_btn: Button
+var _reset_armed: bool = false
+var _hint_lbl: Label
+
 func _ready() -> void:
 	content.visible = false
 	unlock_btn.pressed.connect(_try_pin)
@@ -20,6 +25,7 @@ func _ready() -> void:
 	close_btn.pressed.connect(func(): closed.emit())
 	if change_pin_btn:
 		change_pin_btn.pressed.connect(_change_pin)
+	_ensure_recovery_ui()
 
 func open() -> void:
 	pin_edit.text = ""
@@ -32,6 +38,16 @@ func open() -> void:
 		confirm_pin_edit.text = ""
 	if pin_status:
 		pin_status.text = "Default PIN is 1234 until you change it."
+	_reset_armed = false
+	if _reset_edit:
+		_reset_edit.text = ""
+	if _hint_lbl:
+		_hint_lbl.visible = true
+	if _reset_edit:
+		_reset_edit.visible = true
+	if _reset_btn:
+		_reset_btn.visible = true
+		_reset_btn.text = "Reset PIN"
 	pin_edit.grab_focus()
 
 func _try_pin() -> void:
@@ -42,6 +58,12 @@ func _try_pin() -> void:
 	content.visible = true
 	pin_edit.visible = false
 	unlock_btn.visible = false
+	if _hint_lbl:
+		_hint_lbl.visible = false
+	if _reset_edit:
+		_reset_edit.visible = false
+	if _reset_btn:
+		_reset_btn.visible = false
 	_refresh()
 
 func _change_pin() -> void:
@@ -84,3 +106,54 @@ func _refresh() -> void:
 	else:
 		for h in help:
 			help_list.add_item("%s — %d/%d (%d%%)" % [h["title"], h["correct"], h["total"], int(h["percent"] * 100)])
+
+func _ensure_recovery_ui() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	if vbox.get_node_or_null("ResetHint") != null:
+		_hint_lbl = vbox.get_node("ResetHint")
+		_reset_edit = vbox.get_node("ResetEdit")
+		_reset_btn = vbox.get_node("ResetBtn")
+		return
+	_hint_lbl = Label.new()
+	_hint_lbl.name = "ResetHint"
+	_hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_hint_lbl.text = "Forgot PIN? Type RESET below, press Reset PIN, then type RESET again to confirm. Restores default 1234. Save slots stay."
+	vbox.add_child(_hint_lbl)
+	vbox.move_child(_hint_lbl, unlock_btn.get_index() + 1)
+	_reset_edit = LineEdit.new()
+	_reset_edit.name = "ResetEdit"
+	_reset_edit.placeholder_text = "Type RESET"
+	vbox.add_child(_reset_edit)
+	vbox.move_child(_reset_edit, _hint_lbl.get_index() + 1)
+	_reset_btn = Button.new()
+	_reset_btn.name = "ResetBtn"
+	_reset_btn.text = "Reset PIN"
+	_reset_btn.pressed.connect(_try_pin_reset)
+	vbox.add_child(_reset_btn)
+	vbox.move_child(_reset_btn, _reset_edit.get_index() + 1)
+
+func _try_pin_reset() -> void:
+	var typed: String = _reset_edit.text.strip_edges().to_upper() if _reset_edit else ""
+	if typed != "RESET":
+		summary.text = "Type RESET exactly to recover the parent PIN."
+		content.visible = true
+		_reset_armed = false
+		return
+	if not _reset_armed:
+		_reset_armed = true
+		summary.text = "Confirm: type RESET again and press Reset PIN once more."
+		content.visible = true
+		if _reset_btn:
+			_reset_btn.text = "Confirm RESET"
+		if _reset_edit:
+			_reset_edit.text = ""
+		return
+	GameState.reset_parent_pin_to_default()
+	_reset_armed = false
+	summary.text = "Parent PIN restored to 1234. Save slots were not changed."
+	content.visible = true
+	if _reset_btn:
+		_reset_btn.text = "Reset PIN"
+	if _reset_edit:
+		_reset_edit.text = ""
+	AudioBus.play_ui()

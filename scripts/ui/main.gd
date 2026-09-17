@@ -17,6 +17,11 @@ var world_scene: Node3D = null
 var toast_timer: float = 0.0
 var _pending_new_slot: int = 0
 var _travel_dests: Array = []
+var _confirm_dialog: ConfirmationDialog
+var _save_panel: Control
+var _pending_clear_slot: int = -1
+var _pending_overwrite_slot: int = -1
+var _reset_confirm_armed: bool = false
 
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
@@ -66,6 +71,10 @@ func _ready() -> void:
 			title_screen.refresh_slots()
 	)
 	_setup_travel_panel()
+	_setup_confirm_dialog()
+	_setup_save_panel()
+	if hud.has_signal("saves_pressed"):
+		hud.saves_pressed.connect(_open_save_panel)
 
 func _setup_travel_panel() -> void:
 	if travel_panel == null:
@@ -119,6 +128,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(-12, 0, -45.5), "Pine Ridge ford")
 			KEY_G:
 				_goto_landmark(Vector3(30, 0, 18), "Prayer Garden")
+			KEY_L:
+				_goto_landmark(Vector3(40, 0, 34), "Lookout Rock")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -136,6 +147,7 @@ func _travel_destinations() -> Array:
 		{"label": "Lantern Glade path", "pos": Vector3(0.5, 0, -30), "key": "N"},
 		{"label": "Pine Ridge ford", "pos": Vector3(-12, 0, -45.5), "key": "B"},
 		{"label": "Prayer Garden", "pos": Vector3(30, 0, 18), "key": "G"},
+		{"label": "Lookout Rock", "pos": Vector3(40, 0, 34), "key": "L"},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
@@ -232,10 +244,18 @@ func _set_player_ui_block(v: bool) -> void:
 
 func _on_new_game(slot: int = 0) -> void:
 	AudioBus.play_ui()
-	_pending_new_slot = clampi(slot, 0, GameState.SLOT_COUNT - 1)
-	if GameState.has_save(_pending_new_slot):
-		# Soft confirm via toast — overwrite on Begin
-		GameState.toast.emit("Slot %d has a save — Begin will start fresh there." % (_pending_new_slot + 1))
+	var s: int = clampi(slot, 0, GameState.SLOT_COUNT - 1)
+	if GameState.has_save(s):
+		_pending_overwrite_slot = s
+		_confirm_dialog.title = "Overwrite save?"
+		_confirm_dialog.dialog_text = "Slot %d already has a save. Start a new adventure there and replace it?" % (s + 1)
+		_confirm_dialog.ok_button_text = "Overwrite"
+		_confirm_dialog.popup_centered()
+		return
+	_start_new_in_slot(s)
+
+func _start_new_in_slot(slot: int) -> void:
+	_pending_new_slot = slot
 	title_screen.visible = false
 	customize_screen.open_new()
 	customize_screen.visible = true
@@ -250,9 +270,13 @@ func _on_continue(slot: int = 0) -> void:
 		title_screen.refresh_slots()
 
 func _on_clear_slot(slot: int) -> void:
-	GameState.clear_slot(slot)
-	title_screen.refresh_slots()
-	_on_toast("Cleared save slot %d." % (slot + 1))
+	if not GameState.has_save(slot):
+		return
+	_pending_clear_slot = slot
+	_confirm_dialog.title = "Clear save?"
+	_confirm_dialog.dialog_text = "Delete the save in slot %d? Parent PIN settings are kept." % (slot + 1)
+	_confirm_dialog.ok_button_text = "Clear"
+	_confirm_dialog.popup_centered()
 
 func _on_customize_done(p_name: String, appearance: Dictionary) -> void:
 	customize_screen.visible = false
@@ -305,3 +329,167 @@ func _on_toast(msg: String) -> void:
 	toast_label.text = msg
 	toast_label.visible = true
 	toast_timer = 5.0 if msg.length() > 60 else 3.5
+
+func _setup_confirm_dialog() -> void:
+	_confirm_dialog = ConfirmationDialog.new()
+	_confirm_dialog.unresizable = true
+	add_child(_confirm_dialog)
+	_confirm_dialog.confirmed.connect(_on_confirm_ok)
+	var cancel_btn := _confirm_dialog.get_cancel_button()
+	if cancel_btn:
+		cancel_btn.text = "Cancel"
+	_confirm_dialog.canceled.connect(_on_confirm_cancel)
+
+func _on_confirm_ok() -> void:
+	if _pending_overwrite_slot >= 0:
+		var s: int = _pending_overwrite_slot
+		_pending_overwrite_slot = -1
+		_start_new_in_slot(s)
+		return
+	if _pending_clear_slot >= 0:
+		var s: int = _pending_clear_slot
+		_pending_clear_slot = -1
+		GameState.clear_slot(s)
+		# Parent PIN lives in a separate file — clearing a slot never wipes it.
+		if title_screen.visible:
+			title_screen.refresh_slots()
+		_refresh_save_panel()
+		_on_toast("Cleared save slot %d. Parent PIN kept." % (s + 1))
+		return
+
+func _on_confirm_cancel() -> void:
+	_pending_overwrite_slot = -1
+	_pending_clear_slot = -1
+
+func _setup_save_panel() -> void:
+	_save_panel = Control.new()
+	_save_panel.name = "SavePanel"
+	_save_panel.visible = false
+	_save_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var dim := ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.45)
+	_save_panel.add_child(dim)
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -260
+	panel.offset_top = -220
+	panel.offset_right = 260
+	panel.offset_bottom = 220
+	_save_panel.add_child(panel)
+	var vbox := VBoxContainer.new()
+	vbox.name = "VBox"
+	panel.add_child(vbox)
+	var title := Label.new()
+	title.text = "Save Slots"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(title)
+	var hint := Label.new()
+	hint.name = "Hint"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.text = "Switch slots in-game. Clearing a slot never resets the parent PIN."
+	vbox.add_child(hint)
+	var list := ItemList.new()
+	list.name = "SlotList"
+	list.custom_minimum_size = Vector2(0, 140)
+	vbox.add_child(list)
+	var rename_row := HBoxContainer.new()
+	var rename_edit := LineEdit.new()
+	rename_edit.name = "RenameEdit"
+	rename_edit.placeholder_text = "Optional slot label"
+	rename_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rename_row.add_child(rename_edit)
+	var rename_btn := Button.new()
+	rename_btn.text = "Rename"
+	rename_btn.pressed.connect(_save_rename_current)
+	rename_row.add_child(rename_btn)
+	vbox.add_child(rename_row)
+	var switch_btn := Button.new()
+	switch_btn.text = "Switch to selected"
+	switch_btn.pressed.connect(_save_switch_selected)
+	vbox.add_child(switch_btn)
+	var clear_btn := Button.new()
+	clear_btn.text = "Clear selected"
+	clear_btn.pressed.connect(_save_clear_selected)
+	vbox.add_child(clear_btn)
+	var close_btn := Button.new()
+	close_btn.text = "Close"
+	close_btn.pressed.connect(func():
+		_save_panel.visible = false
+		_set_player_ui_block(false)
+	)
+	vbox.add_child(close_btn)
+	$UI.add_child(_save_panel)
+
+func _open_save_panel() -> void:
+	if _save_panel == null:
+		return
+	_refresh_save_panel()
+	_save_panel.visible = true
+	_set_player_ui_block(true)
+	AudioBus.play_ui()
+
+func _refresh_save_panel() -> void:
+	if _save_panel == null:
+		return
+	var list: ItemList = _save_panel.find_child("SlotList", true, false)
+	var rename_edit: LineEdit = _save_panel.find_child("RenameEdit", true, false)
+	if list == null:
+		return
+	list.clear()
+	for i in GameState.SLOT_COUNT:
+		var sum: Dictionary = GameState.slot_summary(i)
+		var mark := " (active)" if i == GameState.active_slot else ""
+		if sum.get("empty", true):
+			list.add_item("Slot %d — empty%s" % [i + 1, mark])
+		else:
+			var lab: String = str(sum.get("slot_label", "")).strip_edges()
+			var lab_s: String = (" “%s”" % lab) if lab != "" else ""
+			list.add_item("Slot %d — %s%s · Lv %d · Wk %d%s" % [
+				i + 1, str(sum.get("child_name", "Apprentice")), lab_s,
+				int(sum.get("level", 1)), int(sum.get("unlocked_week", 1)), mark
+			])
+		if i == GameState.active_slot:
+			list.select(i)
+	if rename_edit:
+		rename_edit.text = GameState.slot_label
+
+func _save_rename_current() -> void:
+	var rename_edit: LineEdit = _save_panel.find_child("RenameEdit", true, false)
+	if rename_edit == null:
+		return
+	GameState.set_slot_label(rename_edit.text)
+	_refresh_save_panel()
+	if title_screen and title_screen.has_method("refresh_slots"):
+		title_screen.refresh_slots()
+	_on_toast("Slot label saved.")
+	AudioBus.play_ui()
+
+func _save_switch_selected() -> void:
+	var list: ItemList = _save_panel.find_child("SlotList", true, false)
+	if list == null or not list.is_anything_selected():
+		return
+	var idx: int = list.get_selected_items()[0]
+	if idx == GameState.active_slot:
+		_on_toast("Already on slot %d." % (idx + 1))
+		return
+	if not GameState.has_save(idx):
+		_on_toast("That slot is empty — use New on the title screen.")
+		return
+	# Save current first; parent PIN file is untouched.
+	GameState.save_game()
+	if not GameState.load_game(idx):
+		_on_toast("Could not load slot %d." % (idx + 1))
+		return
+	_save_panel.visible = false
+	_set_player_ui_block(false)
+	_enter_world()
+	_on_toast("Switched to slot %d." % (idx + 1))
+	AudioBus.play_ui()
+
+func _save_clear_selected() -> void:
+	var list: ItemList = _save_panel.find_child("SlotList", true, false)
+	if list == null or not list.is_anything_selected():
+		return
+	var idx: int = list.get_selected_items()[0]
+	_on_clear_slot(idx)

@@ -54,6 +54,7 @@ func _ready() -> void:
 	_build_lantern_glade()
 	_build_pine_ridge()
 	_build_prayer_garden()
+	_build_lookout_rock()
 	_setup_day_night()
 	_setup_weather()
 	GameState.in_world = true
@@ -274,6 +275,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 		return true
 	# Village plaza keep-clear near fountain soft-travel
 	if abs(pos.x) < 4.0 and abs(pos.z - 12.0) < 3.0:
+		return true
+	# Southeast path to Lookout Rock
+	if abs(pos.z - 34.0) < 3.2 and pos.x > 8.0 and pos.x < 44.0:
+		return true
+	# Lookout plaza keep-clear
+	if abs(pos.x - 40.0) < 4.0 and abs(pos.z - 34.0) < 4.0:
 		return true
 	return false
 
@@ -1152,6 +1159,50 @@ func _build_prayer_garden() -> void:
 	root.add_child(lbl)
 
 
+
+func _build_lookout_rock() -> void:
+	## Southeast landmark — soft travel (L). Rocky overlook with a short dirt spur.
+	var root := Node3D.new()
+	root.name = "LookoutRock"
+	static_world.add_child(root)
+	# Path southeast from plaza toward lookout
+	for i in 8:
+		var t := float(i) / 7.0
+		var x := 10.0 + t * 28.0
+		var z := 14.0 + t * 20.0
+		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "LookoutPath")
+	# Rocky outcrop
+	_mi(_cyl(4.2, 4.5, 0.35), Vector3(40, 0.18, 34), root, _mats["stone"], "LookoutBase")
+	_mi(_box(Vector3(3.2, 1.6, 2.4)), Vector3(40, 1.0, 34), root, _mats["stone_dark"], "LookoutMass")
+	_mi(_box(Vector3(1.4, 0.9, 1.2)), Vector3(41.2, 1.85, 33.2), root, _mats["stone"], "LookoutCap")
+	_mi(_cyl(0.35, 0.4, 1.4), Vector3(39.0, 1.9, 35.0), root, _mats["wood"], "LookoutPost")
+	_mi(_box(Vector3(1.1, 0.08, 0.7)), Vector3(39.0, 2.65, 35.0), root, _mats["wood_light"], "LookoutRail")
+	_add_bench(Vector3(37.5, 0, 36.2), -0.6)
+	_add_lantern_post(Vector3(37.0, 0, 32.0))
+	_add_lantern_post(Vector3(42.5, 0, 36.5))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 211
+	for i in 6:
+		var ang := i * TAU / 6.0
+		_add_flowers(Vector3(40.0 + cos(ang) * 5.0, 0, 34.0 + sin(ang) * 5.0), rng)
+	var sign := Node3D.new()
+	sign.position = Vector3(36.5, 0, 34.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.6, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	var sl := Label3D.new()
+	sl.text = "Lookout Rock"
+	sl.font_size = 40
+	sl.position = Vector3(0, 2.3, 0)
+	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.add_child(sl)
+	var lbl := Label3D.new()
+	lbl.text = "Lookout Rock"
+	lbl.font_size = 52
+	lbl.position = Vector3(40, 3.6, 34)
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(lbl)
+
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
 	var halls: Array = []
@@ -1161,6 +1212,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8"})
 	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32"})
 	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037"})
+	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):

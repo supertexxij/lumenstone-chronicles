@@ -89,9 +89,10 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **1–5** halls (outdoors only) |
+| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **1–5** halls (outdoors only) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
-| Parent dashboard | **Parent** · PIN default `1234` (changeable in panel) |
+| Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
+| Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |
 
 Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compass (top) aid village/wilds orientation. Soft defeat respawns at the village fountain; unlocks and gear are kept.
 
@@ -197,6 +198,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Prayer Garden** eastern landmark with soft travel (**G**)
 - **Indoor rain drip** SFX when raining + indoors + unmuted
 - Saves to `user://lumenstone_save_slot_N.json` (+ legacy mirror for Slot 1)
+- **Overwrite / clear confirm** dialogs on title (non-empty slots)
+- **In-game Saves panel** (switch / optional rename / clear) — parent PIN file untouched
+- **PIN recovery**: type `RESET` twice in Parent panel to restore default `1234`
+- **Click-to-move path assist** when stuck against props (slide + side bias)
+- **Lookout Rock** southeast landmark + soft travel (**L**)
+- Optional **slot labels** on title / Saves panel
+- Combat food: **Wholesome Bread** (+12 HP) and **Cool Water** (+8 HP) starters — Use in inventory
+
 
 
 ### Architecture
@@ -225,7 +234,7 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 - Equipped hat / cape / weapon (sword/axe/staff/bow/dagger/mallet meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** spurs; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
 - Audio is short procedural SFX + soft drone + original village loop + quiet rain / indoor drip loops (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only

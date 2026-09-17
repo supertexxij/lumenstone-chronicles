@@ -165,6 +165,44 @@ func set_parent_pin(new_pin: String) -> bool:
 	_save_parent_settings()
 	return true
 
+func reset_parent_pin_to_default() -> void:
+	## Recovery path — restores factory PIN without touching save slots.
+	parent_pin = DEFAULT_PIN
+	_save_parent_settings()
+
+func set_slot_label(label: String) -> void:
+	slot_label = label.strip_edges().substr(0, 24)
+	save_game()
+	state_changed.emit()
+
+func set_slot_label_on_slot(slot: int, label: String) -> bool:
+	## Write a label into a slot file without changing the in-memory adventure (parent PIN untouched).
+	var s: int = clampi(slot, 0, SLOT_COUNT - 1)
+	var text := label.strip_edges().substr(0, 24)
+	if s == active_slot:
+		set_slot_label(text)
+		return true
+	if not has_save(s):
+		return false
+	var path := slot_path(s)
+	if not FileAccess.file_exists(path) and s == 0 and FileAccess.file_exists(LEGACY_SAVE_PATH):
+		path = LEGACY_SAVE_PATH
+	var f := FileAccess.open(path, FileAccess.READ)
+	if not f:
+		return false
+	var data = JSON.parse_string(f.get_as_text())
+	f.close()
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
+	data["slot_label"] = text
+	var out := FileAccess.open(slot_path(s), FileAccess.WRITE)
+	if not out:
+		return false
+	out.store_string(JSON.stringify(data))
+	out.close()
+	return true
+
+
 func slot_summary(slot: int) -> Dictionary:
 	## Lightweight peek for title UI without mutating active state.
 	if not has_save(slot):
@@ -376,6 +414,32 @@ func take_damage(amount: int) -> void:
 func heal_full() -> void:
 	hp = max_hp
 	hp_changed.emit(hp, max_hp)
+
+func heal(amount: int) -> int:
+	var before: int = hp
+	hp = mini(max_hp, hp + maxi(0, amount))
+	hp_changed.emit(hp, max_hp)
+	return hp - before
+
+func use_consumable(item_id: String) -> bool:
+	var item: Dictionary = ItemDB.get_item(item_id)
+	if item.is_empty() or str(item.get("slot", "")) != "consumable":
+		return false
+	if item_id not in unlocked_items:
+		return false
+	var heal_amt: int = int(item.get("heal", 0))
+	if heal_amt <= 0:
+		return false
+	if hp >= max_hp:
+		toast.emit("Already at full health.")
+		return false
+	var gained: int = heal(heal_amt)
+	# Starter food stays available (village pantry); do not remove from unlocked_items.
+	toast.emit("Used %s (+%d HP)." % [item.get("name", item_id), gained])
+	AudioBus.play_ui()
+	state_changed.emit()
+	save_game()
+	return true
 
 func _soft_defeat() -> void:
 	toast.emit("You were restored at the village fountain.")

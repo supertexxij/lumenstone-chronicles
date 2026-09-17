@@ -48,6 +48,7 @@ func _finish():
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
 	print("PINE", world.static_world.get_node_or_null("PineRidge") != null if world else false)
 	print("GARDEN", world.static_world.get_node_or_null("PrayerGarden") != null if world else false)
+	print("LOOKOUT", world.static_world.get_node_or_null("LookoutRock") != null if world else false)
 	print("DESKS", root.get_tree().get_nodes_in_group("quest_desks").size())
 	print("RAIN_AUDIO", aud != null and aud.has_method("set_rain_audio"))
 	print("DRIP_AUDIO", aud != null and aud.has_method("set_indoor_drip"))

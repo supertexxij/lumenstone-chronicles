@@ -25,6 +25,8 @@ var _attack_t: float = 0.0
 var _attacking: bool = false
 var _last_foot_phase: float = 0.0
 var _weapon_mesh_style: String = ""
+var _stuck_timer: float = 0.0
+var _assist_side: int = 1
 
 func _ready() -> void:
 	add_to_group("player")
@@ -179,6 +181,7 @@ func _handle_click() -> void:
 func _set_move_target(pos: Vector3) -> void:
 	target_pos = Vector3(pos.x, 0, pos.z)
 	has_click_target = true
+	_stuck_timer = 0.0
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		if target_pos.distance_to(GameState.combat_target.global_position) > float(EnemyDB.base_combat.get("escape_range", 8)):
 			GameState.set_combat_target(null)
@@ -238,8 +241,13 @@ func _physics_process(delta: float) -> void:
 			has_click_target = false
 			velocity.x = 0
 			velocity.z = 0
+			_stuck_timer = 0.0
 		else:
 			var wish: Vector3 = to.normalized()
+			# Soft path assist: if recently stuck on a prop, bias around it
+			if _stuck_timer > 0.25:
+				var side := Vector3(-wish.z, 0, wish.x) * float(_assist_side)
+				wish = (wish + side * 0.85).normalized()
 			velocity.x = move_toward(velocity.x, wish.x * SPEED, ACCEL * delta)
 			velocity.z = move_toward(velocity.z, wish.z * SPEED, ACCEL * delta)
 			mesh_root.rotation.y = atan2(wish.x, wish.z)
@@ -247,13 +255,36 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0, ACCEL * delta)
 		velocity.z = move_toward(velocity.z, 0, ACCEL * delta)
+		_stuck_timer = 0.0
 
 	velocity.y = 0
+	var pre_pos := global_position
 	move_and_slide()
-	# Village + Glade + Pine Ridge clamp — skip when teleported into guild-hall interiors (x >= 100)
+	# Slide-along + stuck detection for click-to-move against barrels/trees/fences
+	if has_click_target:
+		var moved_xz := Vector2(global_position.x - pre_pos.x, global_position.z - pre_pos.z).length()
+		if get_slide_collision_count() > 0 and moved_xz < 0.02:
+			_stuck_timer += delta
+			var col := get_slide_collision(0)
+			var n: Vector3 = col.get_normal()
+			n.y = 0.0
+			if n.length() > 0.01:
+				n = n.normalized()
+				var to2: Vector3 = target_pos - global_position
+				to2.y = 0
+				var slide_dir: Vector3 = to2.slide(n)
+				if slide_dir.length() > 0.05:
+					global_position += slide_dir.normalized() * SPEED * delta * 0.65
+					mesh_root.rotation.y = atan2(slide_dir.x, slide_dir.z)
+			if _stuck_timer > 0.55:
+				_assist_side *= -1
+				_stuck_timer = 0.2
+		else:
+			_stuck_timer = maxf(0.0, _stuck_timer - delta * 1.5)
+	# Village + Glade + Pine Ridge + Lookout clamp — skip when teleported into guild-hall interiors (x >= 100)
 	if global_position.x < 90.0:
-		global_position.x = clampf(global_position.x, -52.0, 48.0)
-		global_position.z = clampf(global_position.z, -62.0, 48.0)
+		global_position.x = clampf(global_position.x, -52.0, 52.0)
+		global_position.z = clampf(global_position.z, -62.0, 52.0)
 	global_position.y = 0
 	GameState.position_xz = Vector2(global_position.x, global_position.z)
 

@@ -7,15 +7,25 @@ signal closed
 @onready var equip_btn: Button = $Panel/VBox/HBox/EquipBtn
 @onready var unequip_btn: Button = $Panel/VBox/HBox/UnequipBtn
 @onready var close_btn: Button = $Panel/VBox/HBox/CloseBtn
+@onready var use_btn: Button = $Panel/VBox/HBox/UseBtn
 @onready var loadout: Label = $Panel/VBox/Loadout
 
 var selected_id: String = ""
 
 func _ready() -> void:
+	if use_btn == null:
+		use_btn = Button.new()
+		use_btn.name = "UseBtn"
+		use_btn.text = "Use"
+		use_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		$Panel/VBox/HBox.add_child(use_btn)
+		$Panel/VBox/HBox.move_child(use_btn, unequip_btn.get_index() + 1)
 	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	list.item_selected.connect(_on_select)
 	equip_btn.pressed.connect(_on_equip)
 	unequip_btn.pressed.connect(_on_unequip)
+	if use_btn:
+		use_btn.pressed.connect(_on_use)
 
 func refresh() -> void:
 	list.clear()
@@ -50,7 +60,11 @@ func _on_select(idx: int) -> void:
 		extra = "\nCombat Lv req: %d" % req
 	if item.get("slot", "") == "weapon":
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
+	if str(item.get("slot", "")) == "consumable":
+		extra += "\nHeals %d HP (Use)." % int(item.get("heal", 0))
 	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name",""), item.get("description",""), item.get("slot",""), extra]
+	if use_btn:
+		use_btn.disabled = str(item.get("slot", "")) != "consumable"
 
 func _on_equip() -> void:
 	if selected_id != "":
@@ -63,4 +77,11 @@ func _on_unequip() -> void:
 		AudioBus.play_ui()
 		var item := ItemDB.get_item(selected_id)
 		GameState.unequip_slot(item.get("slot", ""))
+		refresh()
+
+func _on_use() -> void:
+	if selected_id == "":
+		return
+	AudioBus.play_ui()
+	if GameState.use_consumable(selected_id):
 		refresh()
