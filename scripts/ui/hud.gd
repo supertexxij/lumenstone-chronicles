@@ -34,6 +34,7 @@ var _world: Node = null
 var _map_data: Dictionary = {}
 var _hurt_vignette: Control = null
 var _year_chip: Label = null
+var _year_chip_panel: PanelContainer = null  # Wave 32: clearer chip plate
 var _vignette_edges: Array = []
 var _landmark_tick: ColorRect = null
 var _def_flash_t: float = 0.0
@@ -58,6 +59,7 @@ func _ready() -> void:
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
 	_ensure_food_lbl()
 	_ensure_year_chip()
+	_ensure_day_cash_lbl()
 	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
@@ -88,10 +90,7 @@ func refresh() -> void:
 		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d" % [GameState.combat_level, GameState.combat_xp, def_n]
 	else:
 		combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
-	var parts: PackedStringArray = []
-	for g in ["math","la","science","history","bible"]:
-		parts.append("%s:%d" % [GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)])
-	lumen_lbl.text = " · ".join(parts)
+	_refresh_day_cash_lbl()
 	set_hp(GameState.hp, GameState.max_hp)
 	_refresh_food_lbl()
 	_refresh_mute_label()
@@ -265,25 +264,73 @@ func _update_hurt_vignette(cur: int, mx: int) -> void:
 	_hurt_vignette.visible = alpha > 0.01
 
 
+
+func _ensure_day_cash_lbl() -> void:
+	## Wave 32: ONLY Day Cash in the primary money spot — large, obvious, high-contrast.
+	if lumen_lbl == null:
+		return
+	lumen_lbl.name = "DayCashLbl"
+	lumen_lbl.add_theme_font_size_override("font_size", 28)
+	lumen_lbl.add_theme_color_override("font_color", Color(1.0, 0.95, 0.35, 1.0))
+	lumen_lbl.add_theme_color_override("font_outline_color", Color(0.08, 0.1, 0.05, 1.0))
+	lumen_lbl.add_theme_constant_override("outline_size", 6)
+	lumen_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	lumen_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lumen_lbl.tooltip_text = "Day Cash resets each new calendar day. Master lessons to earn more. Guild lumens stay on the Parent dashboard."
+	_refresh_day_cash_lbl()
+
+
+func _refresh_day_cash_lbl() -> void:
+	if lumen_lbl == null:
+		return
+	var n: int = 0
+	if GameState.has_method("get_day_cash"):
+		n = int(GameState.get_day_cash())
+	elif "day_cash" in GameState:
+		n = int(GameState.day_cash)
+	# Large obvious print — kids see THIS, not the multi-lumen guild line
+	lumen_lbl.text = "DAY CASH  %d" % n
+
+
 func _ensure_year_chip() -> void:
-	## Compact year-progress chip near the day label (Wave 22).
+	## Compact year-progress chip near the day label (Wave 22; Wave 32 clearer plate).
 	if _year_chip != null and is_instance_valid(_year_chip):
 		return
+	if has_node("YearChipPanel"):
+		_year_chip_panel = $YearChipPanel
+		_year_chip = _year_chip_panel.get_node_or_null("YearChip")
+		if _year_chip != null:
+			return
 	if has_node("YearChip"):
 		_year_chip = $YearChip
 		return
+	_year_chip_panel = PanelContainer.new()
+	_year_chip_panel.name = "YearChipPanel"
+	_year_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_year_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_year_chip_panel.offset_left = -196.0
+	_year_chip_panel.offset_top = 74.0
+	_year_chip_panel.offset_right = -12.0
+	_year_chip_panel.offset_bottom = 108.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.14, 0.18, 0.14, 0.72)
+	style.border_color = Color(0.78, 0.86, 0.55, 0.75)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	_year_chip_panel.add_theme_stylebox_override("panel", style)
 	_year_chip = Label.new()
 	_year_chip.name = "YearChip"
-	_year_chip.add_theme_font_size_override("font_size", 13)
-	_year_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_year_chip.add_theme_font_size_override("font_size", 15)
+	_year_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_year_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_year_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_year_chip.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_year_chip.offset_left = -168.0
-	_year_chip.offset_top = 80.0
-	_year_chip.offset_right = -16.0
-	_year_chip.offset_bottom = 100.0
-	_year_chip.modulate = Color(0.92, 0.95, 0.85, 0.92)
-	add_child(_year_chip)
+	_year_chip.modulate = Color(0.94, 0.98, 0.82, 1.0)
+	_year_chip_panel.add_child(_year_chip)
+	add_child(_year_chip_panel)
 
 
 func _refresh_year_chip() -> void:
@@ -295,7 +342,8 @@ func _refresh_year_chip() -> void:
 		pct = int(GameState.get_year_progress_percent())
 	elif GameState.has_method("get_quest_mastery_progress"):
 		pct = int(GameState.get_quest_mastery_progress().get("percent", 0))
-	_year_chip.text = "Year %d%%" % pct
+	# Wave 32: clearer wording so the chip reads at a glance
+	_year_chip.text = "Year · %d%%" % pct
 	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
 
 

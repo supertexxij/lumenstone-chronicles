@@ -38,6 +38,8 @@ var appearance: Dictionary = {"hair":"brown","skin":"medium","cape_color":"crims
 var xp: int = 0
 var level: int = 1
 var lumens: Dictionary = {"math":0,"la":0,"science":0,"history":0,"bible":0}
+var day_cash: int = 0  # Wave 32: kid-facing daily cash (resets each local calendar day)
+var day_cash_date: String = ""  # YYYY-MM-DD local; empty until first roll
 var completed_quests: Array = []
 var quest_attempts: Array = []
 var unlocked_items: Array = []
@@ -80,6 +82,7 @@ func _ready() -> void:
 	if unlocked_items.is_empty():
 		_apply_starters()
 	_ensure_pantry_defaults()
+	_ensure_day_cash_roll()
 
 func _process(delta: float) -> void:
 	if consumable_cd > 0.0:
@@ -105,6 +108,8 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	xp = 0
 	level = 1
 	lumens = {"math":0,"la":0,"science":0,"history":0,"bible":0}
+	day_cash = 0
+	day_cash_date = Time.get_date_string_from_system()
 	completed_quests = []
 	quest_attempts = []
 	unlocked_items = []
@@ -287,6 +292,8 @@ func save_game() -> void:
 		"xp": xp,
 		"level": level,
 		"lumens": lumens,
+		"day_cash": day_cash,
+		"day_cash_date": day_cash_date,
 		"completed_quests": completed_quests,
 		"quest_attempts": quest_attempts,
 		"unlocked_items": unlocked_items,
@@ -342,6 +349,8 @@ func load_game(slot: int = -1) -> bool:
 	xp = int(data.get("xp", 0))
 	level = int(data.get("level", 1))
 	lumens = data.get("lumens", lumens)
+	day_cash = int(data.get("day_cash", 0))
+	day_cash_date = str(data.get("day_cash_date", ""))
 	completed_quests = data.get("completed_quests", [])
 	quest_attempts = data.get("quest_attempts", [])
 	unlocked_items = data.get("unlocked_items", [])
@@ -377,6 +386,7 @@ func load_game(slot: int = -1) -> bool:
 		consumable_charges = {}
 	consumable_cd = 0.0
 	_ensure_pantry_defaults()
+	_ensure_day_cash_roll()
 	_recalc_unlocked_week()
 	_apply_starters()
 	check_combat_item_unlocks()
@@ -583,6 +593,44 @@ func get_parent_export_line() -> String:
 	return "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [
 		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0))
 	]
+
+
+
+func _today_local() -> String:
+	return Time.get_date_string_from_system()
+
+
+func _ensure_day_cash_roll() -> void:
+	## Reset Day Cash when the local calendar day changes.
+	var today := _today_local()
+	if day_cash_date == today:
+		return
+	var had_prior: bool = day_cash_date != ""
+	day_cash_date = today
+	day_cash = 0
+	if had_prior:
+		toast.emit("New day — Day Cash resets to 0. Earn more by mastering lessons!")
+		state_changed.emit()
+		save_game()
+
+
+func get_day_cash() -> int:
+	_ensure_day_cash_roll()
+	return day_cash
+
+
+func award_day_cash(amount: int, reason: String = "") -> int:
+	## Kid-facing daily cash. Positive amounts only; rolls the calendar day first.
+	_ensure_day_cash_roll()
+	var add: int = maxi(0, amount)
+	if add <= 0:
+		return day_cash
+	day_cash += add
+	var why: String = (" — %s" % reason) if reason.strip_edges() != "" else ""
+	toast.emit("Day Cash +%d%s (now %d)" % [add, why, day_cash])
+	state_changed.emit()
+	save_game()
+	return day_cash
 
 
 func maybe_daily_checkpoint_reminder() -> void:
@@ -829,6 +877,8 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		if quest.get("lumen_on_mastery", false):
 			var g: String = quest.get("guild", "math")
 			lumens[g] = int(lumens.get(g, 0)) + 1
+		# Wave 32: wholesome Day Cash for kids (guild lumens still track for parents)
+		award_day_cash(5, "quest mastered")
 		var unlock: String = str(quest.get("unlock_item_id", ""))
 		if unlock != "":
 			unlock_item(unlock)

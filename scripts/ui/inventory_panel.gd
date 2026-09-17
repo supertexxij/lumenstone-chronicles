@@ -83,13 +83,18 @@ func refresh() -> void:
 			if GameState.equipped[slot] == id:
 				equipped_mark = " [E]"
 		var stack_mark := ""
-		if str(item.get("slot", "")) == "consumable" and GameState.has_method("pantry_count"):
-			stack_mark = " ×%d/%d" % [GameState.pantry_count(id), GameState.pantry_max(id)]
+		var heal_mark := ""
+		if str(item.get("slot", "")) == "consumable":
+			var heal_n: int = int(item.get("heal", 0))
+			if heal_n > 0:
+				heal_mark = " · +%d HP" % heal_n  # Wave 32: pantry heal preview
+			if GameState.has_method("pantry_count"):
+				stack_mark = " ×%d/%d" % [GameState.pantry_count(id), GameState.pantry_max(id)]
 		var def_mark := ""
 		var def_n: int = int(item.get("defense", 0))
 		if def_n > 0:
-			def_mark = " · Def +%d" % def_n
-		list.add_item("%s%s%s%s" % [item.get("name", id), def_mark, equipped_mark, stack_mark])
+			def_mark = "  [Def +%d]" % def_n  # Wave 32: clearer armor Def on bag rows
+		list.add_item("%s%s%s%s%s" % [item.get("name", id), def_mark, heal_mark, equipped_mark, stack_mark])
 		var idx: int = list.item_count - 1
 		list.set_item_metadata(idx, id)
 		list.set_item_icon(idx, _icon_for_item(item))
@@ -153,9 +158,9 @@ func _update_loadout() -> void:
 			if d <= 0:
 				d = int(item.get("defense", 0))
 			if d > 0:
-				def_bit = " · Def +%d" % d
+				def_bit = "  [Def +%d]" % d
 			elif slot in ["head", "cape"]:
-				def_bit = " · Def +0"
+				def_bit = "  [Def +0]"
 		else:
 			# Empty armor slots still show the slot icon so Head/Cape read clearly.
 			if slot == "head":
@@ -213,7 +218,7 @@ func _refresh_detail_only() -> void:
 	elif slot in ["head", "cape"]:
 		extra += "\nArmor slot: no defense bonus (Travel Cape / plain hats are soft)"
 	if slot == "consumable":
-		extra += "\nHeals %d HP (Use)." % int(item.get("heal", 0))
+		extra += "\nHeal preview: +%d HP when used (Use)." % int(item.get("heal", 0))
 		if GameState.has_method("pantry_count"):
 			extra += "\nPantry %d / %d" % [GameState.pantry_count(selected_id), GameState.pantry_max(selected_id)]
 			if GameState.consumable_cd > 0.05:

@@ -85,6 +85,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_stag(bob)
 		"pine_fox":
 			_build_fox(bob)
+		"oak_hare":
+			_build_hare(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -273,3 +275,30 @@ static func _build_fox(bob: Node3D) -> void:
 		_mi(_capsule(0.05, 0.30), Vector3(0, -0.06, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.09, 0.05, 0.12)), Vector3(0, -0.26, 0.02), leg, "Paw")
 
+
+static func _build_hare(bob: Node3D) -> void:
+	## Soft oak-wilds hare — long ears, compact hop body (distinct from fox/badger/stag).
+	var body := _mi(_capsule(0.20, 0.62), Vector3(0, 0.42, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.16), Vector3(0, 0.50, 0.34), bob, "Head")
+	_mi(_sphere(0.06), Vector3(0, 0.46, 0.48), bob, "Snout")
+	# Long upright ears
+	var el := _mi(_cyl(0.015, 0.045, 0.32), Vector3(-0.06, 0.78, 0.30), bob, "EarL")
+	el.rotation_degrees = Vector3(8, 0, -12)
+	var er := _mi(_cyl(0.015, 0.045, 0.32), Vector3(0.06, 0.78, 0.30), bob, "EarR")
+	er.rotation_degrees = Vector3(8, 0, 12)
+	# Soft cotton-tail puff
+	_mi(_sphere(0.10), Vector3(0, 0.44, -0.36), bob, "Tail")
+	# Four light hop legs
+	for info in [
+		["FL", Vector3(-0.10, 0.24, 0.18)],
+		["FR", Vector3(0.10, 0.24, 0.18)],
+		["BL", Vector3(-0.10, 0.24, -0.18)],
+		["BR", Vector3(0.10, 0.24, -0.18)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.045, 0.26), Vector3(0, -0.04, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.08, 0.05, 0.11)), Vector3(0, -0.22, 0.02), leg, "Paw")

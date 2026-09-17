@@ -90,6 +90,19 @@
       "combat_xp": 42,
       "respawn_sec": 30.0,
       "description": "A slender fox of the pine wilds \u2014 soothe it with a careful step!"
+    },
+    "oak_hare": {
+      "kind": "oak_hare",
+      "name": "Oak Hare",
+      "defeat_verb": "eased",
+      "color": "#6b5344",
+      "accent": "#c8d4a8",
+      "max_hp": 62,
+      "damage": 10,
+      "accuracy": 0.56,
+      "combat_xp": 48,
+      "respawn_sec": 32.0,
+      "description": "A soft hare of the oak wilds \u2014 ease it with a careful step!"
     }
   },
   "spawns": [
@@ -290,6 +303,36 @@
       "kind": "pine_fox",
       "x": 50,
       "z": -10
+    },
+    {
+      "id": "e34",
+      "kind": "oak_hare",
+      "x": 52,
+      "z": 20
+    },
+    {
+      "id": "e35",
+      "kind": "oak_hare",
+      "x": 44,
+      "z": -52
+    },
+    {
+      "id": "e36",
+      "kind": "oak_hare",
+      "x": -52,
+      "z": 28
+    },
+    {
+      "id": "e37",
+      "kind": "oak_hare",
+      "x": -10,
+      "z": -64
+    },
+    {
+      "id": "e38",
+      "kind": "oak_hare",
+      "x": 28,
+      "z": -58
     }
   ],
   "base_combat": {

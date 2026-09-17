@@ -881,7 +881,7 @@ func _update_day_night(delta: float) -> void:
 
 
 func _build_plaza_campfire() -> void:
-	## Wave 31: soft campfire glow near the village plaza (RuneScape-chunky, wholesome).
+	## Wave 31/32: soft campfire glow + ember sparks near the village plaza (RuneScape-chunky, wholesome).
 	var root := Node3D.new()
 	root.name = "PlazaCampfire"
 	# East of fountain keep-clear, near benches — warm hearth feel
@@ -901,26 +901,60 @@ func _build_plaza_campfire() -> void:
 	light.position = Vector3(0, 0.55, 0)
 	root.add_child(light)
 	_plaza_campfire_light = light
-	# Soft ember motes
+	# Soft ember motes (Wave 32: denser loft + bright spark tips)
 	var embers := CPUParticles3D.new()
 	embers.name = "CampfireEmbers"
 	embers.emitting = true
-	embers.amount = 14
-	embers.lifetime = 1.8
-	embers.preprocess = 0.6
+	embers.amount = 22
+	embers.lifetime = 2.1
+	embers.preprocess = 0.8
 	embers.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	embers.emission_sphere_radius = 0.22
+	embers.emission_sphere_radius = 0.26
 	embers.direction = Vector3(0, 1, 0)
-	embers.spread = 28.0
-	embers.initial_velocity_min = 0.25
-	embers.initial_velocity_max = 0.85
-	embers.gravity = Vector3(0, 0.15, 0)
-	embers.scale_amount_min = 0.08
-	embers.scale_amount_max = 0.18
-	embers.color = Color(1.0, 0.7, 0.3, 0.85)
+	embers.spread = 32.0
+	embers.initial_velocity_min = 0.3
+	embers.initial_velocity_max = 1.05
+	embers.gravity = Vector3(0, 0.12, 0)
+	embers.scale_amount_min = 0.07
+	embers.scale_amount_max = 0.2
+	embers.color = Color(1.0, 0.68, 0.28, 0.88)
+	var ember_ramp := Gradient.new()
+	ember_ramp.colors = PackedColorArray([
+		Color(1.0, 0.85, 0.45, 0.95),
+		Color(1.0, 0.55, 0.2, 0.7),
+		Color(0.55, 0.22, 0.08, 0.0),
+	])
+	embers.color_ramp = ember_ramp
 	embers.position = Vector3(0, 0.35, 0)
 	root.add_child(embers)
 	HeadlessGuard.guard_particles(embers)
+	# Bright spark tips that pop above the hearth (Wave 32 polish)
+	var sparks := CPUParticles3D.new()
+	sparks.name = "CampfireSparks"
+	sparks.emitting = true
+	sparks.amount = 10
+	sparks.lifetime = 1.15
+	sparks.preprocess = 0.4
+	sparks.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	sparks.emission_sphere_radius = 0.12
+	sparks.direction = Vector3(0, 1, 0)
+	sparks.spread = 18.0
+	sparks.initial_velocity_min = 0.7
+	sparks.initial_velocity_max = 1.6
+	sparks.gravity = Vector3(0, -0.05, 0)
+	sparks.scale_amount_min = 0.04
+	sparks.scale_amount_max = 0.1
+	sparks.color = Color(1.0, 0.92, 0.55, 0.95)
+	var spark_ramp := Gradient.new()
+	spark_ramp.colors = PackedColorArray([
+		Color(1.0, 0.98, 0.75, 1.0),
+		Color(1.0, 0.7, 0.3, 0.55),
+		Color(0.8, 0.3, 0.1, 0.0),
+	])
+	sparks.color_ramp = spark_ramp
+	sparks.position = Vector3(0, 0.48, 0)
+	root.add_child(sparks)
+	HeadlessGuard.guard_particles(sparks)
 	_place_label3d(root, "Campfire", 28, Vector3(0, 1.6, 0), 5, Color(1, 0.92, 0.7, 0.7))
 	static_world.add_child(root)
 

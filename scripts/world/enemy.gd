@@ -70,6 +70,9 @@ func _ready() -> void:
 		"pine_fox":
 			if label: label.position.y = 1.5
 			hp_bar.position.y = 1.25
+		"oak_hare":
+			if label: label.position.y = 1.45
+			hp_bar.position.y = 1.2
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
@@ -355,6 +358,16 @@ func _idle_anim(delta: float) -> void:
 			if tail_n:
 				tail_n.rotation.y = sin(t * 0.9) * 0.25
 				tail_n.rotation.x = deg_to_rad(-35) + sin(t * 0.7) * 0.08
+		"oak_hare":
+			# Soft hop bob — ears twitch gently
+			creature_bob.position.y = abs(sin(t * 0.85)) * 0.04
+			creature_bob.rotation.y = sin(t * 0.45) * 0.1
+			var el := creature_bob.get_node_or_null("EarL")
+			var er := creature_bob.get_node_or_null("EarR")
+			if el:
+				el.rotation.z = deg_to_rad(-12) + sin(t * 1.1) * 0.08
+			if er:
+				er.rotation.z = deg_to_rad(12) - sin(t * 1.1) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
@@ -449,8 +462,12 @@ func _defeat() -> void:
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	if GameState.combat_level > prev_cl:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
-	GameState.save_game()
-	GameState.state_changed.emit()
+	# Wave 32: tiny Day Cash nibble on soft wilds clears (quest mastery pays more)
+	if GameState.has_method("award_day_cash"):
+		GameState.award_day_cash(1, "wilds clear")
+	else:
+		GameState.save_game()
+		GameState.state_changed.emit()
 	_begin_kill_flash()
 	_dissolve_t = 0.0
 	respawn_timer = float(def.get("respawn_sec", 12))

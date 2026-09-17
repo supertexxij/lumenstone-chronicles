@@ -258,6 +258,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 32 overnight (v1.32.0-overnight)
+- **Day Cash** (must-ship) — kid-facing daily cash in **large obvious HUD print** (`DAY CASH  N`); resets each local calendar day; +5 on quest mastery, +1 on soft wilds clears
+- Guild **lumens stay under the hood** for Parent Dashboard (still listed there); kids see Day Cash only in the primary money spot
+- Soft **campfire ember sparks** polish — denser loft + bright spark tips on the plaza hearth
+- Soft **music ducking on talk** — village tune dips while mentor Talk (F) is open (respects mute)
+- New wilds foe **Oak Hare** — long-ear hop hare with cotton-tail, gentle “eased” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox)
+- Inventory QoL: armor rows show clearer **[Def +N]**; pantry food rows show **+N HP** heal preview (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 31 overnight (v1.31.0-overnight)
 - Soft **plaza campfire glow** — warm hearth ring + ember motes east of the fountain (RuneScape-chunky, wholesome)
 - Clearer **NPC talk prompt** — nearby mentors show **Talk (F)** with a soft gold pulse

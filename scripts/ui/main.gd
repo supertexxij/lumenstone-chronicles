@@ -62,7 +62,12 @@ func _ready() -> void:
 	)
 	inventory_panel.closed.connect(func(): inventory_panel.visible = false; _set_player_ui_block(false))
 	quest_panel.closed.connect(func(): quest_panel.visible = false; _set_player_ui_block(false))
-	npc_panel.closed.connect(func(): npc_panel.visible = false; _set_player_ui_block(false))
+	npc_panel.closed.connect(func():
+		npc_panel.visible = false
+		_set_player_ui_block(false)
+		if AudioBus.has_method("set_talk_duck"):
+			AudioBus.set_talk_duck(false)
+	)
 	npc_panel.quest_chosen.connect(_on_quest_chosen)
 	parent_panel.closed.connect(func(): parent_panel.visible = false; _set_player_ui_block(false))
 	journal_panel.closed.connect(func(): journal_panel.visible = false; _set_player_ui_block(false))
@@ -379,10 +384,14 @@ func _open_npc(npc: Node) -> void:
 	npc_panel.open(npc)
 	npc_panel.visible = true
 	_set_player_ui_block(true)
+	if AudioBus.has_method("set_talk_duck"):
+		AudioBus.set_talk_duck(true)
 
 func _on_quest_chosen(quest_id: String) -> void:
 	AudioBus.play_ui()
 	npc_panel.visible = false
+	if AudioBus.has_method("set_talk_duck"):
+		AudioBus.set_talk_duck(false)
 	quest_panel.open(quest_id)
 	quest_panel.visible = true
 	_set_player_ui_block(true)

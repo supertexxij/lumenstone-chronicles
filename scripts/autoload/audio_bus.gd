@@ -14,6 +14,9 @@ var _day_birds: AudioStreamPlayer
 var _night_hush: AudioStreamPlayer
 var _day_audio_wanted: bool = true
 var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
+var _talk_duck: bool = false  # Wave 32: soft music duck while talking
+var _music_base_db: float = -18.0
+var _ambient_base_db: float = -24.0
 var _streams: Dictionary = {}
 var _foot_cooldown: float = 0.0
 var _ready_ok: bool = false
@@ -112,6 +115,7 @@ func _apply_mute() -> void:
 				_ambient.play()
 			if _music and not _music.playing and _music.stream:
 				_music.play()
+			_apply_talk_duck()
 			_sync_rain_audio()
 			_sync_day_night_audio()
 
@@ -207,6 +211,25 @@ func set_day_night_audio(dayness: float) -> void:
 	_last_day_audio = mode
 	_day_audio_wanted = want_day
 	_sync_day_night_audio()
+
+func set_talk_duck(on: bool) -> void:
+	## Wave 32: soft music/ambient duck while mentor talk panel is open (wholesome, no mute).
+	_talk_duck = on
+	_apply_talk_duck()
+
+
+func _apply_talk_duck() -> void:
+	if not _ready_ok:
+		return
+	if GameState.muted:
+		return
+	var music_db: float = _music_base_db - (10.0 if _talk_duck else 0.0)
+	var amb_db: float = _ambient_base_db - (6.0 if _talk_duck else 0.0)
+	if _music:
+		_music.volume_db = music_db
+	if _ambient:
+		_ambient.volume_db = amb_db
+
 
 func _sync_day_night_audio() -> void:
 	if not _ready_ok:

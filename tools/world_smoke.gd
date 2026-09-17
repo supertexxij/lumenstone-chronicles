@@ -45,6 +45,7 @@ func _finish():
 	var badgers := 0
 	var stags := 0
 	var foxes := 0
+	var hares := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -52,10 +53,13 @@ func _finish():
 			stags += 1
 		if str(foe.get("kind")) == "pine_fox":
 			foxes += 1
+		if str(foe.get("kind")) == "oak_hare":
+			hares += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
 	print("FOXES", foxes)
+	print("HARES", hares)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -180,5 +184,11 @@ func _finish():
 	print("NPC_TALK_PROMPT_SRC", "Talk (F)" in FileAccess.get_file_as_string("res://scripts/world/npc.gd"))
 	print("TARGET_RETICLE_SRC", "TargetReticle" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
 	print("JOURNAL_MASTER_SRC", "Mastered this week" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("DAY_CASH_SRC", "award_day_cash" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "DAY CASH" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("OAK_HARE_SRC", '"oak_hare"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CAMPFIRE_SPARKS_SRC", "CampfireSparks" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("YEAR_CHIP_PLATE_SRC", "YearChipPanel" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("TALK_DUCK_SRC", "set_talk_duck" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("PANTRY_HEAL_SRC", "+%d HP" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)
