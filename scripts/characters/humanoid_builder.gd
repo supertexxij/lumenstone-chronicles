@@ -68,83 +68,95 @@ static func build(root: Node3D) -> Dictionary:
 	bob.name = "BodyBob"
 	root.add_child(bob)
 
-	# --- Core ---
-	var torso := _mi(_box(Vector3(0.52, 0.62, 0.32)), Vector3(0, 1.05, 0), bob, "Torso")
-	var pelvis := _mi(_box(Vector3(0.48, 0.22, 0.30)), Vector3(0, 0.68, 0), bob, "Pelvis")
-	var neck := _mi(_cyl(0.10, 0.12, 0.12), Vector3(0, 1.42, 0), bob, "Neck")
-	var head := _mi(_sphere(0.28), Vector3(0, 1.62, 0), bob, "Head")
-	var hair := _mi(_sphere(0.30, 0.42), Vector3(0, 1.78, -0.02), bob, "Hair")
+	# --- Core (Wave 20: longer limbs, clearer shoulders — still chunky RS, closer to normal) ---
+	var torso := _mi(_box(Vector3(0.46, 0.54, 0.28)), Vector3(0, 1.14, 0), bob, "Torso")
+	var pelvis := _mi(_box(Vector3(0.42, 0.20, 0.26)), Vector3(0, 0.80, 0), bob, "Pelvis")
+	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.50, 0), bob, "Neck")
+	var head := _mi(_sphere(0.24), Vector3(0, 1.70, 0), bob, "Head")
+	var hair := _mi(_sphere(0.26, 0.38), Vector3(0, 1.84, -0.02), bob, "Hair")
+	var l_shoulder := _mi(_box(Vector3(0.16, 0.14, 0.22)), Vector3(-0.28, 1.36, 0), bob, "LShoulder")
+	var r_shoulder := _mi(_box(Vector3(0.16, 0.14, 0.22)), Vector3(0.28, 1.36, 0), bob, "RShoulder")
 
-	# Hat (explorer-style brim + crown) — hidden until equipped
+	# Hat (explorer brim + crown; jewel for crownlets) — hidden until equipped
 	var hat := Node3D.new()
 	hat.name = "Hat"
 	hat.visible = false
-	hat.position = Vector3(0, 1.88, 0)
+	hat.position = Vector3(0, 1.94, 0)
 	bob.add_child(hat)
-	var hat_crown := _mi(_cyl(0.22, 0.24, 0.22), Vector3(0, 0.08, 0), hat, "HatCrown")
-	var hat_brim := _mi(_cyl(0.38, 0.38, 0.04), Vector3(0, -0.02, 0), hat, "HatBrim")
+	var hat_crown := _mi(_cyl(0.20, 0.22, 0.20), Vector3(0, 0.08, 0), hat, "HatCrown")
+	var hat_brim := _mi(_cyl(0.36, 0.36, 0.04), Vector3(0, -0.02, 0), hat, "HatBrim")
+	var hat_jewel := _mi(_sphere(0.06), Vector3(0, 0.22, 0), hat, "HatJewel")
+	hat_jewel.visible = false
 
-	# Cape on back
-	var cape := _mi(_box(Vector3(0.62, 0.85, 0.08)), Vector3(0, 1.05, -0.22), bob, "Cape")
+	# Cape drapes from the shoulders
+	var cape := _mi(_box(Vector3(0.70, 0.95, 0.08)), Vector3(0, 1.02, -0.24), bob, "Cape")
 
 	# Belt around waist
-	var belt := _mi(_box(Vector3(0.54, 0.10, 0.34)), Vector3(0, 0.72, 0), bob, "Belt")
+	var belt := _mi(_box(Vector3(0.48, 0.10, 0.30)), Vector3(0, 0.82, 0), bob, "Belt")
 	belt.visible = false
 
-	# Weapon at right hip (sheathed look)
-	var weapon := Node3D.new()
-	weapon.name = "Weapon"
-	weapon.visible = false
-	weapon.position = Vector3(0.42, 0.85, 0.05)
-	weapon.rotation_degrees = Vector3(0, 0, -18)
-	bob.add_child(weapon)
-	var blade := _mi(_box(Vector3(0.08, 0.72, 0.08)), Vector3(0, 0.15, 0), weapon, "Blade")
-	var hilt := _mi(_box(Vector3(0.18, 0.08, 0.08)), Vector3(0, -0.22, 0), weapon, "Hilt")
-	var pommel := _mi(_sphere(0.06), Vector3(0, -0.32, 0), weapon, "Pommel")
+	# Soft armor overlays (chest + pads) — hidden until a defensive cloak is worn
+	var chest_plate := _mi(_box(Vector3(0.42, 0.34, 0.10)), Vector3(0, 1.16, 0.16), bob, "ChestPlate")
+	chest_plate.visible = false
+	var l_pad := _mi(_box(Vector3(0.22, 0.12, 0.24)), Vector3(-0.30, 1.40, 0.02), bob, "LPad")
+	l_pad.visible = false
+	var r_pad := _mi(_box(Vector3(0.22, 0.12, 0.24)), Vector3(0.30, 1.40, 0.02), bob, "RPad")
+	r_pad.visible = false
 
 	# Accessory (chest charm / belt pouch / lantern) — hidden until equipped
 	var accessory := Node3D.new()
 	accessory.name = "Accessory"
 	accessory.visible = false
-	accessory.position = Vector3(0.0, 1.05, 0.22)
+	accessory.position = Vector3(0.0, 1.12, 0.20)
 	bob.add_child(accessory)
 	var acc_body := _mi(_sphere(0.11), Vector3(0, 0, 0), accessory, "AccBody")
 	var acc_glow := _mi(_sphere(0.06), Vector3(0, 0.08, 0.04), accessory, "AccGlow")
 	var acc_strap := _mi(_box(Vector3(0.08, 0.22, 0.04)), Vector3(0, 0.16, -0.02), accessory, "AccStrap")
 
-	# --- Arms (pivots at shoulders for swing) ---
+	# --- Arms (pivots at shoulders; hands hang near mid-thigh) ---
 	var l_arm := Node3D.new()
 	l_arm.name = "LArm"
-	l_arm.position = Vector3(-0.34, 1.28, 0)
+	l_arm.position = Vector3(-0.32, 1.34, 0)
 	bob.add_child(l_arm)
-	var l_upper := _mi(_capsule(0.09, 0.38), Vector3(-0.06, -0.16, 0), l_arm, "LUpperArm")
-	var l_lower := _mi(_capsule(0.08, 0.34), Vector3(-0.08, -0.48, 0), l_arm, "LLowerArm")
-	var l_hand := _mi(_sphere(0.09), Vector3(-0.08, -0.70, 0), l_arm, "LHand")
+	var l_upper := _mi(_capsule(0.08, 0.42), Vector3(-0.05, -0.20, 0), l_arm, "LUpperArm")
+	var l_lower := _mi(_capsule(0.07, 0.40), Vector3(-0.07, -0.56, 0), l_arm, "LLowerArm")
+	var l_hand := _mi(_sphere(0.08), Vector3(-0.07, -0.80, 0), l_arm, "LHand")
 
 	var r_arm := Node3D.new()
 	r_arm.name = "RArm"
-	r_arm.position = Vector3(0.34, 1.28, 0)
+	r_arm.position = Vector3(0.32, 1.34, 0)
 	bob.add_child(r_arm)
-	var r_upper := _mi(_capsule(0.09, 0.38), Vector3(0.06, -0.16, 0), r_arm, "RUpperArm")
-	var r_lower := _mi(_capsule(0.08, 0.34), Vector3(0.08, -0.48, 0), r_arm, "RLowerArm")
-	var r_hand := _mi(_sphere(0.09), Vector3(0.08, -0.70, 0), r_arm, "RHand")
+	var r_upper := _mi(_capsule(0.08, 0.42), Vector3(0.05, -0.20, 0), r_arm, "RUpperArm")
+	var r_lower := _mi(_capsule(0.07, 0.40), Vector3(0.07, -0.56, 0), r_arm, "RLowerArm")
+	var r_hand := _mi(_sphere(0.08), Vector3(0.07, -0.80, 0), r_arm, "RHand")
 
-	# --- Legs (pivots at hips) ---
+	# Weapon held in the right hand so walk/attack swings it (RuneScape-style)
+	var weapon := Node3D.new()
+	weapon.name = "Weapon"
+	weapon.visible = false
+	weapon.position = Vector3(0.10, -0.82, 0.06)
+	weapon.rotation_degrees = Vector3(8, 0, -12)
+	r_arm.add_child(weapon)
+	var blade := _mi(_box(Vector3(0.07, 0.78, 0.07)), Vector3(0, 0.42, 0), weapon, "Blade")
+	var hilt := _mi(_box(Vector3(0.16, 0.07, 0.07)), Vector3(0, 0.0, 0), weapon, "Hilt")
+	var pommel := _mi(_sphere(0.055), Vector3(0, -0.10, 0), weapon, "Pommel")
+
+	# --- Legs (pivots at hips; feet sit on the ground) ---
 	var l_leg := Node3D.new()
 	l_leg.name = "LLeg"
-	l_leg.position = Vector3(-0.14, 0.58, 0)
+	l_leg.position = Vector3(-0.13, 0.72, 0)
 	bob.add_child(l_leg)
-	var l_thigh := _mi(_capsule(0.11, 0.36), Vector3(0, -0.16, 0), l_leg, "LUpperLeg")
-	var l_shin := _mi(_capsule(0.09, 0.32), Vector3(0, -0.48, 0), l_leg, "LLowerLeg")
-	var l_foot := _mi(_box(Vector3(0.16, 0.10, 0.28)), Vector3(0, -0.68, 0.04), l_leg, "LFoot")
+	var l_thigh := _mi(_capsule(0.10, 0.42), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
+	var l_shin := _mi(_capsule(0.08, 0.40), Vector3(0, -0.54, 0), l_leg, "LLowerLeg")
+	var l_foot := _mi(_box(Vector3(0.15, 0.08, 0.26)), Vector3(0, -0.76, 0.05), l_leg, "LFoot")
 
 	var r_leg := Node3D.new()
 	r_leg.name = "RLeg"
-	r_leg.position = Vector3(0.14, 0.58, 0)
+	r_leg.position = Vector3(0.13, 0.72, 0)
 	bob.add_child(r_leg)
-	var r_thigh := _mi(_capsule(0.11, 0.36), Vector3(0, -0.16, 0), r_leg, "RUpperLeg")
-	var r_shin := _mi(_capsule(0.09, 0.32), Vector3(0, -0.48, 0), r_leg, "RLowerLeg")
-	var r_foot := _mi(_box(Vector3(0.16, 0.10, 0.28)), Vector3(0, -0.68, 0.04), r_leg, "RFoot")
+	var r_thigh := _mi(_capsule(0.10, 0.42), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
+	var r_shin := _mi(_capsule(0.08, 0.40), Vector3(0, -0.54, 0), r_leg, "RLowerLeg")
+	var r_foot := _mi(_box(Vector3(0.15, 0.08, 0.26)), Vector3(0, -0.76, 0.05), r_leg, "RFoot")
 
 	return {
 		"bob": bob,
@@ -153,11 +165,17 @@ static func build(root: Node3D) -> Dictionary:
 		"neck": neck,
 		"head": head,
 		"hair": hair,
+		"l_shoulder": l_shoulder,
+		"r_shoulder": r_shoulder,
 		"hat": hat,
 		"hat_crown": hat_crown,
 		"hat_brim": hat_brim,
+		"hat_jewel": hat_jewel,
 		"cape": cape,
 		"belt": belt,
+		"chest_plate": chest_plate,
+		"l_pad": l_pad,
+		"r_pad": r_pad,
 		"weapon": weapon,
 		"blade": blade,
 		"hilt": hilt,
@@ -207,16 +225,25 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("l_foot"), shoe)
 	set_color(parts.get("r_foot"), shoe)
 	set_color(parts.get("cape"), cape_col)
+	set_color(parts.get("l_shoulder"), outfit)
+	set_color(parts.get("r_shoulder"), outfit)
+	set_color(parts.get("chest_plate"), outfit.darkened(0.12))
+	set_color(parts.get("l_pad"), outfit.darkened(0.18))
+	set_color(parts.get("r_pad"), outfit.darkened(0.18))
 
 
 static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Color("#c68642")) -> void:
 	var outfit := accent
 	var hair := accent.darkened(0.35)
 	apply_human_colors(parts, skin, hair, outfit, accent.darkened(0.2))
-	# NPCs show a small cape stub in accent
+	# NPCs show a small cape stub in accent; no player armor overlays
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
+	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "belt", "accessory"]:
+		var n: Node = parts.get(key)
+		if n:
+			n.visible = false
 
 
 ## Style accessory mesh from item id/name heuristics (lantern, pin, beads, pouch, scroll…).
@@ -234,7 +261,7 @@ static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
 	set_color(glow, col.lightened(0.35), 0.3)
 	set_color(strap, col.darkened(0.25))
 	if "lantern" in iid or "lantern" in name:
-		root.position = Vector3(0.38, 0.85, 0.12)
+		root.position = Vector3(0.36, 0.88, 0.12)
 		if body and body.mesh is SphereMesh:
 			pass
 		# Swap to box-ish lantern look via scale
@@ -244,27 +271,27 @@ static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
 			glow.visible = true
 			glow.scale = Vector3.ONE
 	elif "bead" in iid or "prayer" in name:
-		root.position = Vector3(0, 1.38, 0.18)
+		root.position = Vector3(0, 1.48, 0.16)
 		if body:
 			body.scale = Vector3(1.4, 0.45, 1.4)
 		if glow:
 			glow.visible = false
 	elif "pin" in iid or "star" in name or "badge" in name:
-		root.position = Vector3(0.18, 1.15, 0.18)
+		root.position = Vector3(0.18, 1.22, 0.16)
 		if body:
 			body.scale = Vector3(0.9, 0.35, 0.9)
 		if glow:
 			glow.visible = true
 			glow.scale = Vector3(0.6, 0.6, 0.6)
 	elif "scroll" in iid or "notebook" in name or "bookmark" in name or "map" in name:
-		root.position = Vector3(-0.32, 0.95, 0.1)
+		root.position = Vector3(-0.32, 1.00, 0.1)
 		if body:
 			body.scale = Vector3(0.55, 1.4, 0.35)
 		if glow:
 			glow.visible = false
 	else:
 		# Generic charm / purse at belt
-		root.position = Vector3(0.28, 0.78, 0.14)
+		root.position = Vector3(0.28, 0.84, 0.14)
 		if body:
 			body.scale = Vector3(1.0, 0.9, 1.0)
 		if glow:
@@ -305,43 +332,43 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 	var pommel: MeshInstance3D
 	match mesh_style:
 		"axe":
-			# Haft + axe head
-			blade = _mi(_box(Vector3(0.10, 0.78, 0.10)), Vector3(0, 0.12, 0), weapon, "Blade")
-			hilt = _mi(_box(Vector3(0.42, 0.22, 0.12)), Vector3(0.18, 0.42, 0), weapon, "Hilt")
-			pommel = _mi(_sphere(0.07), Vector3(0, -0.30, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.42, 0.85, 0.05)
-			weapon.rotation_degrees = Vector3(0, 0, -22)
+			# Haft + axe head — held in the right hand
+			blade = _mi(_box(Vector3(0.09, 0.82, 0.09)), Vector3(0, 0.38, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.40, 0.20, 0.12)), Vector3(0.16, 0.72, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.07), Vector3(0, -0.12, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.rotation_degrees = Vector3(10, 0, -16)
 		"staff":
-			blade = _mi(_cyl(0.05, 0.06, 1.35), Vector3(0, 0.35, 0), weapon, "Blade")
-			hilt = _mi(_sphere(0.09), Vector3(0, 1.0, 0), weapon, "Hilt")
-			pommel = _mi(_cyl(0.07, 0.07, 0.08), Vector3(0, -0.28, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.38, 0.55, -0.05)
-			weapon.rotation_degrees = Vector3(8, 0, -8)
+			blade = _mi(_cyl(0.045, 0.055, 1.45), Vector3(0, 0.42, 0), weapon, "Blade")
+			hilt = _mi(_sphere(0.09), Vector3(0, 1.12, 0), weapon, "Hilt")
+			pommel = _mi(_cyl(0.06, 0.06, 0.08), Vector3(0, -0.28, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.08, -0.78, 0.04)
+			weapon.rotation_degrees = Vector3(12, 0, -8)
 		"bow":
-			# Simple recurve silhouette (cosmetic)
-			blade = _mi(_box(Vector3(0.06, 0.95, 0.08)), Vector3(0, 0.2, 0), weapon, "Blade")
-			hilt = _mi(_box(Vector3(0.05, 0.55, 0.05)), Vector3(0.18, 0.2, 0), weapon, "Hilt")
-			pommel = _mi(_box(Vector3(0.04, 0.04, 0.35)), Vector3(0.09, 0.55, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.36, 0.95, -0.08)
-			weapon.rotation_degrees = Vector3(0, 15, -5)
+			# Simple recurve silhouette held beside the arm
+			blade = _mi(_box(Vector3(0.05, 1.05, 0.07)), Vector3(0, 0.22, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.04, 0.55, 0.04)), Vector3(0.16, 0.22, 0), weapon, "Hilt")
+			pommel = _mi(_box(Vector3(0.04, 0.04, 0.32)), Vector3(0.08, 0.62, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.12, -0.55, -0.06)
+			weapon.rotation_degrees = Vector3(5, 18, -4)
 		"dagger":
-			blade = _mi(_box(Vector3(0.07, 0.38, 0.07)), Vector3(0, 0.05, 0), weapon, "Blade")
-			hilt = _mi(_box(Vector3(0.16, 0.06, 0.07)), Vector3(0, -0.14, 0), weapon, "Hilt")
-			pommel = _mi(_sphere(0.05), Vector3(0, -0.22, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.40, 0.88, 0.08)
-			weapon.rotation_degrees = Vector3(0, 0, -25)
+			blade = _mi(_box(Vector3(0.06, 0.40, 0.06)), Vector3(0, 0.18, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.14, 0.06, 0.06)), Vector3(0, -0.04, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.05), Vector3(0, -0.12, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.10, -0.82, 0.08)
+			weapon.rotation_degrees = Vector3(6, 0, -20)
 		"mallet":
-			blade = _mi(_box(Vector3(0.12, 0.55, 0.12)), Vector3(0, 0.1, 0), weapon, "Blade")
-			hilt = _mi(_box(Vector3(0.28, 0.22, 0.22)), Vector3(0, 0.42, 0), weapon, "Hilt")
-			pommel = _mi(_sphere(0.07), Vector3(0, -0.22, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.42, 0.82, 0.06)
-			weapon.rotation_degrees = Vector3(0, 0, -20)
+			blade = _mi(_box(Vector3(0.11, 0.58, 0.11)), Vector3(0, 0.22, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.26, 0.20, 0.20)), Vector3(0, 0.56, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.07), Vector3(0, -0.12, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.rotation_degrees = Vector3(8, 0, -14)
 		_:
-			blade = _mi(_box(Vector3(0.08, 0.72, 0.08)), Vector3(0, 0.15, 0), weapon, "Blade")
-			hilt = _mi(_box(Vector3(0.18, 0.08, 0.08)), Vector3(0, -0.22, 0), weapon, "Hilt")
-			pommel = _mi(_sphere(0.06), Vector3(0, -0.32, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.42, 0.85, 0.05)
-			weapon.rotation_degrees = Vector3(0, 0, -18)
+			blade = _mi(_box(Vector3(0.07, 0.82, 0.07)), Vector3(0, 0.42, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.16, 0.07, 0.07)), Vector3(0, 0.0, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.055), Vector3(0, -0.10, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.rotation_degrees = Vector3(8, 0, -12)
 
 	parts["blade"] = blade
 	parts["hilt"] = hilt
@@ -352,3 +379,89 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 	set_color(blade, col)
 	set_color(hilt, col.darkened(0.25))
 	set_color(pommel, col.lightened(0.15))
+
+
+## Explorer brim vs jeweled crown, colored from the equipped head item.
+static func style_hat(parts: Dictionary, item: Dictionary) -> void:
+	var hat: Node3D = parts.get("hat")
+	if hat == null:
+		return
+	hat.visible = true
+	var iid: String = str(item.get("id", "")).to_lower()
+	var name: String = str(item.get("name", "")).to_lower()
+	var col := Color(item.get("color", "#5c4033"))
+	var crown: MeshInstance3D = parts.get("hat_crown")
+	var brim: MeshInstance3D = parts.get("hat_brim")
+	var jewel: MeshInstance3D = parts.get("hat_jewel")
+	set_color(crown, col)
+	set_color(brim, col.darkened(0.15))
+	set_color(jewel, col.lightened(0.28), 0.35)
+	var is_crown: bool = "crown" in iid or "crown" in name
+	if is_crown:
+		if crown:
+			crown.scale = Vector3(0.88, 1.45, 0.88)
+			crown.position = Vector3(0, 0.14, 0)
+		if brim:
+			brim.scale = Vector3(0.62, 1.0, 0.62)
+			brim.position = Vector3(0, -0.02, 0)
+		if jewel:
+			jewel.visible = true
+			jewel.position = Vector3(0, 0.28, 0)
+	else:
+		if crown:
+			crown.scale = Vector3.ONE
+			crown.position = Vector3(0, 0.08, 0)
+		if brim:
+			brim.scale = Vector3.ONE
+			brim.position = Vector3(0, -0.02, 0)
+		if jewel:
+			jewel.visible = false
+
+
+## Cloak vs tunic: cloaks drape on the back; tunics recolor the torso/sleeves.
+static func style_cloak(parts: Dictionary, item: Dictionary) -> void:
+	var cape: MeshInstance3D = parts.get("cape")
+	var iid: String = str(item.get("id", "")).to_lower()
+	var name: String = str(item.get("name", "")).to_lower()
+	var col := Color(item.get("color", "#c1121f"))
+	var is_tunic: bool = "tunic" in iid or "tunic" in name
+	if cape:
+		if is_tunic:
+			cape.visible = false
+		else:
+			cape.visible = true
+			set_color(cape, col)
+			var defn: int = int(item.get("defense", 0))
+			if "champion" in name or defn >= 2:
+				cape.scale = Vector3(1.08, 1.14, 1.05)
+			else:
+				cape.scale = Vector3.ONE
+	if is_tunic:
+		set_color(parts.get("torso"), col)
+		set_color(parts.get("l_upper"), col)
+		set_color(parts.get("r_upper"), col)
+		set_color(parts.get("l_shoulder"), col)
+		set_color(parts.get("r_shoulder"), col)
+
+
+## Chest plate + shoulder pads when a cloak/hat carries soft defense.
+static func style_armor(parts: Dictionary, item: Dictionary) -> void:
+	var defn: int = int(item.get("defense", 0))
+	var show: bool = defn > 0
+	var col := Color(item.get("color", "#8a8a9a"))
+	var plate: MeshInstance3D = parts.get("chest_plate")
+	var l_pad: MeshInstance3D = parts.get("l_pad")
+	var r_pad: MeshInstance3D = parts.get("r_pad")
+	if plate:
+		plate.visible = show
+		if show:
+			set_color(plate, col.lightened(0.08))
+	if l_pad:
+		l_pad.visible = show
+		if show:
+			set_color(l_pad, col.darkened(0.1))
+	if r_pad:
+		r_pad.visible = show
+		if show:
+			set_color(r_pad, col.darkened(0.1))
+

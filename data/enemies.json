@@ -64,6 +64,19 @@
       "combat_xp": 30,
       "respawn_sec": 26.0,
       "description": "A sturdy badger dusted in soft moss \u2014 settle it gently!"
+    },
+    "cedar_stag": {
+      "kind": "cedar_stag",
+      "name": "Cedar Stag",
+      "defeat_verb": "quieted",
+      "color": "#7a4a2a",
+      "accent": "#d4c4a0",
+      "max_hp": 50,
+      "damage": 8,
+      "accuracy": 0.60,
+      "combat_xp": 36,
+      "respawn_sec": 28.0,
+      "description": "A tall stag of the cedar grove \u2014 quiet it with a careful step!"
     }
   },
   "spawns": [
@@ -210,6 +223,30 @@
       "kind": "moss_badger",
       "x": -18,
       "z": -62
+    },
+    {
+      "id": "e25",
+      "kind": "cedar_stag",
+      "x": 38,
+      "z": -34
+    },
+    {
+      "id": "e26",
+      "kind": "cedar_stag",
+      "x": 44,
+      "z": -40
+    },
+    {
+      "id": "e27",
+      "kind": "cedar_stag",
+      "x": 32,
+      "z": -42
+    },
+    {
+      "id": "e28",
+      "kind": "cedar_stag",
+      "x": 46,
+      "z": -28
     }
   ],
   "base_combat": {
