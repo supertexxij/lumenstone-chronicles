@@ -32,6 +32,8 @@ var food_lbl: Label
 
 var _world: Node = null
 var _map_data: Dictionary = {}
+var _hurt_vignette: Control = null
+var _vignette_edges: Array = []
 
 func _ready() -> void:
 	inv_btn.pressed.connect(func(): AudioBus.play_ui(); inventory_pressed.emit())
@@ -82,6 +84,7 @@ func set_hp(cur: int, mx: int) -> void:
 	hp_bar.max_value = mx
 	hp_bar.value = cur
 	hp_bar.get_node("HpText").text = "%d / %d" % [cur, mx]
+	_update_hurt_vignette(cur, mx)
 
 func _process(_delta: float) -> void:
 	if not visible or _world == null:
@@ -182,3 +185,52 @@ func _refresh_food_lbl() -> void:
 		food_lbl.text = "Pantry %s · CD %.1fs · V:%s" % [stack_txt, cd, next_txt]
 	else:
 		food_lbl.text = "Pantry %s · V:%s" % [stack_txt, next_txt]
+
+
+func _ensure_hurt_vignette() -> void:
+	## Soft screen-edge rose wash when HP is low — kid-friendly, no gore.
+	if _hurt_vignette != null and is_instance_valid(_hurt_vignette):
+		return
+	_hurt_vignette = Control.new()
+	_hurt_vignette.name = "HurtVignette"
+	_hurt_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hurt_vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_hurt_vignette.z_index = -1
+	add_child(_hurt_vignette)
+	move_child(_hurt_vignette, 0)
+	_vignette_edges.clear()
+	var specs := [
+		{"name": "Top", "preset": Control.PRESET_TOP_WIDE, "min": Vector2(0, 56)},
+		{"name": "Bottom", "preset": Control.PRESET_BOTTOM_WIDE, "min": Vector2(0, 56)},
+		{"name": "Left", "preset": Control.PRESET_LEFT_WIDE, "min": Vector2(48, 0)},
+		{"name": "Right", "preset": Control.PRESET_RIGHT_WIDE, "min": Vector2(48, 0)},
+	]
+	for s in specs:
+		var r := ColorRect.new()
+		r.name = str(s["name"])
+		r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		r.color = Color(0.72, 0.28, 0.32, 0.0)
+		r.set_anchors_and_offsets_preset(int(s["preset"]))
+		r.custom_minimum_size = s["min"]
+		_hurt_vignette.add_child(r)
+		_vignette_edges.append(r)
+
+
+func _update_hurt_vignette(cur: int, mx: int) -> void:
+	_ensure_hurt_vignette()
+	if _hurt_vignette == null:
+		return
+	var ratio: float = 1.0
+	if mx > 0:
+		ratio = float(cur) / float(mx)
+	# Fade in below ~45% HP; stronger under ~25%. Soft rose, never opaque.
+	var alpha: float = 0.0
+	if ratio < 0.45:
+		alpha = clampf((0.45 - ratio) / 0.45, 0.0, 1.0) * 0.38
+		if ratio < 0.25:
+			alpha = clampf(alpha + (0.25 - ratio) * 0.55, 0.0, 0.52)
+	for r in _vignette_edges:
+		if r == null or not is_instance_valid(r):
+			continue
+		r.color = Color(0.78, 0.32, 0.36, alpha)
+	_hurt_vignette.visible = alpha > 0.01

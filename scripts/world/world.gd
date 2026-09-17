@@ -32,6 +32,7 @@ var _fog_boost: float = 0.0
 var _weather_label_cache: String = "Clear"
 var _landmark_here: String = ""  # current approach zone id (hysteresis)
 var _landmark_toast_cd: float = 0.0
+var _ambient_critters: Array = []  # {node, base: Vector3, phase, kind}
 
 signal npc_talk(npc: Node)
 signal weather_changed(mode: int, label: String)
@@ -58,6 +59,7 @@ func _ready() -> void:
 	_build_prayer_garden()
 	_build_lookout_rock()
 	_build_mill_bridge()
+	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
 	_setup_outdoor_navigation()
@@ -562,6 +564,7 @@ func _process(delta: float) -> void:
 	_update_weather(delta)
 	_update_quest_desk_highlights()
 	_update_landmark_approach()
+	_update_ambient_critters(delta)
 
 
 func _landmark_zones() -> Array:
@@ -1589,6 +1592,201 @@ func _build_mill_bridge() -> void:
 	_place_label3d(sign, "Mill Bridge", 40, Vector3(0, 2.3, 0))
 	_place_label3d(root, "Creek mill & bridge", 28, Vector3(-36.0, 3.95, 30.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Mill Bridge", 52, Vector3(-36.0, 3.4, 30.0))
+
+func _build_ambient_life() -> void:
+	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
+	var root := Node3D.new()
+	root.name = "AmbientLife"
+	static_world.add_child(root)
+	_ambient_critters.clear()
+	if HeadlessGuard.is_headless():
+		return
+	var sites := [
+		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly"},
+		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow"},
+		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly"},
+		{"pos": Vector3(40.0, 0, 34.0), "birds": true, "bugs": false, "critter": "sparrow"},
+		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly"},
+	]
+	for i in sites.size():
+		var s: Dictionary = sites[i]
+		var p: Vector3 = s["pos"]
+		if s.get("birds", false):
+			_add_bird_particles(root, p + Vector3(0, 4.5, 0), 200 + i)
+		if s.get("bugs", false):
+			_add_bug_particles(root, p + Vector3(0.8, 1.2, -0.5), 300 + i)
+		_add_idle_critter(root, p + Vector3(-1.2, 1.1, 0.9), str(s.get("critter", "butterfly")), 0.4 * float(i))
+
+
+func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int) -> void:
+	var p := CPUParticles3D.new()
+	p.name = "Birds_%d" % seed_n
+	p.position = pos
+	p.amount = 6
+	p.lifetime = 5.5
+	p.preprocess = 2.0
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	p.emission_box_extents = Vector3(5.5, 1.2, 5.5)
+	p.direction = Vector3(1, 0.05, 0.35)
+	p.spread = 28.0
+	p.initial_velocity_min = 1.1
+	p.initial_velocity_max = 2.2
+	p.gravity = Vector3(0, 0.05, 0)
+	p.angular_velocity_min = -20.0
+	p.angular_velocity_max = 20.0
+	p.scale_amount_min = 0.85
+	p.scale_amount_max = 1.2
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.22, 0.05, 0.1)
+	p.mesh = mesh
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.albedo_color = Color(0.55, 0.48, 0.42, 0.85)
+	p.material_override = mat
+	parent.add_child(p)
+	HeadlessGuard.guard_particles(p)
+
+
+func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int) -> void:
+	var p := CPUParticles3D.new()
+	p.name = "Bugs_%d" % seed_n
+	p.position = pos
+	p.amount = 10
+	p.lifetime = 3.2
+	p.preprocess = 1.5
+	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 2.4
+	p.direction = Vector3(0, 1, 0)
+	p.spread = 180.0
+	p.initial_velocity_min = 0.15
+	p.initial_velocity_max = 0.55
+	p.gravity = Vector3(0, 0.02, 0)
+	p.scale_amount_min = 0.6
+	p.scale_amount_max = 1.1
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.04
+	mesh.height = 0.08
+	p.mesh = mesh
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	# Soft firefly / bug sparkle — warm gold-green
+	mat.albedo_color = Color(0.85, 0.92, 0.45, 0.7)
+	p.material_override = mat
+	parent.add_child(p)
+	HeadlessGuard.guard_particles(p)
+
+
+func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) -> void:
+	var bob := Node3D.new()
+	bob.name = "Critter_%s" % kind
+	bob.position = pos
+	parent.add_child(bob)
+	var body := MeshInstance3D.new()
+	body.name = "Body"
+	match kind:
+		"sparrow":
+			var sm := SphereMesh.new()
+			sm.radius = 0.09
+			sm.height = 0.14
+			body.mesh = sm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.45, 0.38, 0.32)
+			body.material_override = mat
+			body.position = Vector3(0, 0, 0)
+			# Tiny wing stubs
+			var wing := MeshInstance3D.new()
+			wing.mesh = _box(Vector3(0.16, 0.03, 0.06))
+			var wmat := StandardMaterial3D.new()
+			wmat.albedo_color = Color(0.5, 0.42, 0.35)
+			wing.material_override = wmat
+			wing.position = Vector3(0, 0.02, 0)
+			bob.add_child(wing)
+			HeadlessGuard.guard_mesh(wing)
+		"dragonfly":
+			var sm := SphereMesh.new()
+			sm.radius = 0.05
+			sm.height = 0.14
+			body.mesh = sm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.35, 0.65, 0.55)
+			body.material_override = mat
+			var wing := MeshInstance3D.new()
+			wing.mesh = _box(Vector3(0.28, 0.015, 0.08))
+			var wmat := StandardMaterial3D.new()
+			wmat.albedo_color = Color(0.7, 0.9, 0.85, 0.7)
+			wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			wing.material_override = wmat
+			wing.position = Vector3(0, 0.02, 0)
+			bob.add_child(wing)
+			HeadlessGuard.guard_mesh(wing)
+		_:
+			# Butterfly — two soft wing plates
+			var sm := SphereMesh.new()
+			sm.radius = 0.045
+			sm.height = 0.08
+			body.mesh = sm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.85, 0.55, 0.35)
+			body.material_override = mat
+			for side in [-1.0, 1.0]:
+				var wing := MeshInstance3D.new()
+				wing.mesh = _box(Vector3(0.14, 0.02, 0.1))
+				var wmat := StandardMaterial3D.new()
+				wmat.albedo_color = Color(0.9, 0.55, 0.75) if side > 0 else Color(0.95, 0.75, 0.4)
+				wing.material_override = wmat
+				wing.position = Vector3(side * 0.08, 0.02, 0)
+				wing.rotation_degrees = Vector3(0, 0, side * -25.0)
+				bob.add_child(wing)
+				HeadlessGuard.guard_mesh(wing)
+	bob.add_child(body)
+	HeadlessGuard.guard_mesh(body)
+	_ambient_critters.append({
+		"node": bob,
+		"base": pos,
+		"phase": phase0,
+		"kind": kind,
+	})
+
+
+func _update_ambient_critters(delta: float) -> void:
+	if _ambient_critters.is_empty():
+		return
+	for c in _ambient_critters:
+		var n: Node3D = c.get("node")
+		if n == null or not is_instance_valid(n):
+			continue
+		var phase: float = float(c.get("phase", 0.0)) + delta
+		c["phase"] = phase
+		var base: Vector3 = c.get("base", n.position)
+		var kind: String = str(c.get("kind", "butterfly"))
+		match kind:
+			"sparrow":
+				n.position = base + Vector3(
+					sin(phase * 0.7) * 0.35,
+					0.25 + abs(sin(phase * 1.6)) * 0.35,
+					cos(phase * 0.55) * 0.35
+				)
+				n.rotation.y = phase * 0.4
+			"dragonfly":
+				n.position = base + Vector3(
+					sin(phase * 1.1) * 0.7,
+					0.15 + sin(phase * 2.2) * 0.2,
+					cos(phase * 0.9) * 0.5
+				)
+				n.rotation.y = phase * 0.9
+			_:
+				n.position = base + Vector3(
+					sin(phase * 0.85) * 0.55,
+					0.1 + sin(phase * 2.8) * 0.18,
+					cos(phase * 0.7) * 0.45
+				)
+				n.rotation.y = phase * 0.6
+				# Soft wing flutter
+				for child in n.get_children():
+					if child is MeshInstance3D and child.name != "Body":
+						child.rotation.z = sin(phase * 10.0) * 0.35
+
 
 func _setup_outdoor_navigation() -> void:
 	## Lightweight outdoor NavigationRegion3D bake (static colliders + ground).

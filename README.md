@@ -239,6 +239,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
 
+### Wave 16 overnight (v1.16.0-overnight)
+- Inventory **armor / defense UX**: Def +N on gear rows, Head/Cape labeled as armor slots, soft-armor breakdown (level + gear = total)
+- **Ambient life** at landmarks — bird flocks, soft bug sparkles, idle butterfly/sparrow/dragonfly critters (wholesome, headless-safe)
+- Combat feel: tiny **hit pause** on player hurt + soft **screen-edge rose vignette** when HP is low (kid-friendly)
+- Bug fixes: unequipping a cape restores **Travel Cape**; Equip no longer treats food as wearable gear
+- Re-export Linux + Windows
+
 ### Wave 15 overnight (v1.15.0-overnight)
 - Light **player defense** (combat level + cape/head gear) and **enemy hit variance** (±1, occasional firmer poke) — wholesome RuneScape-feel numbers
 - Denser **Lantern Glade**, **Pine Ridge**, and **Prayer Garden** spur props (path trim, lanterns, foam/candles, yard props) toward Mill/Lookout quality

@@ -22,9 +22,12 @@ var _save_panel: Control
 var _pending_clear_slot: int = -1
 var _pending_overwrite_slot: int = -1
 var _reset_confirm_armed: bool = false
+var _hit_pausing: bool = false
 
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
+	if GameState.has_signal("hurt") and not GameState.hurt.is_connected(_on_player_hurt):
+		GameState.hurt.connect(_on_player_hurt)
 	GameState.ui_open_requested.connect(_on_ui_open)
 	title_screen.visible = true
 	customize_screen.visible = false
@@ -342,6 +345,26 @@ func _on_ui_open(panel: String) -> void:
 			if npc.npc_id == id:
 				_open_npc(npc)
 				return
+
+func _on_player_hurt(amount: int) -> void:
+	## Tiny hit pause for combat feel — wholesome, very short.
+	if amount <= 0:
+		return
+	_play_hit_pause()
+
+
+func _play_hit_pause() -> void:
+	if _hit_pausing:
+		return
+	if HeadlessGuard.is_headless():
+		return
+	_hit_pausing = true
+	var prev: float = Engine.time_scale
+	Engine.time_scale = 0.14
+	await get_tree().create_timer(0.05, true, false, true).timeout
+	Engine.time_scale = prev if prev > 0.01 else 1.0
+	_hit_pausing = false
+
 
 func _on_toast(msg: String) -> void:
 	toast_label.text = msg

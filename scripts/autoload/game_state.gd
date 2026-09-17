@@ -8,6 +8,7 @@ signal quest_started(quest_id: String)
 signal ui_open_requested(panel: String)
 signal combat_target_changed(enemy: Node)
 signal soft_defeated
+signal hurt(amount: int)
 signal soft_combat_cleared
 signal heal_tick(amount: int)
 
@@ -434,14 +435,20 @@ func equip_item(id: String) -> void:
 		toast.emit("Need Combat Lv %d to equip %s." % [req, item.get("name", id)])
 		return
 	var slot: String = item.get("slot", "")
-	if slot == "":
+	if slot == "" or slot == "consumable":
+		if slot == "consumable":
+			toast.emit("Food is used with Use / V — it is not worn as gear.")
 		return
 	equipped[slot] = id
 	state_changed.emit()
 	save_game()
 
 func unequip_slot(slot: String) -> void:
-	equipped[slot] = null
+	## Cape always falls back to Travel Cape so the armor slot stays clear.
+	if slot == "cape":
+		equipped["cape"] = "default_cape"
+	else:
+		equipped[slot] = null
 	state_changed.emit()
 	save_game()
 
@@ -455,14 +462,28 @@ func get_weapon_stats() -> Dictionary:
 
 func get_defense() -> int:
 	## Light wholesome defense: a little from combat level + cape/head gear with defense.
-	var d: int = mini(2, int(maxi(0, combat_level - 1) / 3))
+	return int(get_defense_breakdown().get("total", 0))
+
+func get_defense_breakdown() -> Dictionary:
+	## Clear armor readout for inventory: level soft armor + gear by slot.
+	var level_def: int = mini(2, int(maxi(0, combat_level - 1) / 3))
+	var by_slot: Dictionary = {"head": 0, "cape": 0, "accessory": 0, "belt": 0}
+	var gear: int = 0
 	for slot in ["cape", "head", "accessory", "belt"]:
 		var iid = equipped.get(slot)
 		if iid == null:
 			continue
 		var it := ItemDB.get_item(str(iid))
-		d += int(it.get("defense", 0))
-	return clampi(d, 0, 4)
+		var d: int = int(it.get("defense", 0))
+		by_slot[slot] = d
+		gear += d
+	var total: int = clampi(level_def + gear, 0, 4)
+	return {
+		"level": level_def,
+		"gear": gear,
+		"total": total,
+		"by_slot": by_slot,
+	}
 
 func mark_aggro_tutorial() -> void:
 	if seen_aggro_tutorial:
@@ -517,8 +538,11 @@ func set_combat_target(enemy: Node) -> void:
 	combat_target_changed.emit(enemy)
 
 func take_damage(amount: int) -> void:
-	hp = maxi(0, hp - amount)
+	var dealt: int = maxi(0, amount)
+	hp = maxi(0, hp - dealt)
 	hp_changed.emit(hp, max_hp)
+	if dealt > 0:
+		hurt.emit(dealt)
 	if hp <= 0:
 		_soft_defeat()
 
