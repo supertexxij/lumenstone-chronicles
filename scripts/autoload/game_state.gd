@@ -46,6 +46,8 @@ var combat_level: int = 1
 var muted: bool = false
 var seen_aggro_tutorial: bool = false
 var seen_combat_tutorial: bool = false
+## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
+var greeted_landmarks: Array = []
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
 var created_at: int = 0
@@ -111,6 +113,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	unlocked_week = 1
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
+	greeted_landmarks = []
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -288,6 +291,7 @@ func save_game() -> void:
 		"muted": muted,
 		"seen_aggro_tutorial": seen_aggro_tutorial,
 		"seen_combat_tutorial": seen_combat_tutorial,
+		"greeted_landmarks": greeted_landmarks,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
 		"created_at": created_at,
@@ -339,6 +343,13 @@ func load_game(slot: int = -1) -> bool:
 	muted = bool(data.get("muted", false))
 	seen_aggro_tutorial = bool(data.get("seen_aggro_tutorial", false))
 	seen_combat_tutorial = bool(data.get("seen_combat_tutorial", false))
+	var gl = data.get("greeted_landmarks", [])
+	greeted_landmarks = []
+	if typeof(gl) == TYPE_ARRAY:
+		for g in gl:
+			var sid := str(g)
+			if sid != "" and sid not in greeted_landmarks:
+				greeted_landmarks.append(sid)
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
 	created_at = int(data.get("created_at", 0))
@@ -447,6 +458,23 @@ func mark_combat_tutorial(silent: bool = false) -> bool:
 		toast.emit("First fight: auto-attacks tick softly. Click empty ground or walk away to leave.")
 	save_game()
 	return true
+
+func has_landmark_greeted(landmark_id: String) -> bool:
+	return landmark_id != "" and landmark_id in greeted_landmarks
+
+func mark_landmark_greeted(landmark_id: String) -> void:
+	## Remember this landmark was greeted for the current visit (saved across sessions).
+	if landmark_id == "" or landmark_id in greeted_landmarks:
+		return
+	greeted_landmarks.append(landmark_id)
+	save_game()
+
+func clear_landmark_greeted(landmark_id: String) -> void:
+	## Left the zone — next approach may greet again.
+	if landmark_id == "" or landmark_id not in greeted_landmarks:
+		return
+	greeted_landmarks.erase(landmark_id)
+	save_game()
 
 func set_combat_target(enemy: Node) -> void:
 	combat_target = enemy

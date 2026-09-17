@@ -583,7 +583,9 @@ func _update_landmark_approach() -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	if _inside_hall != "":
-		_landmark_here = ""
+		if _landmark_here != "":
+			GameState.clear_landmark_greeted(_landmark_here)
+			_landmark_here = ""
 		return
 	var ppos: Vector3 = player.global_position
 	var best_id := ""
@@ -600,13 +602,39 @@ func _update_landmark_approach() -> void:
 			best_id = str(z["id"])
 			best_toast = str(z["toast"])
 	if best_id == "":
-		_landmark_here = ""
+		if _landmark_here != "":
+			GameState.clear_landmark_greeted(_landmark_here)
+			_landmark_here = ""
 		return
 	if best_id != _landmark_here:
+		if _landmark_here != "" and _landmark_here != best_id:
+			GameState.clear_landmark_greeted(_landmark_here)
 		_landmark_here = best_id
-		if _landmark_toast_cd <= 0.0 and best_toast != "":
-			GameState.toast.emit(best_toast)
-			_landmark_toast_cd = 2.5
+		# Once-per-visit: greet if not already remembered (survives save/reload in-zone).
+		if not GameState.has_landmark_greeted(best_id):
+			if _landmark_toast_cd <= 0.0 and best_toast != "":
+				GameState.toast.emit(best_toast)
+				_landmark_toast_cd = 2.5
+			GameState.mark_landmark_greeted(best_id)
+
+func note_soft_travel_arrival(pos: Vector3) -> void:
+	## Soft Travel already toasts the destination — sync zone memory without a second approach toast.
+	var best_id := ""
+	var best_d := 9999.0
+	for z in _landmark_zones():
+		var c: Vector3 = z["pos"]
+		var d: float = Vector2(pos.x - c.x, pos.z - c.z).length()
+		if d <= float(z["enter"]) and d < best_d:
+			best_d = d
+			best_id = str(z["id"])
+	if _landmark_here != "" and _landmark_here != best_id:
+		GameState.clear_landmark_greeted(_landmark_here)
+	_landmark_here = best_id
+	if best_id != "":
+		GameState.mark_landmark_greeted(best_id)
+	else:
+		# Left all landmark zones (e.g. fountain / hall doors).
+		pass
 
 func _setup_day_night() -> void:
 	_sun = get_node_or_null("Sun") as DirectionalLight3D
@@ -1274,16 +1302,21 @@ func _build_prayer_garden() -> void:
 
 
 func _build_lookout_rock() -> void:
-	## Southeast landmark — soft travel (L). Rocky overlook with steps, scope, and flag.
+	## Southeast landmark — soft travel (L). Rocky overlook with denser path + spur props.
 	var root := Node3D.new()
 	root.name = "LookoutRock"
 	static_world.add_child(root)
-	# Path southeast from plaza toward lookout
-	for i in 8:
-		var t := float(i) / 7.0
-		var x := 10.0 + t * 28.0
-		var z := 14.0 + t * 20.0
-		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "LookoutPath")
+	# Path southeast from plaza toward lookout (tighter ribbon + edge trim)
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 10.0 + tt * 28.0
+		var z := 14.0 + tt * 20.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "LookoutPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 12.0 + tt * 24.0
+		var z := 15.5 + tt * 17.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "LookoutTrim")
 	# Rocky outcrop + stepped stones
 	_mi(_cyl(4.2, 4.5, 0.35), Vector3(40, 0.18, 34), root, _mats["stone"], "LookoutBase")
 	_mi(_box(Vector3(3.2, 1.6, 2.4)), Vector3(40, 1.0, 34), root, _mats["stone_dark"], "LookoutMass")
@@ -1299,21 +1332,42 @@ func _build_lookout_rock() -> void:
 	# Small steward flag
 	_mi(_cyl(0.05, 0.06, 2.2), Vector3(41.6, 2.4, 35.2), root, _mats["wood"], "FlagPole")
 	_mi(_box(Vector3(0.7, 0.4, 0.04)), Vector3(41.95, 3.2, 35.2), root, _mat(Color("#c1121f")), "Flag")
-	# Campfire ring (decorative, unlit ash)
+	# Campfire ring (decorative, unlit ash) + crate stash
 	_mi(_cyl(0.7, 0.75, 0.12), Vector3(37.2, 0.08, 32.8), root, _mats["rock"], "FireRing")
 	_mi(_box(Vector3(0.35, 0.12, 0.12)), Vector3(37.2, 0.18, 32.8), root, _mats["wood"], "AshLog")
+	_add_crate(Vector3(42.6, 0, 33.2))
+	_add_barrel(Vector3(42.8, 0, 34.4), 0.4)
 	_add_bench(Vector3(37.5, 0, 36.2), -0.6)
 	_add_bench(Vector3(42.0, 0, 32.5), 0.9)
+	_add_bench(Vector3(38.4, 0, 31.6), 0.2)
 	_add_lantern_post(Vector3(37.0, 0, 32.0))
 	_add_lantern_post(Vector3(42.5, 0, 36.5))
+	_add_lantern_post(Vector3(22.0, 0, 22.5))
+	_add_lantern_post(Vector3(31.0, 0, 28.5))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 211
-	for i in 6:
-		var ang := i * TAU / 6.0
-		_add_flowers(Vector3(40.0 + cos(ang) * 5.0, 0, 34.0 + sin(ang) * 5.0), rng)
-	for i in 4:
-		var ang := float(i) * TAU / 4.0 + 0.4
-		_mi(_sphere(0.35 + float(i % 2) * 0.1), Vector3(40.0 + cos(ang) * 5.8, 0.25, 34.0 + sin(ang) * 5.8), root, _mats["rock"], "Boulder")
+	# Framing props along the spur (outside corridor)
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 12.0 + tt * 24.0
+		var cz := 15.5 + tt * 17.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		# Perpendicular offset along SE diagonal (dir ~ (28,20))
+		var ox := side * rng.randf_range(4.8, 8.5) * 0.71
+		var oz := side * rng.randf_range(4.8, 8.5) * -0.55
+		var p := Vector3(cx + ox, 0, cz + oz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 1 if i > 5 else 0)
+	for i in 8:
+		var ang := i * TAU / 8.0
+		_add_flowers(Vector3(40.0 + cos(ang) * 5.2, 0, 34.0 + sin(ang) * 5.2), rng)
+	for i in 5:
+		var ang := float(i) * TAU / 5.0 + 0.35
+		_mi(_sphere(0.35 + float(i % 2) * 0.1), Vector3(40.0 + cos(ang) * 6.0, 0.25, 34.0 + sin(ang) * 6.0), root, _mats["rock"], "Boulder")
 	var sign := Node3D.new()
 	sign.position = Vector3(36.5, 0, 34.0)
 	root.add_child(sign)
@@ -1363,22 +1417,28 @@ func get_minimap_markers() -> Dictionary:
 	}
 
 func _build_mill_bridge() -> void:
-	## Southwest landmark — soft travel (K). Mill, sack piles, grindstone, creek foam.
+	## Southwest landmark — soft travel (K). Denser spur path, mill yard props, creek foam.
 	var root := Node3D.new()
 	root.name = "MillBridge"
 	static_world.add_child(root)
-	# Dirt spur southwest from plaza
-	for i in 8:
-		var t := float(i) / 7.0
-		var x := -8.0 + t * (-28.0)
-		var z := 14.0 + t * 16.0
-		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "MillPath")
+	# Dirt spur southwest from plaza (overlap ribbon + trim)
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -8.0 + tt * (-28.0)
+		var z := 14.0 + tt * 16.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "MillPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -10.0 + tt * (-22.0)
+		var z := 15.0 + tt * 13.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "MillTrim")
 	# Creek under the bridge + foam highlights
 	_mi(_cyl(3.4, 3.4, 0.08), Vector3(-36.0, 0.015, 30.0), root, _mats["water"], "MillCreek")
 	_mi(_cyl(1.5, 1.5, 0.05), Vector3(-39.0, 0.015, 32.5), root, _mats["water"], "MillCreekBend")
 	_mi(_cyl(0.55, 0.6, 0.04), Vector3(-37.2, 0.04, 29.4), root, _mat(Color("#a8d4ea"), 0.15), "Foam1")
 	_mi(_cyl(0.4, 0.45, 0.03), Vector3(-35.0, 0.04, 30.6), root, _mat(Color("#b8dff0"), 0.15), "Foam2")
 	_mi(_cyl(0.35, 0.4, 0.03), Vector3(-38.4, 0.04, 31.2), root, _mat(Color("#a8d4ea"), 0.15), "Foam3")
+	_mi(_cyl(0.3, 0.35, 0.03), Vector3(-36.6, 0.04, 31.4), root, _mat(Color("#b8dff0"), 0.12), "Foam4")
 	# Bridge planks + center runner
 	_mi(_box(Vector3(5.2, 0.12, 1.8)), Vector3(-36.0, 0.35, 30.0), root, _mats["wood"], "BridgeDeck")
 	_mi(_box(Vector3(5.0, 0.04, 0.35)), Vector3(-36.0, 0.43, 30.0), root, _mats["wood_light"], "BridgeRunner")
@@ -1400,23 +1460,46 @@ func _build_mill_bridge() -> void:
 		var by := 1.3 + sin(ang) * 1.05
 		_mi(_box(Vector3(0.12, 0.7, 0.08)), Vector3(bx, by, 28.6), root, _mats["wood"], "Blade")
 	_mi(_cyl(0.12, 0.14, 1.6), Vector3(-38.2, 1.3, 27.8), root, _mats["iron"], "Axle")
-	# Grindstone + grain sacks + fence stub
+	# Grindstone + grain sacks + fence stub + yard props
 	_mi(_cyl(0.55, 0.55, 0.18), Vector3(-42.2, 0.55, 29.2), root, _mats["stone"], "Grindstone")
 	_mi(_cyl(0.08, 0.1, 0.7), Vector3(-42.2, 0.25, 29.2), root, _mats["wood"], "GrindStand")
 	_mi(_sphere(0.38, 0.55), Vector3(-41.5, 0.35, 25.6), root, _mats["barrel"], "Sack1")
 	_mi(_sphere(0.32, 0.48), Vector3(-42.2, 0.3, 26.1), root, _mats["barrel"], "Sack2")
+	_mi(_sphere(0.28, 0.42), Vector3(-40.8, 0.28, 25.2), root, _mats["barrel"], "Sack3")
+	_add_crate(Vector3(-42.8, 0, 27.4))
+	_add_barrel(Vector3(-39.2, 0, 25.0), -0.5)
 	_mi(_box(Vector3(0.08, 0.9, 0.08)), Vector3(-34.8, 0.45, 27.2), root, _mats["fence"], "FenceA")
 	_mi(_box(Vector3(0.08, 0.9, 0.08)), Vector3(-33.6, 0.45, 27.2), root, _mats["fence"], "FenceB")
 	_mi(_box(Vector3(1.4, 0.08, 0.08)), Vector3(-34.2, 0.75, 27.2), root, _mats["fence"], "FenceRail")
+	_mi(_box(Vector3(0.08, 0.9, 0.08)), Vector3(-32.4, 0.45, 27.2), root, _mats["fence"], "FenceC")
+	_mi(_box(Vector3(1.3, 0.08, 0.08)), Vector3(-33.0, 0.55, 27.2), root, _mats["fence"], "FenceRail2")
 	_add_lantern_post(Vector3(-33.5, 0, 28.0))
 	_add_lantern_post(Vector3(-33.5, 0, 32.0))
 	_add_lantern_post(Vector3(-42.0, 0, 25.0))
+	_add_lantern_post(Vector3(-18.0, 0, 20.0))
+	_add_lantern_post(Vector3(-26.0, 0, 24.5))
 	_add_bench(Vector3(-34.0, 0, 33.5), 0.3)
+	_add_bench(Vector3(-38.5, 0, 33.8), -0.4)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 307
-	for i in 5:
-		var ang := i * TAU / 5.0
-		_add_flowers(Vector3(-36.0 + cos(ang) * 5.5, 0, 30.0 + sin(ang) * 5.5), rng)
+	# Framing props along the spur (outside corridor)
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -10.0 + tt * (-22.0)
+		var cz := 15.0 + tt * 13.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var ox := side * rng.randf_range(4.8, 8.5) * 0.55
+		var oz := side * rng.randf_range(4.8, 8.5) * 0.75
+		var p := Vector3(cx + ox, 0, cz + oz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0 if i < 5 else 1)
+	for i in 7:
+		var ang := i * TAU / 7.0
+		_add_flowers(Vector3(-36.0 + cos(ang) * 5.8, 0, 30.0 + sin(ang) * 5.8), rng)
 	var sign := Node3D.new()
 	sign.position = Vector3(-32.5, 0, 30.0)
 	root.add_child(sign)

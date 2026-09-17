@@ -42,12 +42,12 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 	elif amount <= 0:
 		dmat.albedo_color = Color(0.55, 0.55, 0.6, 0.75)
 	elif kind == "strong_foe":
-		# Soft gold/white — crisp strong hit on foe (wholesome, not gore)
-		dmat.albedo_color = Color(1.0, 0.95, 0.55, 0.92)
+		# Soft gold/white — crisp bright hit on foe (wholesome, not gore)
+		dmat.albedo_color = Color(1.0, 0.96, 0.48, 0.95)
 		label_text = str(amount)
-		font_sz = 64
-		text_col = Color(0.12, 0.08, 0.02)
-		outline_col = Color(1, 1, 0.92)
+		font_sz = 68
+		text_col = Color(0.1, 0.06, 0.02)
+		outline_col = Color(1, 1, 0.95)
 	elif kind == "strong_hit":
 		# Amber flash when player takes a heavy hit
 		dmat.albedo_color = Color(1.0, 0.45, 0.2, 0.9)

@@ -126,9 +126,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_H:
 				_goto_landmark(Vector3(0, 0, 12), "Village Fountain")
 			KEY_N:
-				_goto_landmark(Vector3(0.5, 0, -30), "Lantern Glade path")
+				_goto_landmark(Vector3(0.5, 0, -46), "Lantern Glade")
 			KEY_B:
-				_goto_landmark(Vector3(-12, 0, -45.5), "Pine Ridge ford")
+				_goto_landmark(Vector3(-20, 0, -50), "Pine Ridge")
 			KEY_G:
 				_goto_landmark(Vector3(30, 0, 18), "Prayer Garden")
 			KEY_L:
@@ -149,8 +149,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _travel_destinations() -> Array:
 	return [
 		{"label": "Village Fountain", "pos": Vector3(0, 0, 12), "key": "H"},
-		{"label": "Lantern Glade path", "pos": Vector3(0.5, 0, -30), "key": "N"},
-		{"label": "Pine Ridge ford", "pos": Vector3(-12, 0, -45.5), "key": "B"},
+		{"label": "Lantern Glade", "pos": Vector3(0.5, 0, -46), "key": "N"},
+		{"label": "Pine Ridge", "pos": Vector3(-20, 0, -50), "key": "B"},
 		{"label": "Prayer Garden", "pos": Vector3(30, 0, 18), "key": "G"},
 		{"label": "Lookout Rock", "pos": Vector3(40, 0, 34), "key": "L"},
 		{"label": "Mill Bridge", "pos": Vector3(-36, 0, 30), "key": "K"},
@@ -207,6 +207,8 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false
 	GameState.position_xz = Vector2(pos.x, pos.z)
+	if world_scene.has_method("note_soft_travel_arrival"):
+		world_scene.note_soft_travel_arrival(pos)
 	if "Fountain" in label:
 		if GameState.has_method("rest_at_fountain"):
 			GameState.rest_at_fountain(true)

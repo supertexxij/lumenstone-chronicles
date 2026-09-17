@@ -238,6 +238,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Feel polish: soft **yellow click-to-move marker** (RuneScape-style destination ring)
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
+
+### Wave 14 overnight (v1.14.0-overnight)
+- **Landmark toast memory**: once-per-visit greetings saved in the slot (`greeted_landmarks`); reload in-zone does not re-toast; leave and return greets again
+- Soft Travel no longer double-toasts approach + travel (syncs zone via `note_soft_travel_arrival`)
+- Soft Travel **Glade / Ridge** land inside approach radii (v1.13 destination bugfix)
+- Light **hit variance** on player swings (±1) with ~15% bright hit → stronger gold hitsplat (wholesome)
+- Denser **Mill Bridge** and **Lookout Rock** spur paths (trim, lanterns, side props, yard crates)
+
 ### Wave 13 overnight (v1.13.0-overnight)
 - Subtle **footstep dust puffs** on walk (CPUParticles, headless-safe)
 - **Landmark approach toasts** for Lantern Glade / Pine Ridge / Prayer Garden / Lookout Rock / Mill Bridge

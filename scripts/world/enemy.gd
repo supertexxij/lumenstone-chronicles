@@ -284,10 +284,14 @@ func _combat_tick() -> void:
 		player.play_attack_swing()
 	var wstats: Dictionary = GameState.get_weapon_stats()
 	if randf() < float(wstats.get("accuracy", 0.7)):
-		var dmg: int = int(wstats.get("damage", 2))
-		dmg += maxi(0, GameState.combat_level - 1)
-		# Soft "strong hit" when damage is high vs foe max HP or absolute threshold
-		var strong: bool = dmg >= 8 or dmg >= int(ceil(float(max_hp) * 0.4))
+		var base: int = int(wstats.get("damage", 2)) + maxi(0, GameState.combat_level - 1)
+		# Light RuneScape-feel variance (±1) + occasional bright hit (wholesome, no gore)
+		var dmg: int = maxi(1, base + randi_range(-1, 1))
+		var bright: bool = randf() < 0.15
+		if bright:
+			dmg = maxi(dmg + 1, int(ceil(float(base) * 1.35)))
+		# Soft "strong / bright hit" when damage is high vs foe max HP or absolute threshold
+		var strong: bool = bright or dmg >= 8 or dmg >= int(ceil(float(max_hp) * 0.4))
 		_take_hit(dmg)
 		HitsplatUtil.spawn(self, dmg, true, 2.15, strong)
 		AudioBus.play_hit()
