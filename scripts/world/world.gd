@@ -40,6 +40,7 @@ var _fern_sway_nodes: Array = []  # Wave 62: soft fern sway at Fern Dell
 var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Heath
 var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
+var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -1011,6 +1012,7 @@ func _update_day_night(delta: float) -> void:
 	_update_hall_wind_chime()
 	_update_village_dusk_lamps(dayness)
 	_update_knoll_dusk_glow(dayness)  # Wave 59: soft amber knoll glow at dusk
+	_update_arch_dusk_glow(dayness)  # Wave 64: soft stone arch glow at dusk
 	_update_plaza_campfire(dayness)
 
 
@@ -1250,6 +1252,27 @@ func _update_knoll_dusk_glow(dayness: float) -> void:
 		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.017 + float(i) * 1.1)
 		var e: float = energy * clampf(phase, 0.88, 1.12)
 		# Rim light a touch softer than crest
+		if "Rim" in str(light.name):
+			e *= 0.55
+		light.light_energy = e
+		light.visible = e > 0.04
+		i += 1
+
+
+func _update_arch_dusk_glow(dayness: float) -> void:
+	## Wave 64: soft stone arch glow at dusk — cool limestone OmniLight on Stone Arch gateway (RuneScape-chunky, wholesome).
+	if _arch_dusk_lights.is_empty():
+		return
+	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
+	var t_ms: float = float(Time.get_ticks_msec())
+	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0018))
+	var energy: float = dusk * 1.70 * pulse
+	var i: int = 0
+	for light in _arch_dusk_lights:
+		if light == null or not is_instance_valid(light):
+			continue
+		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.015 + float(i) * 1.2)
+		var e: float = energy * clampf(phase, 0.88, 1.12)
 		if "Rim" in str(light.name):
 			e *= 0.55
 		light.light_energy = e
@@ -2920,6 +2943,27 @@ func _build_stone_arch() -> void:
 	_add_chunky_sign(root, Vector3(-44.2, 0, 8.0), "Stone Arch", -0.15)
 	_place_label3d(root, "Gateway to the west wilds", 28, Vector3(-48.0, 4.55, 8.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Stone Arch", 52, Vector3(-48.0, 4.0, 8.0))
+	# Wave 64: soft stone arch glow at dusk — cool limestone OmniLight on keystone + plaza rim (RuneScape-chunky, wholesome)
+	var arch_light := OmniLight3D.new()
+	arch_light.name = "ArchDuskGlow"
+	arch_light.light_color = Color(0.82, 0.88, 1.0)  # soft cool stone
+	arch_light.light_energy = 0.0
+	arch_light.omni_range = 9.0
+	arch_light.omni_attenuation = 1.25
+	arch_light.shadow_enabled = false
+	arch_light.position = Vector3(-48.0, 3.95, 8.0)  # near keystone
+	root.add_child(arch_light)
+	_arch_dusk_lights.append(arch_light)
+	var arch_rim := OmniLight3D.new()
+	arch_rim.name = "ArchDuskRim"
+	arch_rim.light_color = Color(0.78, 0.84, 0.96)
+	arch_rim.light_energy = 0.0
+	arch_rim.omni_range = 5.5
+	arch_rim.omni_attenuation = 1.4
+	arch_rim.shadow_enabled = false
+	arch_rim.position = Vector3(-48.0, 1.2, 8.0)
+	root.add_child(arch_rim)
+	_arch_dusk_lights.append(arch_rim)
 
 
 

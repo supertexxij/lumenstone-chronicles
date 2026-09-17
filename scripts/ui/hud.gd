@@ -817,6 +817,45 @@ func _ensure_fav_paces() -> void:
 	add_child(_fav_paces_panel)
 
 
+
+func _fav_landmark_short(full: String) -> String:
+	## Wave 64: compact landmark short name for ★ fav chip (RuneScape-chunky, wholesome).
+	var n := full.strip_edges()
+	var map := {
+		"Fountain": "Fountain",
+		"Lantern Glade": "Glade",
+		"Pine Ridge": "Ridge",
+		"Prayer Garden": "Garden",
+		"Lookout Rock": "Lookout",
+		"Mill Bridge": "Mill",
+		"Cedar Hollow": "Hollow",
+		"Willow Bend": "Willow",
+		"Reed Pool": "Reed",
+		"Quiet Cross": "Cross",
+		"Stone Arch": "Arch",
+		"Amber Knoll": "Knoll",
+		"Birch Rest": "Birch",
+		"Fern Dell": "Fern",
+		"Heather Heath": "Heath",
+		"Thistle Rise": "Thistle",
+		"Maple Copse": "Maple",
+		"Lantern Glade center": "Glade",
+		"Pine Ridge stand": "Ridge",
+		"Builder's Hall (door)": "Builder",
+		"Scribe's Hall (door)": "Scribe",
+		"Creation Hall (door)": "Creation",
+		"Chronicle Hall (door)": "Chronicle",
+		"Worship Hall (door)": "Worship",
+	}
+	if n in map:
+		return str(map[n])
+	# Fallback: last word of multi-word name
+	var parts := n.split(" ")
+	if parts.size() >= 2:
+		return str(parts[-1]).replace("(door)", "").strip_edges()
+	return n
+
+
 func _fav_landmark_pos(label: String) -> Vector3:
 	## Match Travel (T) destination labels to world positions for ★ fav paces.
 	var lab := label.strip_edges()
@@ -874,7 +913,9 @@ func _refresh_fav_paces() -> void:
 	if paces < 25:
 		_fav_paces_panel.visible = false
 		return
-	_fav_paces_lbl.text = "★ %s · ~%d paces" % [fav, paces]
-	_fav_paces_lbl.tooltip_text = "Distance to your Travel ★ fav (Pin ★ Fav in Travel)"
+	# Wave 64: ★ fav chip shows landmark short name (PIN stays 1234; mastery ≥80%)
+	var short_n: String = _fav_landmark_short(fav)
+	_fav_paces_lbl.text = "★ %s · ~%d paces" % [short_n, paces]
+	_fav_paces_lbl.tooltip_text = "Distance to your Travel ★ fav · %s (Pin ★ Fav in Travel)" % fav
 	_fav_paces_panel.visible = true
 

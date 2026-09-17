@@ -134,6 +134,9 @@ func _ready() -> void:
 		"blueberry_bunny":
 			if label: label.position.y = 1.55
 			hp_bar.position.y = 1.3
+		"cranberry_capybara":
+			if label: label.position.y = 1.45
+			hp_bar.position.y = 1.2
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -332,13 +335,26 @@ func _set_warning(on: bool) -> void:
 			label.outline_size = 10
 		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
 		# Wave 53: soft color shift yellow → warm honey as telegraph nears pull (no cheesy combat labels)
+		# Wave 64: clearer soft-aggro ring when armor Def high (RuneScape-chunky, wholesome; no cheesy combat labels)
 		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
 		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
 		var prog: float = clampf(_aggro_pulse / 1.15, 0.0, 1.0)
+		var def_n: int = 0
+		if GameState.has_method("get_defense"):
+			def_n = int(GameState.get_defense())
+		var def_boost: float = clampf(float(def_n) / 7.0, 0.0, 1.0)  # soft cap matches armor Def
+		if def_boost > 0.0:
+			pulse = pulse * (1.0 + 0.38 * def_boost)
+			s = s * (1.0 + 0.10 * def_boost)
 		var disc_a := Color(0.99, 0.92, 0.32, pulse * 0.78)
 		var disc_b := Color(1.0, 0.72, 0.28, pulse * 0.88)
 		var rim_a := Color(1.0, 0.96, 0.42, 0.48 + pulse * 0.4)
 		var rim_b := Color(1.0, 0.78, 0.32, 0.55 + pulse * 0.42)
+		# High Def: cream-bright rim so the safe-step-back ring reads clearer
+		if def_boost > 0.15:
+			rim_a = rim_a.lerp(Color(1.0, 0.98, 0.78, 0.62 + pulse * 0.45), def_boost)
+			rim_b = rim_b.lerp(Color(1.0, 0.88, 0.55, 0.70 + pulse * 0.42), def_boost)
+			disc_a = disc_a.lerp(Color(1.0, 0.96, 0.55, pulse * 0.92), def_boost * 0.65)
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
 			mat.albedo_color = disc_a.lerp(disc_b, prog)
@@ -814,6 +830,23 @@ func _idle_anim(delta: float) -> void:
 			var bhead := creature_bob.get_node_or_null("Head")
 			if bhead:
 				bhead.rotation.y = sin(t * 0.8) * 0.06
+		"cranberry_capybara":
+			# Soft lounge-bob — barrel breathe, tiny ears twitch, blunt tail sway (Wave 64)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.95)) * 0.022
+			creature_bob.rotation.y = sin(t * 0.32) * 0.07
+			var cear_l := creature_bob.get_node_or_null("EarL")
+			var cear_r := creature_bob.get_node_or_null("EarR")
+			if cear_l:
+				cear_l.rotation.z = sin(t * 1.25) * 0.07
+			if cear_r:
+				cear_r.rotation.z = -sin(t * 1.25 + 0.2) * 0.07
+			var ctail := creature_bob.get_node_or_null("Tail")
+			if ctail:
+				ctail.rotation.y = sin(t * 0.85) * 0.12
+				ctail.rotation.x = deg_to_rad(40) + sin(t * 0.65) * 0.04
+			var chead := creature_bob.get_node_or_null("Head")
+			if chead:
+				chead.rotation.y = sin(t * 0.7) * 0.05
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

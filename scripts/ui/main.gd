@@ -19,6 +19,7 @@ var _pending_new_slot: int = 0
 var _travel_dests: Array = []
 var _travel_filter: String = ""
 var _travel_search: LineEdit = null
+var _travel_last_query: String = ""  # Wave 64: remember last travel search until close
 var _confirm_dialog: ConfirmationDialog
 var _save_panel: Control
 var _pending_clear_slot: int = -1
@@ -134,6 +135,11 @@ func _setup_travel_panel() -> void:
 			existing.pressed.connect(_travel_pin_favorite)
 	if close:
 		close.pressed.connect(func():
+			# Wave 64: clear remembered travel search on close
+			_travel_last_query = ""
+			if _travel_search:
+				_travel_search.text = ""
+			_travel_filter = ""
 			travel_panel.visible = false
 			_set_player_ui_block(false)
 		)
@@ -141,6 +147,8 @@ func _setup_travel_panel() -> void:
 		list.item_activated.connect(func(_i): _travel_go_selected())
 
 func _on_travel_filter_changed(txt: String) -> void:
+	## Wave 64: remember last travel search until close (PIN 1234; mastery ≥80%).
+	_travel_last_query = txt
 	_travel_filter = txt.strip_edges().to_lower()
 	_refresh_travel_list()
 
@@ -258,9 +266,10 @@ func _open_travel() -> void:
 	if world_scene and world_scene.player and world_scene.player.get("ui_blocking"):
 		# Allow opening travel only if no other panel owns the block — if travel already open, ignore
 		pass
+	# Wave 64: travel search remembers last query until close (PIN 1234; mastery ≥80%)
 	if _travel_search:
-		_travel_search.text = ""
-	_travel_filter = ""
+		_travel_search.text = _travel_last_query
+	_travel_filter = _travel_last_query.strip_edges().to_lower()
 	_refresh_travel_list()
 	travel_panel.visible = true
 	_play_travel_open_flourish()  # Wave 54: clearer soft-travel menu open
@@ -419,6 +428,11 @@ func _travel_go_selected() -> void:
 	var d: Dictionary = _travel_dests[idx]
 	if bool(d.get("group", false)):
 		return
+	# Wave 64: travel search clears on close/go
+	_travel_last_query = ""
+	if _travel_search:
+		_travel_search.text = ""
+	_travel_filter = ""
 	travel_panel.visible = false
 	_set_player_ui_block(false)
 	_goto_landmark(d["pos"], d["label"])
@@ -725,6 +739,9 @@ func _enter_world() -> void:
 	# Wave 63: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_63_toast"):
 		GameState.maybe_wave_63_toast()
+	# Wave 64: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_64_toast"):
+		GameState.maybe_wave_64_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 64 overnight (v1.64.0-overnight)
+- Soft **stone arch glow at dusk** — cool limestone OmniLight on the Stone Arch gateway (RuneScape-chunky, wholesome)
+- Clearer **soft-aggro ring when armor Def high** — cream-bright telegraph scales with Def (no cheesy combat labels)
+- ★ **fav chip shows landmark short name** (Arch / Heath / Glade…) + **travel search remembers last query until close**
+- New wilds foe **Cranberry Capybara** — plump barrel body, blunt snout, tiny rounded ears, stubby lounge legs, soft blunt tail, gentle “lounged” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny)
+- PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 63 overnight (v1.63.0-overnight)
 - Soft **heather sway at Heather Heath** — purple tufts lean gently in the wind (RuneScape-chunky, wholesome)
 - Clearer **Year chip with mastery %** — reads `Year · mastery N%` so quest mastery is obvious at a glance

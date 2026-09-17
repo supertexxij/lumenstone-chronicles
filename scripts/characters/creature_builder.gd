@@ -149,6 +149,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_armadillo(bob)
 		"blueberry_bunny":
 			_build_bunny(bob)
+		"cranberry_capybara":
+			_build_capybara(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1471,4 +1473,41 @@ static func _build_bunny(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.06, 0.02, 0.08)), Vector3(0, -0.09, 0.01), leg, "Foot")
 	# Tiny puff tail
 	_mi(_sphere(0.07), Vector3(0, 0.30, -0.26), bob, "Tail")
+
+
+static func _build_capybara(bob: Node3D) -> void:
+	## Soft cranberry-wilds capybara — plump barrel body, blunt snout, tiny rounded ears, stubby legs, soft blunt tail (distinct from Magnolia Beaver / Aspen Otter / Moss Badger / Blueberry Bunny / Lemon Lemming).
+	# Plump barrel body
+	var body := _mi(_sphere(0.22, 0.32), Vector3(0, 0.34, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.12, 0.16), Vector3(0, 0.24, 0.06), bob, "Belly")
+	# Round head + blunt snout + tiny rounded ears
+	_mi(_sphere(0.13), Vector3(0, 0.42, 0.30), bob, "Head")
+	_mi(_sphere(0.045, 0.05), Vector3(-0.08, 0.52, 0.28), bob, "EarL")
+	_mi(_sphere(0.045, 0.05), Vector3(0.08, 0.52, 0.28), bob, "EarR")
+	_mi(_box(Vector3(0.07, 0.05, 0.10)), Vector3(0, 0.36, 0.44), bob, "Snout")
+	_mi(_sphere(0.028), Vector3(0, 0.35, 0.50), bob, "Nose")
+	_mi(_sphere(0.025), Vector3(-0.045, 0.44, 0.40), bob, "EyeL")
+	_mi(_sphere(0.025), Vector3(0.045, 0.44, 0.40), bob, "EyeR")
+	# Soft cheek tufts (cranberry blush)
+	_mi(_sphere(0.04, 0.035), Vector3(-0.12, 0.38, 0.28), bob, "CheekL")
+	_mi(_sphere(0.04, 0.035), Vector3(0.12, 0.38, 0.28), bob, "CheekR")
+	# Stubby lounge legs
+	for info in [
+		["FL", Vector3(-0.11, 0.16, 0.14)],
+		["FR", Vector3(0.11, 0.16, 0.14)],
+		["BL", Vector3(-0.12, 0.16, -0.14)],
+		["BR", Vector3(0.12, 0.16, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.032, 0.036, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.07, 0.02, 0.09)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Soft blunt tail
+	var tail := _mi(_cyl(0.045, 0.028, 0.16), Vector3(0, 0.28, -0.30), bob, "Tail")
+	tail.rotation_degrees = Vector3(40, 0, 0)
+	_mi(_sphere(0.04), Vector3(0, 0.22, -0.42), bob, "TailTip")
+
 

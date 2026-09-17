@@ -506,6 +506,19 @@
       "combat_xp": 234,
       "respawn_sec": 94.0,
       "description": "A plump bunny of the blueberry wilds — hop it gently with a careful step!"
+    },
+    "cranberry_capybara": {
+      "kind": "cranberry_capybara",
+      "name": "Cranberry Capybara",
+      "defeat_verb": "lounged",
+      "color": "#8b2e4a",
+      "accent": "#e8a0b0",
+      "max_hp": 254,
+      "damage": 42,
+      "accuracy": 0.17,
+      "combat_xp": 240,
+      "respawn_sec": 96.0,
+      "description": "A plump capybara of the cranberry wilds — lounge it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1666,6 +1679,36 @@
       "kind": "blueberry_bunny",
       "x": -65,
       "z": 155
+    },
+    {
+      "id": "e194",
+      "kind": "cranberry_capybara",
+      "x": -155,
+      "z": -45
+    },
+    {
+      "id": "e195",
+      "kind": "cranberry_capybara",
+      "x": 135,
+      "z": 115
+    },
+    {
+      "id": "e196",
+      "kind": "cranberry_capybara",
+      "x": -110,
+      "z": 160
+    },
+    {
+      "id": "e197",
+      "kind": "cranberry_capybara",
+      "x": 160,
+      "z": -90
+    },
+    {
+      "id": "e198",
+      "kind": "cranberry_capybara",
+      "x": -75,
+      "z": -160
     }
   ],
   "base_combat": {
