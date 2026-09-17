@@ -174,7 +174,9 @@ func _refresh_campaign_tabs(uw: int) -> void:
 		tab_idx = 3
 	if _campaign_tabs:
 		_campaign_tabs.current_tab = tab_idx
-	# Default: expand only the current week (first open)
+	# Restore persisted expand state; default current week open on first visit
+	if _expanded_weeks.is_empty() and not GameState.parent_expanded_weeks.is_empty():
+		_expanded_weeks = GameState.parent_expanded_weeks.duplicate()
 	if not _expanded_weeks.has(uw):
 		_expanded_weeks[uw] = true
 	for i in range(CAMPAIGN_RANGES.size()):
@@ -238,6 +240,8 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 		if week_num == uw:
 			h2 += "  ← current"
 		btn.text = h2
+		if GameState.has_method("set_parent_expanded_weeks"):
+			GameState.set_parent_expanded_weeks(_expanded_weeks)
 	)
 	row.add_child(btn)
 	row.add_child(detail)

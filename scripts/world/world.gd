@@ -30,6 +30,8 @@ var _weather_auto: bool = true
 var _rain: CPUParticles3D
 var _fog_boost: float = 0.0
 var _weather_label_cache: String = "Clear"
+var _landmark_here: String = ""  # current approach zone id (hysteresis)
+var _landmark_toast_cd: float = 0.0
 
 signal npc_talk(npc: Node)
 signal weather_changed(mode: int, label: String)
@@ -554,9 +556,57 @@ func _spawn_player() -> void:
 func _process(delta: float) -> void:
 	if _door_cooldown > 0.0:
 		_door_cooldown -= delta
+	if _landmark_toast_cd > 0.0:
+		_landmark_toast_cd -= delta
 	_update_day_night(delta)
 	_update_weather(delta)
 	_update_quest_desk_highlights()
+	_update_landmark_approach()
+
+
+func _landmark_zones() -> Array:
+	## Soft approach radii for wilds landmarks (RuneScape-feel area toasts).
+	return [
+		{"id": "glade", "pos": Vector3(0.5, 0, -48), "enter": 11.0, "exit": 14.0,
+			"toast": "Approaching Lantern Glade — soft light among the trees."},
+		{"id": "ridge", "pos": Vector3(-24, 0, -54), "enter": 10.0, "exit": 13.0,
+			"toast": "Approaching Pine Ridge — cool air under the pines."},
+		{"id": "garden", "pos": Vector3(30, 0, 18), "enter": 9.0, "exit": 12.0,
+			"toast": "Approaching the Prayer Garden — a quiet place to give thanks."},
+		{"id": "lookout", "pos": Vector3(40, 0, 34), "enter": 9.0, "exit": 12.0,
+			"toast": "Approaching Lookout Rock — a clear view over the green."},
+		{"id": "mill", "pos": Vector3(-36, 0, 30), "enter": 9.0, "exit": 12.0,
+			"toast": "Approaching Mill Bridge — water and stone work together."},
+	]
+
+func _update_landmark_approach() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	if _inside_hall != "":
+		_landmark_here = ""
+		return
+	var ppos: Vector3 = player.global_position
+	var best_id := ""
+	var best_toast := ""
+	var best_d := 9999.0
+	for z in _landmark_zones():
+		var c: Vector3 = z["pos"]
+		var d: float = Vector2(ppos.x - c.x, ppos.z - c.z).length()
+		var enter_r: float = float(z["enter"])
+		var exit_r: float = float(z["exit"])
+		var active: bool = d <= enter_r or (_landmark_here == str(z["id"]) and d <= exit_r)
+		if active and d < best_d:
+			best_d = d
+			best_id = str(z["id"])
+			best_toast = str(z["toast"])
+	if best_id == "":
+		_landmark_here = ""
+		return
+	if best_id != _landmark_here:
+		_landmark_here = best_id
+		if _landmark_toast_cd <= 0.0 and best_toast != "":
+			GameState.toast.emit(best_toast)
+			_landmark_toast_cd = 2.5
 
 func _setup_day_night() -> void:
 	_sun = get_node_or_null("Sun") as DirectionalLight3D

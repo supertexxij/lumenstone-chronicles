@@ -38,6 +38,7 @@ var _desired_vel: Vector3 = Vector3.ZERO
 var _click_marker: MeshInstance3D = null
 var _click_marker_t: float = -1.0
 var _click_marker_mat: StandardMaterial3D = null
+var _foot_dust: CPUParticles3D = null
 
 func _ready() -> void:
 	add_to_group("player")
@@ -450,6 +451,50 @@ func _physics_process(delta: float) -> void:
 
 
 
+
+func _ensure_foot_dust() -> void:
+	if HeadlessGuard.is_headless():
+		return
+	if _foot_dust != null and is_instance_valid(_foot_dust):
+		return
+	_foot_dust = CPUParticles3D.new()
+	_foot_dust.name = "FootDust"
+	_foot_dust.emitting = false
+	_foot_dust.one_shot = true
+	_foot_dust.explosiveness = 0.92
+	_foot_dust.amount = 5
+	_foot_dust.lifetime = 0.32
+	_foot_dust.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_foot_dust.emission_sphere_radius = 0.1
+	_foot_dust.direction = Vector3(0, 1, 0)
+	_foot_dust.spread = 70.0
+	_foot_dust.initial_velocity_min = 0.35
+	_foot_dust.initial_velocity_max = 0.95
+	_foot_dust.gravity = Vector3(0, -4.5, 0)
+	_foot_dust.scale_amount_min = 0.7
+	_foot_dust.scale_amount_max = 1.15
+	var dm := BoxMesh.new()
+	dm.size = Vector3(0.06, 0.04, 0.06)
+	_foot_dust.mesh = dm
+	var dmat := StandardMaterial3D.new()
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dmat.albedo_color = Color(0.72, 0.62, 0.42, 0.45)
+	_foot_dust.material_override = dmat
+	_foot_dust.position = Vector3(0, 0.04, 0)
+	add_child(_foot_dust)
+	HeadlessGuard.guard_particles(_foot_dust)
+
+func _puff_foot_dust() -> void:
+	## Subtle ground puff on each footfall — soft RuneScape-adjacent dust.
+	if HeadlessGuard.is_headless():
+		return
+	_ensure_foot_dust()
+	if _foot_dust == null:
+		return
+	_foot_dust.restart()
+	_foot_dust.emitting = true
+
 func _ensure_click_marker() -> void:
 	if _click_marker != null and is_instance_valid(_click_marker):
 		return
@@ -555,6 +600,7 @@ func _animate_walk(moving: bool, delta: float) -> void:
 		var foot_gate := sin(_walk_phase)
 		if _last_foot_phase <= 0.0 and foot_gate > 0.0:
 			AudioBus.play_footstep()
+			_puff_foot_dust()
 		_last_foot_phase = foot_gate
 	else:
 		_walk_phase = move_toward(_walk_phase, 0.0, delta * 6.0)

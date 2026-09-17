@@ -2,8 +2,11 @@ class_name Hitsplat
 extends RefCounted
 ## Clear RuneScape-like floating damage / heal numbers (wholesome — no gore).
 
-static func spawn(parent: Node, dmg: int, is_player_hit: bool, y: float = 2.15) -> void:
-	_spawn(parent, dmg, "damage" if not is_player_hit else "hit_foe", y)
+static func spawn(parent: Node, dmg: int, is_player_hit: bool, y: float = 2.15, strong: bool = false) -> void:
+	var kind := "damage" if not is_player_hit else "hit_foe"
+	if strong and dmg > 0:
+		kind = "strong_hit" if not is_player_hit else "strong_foe"
+	_spawn(parent, dmg, kind, y)
 
 static func spawn_heal(parent: Node, amount: int, y: float = 2.15) -> void:
 	_spawn(parent, amount, "heal", y)
@@ -38,6 +41,20 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		outline_col = Color(0.85, 1.0, 0.9)
 	elif amount <= 0:
 		dmat.albedo_color = Color(0.55, 0.55, 0.6, 0.75)
+	elif kind == "strong_foe":
+		# Soft gold/white — crisp strong hit on foe (wholesome, not gore)
+		dmat.albedo_color = Color(1.0, 0.95, 0.55, 0.92)
+		label_text = str(amount)
+		font_sz = 64
+		text_col = Color(0.12, 0.08, 0.02)
+		outline_col = Color(1, 1, 0.92)
+	elif kind == "strong_hit":
+		# Amber flash when player takes a heavy hit
+		dmat.albedo_color = Color(1.0, 0.45, 0.2, 0.9)
+		label_text = str(amount)
+		font_sz = 62
+		text_col = Color(0.12, 0.05, 0.02)
+		outline_col = Color(1, 0.95, 0.85)
 	elif kind == "hit_foe":
 		dmat.albedo_color = Color(0.95, 0.82, 0.15, 0.85)  # yellow splat on foe
 		label_text = str(amount)
@@ -65,10 +82,12 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		splat.position = Vector3(0, 0.02, 0.02)
 		root.add_child(splat)
 
+	var lift := 1.25 if kind in ["strong_foe", "strong_hit"] else 1.1
+	var dur := 0.95 if kind in ["strong_foe", "strong_hit"] else 0.85
 	var tw := parent.get_tree().create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(root, "position:y", y + 1.1, 0.85).set_ease(Tween.EASE_OUT)
+	tw.tween_property(root, "position:y", y + lift, dur).set_ease(Tween.EASE_OUT)
 	if splat:
-		tw.tween_property(splat, "modulate:a", 0.0, 0.85)
-	tw.tween_property(dmat, "albedo_color:a", 0.0, 0.85)
+		tw.tween_property(splat, "modulate:a", 0.0, dur)
+	tw.tween_property(dmat, "albedo_color:a", 0.0, dur)
 	tw.chain().tween_callback(root.queue_free)

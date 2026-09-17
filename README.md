@@ -238,6 +238,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Feel polish: soft **yellow click-to-move marker** (RuneScape-style destination ring)
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
+### Wave 13 overnight (v1.13.0-overnight)
+- Subtle **footstep dust puffs** on walk (CPUParticles, headless-safe)
+- **Landmark approach toasts** for Lantern Glade / Pine Ridge / Prayer Garden / Lookout Rock / Mill Bridge
+- Richer combat feedback: **strong-hit** hitsplat color on high damage + soft **gold kill flash** before dissolve (wholesome)
+- Parent dashboard: **persist week expand state** in `user://lumenstone_parent.json`
+- Bug fix: Soft Travel hint lists **K Mill** (was missing)
+
 ### Architecture
 
 | Autoload | Role |

@@ -16,6 +16,8 @@ var spawn_pos: Vector3
 var creature_bob: Node3D = null
 var wing_phase: float = 0.0
 var _flinch_t: float = 0.0
+var _kill_flash_t: float = -1.0
+var _kill_flash_base: Dictionary = {}  # MeshInstance3D -> Color
 var _dissolve_t: float = -1.0
 var _base_scale: Vector3 = Vector3.ONE
 var _aggro_pulse: float = 0.0
@@ -90,6 +92,7 @@ func _ensure_nav_obstacle() -> void:
 
 func _physics_process(delta: float) -> void:
 	if _dissolve_t >= 0.0:
+		_tick_kill_flash(delta)
 		_dissolve_t += delta
 		var u := clampf(_dissolve_t / 0.7, 0.0, 1.0)
 		mesh_root.scale = _base_scale * (1.0 - u)
@@ -283,8 +286,10 @@ func _combat_tick() -> void:
 	if randf() < float(wstats.get("accuracy", 0.7)):
 		var dmg: int = int(wstats.get("damage", 2))
 		dmg += maxi(0, GameState.combat_level - 1)
+		# Soft "strong hit" when damage is high vs foe max HP or absolute threshold
+		var strong: bool = dmg >= 8 or dmg >= int(ceil(float(max_hp) * 0.4))
 		_take_hit(dmg)
-		HitsplatUtil.spawn(self, dmg, true)
+		HitsplatUtil.spawn(self, dmg, true, 2.15, strong)
 		AudioBus.play_hit()
 	else:
 		HitsplatUtil.spawn(self, 0, true)
@@ -293,8 +298,9 @@ func _combat_tick() -> void:
 		return
 	if randf() < float(def.get("accuracy", 0.7)):
 		var edmg: int = int(def.get("damage", 1))
+		var strong_in: bool = edmg >= 4
 		GameState.take_damage(edmg)
-		HitsplatUtil.spawn(player, edmg, false)
+		HitsplatUtil.spawn(player, edmg, false, 2.15, strong_in)
 		AudioBus.play_hit()
 		if GameState.hp <= 0:
 			GameState.set_combat_target(null)
@@ -325,8 +331,48 @@ func _defeat() -> void:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
 	GameState.save_game()
 	GameState.state_changed.emit()
+	_begin_kill_flash()
 	_dissolve_t = 0.0
 	respawn_timer = float(def.get("respawn_sec", 12))
+
+
+func _begin_kill_flash() -> void:
+	## Brief soft gold wash before dissolve — wholesome clear, not gore.
+	if HeadlessGuard.is_headless():
+		return
+	_kill_flash_t = 0.22
+	_kill_flash_base.clear()
+	_capture_mesh_colors(creature_bob)
+	_apply_kill_flash_color(Color(1.0, 0.95, 0.65, 1.0))
+
+func _capture_mesh_colors(n: Node) -> void:
+	if n == null:
+		return
+	if n is MeshInstance3D:
+		var mi := n as MeshInstance3D
+		if mi.material_override is StandardMaterial3D:
+			_kill_flash_base[mi] = (mi.material_override as StandardMaterial3D).albedo_color
+	for c in n.get_children():
+		_capture_mesh_colors(c)
+
+func _apply_kill_flash_color(c: Color) -> void:
+	for mi in _kill_flash_base.keys():
+		if not is_instance_valid(mi):
+			continue
+		if mi.material_override is StandardMaterial3D:
+			var mat := (mi.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
+			mat.albedo_color = c
+			mi.material_override = mat
+
+func _tick_kill_flash(delta: float) -> void:
+	if _kill_flash_t < 0.0:
+		return
+	_kill_flash_t -= delta
+	var u: float = clampf(1.0 - (_kill_flash_t / 0.22), 0.0, 1.0)
+	var flash := Color(1.0, 0.95, 0.65, 1.0).lerp(Color(1.0, 1.0, 1.0, 0.85), u)
+	_apply_kill_flash_color(flash)
+	if _kill_flash_t <= 0.0:
+		_kill_flash_t = -1.0
 
 func _respawn() -> void:
 	alive = true

@@ -53,6 +53,7 @@ var last_played: int = 0
 var unlocked_week: int = 1
 var active_slot: int = 0
 var parent_pin: String = DEFAULT_PIN
+var parent_expanded_weeks: Dictionary = {}  # week int (as string keys in JSON) -> bool
 var slot_label: String = ""
 ## Pantry stacks for starter food (refill at fountain). Soft combat balance.
 var consumable_charges: Dictionary = {}
@@ -152,6 +153,7 @@ func _migrate_legacy_save() -> void:
 
 func _load_parent_settings() -> void:
 	parent_pin = DEFAULT_PIN
+	parent_expanded_weeks = {}
 	if not FileAccess.file_exists(PARENT_SETTINGS_PATH):
 		return
 	var f := FileAccess.open(PARENT_SETTINGS_PATH, FileAccess.READ)
@@ -163,12 +165,27 @@ func _load_parent_settings() -> void:
 		var pin := str(data.get("parent_pin", DEFAULT_PIN)).strip_edges()
 		if pin.length() >= 4:
 			parent_pin = pin
+		var ew = data.get("expanded_weeks", {})
+		if typeof(ew) == TYPE_DICTIONARY:
+			parent_expanded_weeks = {}
+			for k in ew.keys():
+				parent_expanded_weeks[int(str(k))] = bool(ew[k])
 
 func _save_parent_settings() -> void:
+	var ew_out := {}
+	for k in parent_expanded_weeks.keys():
+		ew_out[str(int(k))] = bool(parent_expanded_weeks[k])
 	var f := FileAccess.open(PARENT_SETTINGS_PATH, FileAccess.WRITE)
 	if f:
-		f.store_string(JSON.stringify({"parent_pin": parent_pin}))
+		f.store_string(JSON.stringify({"parent_pin": parent_pin, "expanded_weeks": ew_out}))
 		f.close()
+
+func set_parent_expanded_weeks(expanded: Dictionary) -> void:
+	## Persist which parent-dashboard week rows are open.
+	parent_expanded_weeks = {}
+	for k in expanded.keys():
+		parent_expanded_weeks[int(k)] = bool(expanded[k])
+	_save_parent_settings()
 
 func set_parent_pin(new_pin: String) -> bool:
 	var pin := new_pin.strip_edges()
