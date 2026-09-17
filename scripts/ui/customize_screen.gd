@@ -14,6 +14,8 @@ signal cancelled
 
 var wardrobe_mode: bool = false
 var _preview_row: HBoxContainer = null
+var _preview_pulse_tw: Tween = null  # Wave 52: wardrobe color preview pulse
+
 var _swatches: Dictionary = {}  # key -> ColorRect
 
 const SKIN_COLORS := {
@@ -146,6 +148,21 @@ func _refresh_preview() -> void:
 	_swatches["hair"].color = HAIR_COLORS.get(hair_k, Color.WHITE)
 	_swatches["cape"].color = CAPE_COLORS.get(cape_k, Color.WHITE)
 	_swatches["outfit"].color = OUTFIT_COLORS.get(outfit_k, Color.WHITE)
+	_play_wardrobe_preview_pulse()  # Wave 52: color preview pulse
+
+func _play_wardrobe_preview_pulse() -> void:
+	## Wave 52: soft wardrobe color preview pulse — gentle cream scale bloom on swatches (RuneScape-chunky, wholesome).
+	if _preview_row == null or not is_instance_valid(_preview_row):
+		return
+	if _preview_pulse_tw != null and is_instance_valid(_preview_pulse_tw):
+		_preview_pulse_tw.kill()
+	_preview_row.pivot_offset = _preview_row.size * 0.5
+	_preview_row.scale = Vector2(1.06, 1.06)
+	_preview_row.modulate = Color(1.08, 1.05, 0.92, 1.0)
+	_preview_pulse_tw = create_tween()
+	_preview_pulse_tw.set_parallel(true)
+	_preview_pulse_tw.tween_property(_preview_row, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_preview_pulse_tw.tween_property(_preview_row, "modulate", Color(1, 1, 1, 1), 0.28)
 
 func _on_ok() -> void:
 	var app := {

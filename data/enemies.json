@@ -350,6 +350,19 @@
       "combat_xp": 162,
       "respawn_sec": 70.0,
       "description": "A sleek weasel of the walnut wilds \u2014 shoo it gently with a careful step!"
+    },
+    "pecan_possum": {
+      "kind": "pecan_possum",
+      "name": "Pecan Possum",
+      "defeat_verb": "coaxed",
+      "color": "#8a6e4e",
+      "accent": "#d8c8a8",
+      "max_hp": 182,
+      "damage": 30,
+      "accuracy": 0.22,
+      "combat_xp": 168,
+      "respawn_sec": 72.0,
+      "description": "A gentle possum of the pecan wilds \u2014 coax it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -1150,6 +1163,36 @@
       "kind": "walnut_weasel",
       "x": -80,
       "z": -98
+    },
+    {
+      "id": "e134",
+      "kind": "pecan_possum",
+      "x": -102,
+      "z": 24
+    },
+    {
+      "id": "e135",
+      "kind": "pecan_possum",
+      "x": 72,
+      "z": -84
+    },
+    {
+      "id": "e136",
+      "kind": "pecan_possum",
+      "x": -48,
+      "z": 104
+    },
+    {
+      "id": "e137",
+      "kind": "pecan_possum",
+      "x": 96,
+      "z": -52
+    },
+    {
+      "id": "e138",
+      "kind": "pecan_possum",
+      "x": -88,
+      "z": -84
     }
   ],
   "base_combat": {

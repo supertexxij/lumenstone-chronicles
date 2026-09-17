@@ -29,6 +29,8 @@ var _leaf_rustle: AudioStreamPlayer
 var _leaf_rustle_wanted: bool = false  # Wave 37: leaf rustle near trees
 var _brook_murmur: AudioStreamPlayer
 var _brook_murmur_wanted: bool = false  # Wave 38: soft brook murmur near water
+var _wind_chime: AudioStreamPlayer
+var _wind_chime_wanted: bool = false  # Wave 52: soft wind chime near halls
 var _talk_duck: bool = false  # Wave 32: soft music duck while talking
 var _music_base_db: float = -18.0
 var _ambient_base_db: float = -24.0
@@ -123,6 +125,12 @@ func _ready() -> void:
 	_brook_murmur.volume_db = -30.0
 	_brook_murmur.stream = _streams.get("brook_murmur")
 	add_child(_brook_murmur)
+	_wind_chime = AudioStreamPlayer.new()
+	_wind_chime.name = "HallWindChime"
+	_wind_chime.bus = "Master"
+	_wind_chime.volume_db = -31.0
+	_wind_chime.stream = _streams.get("wind_chime")
+	add_child(_wind_chime)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -180,6 +188,8 @@ func _apply_mute() -> void:
 			_leaf_rustle.stop()
 		if _brook_murmur and _brook_murmur.playing:
 			_brook_murmur.stop()
+		if _wind_chime and _wind_chime.playing:
+			_wind_chime.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -195,6 +205,7 @@ func _apply_mute() -> void:
 			_sync_hall_chatter_audio()
 			_sync_leaf_rustle_audio()
 			_sync_brook_murmur_audio()
+			_sync_wind_chime_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -223,6 +234,7 @@ func stop_ambient() -> void:
 	set_hall_chatter(false)
 	set_leaf_rustle(false)
 	set_brook_murmur(false)
+	set_wind_chime(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -315,6 +327,7 @@ func _build_streams() -> void:
 	_streams["hall_chatter"] = _soft_hall_chatter(7.0, 0.055)  # Wave 42: soft guild-hall ambient chatter
 	_streams["leaf_rustle"] = _soft_leaf_rustle(5.5, 0.07)  # Wave 37: leaf rustle near trees
 	_streams["brook_murmur"] = _soft_brook_murmur(6.0, 0.07)  # Wave 38: soft brook murmur near water
+	_streams["wind_chime"] = _soft_wind_chime(8.0, 0.055)  # Wave 52: soft wind chime near halls
 
 
 func set_rain_audio(on: bool) -> void:
@@ -365,6 +378,12 @@ func set_brook_murmur(on: bool) -> void:
 	## Wave 38: soft brook murmur when near water landmarks outdoors (respects mute).
 	_brook_murmur_wanted = on
 	_sync_brook_murmur_audio()
+
+
+func set_wind_chime(on: bool) -> void:
+	## Wave 52: soft wind chime when outdoors near guild halls (respects mute; RuneScape-chunky, wholesome).
+	_wind_chime_wanted = on
+	_sync_wind_chime_audio()
 
 
 func set_day_night_audio(dayness: float, day_phase: float = -1.0) -> void:
@@ -574,6 +593,20 @@ func _sync_brook_murmur_audio() -> void:
 				_brook_murmur.play()
 		elif _brook_murmur.playing:
 			_brook_murmur.stop()
+
+func _sync_wind_chime_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _wind_chime:
+		var should: bool = _wind_chime_wanted and can
+		if should:
+			if _wind_chime.stream == null:
+				_wind_chime.stream = _streams.get("wind_chime")
+			if not _wind_chime.playing and _wind_chime.stream:
+				_wind_chime.play()
+		elif _wind_chime.playing:
+			_wind_chime.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -1018,6 +1051,35 @@ func _dusk_owl_hoot(dur: float, amp: float) -> AudioStreamWAV:
 				s += sin(TAU * freq * u) * env * 0.7
 				s += sin(TAU * (freq * 0.5) * u) * env * 0.25
 		samples[i] = (s + bed * breathe * 0.35) * amp
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+func _soft_wind_chime(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 52: soft wind chime near halls — sparse glass/metal tones (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	# Soft chime strikes (seconds into loop)
+	var strikes := [0.4, 1.6, 2.9, 4.1, 5.5, 6.8]
+	var freqs := [784.0, 988.0, 1174.0, 880.0, 1046.0, 1318.0]
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		# Quiet air bed
+		var bed := sin(TAU * 48.0 * tsec) * 0.06 + sin(TAU * 72.0 * tsec) * 0.04
+		var breathe := 0.8 + 0.2 * sin(TAU * 0.07 * tsec)
+		for k in range(strikes.size()):
+			var u := tsec - float(strikes[k])
+			if u >= 0.0 and u < 1.4:
+				var env := exp(-u * 2.4)
+				var f := float(freqs[k])
+				s += sin(TAU * f * u) * env * 0.55
+				s += sin(TAU * (f * 2.01) * u) * env * 0.12
+		samples[i] = (s + bed * breathe) * amp
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

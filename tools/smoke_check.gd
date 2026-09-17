@@ -450,5 +450,21 @@ func _initialize():
 	print("NO_DAY_CASH_W51", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
+
+
+	print("VERSION_152", 'config/version="1.52.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("PECAN_POSSUM", '"pecan_possum"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_possum" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e138"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("WIND_CHIME_W52", "set_wind_chime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "HallWindChime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "_update_hall_wind_chime" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("DEFEAT_CAM_W52", "_play_soft_defeat_camera_settle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("WARDROBE_PULSE_W52", "_play_wardrobe_preview_pulse" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	var jp52 = FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd")
+	print("JOURNAL_QOL_W52", "OpenOnlyBtn" in jp52 and "_open_only" in jp52 and "weeks locked" in jp52)
+	print("WAVE52_TOAST", "maybe_wave_52_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_52_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs52 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W52", "const DEFAULT_PIN := \"1234\"" in gs52 or 'DEFAULT_PIN := "1234"' in gs52)
+	print("MASTERY_80_W52", "MASTERY_PCT := 0.8" in gs52 or "0.8" in gs52)
+	print("NO_DAY_CASH_W52", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
 	print("CHECK_OK")
 	quit(0)

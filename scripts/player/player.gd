@@ -141,6 +141,28 @@ func soft_respawn() -> void:
 	velocity = Vector3.ZERO
 	if _nav_agent:
 		_nav_agent.set_velocity_forced(Vector3.ZERO)
+	_play_soft_defeat_camera_settle()  # Wave 52: clearer soft-defeat camera settle
+
+func _play_soft_defeat_camera_settle() -> void:
+	## Wave 52: clearer soft-defeat camera settle — ease zoom home + soft yaw settle at the fountain (RuneScape-chunky, wholesome; no cheesy combat labels).
+	if HeadlessGuard.is_headless():
+		return
+	var start_zoom: float = cam_zoom
+	var target_zoom: float = 1.0
+	var start_yaw: float = cam_yaw
+	# Partial settle toward north/fountain overview — not a hard snap
+	var end_yaw: float = start_yaw + wrapf(0.0 - start_yaw, -PI, PI) * 0.4
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_method(func(z: float) -> void:
+		cam_zoom = z
+		_apply_camera_zoom()
+	, start_zoom, target_zoom, 0.58).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_method(func(y: float) -> void:
+		cam_yaw = y
+		if camera_pivot:
+			camera_pivot.rotation.y = cam_yaw
+	, start_yaw, end_yaw, 0.58).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _on_heal_tick(amount: int) -> void:
 	if amount > 0:

@@ -125,6 +125,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_toad(bob)
 		"walnut_weasel":
 			_build_weasel(bob)
+		"pecan_possum":
+			_build_possum(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -976,4 +978,41 @@ static func _build_toad(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.11, 0.028, 0.10)), Vector3(0, -0.10, 0.03), leg2, "Pad")
 	# Tiny stubby nub (no long skink tail)
 	_mi(_sphere(0.04), Vector3(0, 0.28, -0.22), bob, "Nub")
+
+static func _build_possum(bob: Node3D) -> void:
+	## Soft pecan-wilds possum — round body, pointed snout, soft ears, curling prehensile tail (distinct from Walnut Weasel / Elm Raccoon / Pine Fox).
+	# Plump rounded body (chunkier than weasel)
+	_mi(_sphere(0.20, 0.28), Vector3(0, 0.36, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.12, 0.18), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Pointed head + longish snout
+	_mi(_sphere(0.12, 0.13), Vector3(0, 0.42, 0.26), bob, "Head")
+	_mi(_box(Vector3(0.06, 0.045, 0.12)), Vector3(0, 0.38, 0.38), bob, "Snout")
+	# Soft rounded ears (signature vs fox/weasel)
+	_mi(_sphere(0.045, 0.055), Vector3(-0.07, 0.54, 0.24), bob, "EarL")
+	_mi(_sphere(0.045, 0.055), Vector3(0.07, 0.54, 0.24), bob, "EarR")
+	# Bright eyes
+	_mi(_sphere(0.028), Vector3(-0.05, 0.46, 0.34), bob, "EyeL")
+	_mi(_sphere(0.028), Vector3(0.05, 0.46, 0.34), bob, "EyeR")
+	_mi(_sphere(0.012), Vector3(-0.05, 0.465, 0.36), bob, "PupilL")
+	_mi(_sphere(0.012), Vector3(0.05, 0.465, 0.36), bob, "PupilR")
+	# Short sturdy legs
+	for info in [
+		["FL", Vector3(-0.10, 0.16, 0.14)],
+		["FR", Vector3(0.10, 0.16, 0.14)],
+		["BL", Vector3(-0.10, 0.16, -0.12)],
+		["BR", Vector3(0.10, 0.16, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.018, 0.02, 0.13), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.05, 0.016, 0.06)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Curling prehensile tail (signature — coils upward unlike weasel bush)
+	var tail := _mi(_cyl(0.05, 0.02, 0.38), Vector3(0, 0.34, -0.28), bob, "Tail")
+	tail.rotation_degrees = Vector3(40, 0, 0)
+	var curl := _mi(_cyl(0.035, 0.015, 0.22), Vector3(0, 0.48, -0.48), bob, "TailCurl")
+	curl.rotation_degrees = Vector3(-55, 0, 0)
+	_mi(_sphere(0.04), Vector3(0, 0.58, -0.55), bob, "TailTip")
 

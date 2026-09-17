@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 52 overnight (v1.52.0-overnight)
+- Soft **wind chime near halls** — gentle glass/metal tones outdoors by guild halls (respects mute; RuneScape-chunky, wholesome)
+- Clearer **soft-defeat camera settle** — ease zoom home + soft yaw settle at the fountain (no cheesy combat labels)
+- Soft **wardrobe color preview pulse** — gentle cream scale bloom when picking Look/Wardrobe colors
+- New wilds foe **Pecan Possum** — plump rounded body, pointed snout, soft ears, curling prehensile tail, gentle “coaxed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel)
+- Journal QoL: **🔒 locked week count** in header + **Open only** toggle (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 51 overnight (v1.51.0-overnight)
 - Soft **rain eaves splash on halls** — gentle blue-glass drips off outdoor hall roof eaves while raining (off indoors / clear / fog; RuneScape-chunky, wholesome)
 - Clearer **journal open flourish** — soft scale + cream fade when opening the quest journal (J)

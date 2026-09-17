@@ -401,5 +401,16 @@ func _finish():
 	print("VERSION_151_SRC", 'config/version="1.51.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
+
+
+	print("PECAN_POSSUM_SRC", '"pecan_possum"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("WIND_CHIME_SRC", "HallWindChime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "_update_hall_wind_chime" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("DEFEAT_CAM_SRC", "_play_soft_defeat_camera_settle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("WARDROBE_PULSE_SRC", "_play_wardrobe_preview_pulse" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	print("JOURNAL_OPEN_ONLY_SRC", "OpenOnlyBtn" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd") and "weeks locked" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("WAVE52_TOAST_SRC", "maybe_wave_52_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_152_SRC", 'config/version="1.52.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
 	print("WORLD_SMOKE_OK")
 	quit(0)

@@ -11,6 +11,8 @@ signal closed
 @onready var close_btn: Button = $Panel/VBox/CloseBtn
 
 var _filter: String = "current"  # current | available | completed | all
+var _open_only: bool = false  # Wave 52: Open-only toggle (unlocked & not mastered)
+var _open_only_btn: CheckButton = null
 
 func _ready() -> void:
 	close_btn.pressed.connect(func():
@@ -24,6 +26,27 @@ func _ready() -> void:
 	filter_opt.add_item("All weeks", 3)
 	filter_opt.item_selected.connect(_on_filter)
 	list.item_selected.connect(_on_select)
+	_ensure_open_only_toggle()
+
+func _ensure_open_only_toggle() -> void:
+	## Wave 52: Open-only filter toggle in journal FilterRow (PIN 1234; mastery ≥80% unchanged).
+	if _open_only_btn != null and is_instance_valid(_open_only_btn):
+		return
+	var row: HBoxContainer = get_node_or_null("Panel/VBox/FilterRow")
+	if row == null:
+		return
+	_open_only_btn = CheckButton.new()
+	_open_only_btn.name = "OpenOnlyBtn"
+	_open_only_btn.text = "Open only"
+	_open_only_btn.tooltip_text = "Show only unlocked quests that are still open (not mastered ★)."
+	_open_only_btn.button_pressed = _open_only
+	_open_only_btn.toggled.connect(_on_open_only_toggled)
+	row.add_child(_open_only_btn)
+
+func _on_open_only_toggled(on: bool) -> void:
+	AudioBus.play_ui()
+	_open_only = on
+	refresh()
 
 func open() -> void:
 	_filter = "current"
@@ -58,7 +81,10 @@ func refresh() -> void:
 	var camp_frac := _campaign_progress_fraction(uw)
 	# Wave 47: ★ count mastered this campaign in header (PIN 1234; mastery ≥80% unchanged)
 	var camp_stars: int = _count_campaign_mastered(uw)
-	week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered]
+	# Wave 52: show locked week count (PIN 1234; mastery ≥80% unchanged)
+	var locked_weeks: int = maxi(0, 36 - uw)
+	var locked_tag := (" · 🔒 %d weeks locked" % locked_weeks) if locked_weeks > 0 else " · Full year open"
+	week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -156,6 +182,9 @@ func _collect_quests() -> Array:
 					continue
 			"all":
 				pass
+		# Wave 52: Open-only toggle — unlocked & not mastered (PIN 1234; mastery ≥80% unchanged)
+		if _open_only and (not unlocked or done):
+			continue
 		out.append(q)
 	return out
 

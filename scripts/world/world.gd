@@ -42,6 +42,7 @@ var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
 var _water_positions: Array = []  # Wave 38: brook murmur proximity
 var _brook_check_t: float = 0.0
+var _wind_chime_check_t: float = 0.0  # Wave 52: soft wind chime near halls
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -979,6 +980,7 @@ func _update_day_night(delta: float) -> void:
 		AudioBus.set_hall_chatter(_inside_hall != "")
 	_update_leaf_rustle()
 	_update_brook_murmur()
+	_update_hall_wind_chime()
 	_update_village_dusk_lamps(dayness)
 	_update_plaza_campfire(dayness)
 
@@ -1135,6 +1137,35 @@ func _update_brook_murmur() -> void:
 			near = true
 			break
 	AudioBus.set_brook_murmur(near)
+
+
+
+func _update_hall_wind_chime() -> void:
+	## Wave 52: soft wind chime when outdoors near guild halls (throttled; respects mute via AudioBus).
+	if not AudioBus.has_method("set_wind_chime"):
+		return
+	if _inside_hall != "" or player == null:
+		AudioBus.set_wind_chime(false)
+		return
+	var now: float = float(Time.get_ticks_msec()) * 0.001
+	if now - _wind_chime_check_t < 0.33:
+		return
+	_wind_chime_check_t = now
+	var near := false
+	var pp: Vector3 = player.global_position
+	var pts: Array = []
+	if not _hall_eaves.is_empty():
+		pts = _hall_eaves
+	else:
+		for b in world_data.get("buildings", []):
+			pts.append(Vector3(float(b.get("x", 0)), 0.0, float(b.get("z", 0))))
+	for ep in pts:
+		var dx: float = pp.x - ep.x
+		var dz: float = pp.z - ep.z
+		if dx * dx + dz * dz < 132.25:  # ~11.5^2 soft hear-distance by halls
+			near = true
+			break
+	AudioBus.set_wind_chime(near)
 
 
 func _update_plaza_campfire(dayness: float) -> void:
@@ -1482,6 +1513,8 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 		AudioBus.set_hall_chatter(true)
 	if AudioBus.has_method("set_leaf_rustle"):
 		AudioBus.set_leaf_rustle(false)
+	if AudioBus.has_method("set_wind_chime"):
+		AudioBus.set_wind_chime(false)
 	if AudioBus.has_method("set_brook_murmur"):
 		AudioBus.set_brook_murmur(false)
 	_door_cooldown = 0.8
