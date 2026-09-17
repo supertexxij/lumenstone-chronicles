@@ -51,7 +51,7 @@ func _ready() -> void:
 	_fill(cape_opt, ["crimson","azure","emerald","gold","violet"])
 	_fill(outfit_opt, ["cream","sky","forest","sand","rose"])
 	ok_btn.pressed.connect(_on_ok)
-	cancel_btn.pressed.connect(func(): cancelled.emit())
+	cancel_btn.pressed.connect(_on_cancel)
 	skin_opt.item_selected.connect(func(_i): _refresh_preview())
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
@@ -156,7 +156,18 @@ func _on_ok() -> void:
 	}
 	if wardrobe_mode:
 		_play_wardrobe_equip_sparkle()  # Wave 42: soft equip sparkle
-	confirmed.emit(name_edit.text.strip_edges(), app)
+		_play_wardrobe_close_flourish(func():
+			confirmed.emit(name_edit.text.strip_edges(), app)
+		)
+	else:
+		confirmed.emit(name_edit.text.strip_edges(), app)
+
+
+func _on_cancel() -> void:
+	if wardrobe_mode:
+		_play_wardrobe_close_flourish(func(): cancelled.emit())
+	else:
+		cancelled.emit()
 
 
 func _play_wardrobe_flourish() -> void:
@@ -206,5 +217,22 @@ func _play_wardrobe_equip_sparkle() -> void:
 	get_tree().create_timer(0.7).timeout.connect(func():
 		if is_instance_valid(host):
 			host.queue_free()
+	)
+
+func _play_wardrobe_close_flourish(done: Callable) -> void:
+	## Wave 48: soft wardrobe close flourish — gentle scale down + fade (RuneScape-chunky, wholesome).
+	var panel: Control = get_node_or_null("Panel")
+	if panel == null:
+		done.call()
+		return
+	panel.pivot_offset = panel.size * 0.5
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(panel, "scale", Vector2(0.94, 0.94), 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 0.0), 0.16)
+	tw.chain().tween_callback(func():
+		panel.scale = Vector2.ONE
+		panel.modulate = Color(1, 1, 1, 1)
+		done.call()
 	)
 

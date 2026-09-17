@@ -110,6 +110,9 @@ func _ready() -> void:
 		"hickory_quail":
 			if label: label.position.y = 1.4
 			hp_bar.position.y = 1.15
+		"juniper_jay":
+			if label: label.position.y = 1.5
+			hp_bar.position.y = 1.25
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -219,6 +222,8 @@ func _update_target_reticle(_delta: float) -> void:
 	_ensure_target_reticle()
 	var on := alive and GameState.combat_target == self
 	_target_reticle.visible = on
+	# Wave 48: clearer combat target name plate — chunkier outline + warm cream when engaged
+	_update_target_nameplate(on)
 	if not on:
 		return
 	# Soft steady cream breath — distinct from yellow soft-aggro telegraph
@@ -228,6 +233,23 @@ func _update_target_reticle(_delta: float) -> void:
 		var mat: StandardMaterial3D = _target_reticle.material_override
 		mat.albedo_color = Color(0.98, 0.94, 0.82, pulse)
 	_target_reticle.scale = Vector3(s, 1.0, s)
+
+
+func _update_target_nameplate(engaged: bool) -> void:
+	## Wave 48: clearer combat target name plate (RuneScape-chunky, wholesome; no cheesy combat labels).
+	if label == null:
+		return
+	if engaged:
+		label.outline_size = 12
+		label.font_size = 48
+		label.modulate = Color(1.0, 0.97, 0.82, 1.0)
+		label.outline_modulate = Color(0.22, 0.18, 0.10, 0.95)
+	else:
+		label.outline_size = 6
+		label.font_size = 40
+		if not _was_warning:
+			label.modulate = Color.WHITE
+		label.outline_modulate = Color(0, 0, 0, 1)
 
 func _ensure_telegraph() -> void:
 	## Wave 23: chunkier RuneScape-style soft-aggro ring — bright torus rim + soft fill disc.
@@ -622,6 +644,28 @@ func _idle_anim(delta: float) -> void:
 			var flank := creature_bob.get_node_or_null("Flank")
 			if flank:
 				flank.scale = Vector3.ONE * (1.0 + sin(t * 1.15) * 0.04)
+		"juniper_jay":
+			# Soft perch-hop — tall crest tip, wing tuck, pale bib puff (Wave 48)
+			creature_bob.position.y = 0.04 + abs(sin(t * 1.6)) * 0.045
+			creature_bob.rotation.y = sin(t * 0.7) * 0.12
+			wing_phase += delta * 11.0
+			var jlw := creature_bob.get_node_or_null("LWing")
+			var jrw := creature_bob.get_node_or_null("RWing")
+			var jflap := sin(wing_phase) * 0.24
+			if jlw:
+				jlw.rotation.z = deg_to_rad(16) + jflap
+			if jrw:
+				jrw.rotation.z = deg_to_rad(-16) - jflap
+			var jtail := creature_bob.get_node_or_null("Tail")
+			if jtail:
+				jtail.rotation.y = sin(t * 1.05) * 0.12
+				jtail.rotation.x = deg_to_rad(-12) + sin(t * 0.85) * 0.05
+			var jcrest := creature_bob.get_node_or_null("Crest")
+			if jcrest:
+				jcrest.rotation.x = deg_to_rad(-28) + sin(t * 1.3) * 0.08
+			var jbib := creature_bob.get_node_or_null("Bib")
+			if jbib:
+				jbib.scale = Vector3.ONE * (1.0 + sin(t * 1.35) * 0.05)
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -392,5 +392,18 @@ func _initialize():
 	print("MASTERY_80_W47", "MASTERY_PCT := 0.8" in gs47 or "0.8" in gs47)
 	print("NO_DAY_CASH_W47", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+	print("VERSION_148", 'config/version="1.48.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("JUNIPER_JAY", '"juniper_jay"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_jay" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e118"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CANOPY_DRIP_W48", "_setup_canopy_drip" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "RainCanopyDrip" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TARGET_NAMEPLATE_W48", "_update_target_nameplate" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("WARDROBE_CLOSE_W48", "_play_wardrobe_close_flourish" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	var gs48 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("EQUIP_TOAST_W48", "Equipped %s." in gs48)
+	print("FOOD_STACK_W48", "stack %d/%d" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and '"%s %d/%d"' in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("PIN_STILL_1234_W48", "const DEFAULT_PIN := \"1234\"" in gs48 or 'DEFAULT_PIN := "1234"' in gs48)
+	print("MASTERY_80_W48", "MASTERY_PCT := 0.8" in gs48 or "0.8" in gs48)
+	print("NO_DAY_CASH_W48", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

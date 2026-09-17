@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 48 overnight (v1.48.0-overnight)
+- Soft **rain canopy drip under trees** — gentle blue-glass drips from the nearest canopy while raining outdoors (off indoors / clear / fog; RuneScape-chunky, wholesome)
+- Clearer **combat target name plate** — chunkier outline + warm cream when engaged (no cheesy combat labels)
+- Soft **wardrobe close flourish** — gentle scale + fade when confirming or closing Look/Wardrobe
+- New wilds foe **Juniper Jay** — sleek body, tall crest, pale throat bib, longer fan tail, gentle “shooed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail)
+- Inventory QoL: clearer **food stack counts** (`stack N/M` in bag + `Bread N/M` on pantry HUD) + **Equipped …** confirmation toast (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 47 overnight (v1.47.0-overnight)
 - Soft **snowdust particles in cold Fog** — pale motes drift around the player outdoors in Fog weather (off indoors / clear / rain; RuneScape-chunky, wholesome)
 - Clearer **soft-defeat HP restore numbers** — toast shows +N HP and a chunky floating “+N HP” at the fountain (no cheesy combat labels)

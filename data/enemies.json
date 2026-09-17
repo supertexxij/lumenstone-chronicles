@@ -298,6 +298,19 @@
       "combat_xp": 138,
       "respawn_sec": 62.0,
       "description": "A plump quail of the hickory wilds \u2014 flush it gently with a careful step!"
+    },
+    "juniper_jay": {
+      "kind": "juniper_jay",
+      "name": "Juniper Jay",
+      "defeat_verb": "shooed",
+      "color": "#4a6a78",
+      "accent": "#c9e0f0",
+      "max_hp": 158,
+      "damage": 26,
+      "accuracy": 0.26,
+      "combat_xp": 144,
+      "respawn_sec": 64.0,
+      "description": "A bright jay of the juniper wilds \u2014 shoo it gently with a careful step!"
     }
   },
   "spawns": [
@@ -978,6 +991,36 @@
       "kind": "hickory_quail",
       "x": -28,
       "z": -76
+    },
+    {
+      "id": "e114",
+      "kind": "juniper_jay",
+      "x": -82,
+      "z": 18
+    },
+    {
+      "id": "e115",
+      "kind": "juniper_jay",
+      "x": 44,
+      "z": -78
+    },
+    {
+      "id": "e116",
+      "kind": "juniper_jay",
+      "x": -12,
+      "z": 88
+    },
+    {
+      "id": "e117",
+      "kind": "juniper_jay",
+      "x": 88,
+      "z": 42
+    },
+    {
+      "id": "e118",
+      "kind": "juniper_jay",
+      "x": -56,
+      "z": -88
     }
   ],
   "base_combat": {

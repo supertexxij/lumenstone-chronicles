@@ -125,7 +125,8 @@ func refresh() -> void:
 			if heal_n > 0:
 				heal_mark = " · +%d HP" % heal_n  # Wave 32: pantry heal preview
 			if GameState.has_method("pantry_count"):
-				stack_mark = " ×%d/%d" % [GameState.pantry_count(id), GameState.pantry_max(id)]
+				# Wave 48: clearer food stack counts
+				stack_mark = "  · stack %d/%d" % [GameState.pantry_count(id), GameState.pantry_max(id)]
 		var def_mark := ""
 		var def_n: int = int(item.get("defense", 0))
 		if def_n > 0:

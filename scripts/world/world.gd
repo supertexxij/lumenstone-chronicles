@@ -34,6 +34,7 @@ var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
+var _canopy_drip: CPUParticles3D  # Wave 48: soft rain canopy drip under trees outdoors
 var _puddle_ripples: CPUParticles3D  # Wave 41: soft rain puddle ripples on ground
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
@@ -1602,6 +1603,7 @@ func _setup_weather() -> void:
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
 	_setup_snowdust()
+	_setup_canopy_drip()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1812,6 +1814,8 @@ func _update_weather(delta: float) -> void:
 		else:
 			_snowdust.emitting = false
 			_snowdust.visible = false
+	# Wave 48: soft rain canopy drip under nearest tree outdoors (off indoors / clear / fog)
+	_update_canopy_drip()
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -3193,6 +3197,69 @@ func _setup_snowdust() -> void:
 	_snowdust.position = Vector3(0, 2.8, 0)
 	add_child(_snowdust)
 	HeadlessGuard.guard_particles(_snowdust)
+
+func _setup_canopy_drip() -> void:
+	## Wave 48: soft canopy drip motes under trees while raining outdoors (RuneScape-chunky, wholesome).
+	_canopy_drip = CPUParticles3D.new()
+	_canopy_drip.name = "RainCanopyDrip"
+	_canopy_drip.emitting = false
+	_canopy_drip.amount = 28
+	_canopy_drip.lifetime = 1.6
+	_canopy_drip.preprocess = 0.4
+	_canopy_drip.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_canopy_drip.emission_box_extents = Vector3(2.2, 0.15, 2.2)
+	_canopy_drip.direction = Vector3(0.02, -1, 0.01)
+	_canopy_drip.spread = 8.0
+	_canopy_drip.initial_velocity_min = 1.2
+	_canopy_drip.initial_velocity_max = 2.4
+	_canopy_drip.gravity = Vector3(0, -4.5, 0)
+	_canopy_drip.scale_amount_min = 0.18
+	_canopy_drip.scale_amount_max = 0.38
+	var dm := SphereMesh.new()
+	dm.radius = 0.035
+	dm.height = 0.07
+	_canopy_drip.mesh = dm
+	var dmat := StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.72, 0.84, 0.95, 0.78)
+	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_canopy_drip.material_override = dmat
+	_canopy_drip.position = Vector3(0, 3.2, 0)
+	_canopy_drip.visible = false
+	add_child(_canopy_drip)
+	HeadlessGuard.guard_particles(_canopy_drip)
+
+
+func _update_canopy_drip() -> void:
+	## Soft drip under the nearest tree canopy while raining outdoors.
+	if _canopy_drip == null:
+		return
+	var raining_out := player != null and _inside_hall == "" and _weather_mode == 2
+	if not raining_out or _tree_positions.is_empty():
+		_canopy_drip.emitting = false
+		_canopy_drip.visible = false
+		return
+	var pp: Vector3 = player.global_position
+	var best: Vector3 = _tree_positions[0]
+	var best_d2: float = 1.0e12
+	for i in _tree_positions.size():
+		# Sample every other tree for cheap proximity (same spirit as leaf rustle)
+		if i % 2 != 0 and _tree_positions.size() > 24:
+			continue
+		var tp: Vector3 = _tree_positions[i]
+		var dx: float = pp.x - tp.x
+		var dz: float = pp.z - tp.z
+		var d2: float = dx * dx + dz * dz
+		if d2 < best_d2:
+			best_d2 = d2
+			best = tp
+	if best_d2 > 36.0:  # farther than ~6 paces — no canopy overhead
+		_canopy_drip.emitting = false
+		_canopy_drip.visible = false
+		return
+	_canopy_drip.global_position = Vector3(best.x, 3.4, best.z)
+	_canopy_drip.emitting = true
+	_canopy_drip.visible = true
 
 
 func _play_fountain_restore_fx() -> void:

@@ -251,7 +251,8 @@ func _refresh_food_lbl() -> void:
 			short = "Cake"
 		elif "Stew" in nm:
 			short = "Stew"
-		bits.append("%s×%d" % [short, int(s.get("count", 0))])
+		# Wave 48: clearer food stack counts on pantry HUD
+		bits.append("%s %d/%d" % [short, int(s.get("count", 0)), int(s.get("max", s.get("count", 0)))])
 	var stack_txt := " · ".join(bits) if bits.size() > 0 else "empty"
 	var cd: float = float(info.get("cooldown", 0.0))
 	var best: Dictionary = info.get("best", {})

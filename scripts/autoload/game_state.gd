@@ -450,6 +450,8 @@ func equip_item(id: String) -> void:
 			toast.emit("Food is used with Use / V — it is not worn as gear.")
 		return
 	equipped[slot] = id
+	# Wave 48: equip confirmation toast (PIN 1234; mastery ≥80% unchanged)
+	toast.emit("Equipped %s." % item.get("name", id))
 	state_changed.emit()
 	save_game()
 
@@ -758,7 +760,8 @@ func peek_best_consumable() -> Dictionary:
 		var heal_amt: int = int(it.get("heal", 0))
 		if heal_amt <= 0:
 			continue
-		stacks.append({"id": str(id), "name": str(it.get("name", id)), "count": cnt, "heal": heal_amt})
+		# Wave 48: include max so HUD can show clearer stack N/M counts
+		stacks.append({"id": str(id), "name": str(it.get("name", id)), "count": cnt, "max": pantry_max(str(id)), "heal": heal_amt})
 		if cnt <= 0:
 			continue
 		if heal_amt > best_heal:
