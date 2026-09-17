@@ -57,9 +57,28 @@ func _ready() -> void:
 			hp_bar.position.y = 1.5
 	_update_hp_bar()
 	_ensure_telegraph()
+	_ensure_nav_obstacle()
+	if GameState.has_signal("soft_combat_cleared") and not GameState.soft_combat_cleared.is_connected(clear_soft_aggro):
+		GameState.soft_combat_cleared.connect(clear_soft_aggro)
 
 func is_alive() -> bool:
 	return alive
+
+func clear_soft_aggro() -> void:
+	## Called when player rests at the fountain — drop yellow pull / pulse.
+	_aggro_pulse = 0.0
+	_was_warning = false
+	_set_warning(false)
+
+func _ensure_nav_obstacle() -> void:
+	if get_node_or_null("NavObstacle") != null:
+		return
+	var obs := NavigationObstacle3D.new()
+	obs.name = "NavObstacle"
+	obs.radius = 0.5
+	obs.height = 1.5
+	obs.avoidance_enabled = true
+	add_child(obs)
 
 func _physics_process(delta: float) -> void:
 	if _dissolve_t >= 0.0:

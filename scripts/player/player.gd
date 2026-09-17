@@ -1,4 +1,5 @@
 extends CharacterBody3D
+const HitsplatUtil = preload("res://scripts/combat/hitsplat.gd")
 ## Click-to-move + WASD player with elevated camera follow
 ## Humanoid mesh: head/torso/arms/legs + equip visuals + walk / attack poses
 
@@ -38,6 +39,8 @@ func _ready() -> void:
 	GameState.state_changed.connect(_on_state_changed)
 	GameState.soft_defeated.connect(soft_respawn)
 	GameState.combat_target_changed.connect(_on_combat_target)
+	if GameState.has_signal("heal_tick") and not GameState.heal_tick.is_connected(_on_heal_tick):
+		GameState.heal_tick.connect(_on_heal_tick)
 	_ensure_nav_agent()
 	_apply_appearance()
 	_apply_camera_zoom()
@@ -52,10 +55,18 @@ func _ensure_nav_agent() -> void:
 		add_child(_nav_agent)
 	_nav_agent.path_desired_distance = 0.55
 	_nav_agent.target_desired_distance = 0.45
-	_nav_agent.avoidance_enabled = false
-	_nav_agent.radius = 0.4
+	# Light RVO avoidance vs other agents / NavigationObstacle3D (NPCs, foes)
+	_nav_agent.avoidance_enabled = true
+	_nav_agent.radius = 0.42
 	_nav_agent.height = 1.6
 	_nav_agent.max_speed = SPEED
+	_nav_agent.neighbor_distance = 2.8
+	_nav_agent.max_neighbors = 6
+	_nav_agent.time_horizon_agents = 0.7
+	_nav_agent.time_horizon_obstacles = 0.35
+	_nav_agent.avoidance_priority = 1.0
+	if not _nav_agent.velocity_computed.is_connected(_on_nav_velocity_computed):
+		_nav_agent.velocity_computed.connect(_on_nav_velocity_computed)
 
 func set_navigation_ready(ok: bool) -> void:
 	_nav_ready = ok
@@ -72,6 +83,17 @@ func soft_respawn() -> void:
 	target_pos = global_position
 	has_click_target = false
 	velocity = Vector3.ZERO
+	if _nav_agent:
+		_nav_agent.set_velocity(Vector3.ZERO)
+
+func _on_heal_tick(amount: int) -> void:
+	if amount > 0:
+		HitsplatUtil.spawn_heal(self, amount, 2.05)
+
+func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
+	## Apply lightly avoided velocity from NavigationServer RVO.
+	velocity.x = safe_velocity.x
+	velocity.z = safe_velocity.z
 
 func _apply_appearance() -> void:
 	if parts.is_empty():
@@ -305,6 +327,7 @@ func _physics_process(delta: float) -> void:
 		var forward: Vector3 = Vector3(-sin(cam_yaw), 0, -cos(cam_yaw))
 		var right: Vector3 = Vector3(cos(cam_yaw), 0, -sin(cam_yaw))
 		var wish: Vector3 = (right * input_dir.x + forward * input_dir.y).normalized()
+		wish = _soft_avoid_entities(wish)
 		velocity.x = move_toward(velocity.x, wish.x * SPEED, ACCEL * delta)
 		velocity.z = move_toward(velocity.z, wish.z * SPEED, ACCEL * delta)
 		mesh_root.rotation.y = atan2(wish.x, wish.z)
@@ -340,6 +363,7 @@ func _physics_process(delta: float) -> void:
 			if (not using_nav) and _stuck_timer > 0.25:
 				var side := Vector3(-wish.z, 0, wish.x) * float(_assist_side)
 				wish = (wish + side * 0.85).normalized()
+			wish = _soft_avoid_entities(wish)
 			velocity.x = move_toward(velocity.x, wish.x * SPEED, ACCEL * delta)
 			velocity.z = move_toward(velocity.z, wish.z * SPEED, ACCEL * delta)
 			mesh_root.rotation.y = atan2(wish.x, wish.z)
@@ -350,6 +374,10 @@ func _physics_process(delta: float) -> void:
 		_stuck_timer = 0.0
 
 	velocity.y = 0
+	# Feed desired velocity into avoidance (light sidestep around NPCs / obstacles)
+	if _nav_agent and _nav_agent.avoidance_enabled:
+		_nav_agent.set_velocity(Vector3(velocity.x, 0.0, velocity.z))
+		# velocity_computed may fire sync; keep current if not
 	var pre_pos := global_position
 	move_and_slide()
 	# Slide-along + stuck detection for click-to-move against barrels/trees/fences
@@ -396,6 +424,36 @@ func _physics_process(delta: float) -> void:
 			# Face the foe while in range
 			var to_e: Vector3 = GameState.combat_target.global_position - global_position
 			mesh_root.rotation.y = atan2(to_e.x, to_e.z)
+
+
+func _soft_avoid_entities(wish: Vector3) -> Vector3:
+	## Light sidestep around mentors / foes so click-move feels RuneScape-aware.
+	if wish.length() < 0.01:
+		return wish
+	var push := Vector3.ZERO
+	for n in get_tree().get_nodes_in_group("npcs"):
+		if not is_instance_valid(n):
+			continue
+		var d: float = global_position.distance_to(n.global_position)
+		if d < 1.4 and d > 0.05:
+			var away: Vector3 = global_position - n.global_position
+			away.y = 0.0
+			if away.length() > 0.01:
+				push += away.normalized() * ((1.4 - d) / 1.4)
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(e):
+			continue
+		if e.has_method("is_alive") and not e.is_alive():
+			continue
+		var d2: float = global_position.distance_to(e.global_position)
+		if d2 < 1.25 and d2 > 0.05:
+			var away2: Vector3 = global_position - e.global_position
+			away2.y = 0.0
+			if away2.length() > 0.01:
+				push += away2.normalized() * ((1.25 - d2) / 1.25) * 0.55
+	if push.length() > 0.01:
+		wish = (wish + push * 0.9).normalized()
+	return wish
 
 func _animate_walk(moving: bool, delta: float) -> void:
 	var bob: Node3D = parts.get("bob")

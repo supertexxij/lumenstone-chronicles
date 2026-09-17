@@ -90,6 +90,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **1–5** halls (outdoors only) |
+| Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
 | Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |
@@ -217,6 +218,12 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Outdoor **nav re-path** when blocked mid-walk (refresh nav + assist waypoints)
 - **Mill Bridge** polish (foam, door/window, grindstone, sacks, fence) + **Lookout Rock** polish (steps, spyglass, flag, fire ring)
 - Fountain pantry refill covers all unlocked consumables (not only starters)
+- **V / F1** hotkey eats best available food (highest heal, pantry + cooldown aware)
+- Light **NavigationAgent avoidance** + NPC/foe obstacles; soft sidestep around mentors
+- Tighter **hall prop collision** + a bit more desk/shelf density (perf-minded)
+- Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
+- Inventory Use button respects empty pantry stacks (v1.8 bugfix)
+- Indoor attendant shifted clear of quest-desk approach
 
 ### Architecture
 

@@ -8,6 +8,8 @@ signal quest_started(quest_id: String)
 signal ui_open_requested(panel: String)
 signal combat_target_changed(enemy: Node)
 signal soft_defeated
+signal soft_combat_cleared
+signal heal_tick(amount: int)
 
 const LEGACY_SAVE_PATH := "user://lumenstone_save_v1.json"
 const SAVE_SLOT_FMT := "user://lumenstone_save_slot_%d.json"
@@ -55,6 +57,8 @@ var slot_label: String = ""
 ## Pantry stacks for starter food (refill at fountain). Soft combat balance.
 var consumable_charges: Dictionary = {}
 var consumable_cd: float = 0.0
+var _fountain_regen_left: int = 0
+var _fountain_regen_timer: float = 0.0
 
 var hp: int = 40
 var max_hp: int = 40
@@ -72,6 +76,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if consumable_cd > 0.0:
 		consumable_cd = maxf(0.0, consumable_cd - delta)
+	_tick_fountain_regen(delta)
 
 func _apply_starters() -> void:
 	for id in ItemDB.starter_ids():
@@ -516,12 +521,78 @@ func use_consumable(item_id: String) -> bool:
 	save_game()
 	return true
 
+
+func use_best_consumable() -> bool:
+	## Hotkey food: pick unlocked pantry item with charges, off cooldown, highest heal.
+	if hp >= max_hp:
+		toast.emit("Already at full health.")
+		return false
+	if consumable_cd > 0.05:
+		toast.emit("Give it a moment (%.1fs)." % consumable_cd)
+		return false
+	_ensure_pantry_defaults()
+	var best_id := ""
+	var best_heal := -1
+	for id in unlocked_items:
+		var it: Dictionary = ItemDB.get_item(str(id))
+		if str(it.get("slot", "")) != "consumable":
+			continue
+		var heal_amt: int = int(it.get("heal", 0))
+		if heal_amt <= 0:
+			continue
+		if int(consumable_charges.get(id, 0)) <= 0:
+			continue
+		if heal_amt > best_heal:
+			best_heal = heal_amt
+			best_id = str(id)
+	if best_id == "":
+		toast.emit("Pantry empty — rest at the fountain to refill.")
+		return false
+	return use_consumable(best_id)
+
+func clear_soft_combat(announce: bool = false) -> void:
+	## Leave soft combat / yellow pull without a defeat.
+	var had: bool = combat_target != null and is_instance_valid(combat_target)
+	set_combat_target(null)
+	soft_combat_cleared.emit()
+	if announce and had:
+		toast.emit("Combat calm — you are safe by the fountain.")
+
+func rest_at_fountain(announce: bool = true) -> void:
+	## Soft rest: clear combat status, refill pantry, brief HP regen ticks.
+	clear_soft_combat(false)
+	refill_pantry(announce)
+	if hp < max_hp:
+		_fountain_regen_left = 3
+		_fountain_regen_timer = 0.05
+		if announce:
+			toast.emit("Resting by the fountain — strength returns.")
+	elif announce:
+		# refill_pantry already toasted if stocks changed; still confirm calm
+		pass
+
+func _tick_fountain_regen(delta: float) -> void:
+	if _fountain_regen_left <= 0:
+		return
+	_fountain_regen_timer -= delta
+	if _fountain_regen_timer > 0.0:
+		return
+	_fountain_regen_timer = 0.45
+	var gained: int = heal(3)
+	_fountain_regen_left -= 1
+	if gained > 0:
+		heal_tick.emit(gained)
+	if _fountain_regen_left <= 0 and hp >= max_hp:
+		toast.emit("Fully rested.")
+
 func _soft_defeat() -> void:
 	toast.emit("You were restored at the village fountain.")
 	position_xz = Vector2(0, 10)
+	_fountain_regen_left = 0
 	heal_full()
 	refill_pantry(false)
 	set_combat_target(null)
+	soft_combat_cleared.emit()
 	soft_defeated.emit()
 	state_changed.emit()
 	save_game()

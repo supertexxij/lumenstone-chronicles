@@ -22,6 +22,7 @@ func _ready() -> void:
 	add_to_group("npcs")
 	label.text = npc_name
 	parts = HumanoidBuilder.build(mesh_root)
+	_ensure_nav_obstacle()
 	var skin_keys := ["fair", "light", "medium", "tan", "deep"]
 	var skin_hex: String = str(GameState.SKIN_HEX[skin_keys[abs(npc_id.hash()) % skin_keys.size()]])
 	HumanoidBuilder.apply_npc_colors(parts, accent, Color(skin_hex))
@@ -83,3 +84,14 @@ func request_talk() -> void:
 	talk_requested.emit(self)
 	GameState.ui_open_requested.emit("npc:" + npc_id)
 	AudioBus.play_ui()
+
+func _ensure_nav_obstacle() -> void:
+	## Light avoidance bubble so NavigationAgent steers around mentors.
+	if get_node_or_null("NavObstacle") != null:
+		return
+	var obs := NavigationObstacle3D.new()
+	obs.name = "NavObstacle"
+	obs.radius = 0.55
+	obs.height = 1.8
+	obs.avoidance_enabled = true
+	add_child(obs)

@@ -115,6 +115,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cycle_weather()
 	if event.is_action_pressed("interact"):
 		_try_nearby_npc()
+	if event.is_action_pressed("use_food"):
+		if GameState.has_method("use_best_consumable"):
+			GameState.use_best_consumable()
 	if event is InputEventKey and event.pressed and not event.echo:
 		var code: int = event.keycode if event.keycode != 0 else event.physical_keycode
 		match code:
@@ -204,9 +207,14 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false
 	GameState.position_xz = Vector2(pos.x, pos.z)
-	if "Fountain" in label and GameState.has_method("refill_pantry"):
-		GameState.refill_pantry(true)
-	GameState.toast.emit("Traveled to %s." % label)
+	if "Fountain" in label:
+		if GameState.has_method("rest_at_fountain"):
+			GameState.rest_at_fountain(true)
+		elif GameState.has_method("refill_pantry"):
+			GameState.refill_pantry(true)
+		GameState.toast.emit("Traveled to %s — resting." % label)
+	else:
+		GameState.toast.emit("Traveled to %s." % label)
 	AudioBus.play_ui()
 
 func _open_journal() -> void:

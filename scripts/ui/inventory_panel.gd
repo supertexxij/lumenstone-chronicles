@@ -100,7 +100,8 @@ func _on_select(idx: int) -> void:
 	_refresh_detail_only()
 	if use_btn:
 		var is_food: bool = str(ItemDB.get_item(selected_id).get("slot", "")) == "consumable"
-		use_btn.disabled = (not is_food) or GameState.consumable_cd > 0.05
+		var empty: bool = is_food and GameState.has_method("pantry_count") and int(GameState.pantry_count(selected_id)) <= 0
+		use_btn.disabled = (not is_food) or GameState.consumable_cd > 0.05 or empty
 
 func _on_equip() -> void:
 	if selected_id != "":

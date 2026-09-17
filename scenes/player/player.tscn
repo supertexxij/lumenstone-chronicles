@@ -29,4 +29,4 @@ path_desired_distance = 0.55
 target_desired_distance = 0.45
 radius = 0.4
 height = 1.6
-avoidance_enabled = false
+avoidance_enabled = true

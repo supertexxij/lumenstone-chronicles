@@ -395,7 +395,9 @@ func _build_fountain() -> void:
 	rcol.shape = rbox
 	refill.add_child(rcol)
 	refill.body_entered.connect(func(body: Node):
-		if body.is_in_group("player") and GameState.has_method("refill_pantry"):
+		if body.is_in_group("player") and GameState.has_method("rest_at_fountain"):
+			GameState.rest_at_fountain(true)
+		elif body.is_in_group("player") and GameState.has_method("refill_pantry"):
 			GameState.refill_pantry(true)
 	)
 	root.add_child(refill)
@@ -654,26 +656,30 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_mi(_box(Vector3(12.2, 0.25, 12.2)), Vector3(0, 3.7, 0), room, _mats["roof"], "Ceiling")
 	# Rug
 	_mi(_box(Vector3(4.5, 0.04, 3.2)), Vector3(0, 0.22, 0.5), room, rug, "Rug")
-	# Quest desk (center-north) — interactable
+	# Quest desk (center-north) — interactable; collision snug to desk mesh
 	_add_quest_desk(room, Vector3(0, 0, -3.2), col, str(b.get("guild", "")), str(b.get("label", "Hall")))
-	_add_wall_col(room, Vector3(2.9, 1.0, 1.3), Vector3(0, 0.55, -3.2))  # desk blocker for indoor nav
-	# Side study tables + chairs
+	_add_wall_col(room, Vector3(2.75, 0.95, 1.15), Vector3(0, 0.5, -3.2))
+	# Side study tables + chairs (with collisions)
 	_add_study_table(room, Vector3(-3.4, 0, -1.0), 0.2)
 	_add_study_table(room, Vector3(3.4, 0, -1.0), -0.2)
 	_add_chair(room, Vector3(-3.4, 0, 0.3), PI)
 	_add_chair(room, Vector3(3.4, 0, 0.3), PI)
-	# Bookshelves / scroll racks
+	# Bookshelves / scroll racks — slightly tighter shelf shells
 	_add_bookshelf(room, Vector3(-5.2, 0, -3.5), col)
 	_add_bookshelf(room, Vector3(5.2, 0, -3.5), col)
 	_add_bookshelf(room, Vector3(-5.2, 0, 2.0), col)
-	_add_bookshelf(room, Vector3(5.2, 0, 2.0), col)  # denser east wall
-	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(-5.2, 1.0, -3.5))
-	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(5.2, 1.0, -3.5))
-	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(-5.2, 1.0, 2.0))
-	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(5.2, 1.0, 2.0))
-	# Extra study nook + desk-side chair
+	_add_bookshelf(room, Vector3(5.2, 0, 2.0), col)
+	_add_bookshelf(room, Vector3(-5.2, 0, -0.7), col)  # denser west wall
+	_add_wall_col(room, Vector3(1.15, 2.0, 0.4), Vector3(-5.2, 1.0, -3.5))
+	_add_wall_col(room, Vector3(1.15, 2.0, 0.4), Vector3(5.2, 1.0, -3.5))
+	_add_wall_col(room, Vector3(1.15, 2.0, 0.4), Vector3(-5.2, 1.0, 2.0))
+	_add_wall_col(room, Vector3(1.15, 2.0, 0.4), Vector3(5.2, 1.0, 2.0))
+	_add_wall_col(room, Vector3(1.15, 2.0, 0.4), Vector3(-5.2, 1.0, -0.7))
+	# Extra study nook + second desk pair (Wave 9 density, still light)
 	_add_study_table(room, Vector3(0.0, 0, 2.4), 0.0)
 	_add_chair(room, Vector3(0.0, 0, 3.4), 0.0)
+	_add_study_table(room, Vector3(-3.5, 0, 1.6), -0.15)
+	_add_chair(room, Vector3(-3.5, 0, 2.5), PI)
 	_add_chair(room, Vector3(-0.9, 0, -2.2), 0.4)  # seat at quest desk
 	# Wall plaque near desk
 	_mi(_box(Vector3(1.1, 0.7, 0.06)), Vector3(-2.2, 1.8, -5.7), room, _mat(col.darkened(0.25)), "Plaque")
@@ -683,15 +689,19 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	plaque.position = Vector3(-2.2, 2.35, -5.5)
 	plaque.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	room.add_child(plaque)
-	# Benches along walls
+	# Benches along walls (with snug collision)
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(-2.5, 0.55, 4.2), room, _mats["bench"], "BenchL")
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(2.5, 0.55, 4.2), room, _mats["bench"], "BenchR")
+	_add_wall_col(room, Vector3(2.1, 0.5, 0.45), Vector3(-2.5, 0.5, 4.2))
+	_add_wall_col(room, Vector3(2.1, 0.5, 0.45), Vector3(2.5, 0.5, 4.2))
 	# Barrel + crate + notice board
 	var bar := Node3D.new()
 	bar.position = Vector3(-4.5, 0, 3.5)
 	room.add_child(bar)
 	_mi(_cyl(0.32, 0.35, 0.8), Vector3(0, 0.4, 0), bar, _mats["barrel"], "Barrel")
+	_add_wall_col(room, Vector3(0.65, 0.85, 0.65), Vector3(-4.5, 0.45, 3.5))
 	_mi(_box(Vector3(0.65, 0.5, 0.65)), Vector3(4.4, 0.28, 3.4), room, _mats["wood_light"], "Crate")
+	_add_wall_col(room, Vector3(0.6, 0.55, 0.6), Vector3(4.4, 0.3, 3.4))
 	_mi(_box(Vector3(1.6, 1.1, 0.08)), Vector3(0, 1.6, 5.5), room, _mat(col.darkened(0.35)), "NoticeBoard")
 	var notice := Label3D.new()
 	notice.text = "Notices"
@@ -823,6 +833,17 @@ func _add_study_table(room: Node3D, pos: Vector3, yaw: float) -> void:
 	_mi(_cyl(0.06, 0.06, 0.7), Vector3(0.6, 0.35, -0.3), root, _mats["wood_light"], "Leg2")
 	_mi(_cyl(0.06, 0.06, 0.7), Vector3(-0.6, 0.35, 0.3), root, _mats["wood_light"], "Leg3")
 	_mi(_cyl(0.06, 0.06, 0.7), Vector3(0.6, 0.35, 0.3), root, _mats["wood_light"], "Leg4")
+	# Snug collision for indoor nav + walk (Wave 9)
+	var body := StaticBody3D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(1.55, 0.75, 0.85)
+	col.shape = shape
+	col.position = Vector3(0, 0.4, 0)
+	body.add_child(col)
+	root.add_child(body)
 
 func _add_chair(room: Node3D, pos: Vector3, yaw: float) -> void:
 	var root := Node3D.new()
@@ -833,6 +854,16 @@ func _add_chair(room: Node3D, pos: Vector3, yaw: float) -> void:
 	_mi(_box(Vector3(0.55, 0.55, 0.08)), Vector3(0, 0.75, -0.22), root, _mats["bench"], "Back")
 	_mi(_box(Vector3(0.08, 0.45, 0.08)), Vector3(-0.2, 0.22, 0.15), root, _mats["wood"], "Leg")
 	_mi(_box(Vector3(0.08, 0.45, 0.08)), Vector3(0.2, 0.22, 0.15), root, _mats["wood"], "Leg2")
+	var body := StaticBody3D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(0.5, 0.85, 0.45)
+	col.shape = shape
+	col.position = Vector3(0, 0.45, -0.05)
+	body.add_child(col)
+	root.add_child(body)
 
 func _add_bookshelf(room: Node3D, pos: Vector3, guild_col: Color) -> void:
 	var root := Node3D.new()
@@ -861,7 +892,7 @@ func _spawn_indoor_attendant(room: Node3D, b: Dictionary) -> void:
 	npc.guild = guild
 	npc.quest_ids = PackedStringArray(outdoor.get("quest_ids", []))
 	npc.accent = _hex_color(str(outdoor.get("color", b.get("color", "#888"))))
-	npc.position = Vector3(2.2, 0, -3.8)
+	npc.position = Vector3(3.1, 0, -4.2)  # clear of quest-desk approach (v1.8/v1.9)
 	npc.talk_requested.connect(func(p): npc_talk.emit(p))
 	room.add_child(npc)
 
@@ -1104,6 +1135,7 @@ func _add_guild_theme_props(room: Node3D, guild: String, col: Color) -> void:
 			# Map table + timeline posts
 			_mi(_box(Vector3(1.8, 0.7, 1.1)), Vector3(-3.8, 0.45, 1.5), room, _mats["wood"], "MapTable")
 			_mi(_box(Vector3(1.5, 0.04, 0.9)), Vector3(-3.8, 0.85, 1.5), room, _mat(Color("#c2b280")), "Map")
+			_add_wall_col(room, Vector3(1.7, 0.75, 1.0), Vector3(-3.8, 0.4, 1.5))
 			for i in 4:
 				_mi(_cyl(0.06, 0.06, 1.1), Vector3(3.6 + float(i) * 0.35, 0.7, 1.8), room, _mats["wood"], "Post")
 				_mi(_box(Vector3(0.2, 0.15, 0.05)), Vector3(3.6 + float(i) * 0.35, 1.2, 1.8), room, _mat(col.lightened(0.1 * i)), "Flag")
@@ -1111,6 +1143,7 @@ func _add_guild_theme_props(room: Node3D, guild: String, col: Color) -> void:
 			# Simple lectern + quiet candles
 			_mi(_box(Vector3(0.7, 1.1, 0.5)), Vector3(-3.8, 0.7, 1.4), room, _mats["wood"], "Lectern")
 			_mi(_box(Vector3(0.55, 0.08, 0.45)), Vector3(-3.8, 1.3, 1.55), room, _mats["wood_light"], "LecternTop")
+			_add_wall_col(room, Vector3(0.65, 1.15, 0.5), Vector3(-3.8, 0.65, 1.4))
 			_mi(_box(Vector3(0.35, 0.1, 0.28)), Vector3(-3.8, 1.4, 1.55), room, _mat(Color("#f4e4bc")), "OpenWord")
 			for i in 3:
 				var cx := 3.5 + float(i) * 0.4
