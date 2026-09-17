@@ -24,6 +24,7 @@ var _interior_root: Node3D
 var _outdoor_return: Vector3 = Vector3(0, 0, 10)
 var _inside_hall: String = ""
 var _door_cooldown: float = 0.0
+var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -68,6 +69,7 @@ func _ready() -> void:
 	_build_stone_arch()
 	_build_amber_knoll()
 	_build_birch_rest()
+	_build_fern_dell()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -111,6 +113,9 @@ func _init_mats() -> void:
 	_mats["birch_dark"] = _mat(Color("#c4b8a0"))
 	_mats["leaf_birch"] = _mat(Color("#6a9a4a"))
 	_mats["heather"] = _mat(Color("#9a6a9a"))
+	_mats["fern"] = _mat(Color("#3d7a3a"))
+	_mats["fern_light"] = _mat(Color("#5a9a48"))
+	_mats["fern_dark"] = _mat(Color("#2a5a2a"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -398,6 +403,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Birch Rest plaza keep-clear
 	if abs(pos.x + 42.0) < 5.0 and abs(pos.z + 20.0) < 5.0:
 		return true
+	# South-southeast path to Fern Dell (Wave 27)
+	if _near_segment_xz(pos, Vector3(8, 0, 20), Vector3(22, 0, 48), 3.4):
+		return true
+	# Fern Dell plaza keep-clear
+	if abs(pos.x - 22.0) < 5.0 and abs(pos.z - 48.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -639,6 +650,7 @@ func _process(delta: float) -> void:
 	_update_day_night(delta)
 	_update_weather(delta)
 	_update_quest_desk_highlights()
+	_update_door_glows()
 	_update_landmark_approach()
 	_update_ambient_critters(delta)
 
@@ -683,6 +695,9 @@ func _landmark_zones() -> Array:
 		{"id": "birch", "pos": Vector3(-42, 0, -20), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Birch Rest — pale birch trunks and a quiet place to sit awhile.",
 			"return_toast": "Back at Birch Rest — the pale trunks still stand gentle and calm."},
+		{"id": "fern", "pos": Vector3(22, 0, 48), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Fern Dell — soft green fronds fill a quiet south hollow.",
+			"return_toast": "Back at Fern Dell — the fronds still rustle kindly underfoot."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -828,11 +843,18 @@ func _add_door_volume(b: Dictionary) -> void:
 	box.size = Vector3(1.6, 2.2, 1.4)
 	col.shape = box
 	area.add_child(col)
-	# Visible soft door marker
-	var mat := _mat(Color(0.95, 0.9, 0.55, 0.35), 0.5)
+	# Visible soft door marker — Wave 27: warmer pulse glow (RuneScape-chunky Enter)
+	var mat := _mat(Color(1.0, 0.92, 0.45, 0.42), 0.45)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mi(_box(Vector3(1.2, 2.0, 0.15)), Vector3(0, 0.1, 0), area, mat, "DoorGlow")
-	_place_label3d(area, "Enter", 36, Vector3(0, 1.5, 0))
+	var glow_mi := _mi(_box(Vector3(1.35, 2.15, 0.18)), Vector3(0, 0.1, 0), area, mat, "DoorGlow")
+	# Soft ground wash under the door
+	var wash := _mat(Color(1.0, 0.88, 0.4, 0.22), 0.5)
+	wash.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var wash_mi := _mi(_box(Vector3(1.8, 0.05, 1.1)), Vector3(0, -0.95, 0.15), area, wash, "DoorWash")
+	area.set_meta("door_glow_mi", glow_mi)
+	area.set_meta("door_wash_mi", wash_mi)
+	_door_glow_mats.append({"glow": mat, "wash": wash, "label_area": area})
+	_place_label3d(area, "Enter", 38, Vector3(0, 1.55, 0))
 	area.body_entered.connect(func(body: Node):
 		if body.is_in_group("player"):
 			_enter_hall(str(b.get("id", "")), str(b.get("label", "Hall")), body)
@@ -1629,6 +1651,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
 	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
 	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
+	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -2191,6 +2214,83 @@ func _build_birch_rest() -> void:
 	_add_chunky_sign(root, Vector3(-38.5, 0, -20.0), "Birch Rest", -0.25)
 	_place_label3d(root, "Pale trunks, quiet rest", 28, Vector3(-42.0, 4.1, -20.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Birch Rest", 52, Vector3(-42.0, 3.5, -20.0))
+
+
+
+func _update_door_glows() -> void:
+	## Wave 27: soft warm pulse on guild-hall Enter markers (wholesome, no combat labels).
+	if _door_glow_mats.is_empty():
+		return
+	var pulse: float = 0.38 + 0.32 * abs(sin(Time.get_ticks_msec() * 0.0035))
+	for entry in _door_glow_mats:
+		var gmat: StandardMaterial3D = entry.get("glow")
+		var wmat: StandardMaterial3D = entry.get("wash")
+		if gmat:
+			gmat.albedo_color = Color(1.0, 0.92, 0.45, 0.28 + 0.38 * pulse)
+		if wmat:
+			wmat.albedo_color = Color(1.0, 0.88, 0.4, 0.12 + 0.18 * pulse)
+
+
+func _build_fern_dell() -> void:
+	## South-southeast wilds landmark — soft fern hollow (soft travel 7).
+	## Distinct from Reed Pool (reeds/water west) and Birch Rest (pale trunks SW).
+	var root := Node3D.new()
+	root.name = "FernDell"
+	static_world.add_child(root)
+	# Dirt spur SSE from the green
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 8.0 + tt * 14.0
+		var z := 20.0 + tt * 28.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "FernPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 9.0 + tt * 12.0
+		var z := 22.0 + tt * 24.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "FernTrim")
+	# Soft mossy dell floor
+	_mi(_cyl(4.4, 4.4, 0.08), Vector3(22.0, 0.04, 48.0), root, _mats["grass_dark"], "FernClearing")
+	_mi(_cyl(2.6, 2.6, 0.06), Vector3(22.0, 0.08, 48.0), root, _mats["fern_light"], "FernClearingInner")
+	# Ring of fern fronds (chunky leaf fans)
+	for i in 9:
+		var ang := float(i) * TAU / 9.0 + 0.15
+		var fx := 22.0 + cos(ang) * 3.4
+		var fz := 48.0 + sin(ang) * 3.4
+		var fh := 0.55 + float(i % 3) * 0.12
+		# Stem
+		_mi(_cyl(0.04, 0.05, fh), Vector3(fx, fh * 0.5, fz), root, _mats["fern_dark"], "FernStem%d" % i)
+		# Frond lobes
+		var lobe := _mi(_box(Vector3(0.55, 0.06, 0.28)), Vector3(fx, fh + 0.08, fz), root, _mats["fern"], "FernLobe%d" % i)
+		lobe.rotation_degrees = Vector3(12.0, rad_to_deg(ang), 18.0 if i % 2 == 0 else -18.0)
+		_mi(_sphere(0.22, 0.18), Vector3(fx + cos(ang) * 0.15, fh + 0.2, fz + sin(ang) * 0.15), root, _mats["fern_light"], "FernTip%d" % i)
+	# Inner tufts
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		_mi(_sphere(0.2, 0.24), Vector3(22.0 + cos(ang) * 1.6, 0.14, 48.0 + sin(ang) * 1.6), root, _mats["fern"], "FernTuft%d" % i)
+	# Resting log + lanterns + crate
+	_mi(_cyl(0.22, 0.22, 1.6), Vector3(20.2, 0.22, 46.4), root, _mats["wood"], "FernLog")
+	_add_crate(Vector3(24.0, 0, 49.5))
+	_add_lantern_post(Vector3(18.5, 0, 45.0))
+	_add_lantern_post(Vector3(25.5, 0, 50.5))
+	_add_lantern_post(Vector3(12.0, 0, 28.0))
+	_add_lantern_post(Vector3(16.0, 0, 36.0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1027
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 9.0 + tt * 12.0
+		var cz := 22.0 + tt * 24.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(4.5, 7.2), 0, cz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	_add_chunky_sign(root, Vector3(19.5, 0, 48.0), "Fern Dell", 0.35)
+	_place_label3d(root, "Soft fronds, quiet dell", 28, Vector3(22.0, 4.1, 48.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Fern Dell", 52, Vector3(22.0, 3.5, 48.0))
 
 
 func _play_fountain_restore_fx() -> void:

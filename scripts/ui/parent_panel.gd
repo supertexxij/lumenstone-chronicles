@@ -106,8 +106,9 @@ func _refresh() -> void:
 	var year_note: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year: week unlock %d%% · quests mastered %d%%" % [week_pct, mastery_pct]
 	var help_preview: Array = GameState.needs_help_quests()
 	var help_n: int = help_preview.size()
-	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
-		help_n, GameState.child_name, GameState.active_slot + 1,
+	var last_sess: String = _format_last_session()
+	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+		help_n, GameState.child_name, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		uw, camp, week_bar, next_gate,
 		mastered, total_q, mastery_pct, mastery_bar, year_note
@@ -260,6 +261,20 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	row.add_child(btn)
 	row.add_child(detail)
 	parent.add_child(row)
+
+func _format_last_session() -> String:
+	## Wave 27: show last save/session time (local clock; PIN stays 1234).
+	var ts: int = int(GameState.last_played) if GameState.get("last_played") != null else 0
+	if ts <= 0:
+		return "Last session: not saved yet"
+	# Godot 4.3: unix dict is UTC — shift by system timezone bias (minutes).
+	var bias: int = int(Time.get_time_zone_from_system().get("bias", 0))
+	var dt: Dictionary = Time.get_datetime_dict_from_unix_time(ts + bias * 60)
+	return "Last session: %04d-%02d-%02d %02d:%02d" % [
+		int(dt.get("year", 0)), int(dt.get("month", 0)), int(dt.get("day", 0)),
+		int(dt.get("hour", 0)), int(dt.get("minute", 0))
+	]
+
 
 func _campaign_name(week: int) -> String:
 	if week <= 9:

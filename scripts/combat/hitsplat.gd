@@ -82,10 +82,14 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		splat.position = Vector3(0, 0.02, 0.02)
 		root.add_child(splat)
 
+	# Wave 27: soft scale pop so HP floats read chunkier (RuneScape-feel, no cheesy labels)
+	root.scale = Vector3(0.72, 0.72, 0.72)
 	var lift := 1.25 if kind in ["strong_foe", "strong_hit"] else 1.1
 	var dur := 0.95 if kind in ["strong_foe", "strong_hit"] else 0.85
+	var peak := 1.18 if kind in ["strong_foe", "strong_hit"] else 1.08
 	var tw := parent.get_tree().create_tween()
 	tw.set_parallel(true)
+	tw.tween_property(root, "scale", Vector3(peak, peak, peak), 0.12).set_ease(Tween.EASE_OUT)
 	tw.tween_property(root, "position:y", y + lift, dur).set_ease(Tween.EASE_OUT)
 	if splat:
 		tw.tween_property(splat, "modulate:a", 0.0, dur)

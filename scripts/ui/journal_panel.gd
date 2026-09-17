@@ -37,7 +37,8 @@ func _on_filter(idx: int) -> void:
 
 func refresh() -> void:
 	var uw: int = GameState.unlocked_week
-	week_lbl.text = "Campaign Week %d unlocked (of 36)" % uw
+	# Wave 27: show campaign name in journal header
+	week_lbl.text = "%s · Week %d unlocked (of 36)" % [_campaign_name(uw), uw]
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -174,3 +175,14 @@ func _on_select(idx: int) -> void:
 		status,
 		raid_note,
 	]
+
+func _campaign_name(week: int) -> String:
+	## Mirror parent dashboard campaign titles (Wave 27 journal header).
+	if week <= 9:
+		return "Campaign I — Kindling the Lamps"
+	if week <= 18:
+		return "Campaign II — Scrolls of the Free"
+	if week <= 27:
+		return "Campaign III — Builders of the Republic"
+	return "Campaign IV — Light for the Realm"
+

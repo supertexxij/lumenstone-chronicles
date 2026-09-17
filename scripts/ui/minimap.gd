@@ -125,6 +125,26 @@ func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
 			draw_rect(Rect2(pos + Vector2(2.0, -4.0), Vector2(1.2, 8.0)), col)
 			draw_circle(pos + Vector2(-2.4, -4.8), 2.2, col)
 			draw_circle(pos + Vector2(2.6, -4.8), 2.2, col)
+		"fern":
+			# Soft green frond / leaf mark (Wave 27)
+			var fpts := PackedVector2Array([
+				pos + Vector2(0, -5.0),
+				pos + Vector2(4.2, -1.5),
+				pos + Vector2(2.2, 1.0),
+				pos + Vector2(0, 4.5),
+				pos + Vector2(-2.2, 1.0),
+				pos + Vector2(-4.2, -1.5),
+			])
+			draw_colored_polygon(fpts, outline)
+			var fpts2 := PackedVector2Array([
+				pos + Vector2(0, -3.6),
+				pos + Vector2(3.0, -1.0),
+				pos + Vector2(1.5, 0.6),
+				pos + Vector2(0, 3.2),
+				pos + Vector2(-1.5, 0.6),
+				pos + Vector2(-3.0, -1.0),
+			])
+			draw_colored_polygon(fpts2, col)
 		"hall":
 			draw_rect(Rect2(pos + Vector2(-3.2, -3.2), Vector2(6.4, 6.4)), outline)
 			draw_rect(Rect2(pos + Vector2(-2.4, -2.4), Vector2(4.8, 4.8)), col)

@@ -465,24 +465,25 @@ func _ensure_foot_dust() -> void:
 	_foot_dust.emitting = false
 	_foot_dust.one_shot = true
 	_foot_dust.explosiveness = 0.92
-	_foot_dust.amount = 5
-	_foot_dust.lifetime = 0.32
+	# Wave 27: slightly chunkier wholesome footstep dust (still soft, not muddy)
+	_foot_dust.amount = 7
+	_foot_dust.lifetime = 0.38
 	_foot_dust.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	_foot_dust.emission_sphere_radius = 0.1
+	_foot_dust.emission_sphere_radius = 0.12
 	_foot_dust.direction = Vector3(0, 1, 0)
-	_foot_dust.spread = 70.0
-	_foot_dust.initial_velocity_min = 0.35
-	_foot_dust.initial_velocity_max = 0.95
-	_foot_dust.gravity = Vector3(0, -4.5, 0)
-	_foot_dust.scale_amount_min = 0.7
-	_foot_dust.scale_amount_max = 1.15
+	_foot_dust.spread = 75.0
+	_foot_dust.initial_velocity_min = 0.4
+	_foot_dust.initial_velocity_max = 1.1
+	_foot_dust.gravity = Vector3(0, -4.2, 0)
+	_foot_dust.scale_amount_min = 0.85
+	_foot_dust.scale_amount_max = 1.35
 	var dm := BoxMesh.new()
-	dm.size = Vector3(0.06, 0.04, 0.06)
+	dm.size = Vector3(0.08, 0.045, 0.08)
 	_foot_dust.mesh = dm
 	var dmat := StandardMaterial3D.new()
 	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	dmat.albedo_color = Color(0.72, 0.62, 0.42, 0.45)
+	dmat.albedo_color = Color(0.78, 0.66, 0.44, 0.52)
 	_foot_dust.material_override = dmat
 	_foot_dust.position = Vector3(0, 0.04, 0)
 	add_child(_foot_dust)
