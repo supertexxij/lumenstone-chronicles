@@ -81,6 +81,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_golem(bob)
 		"moss_badger":
 			_build_badger(bob)
+		"cedar_stag":
+			_build_stag(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -191,3 +193,47 @@ static func _build_badger(bob: Node3D) -> void:
 	# Moss tufts on back
 	_mi(_sphere(0.12), Vector3(0.05, 0.72, -0.05), bob, "Moss1")
 	_mi(_sphere(0.1), Vector3(-0.08, 0.7, -0.15), bob, "Moss2")
+
+
+static func _build_stag(bob: Node3D) -> void:
+	## Tall cedar-grove stag — long neck, branching antlers, four legs (wholesome).
+	var body := _mi(_capsule(0.28, 1.05), Vector3(0, 0.78, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	var neck := _mi(_cyl(0.10, 0.14, 0.55), Vector3(0, 1.05, 0.42), bob, "Neck")
+	neck.rotation_degrees = Vector3(28, 0, 0)
+	_mi(_sphere(0.20), Vector3(0, 1.28, 0.70), bob, "Head")
+	_mi(_sphere(0.08), Vector3(0, 1.22, 0.88), bob, "Snout")
+	_mi(_box(Vector3(0.08, 0.12, 0.22)), Vector3(0, 0.78, -0.55), bob, "Tail")
+	# Branching antlers
+	var ant_l := Node3D.new()
+	ant_l.name = "AntlerL"
+	ant_l.position = Vector3(-0.10, 1.46, 0.62)
+	ant_l.rotation_degrees = Vector3(12, 0, -18)
+	bob.add_child(ant_l)
+	_mi(_cyl(0.025, 0.035, 0.42), Vector3(0, 0.18, 0), ant_l, "Beam")
+	_mi(_cyl(0.02, 0.025, 0.22), Vector3(-0.08, 0.32, 0.04), ant_l, "TineA")
+	_mi(_cyl(0.018, 0.022, 0.16), Vector3(0.06, 0.38, -0.02), ant_l, "TineB")
+	var ant_r := Node3D.new()
+	ant_r.name = "AntlerR"
+	ant_r.position = Vector3(0.10, 1.46, 0.62)
+	ant_r.rotation_degrees = Vector3(12, 0, 18)
+	bob.add_child(ant_r)
+	_mi(_cyl(0.025, 0.035, 0.42), Vector3(0, 0.18, 0), ant_r, "Beam")
+	_mi(_cyl(0.02, 0.025, 0.22), Vector3(0.08, 0.32, 0.04), ant_r, "TineA")
+	_mi(_cyl(0.018, 0.022, 0.16), Vector3(-0.06, 0.38, -0.02), ant_r, "TineB")
+	# Ears
+	_mi(_sphere(0.07, 0.12), Vector3(-0.12, 1.38, 0.58), bob, "EarL")
+	_mi(_sphere(0.07, 0.12), Vector3(0.12, 1.38, 0.58), bob, "EarR")
+	# Four long legs
+	for info in [
+		["FL", Vector3(-0.16, 0.48, 0.32)],
+		["FR", Vector3(0.16, 0.48, 0.32)],
+		["BL", Vector3(-0.16, 0.48, -0.32)],
+		["BR", Vector3(0.16, 0.48, -0.32)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.06, 0.42), Vector3(0, -0.12, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.10, 0.06, 0.14)), Vector3(0, -0.36, 0.02), leg, "Hoof")

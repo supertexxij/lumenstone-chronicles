@@ -43,11 +43,15 @@ func _finish():
 	print("PLAYER", world != null and world.get("player") != null)
 	print("NPCS", root.get_tree().get_nodes_in_group("npcs").size())
 	var badgers := 0
+	var stags := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
+		if str(foe.get("kind")) == "cedar_stag":
+			stags += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
+	print("STAGS", stags)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -55,6 +59,7 @@ func _finish():
 	print("GARDEN", world.static_world.get_node_or_null("PrayerGarden") != null if world else false)
 	print("LOOKOUT", world.static_world.get_node_or_null("LookoutRock") != null if world else false)
 	print("MILL", world.static_world.get_node_or_null("MillBridge") != null if world else false)
+	print("HOLLOW", world.static_world.get_node_or_null("CedarHollow") != null if world else false)
 	print("NAV", world.get_node_or_null("OutdoorNavRegion") != null if world else false)
 	print("INDOOR_NAV", world.get_node_or_null("IndoorNavRegion") != null if world else false)
 	print("DESKS", root.get_tree().get_nodes_in_group("quest_desks").size())
@@ -110,5 +115,10 @@ func _finish():
 	print("LATE_WILDS_TUNE", '"max_hp": 24' in FileAccess.get_file_as_string("res://data/enemies.json") and '"max_hp": 34' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("PLAZA_AMBIENT_DENSE", '"dense": true' in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("LOADOUT_ARMOR_ICONS", "SlotRows" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "SoftArmor" in FileAccess.get_file_as_string("res://scenes/main.tscn"))
+	print("CEDAR_STAG", '"cedar_stag"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CEDAR_HOLLOW_SRC", "_build_cedar_hollow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("HELD_WEAPON", "r_arm.add_child(weapon)" in FileAccess.get_file_as_string("res://scripts/characters/humanoid_builder.gd"))
+	print("STYLE_ARMOR", "func style_armor" in FileAccess.get_file_as_string("res://scripts/characters/humanoid_builder.gd"))
+	print("YARD_ANIMALS", '"hen"' in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

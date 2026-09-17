@@ -89,7 +89,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **1–5** halls (outdoors only) |
+| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **1–5** halls (outdoors only) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
@@ -169,12 +169,12 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 - Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
-- Character customize (skin / hair / cape / outfit) with **humanoid** player mesh
-- Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + weapon mesh** attach when equipped
+- Character customize (skin / hair / cape / outfit) with **humanoid** player mesh (clearer arms/legs + visible equipped gear)
+- Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + held weapon + cloak/armor overlays** when equipped
 - **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
 - RuneScape-style **tick combat** with clearer hitsplats, player weapon swing pose, enemy flinch + death dissolve, soft wild aggro, wholesome defeat verbs, soft respawn
-- Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem
+- Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem, Moss Badger, Cedar Stag
 - **Camera zoom** (scroll / `=` `-`) + **entity-first click targeting** (props no longer steal enemy/NPC/ground clicks)
 - **Weapon mesh variants** on equip: practice sword, oak axe, shepherd staff, yew bow (cosmetic), flint dagger
 - **Minimap + compass** + day/dusk/night label for village/wilds orientation
@@ -207,6 +207,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Optional **slot labels** on title / Saves panel
 - Combat food: **Wholesome Bread** (+12 HP) and **Cool Water** (+8 HP) starters — Use in inventory
 - **Mill Bridge** southwest landmark + soft travel (**K**) + minimap mark
+- **Cedar Hollow** northeast landmark + soft travel (**O**) + Cedar Stag
 - Outdoor **NavigationRegion3D** bake for click-to-move (raycast path assist fallback)
 - Consumable **pantry stacks** (Bread ×5 / Water ×8) + short cooldown; refill at fountain
 - Stronger **per-slot rename** on title + in-game Saves panel
@@ -254,6 +255,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Added denser ambient life around guild-hall doorsteps, indoor halls, and the wilds spurs.
 - Inventory polish: equipped loadout rows keep clear armor icons, and Unequip only acts on the selected worn item.
 - Re-export Linux + Windows.
+
+### Wave 20 overnight (v1.20.0-overnight)
+- **Visible equipped gear** on the humanoid player: held weapon (sword/axe/staff/bow/dagger/mallet), cloak vs tunic, chest plate + shoulder pads on defensive cloaks, explorer hat vs jeweled crown
+- Longer, clearer **arms and legs** on the chunky RuneScape-style humanoid (still not AAA)
+- New late-wilds landmark **Cedar Hollow** (northeast spur, soft travel **O**) with toasts, minimap mark, and path corridor
+- New foe **Cedar Stag** (branching antlers, graze idle) with four hollow-area spawns
+- Village yard **hens and lambs** plus hollow birds/bugs so the green and wilds feel busier
+- Re-export Linux + Windows
 
 ### Wave 17 overnight (v1.17.0-overnight)
 - Mid/late **cloaks & hats** gain plain Soft defense (+1 early/mid, +2 late, +3 Year Champion); crowns +2
@@ -313,11 +322,11 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 
 ## Limitations
 
-- Chunky low-poly **humanoid** characters (head, torso, arms, legs, feet) — RuneScape-adjacent, not photoreal
-- Equipped hat / cape / weapon (sword/axe/staff/bow/dagger/mallet meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
-- Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
+- Chunky low-poly **humanoid** characters (head, torso, shoulders, arms, legs, feet) — RuneScape-adjacent, not photoreal
+- Equipped hat / crown / cape or tunic / weapon held in the right hand / belt / **accessory** / cloak armor plate show on the player model; NPCs share the same humanoid base
+- Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** spurs; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
 - Audio is short procedural SFX + soft drone + original village loop + quiet rain / indoor drip loops (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only

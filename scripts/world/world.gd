@@ -59,6 +59,7 @@ func _ready() -> void:
 	_build_prayer_garden()
 	_build_lookout_rock()
 	_build_mill_bridge()
+	_build_cedar_hollow()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -91,6 +92,7 @@ func _init_mats() -> void:
 	_mats["flower"] = _mat(Color("#c76b8a"))
 	_mats["flower_y"] = _mat(Color("#d4a017"))
 	_mats["rock"] = _mat(Color("#7a7a70"))
+	_mats["leaf_cedar"] = _mat(Color("#1e4a32"))
 	_mats["bush"] = _mat(Color("#356b45"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
@@ -337,6 +339,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Mill Bridge plaza keep-clear
 	if abs(pos.x + 36.0) < 5.0 and abs(pos.z - 30.0) < 5.0:
 		return true
+	# Northeast path to Cedar Hollow
+	if _near_segment_xz(pos, Vector3(10, 0, -16), Vector3(38, 0, -36), 3.4):
+		return true
+	# Cedar Hollow plaza keep-clear
+	if abs(pos.x - 38.0) < 5.0 and abs(pos.z + 36.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -344,12 +352,18 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		return
 	var body := StaticBody3D.new()
 	body.position = pos
-	var trunk_h := 1.4 if style == 0 else 1.8
+	var trunk_h := 1.4 if style == 0 else (2.15 if style == 2 else 1.8)
 	_mi(_cyl(0.22, 0.34, trunk_h), Vector3(0, trunk_h * 0.5, 0), body, _mats["wood"], "Trunk")
-	var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
-	_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
-	if style == 1:
-		_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
+	if style == 2:
+		# Cedar — taller stacked dark cones
+		_mi(_sphere(0.95, 1.7), Vector3(0, trunk_h + 0.35, 0), body, _mats["leaf_cedar"], "Leaves")
+		_mi(_sphere(0.72, 1.3), Vector3(0, trunk_h + 1.05, 0), body, _mats["leaf_cedar"], "Leaves2")
+		_mi(_sphere(0.45, 0.9), Vector3(0, trunk_h + 1.65, 0), body, _mats["leaf"], "Leaves3")
+	else:
+		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
+		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
+		if style == 1:
+			_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
 	shape.radius = 0.32
@@ -586,6 +600,9 @@ func _landmark_zones() -> Array:
 		{"id": "mill", "pos": Vector3(-36, 0, 30), "enter": 9.0, "exit": 12.0,
 			"first_toast": "First discovery: Mill Bridge — water and stone work together.",
 			"return_toast": "Back at Mill Bridge — the creek still sings under the planks."},
+		{"id": "hollow", "pos": Vector3(38, 0, -36), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Cedar Hollow — quiet trees and a gentle clearing.",
+			"return_toast": "Back at Cedar Hollow — the cedars still stand still and kind."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1472,6 +1489,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037"})
 	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a"})
 	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40"})
+	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1593,6 +1611,64 @@ func _build_mill_bridge() -> void:
 	_place_label3d(root, "Creek mill & bridge", 28, Vector3(-36.0, 3.95, 30.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Mill Bridge", 52, Vector3(-36.0, 3.4, 30.0))
 
+
+func _build_cedar_hollow() -> void:
+	## Northeast late-wilds landmark — cedar stand, fallen log, lanterns (soft travel O).
+	var root := Node3D.new()
+	root.name = "CedarHollow"
+	static_world.add_child(root)
+	# Dirt spur northeast from the glade path / village edge
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 10.0 + tt * 28.0
+		var z := -16.0 + tt * (-20.0)
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "HollowPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 12.0 + tt * 22.0
+		var z := -18.0 + tt * (-16.0)
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "HollowTrim")
+	# Soft needle bed in the clearing
+	_mi(_cyl(4.2, 4.2, 0.05), Vector3(38.0, 0.02, -36.0), root, _mats["grass_dark"], "NeedleBed")
+	# Fallen log + stump
+	var logm := _mi(_cyl(0.22, 0.26, 2.6), Vector3(35.2, 0.28, -34.2), root, _mats["wood"], "FallenLog")
+	logm.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_cyl(0.28, 0.32, 0.45), Vector3(40.6, 0.22, -38.4), root, _mats["wood"], "Stump")
+	_add_lantern_post(Vector3(34.6, 0, -33.5))
+	_add_lantern_post(Vector3(41.2, 0, -38.8))
+	_add_lantern_post(Vector3(24.0, 0, -26.0))
+	_add_lantern_post(Vector3(16.5, 0, -20.5))
+	_add_bench(Vector3(36.2, 0, -32.6), 0.4)
+	_add_crate(Vector3(40.8, 0, -33.4))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 421
+	# Framing cedars kept outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 12.0 + tt * 22.0
+		var cz := -18.0 + tt * (-16.0)
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(5.0, 8.5), 0, cz + side * rng.randf_range(1.5, 4.0) * 0.4)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 2)
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		_add_tree(Vector3(38.0 + cos(ang) * 6.4, 0, -36.0 + sin(ang) * 6.4), 2)
+		_add_flowers(Vector3(38.0 + cos(ang) * 4.6, 0, -36.0 + sin(ang) * 4.6), rng)
+	var sign := Node3D.new()
+	sign.position = Vector3(34.0, 0, -36.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.7, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	_place_label3d(sign, "Cedar Hollow", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "Quiet cedar grove", 28, Vector3(38.0, 3.95, -36.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Cedar Hollow", 52, Vector3(38.0, 3.4, -36.0))
+
+
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
 	var root := Node3D.new()
@@ -1633,6 +1709,14 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(37.0, 0, 31.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		{"pos": Vector3(-33.0, 0, 33.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		# Cedar Hollow (Wave 20)
+		{"pos": Vector3(38.0, 0, -36.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(41.0, 0, -33.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		# Village yard animals — hens and lambs near the fountain (Wave 20)
+		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
+		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},
+		{"pos": Vector3(8.0, 0, 12.5), "birds": false, "bugs": false, "critter": "lamb"},
+		{"pos": Vector3(-7.5, 0, 13.0), "birds": false, "bugs": false, "critter": "lamb"},
 	]
 	for i in sites.size():
 		var s: Dictionary = sites[i]
@@ -1707,7 +1791,11 @@ func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = f
 func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) -> void:
 	var bob := Node3D.new()
 	bob.name = "Critter_%s" % kind
-	bob.position = pos
+	# Ground animals stay near the dirt; flyers keep a little height.
+	var place := pos
+	if kind == "hen" or kind == "lamb":
+		place = Vector3(pos.x, 0.12, pos.z)
+	bob.position = place
 	parent.add_child(bob)
 	var body := MeshInstance3D.new()
 	body.name = "Body"
@@ -1747,6 +1835,59 @@ func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) 
 			wing.position = Vector3(0, 0.02, 0)
 			bob.add_child(wing)
 			HeadlessGuard.guard_mesh(wing)
+		"hen":
+			var sm := SphereMesh.new()
+			sm.radius = 0.11
+			sm.height = 0.16
+			body.mesh = sm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.78, 0.42, 0.22)
+			body.material_override = mat
+			var head := MeshInstance3D.new()
+			var hm := SphereMesh.new()
+			hm.radius = 0.055
+			head.mesh = hm
+			var hmat := StandardMaterial3D.new()
+			hmat.albedo_color = Color(0.85, 0.55, 0.28)
+			head.material_override = hmat
+			head.position = Vector3(0, 0.1, 0.08)
+			bob.add_child(head)
+			HeadlessGuard.guard_mesh(head)
+			var comb := MeshInstance3D.new()
+			comb.mesh = _box(Vector3(0.03, 0.05, 0.04))
+			var cmat := StandardMaterial3D.new()
+			cmat.albedo_color = Color(0.75, 0.18, 0.16)
+			comb.material_override = cmat
+			comb.position = Vector3(0, 0.16, 0.08)
+			bob.add_child(comb)
+			HeadlessGuard.guard_mesh(comb)
+		"lamb":
+			var sm := SphereMesh.new()
+			sm.radius = 0.14
+			sm.height = 0.18
+			body.mesh = sm
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color(0.92, 0.90, 0.84)
+			body.material_override = mat
+			var head := MeshInstance3D.new()
+			var hm := SphereMesh.new()
+			hm.radius = 0.07
+			head.mesh = hm
+			var hmat := StandardMaterial3D.new()
+			hmat.albedo_color = Color(0.85, 0.78, 0.62)
+			head.material_override = hmat
+			head.position = Vector3(0, 0.08, 0.14)
+			bob.add_child(head)
+			HeadlessGuard.guard_mesh(head)
+			for side in [-1.0, 1.0]:
+				var ear := MeshInstance3D.new()
+				ear.mesh = _box(Vector3(0.04, 0.06, 0.02))
+				var emat := StandardMaterial3D.new()
+				emat.albedo_color = Color(0.78, 0.68, 0.5)
+				ear.material_override = emat
+				ear.position = Vector3(side * 0.08, 0.14, 0.12)
+				bob.add_child(ear)
+				HeadlessGuard.guard_mesh(ear)
 		_:
 			# Butterfly — two soft wing plates
 			var sm := SphereMesh.new()
@@ -1770,7 +1911,7 @@ func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) 
 	HeadlessGuard.guard_mesh(body)
 	_ambient_critters.append({
 		"node": bob,
-		"base": pos,
+		"base": place,
 		"phase": phase0,
 		"kind": kind,
 	})
@@ -1802,6 +1943,20 @@ func _update_ambient_critters(delta: float) -> void:
 					cos(phase * 0.9) * 0.5
 				)
 				n.rotation.y = phase * 0.9
+			"hen":
+				n.position = base + Vector3(
+					sin(phase * 0.35) * 0.55,
+					0.0,
+					cos(phase * 0.28) * 0.45
+				)
+				n.rotation.y = phase * 0.35
+			"lamb":
+				n.position = base + Vector3(
+					sin(phase * 0.22) * 0.7,
+					abs(sin(phase * 1.4)) * 0.03,
+					cos(phase * 0.18) * 0.55
+				)
+				n.rotation.y = phase * 0.22
 			_:
 				n.position = base + Vector3(
 					sin(phase * 0.85) * 0.55,

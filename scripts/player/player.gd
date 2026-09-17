@@ -118,15 +118,20 @@ func _apply_appearance() -> void:
 	HumanoidBuilder.apply_human_colors(parts, skin, hair, outfit, cape_col)
 
 	var cape_id = GameState.equipped.get("cape")
-	var cape_mesh: MeshInstance3D = parts.get("cape")
 	if cape_id != null:
-		var item: Dictionary = ItemDB.get_item(str(cape_id))
-		if not item.is_empty() and item.get("color", "") != "":
-			HumanoidBuilder.set_color(cape_mesh, Color(item["color"]))
+		var citem: Dictionary = ItemDB.get_item(str(cape_id))
+		if not citem.is_empty():
+			HumanoidBuilder.style_cloak(parts, citem)
+			HumanoidBuilder.style_armor(parts, citem)
+		else:
+			var cape_mesh: MeshInstance3D = parts.get("cape")
+			if cape_mesh:
+				cape_mesh.visible = true
+	else:
+		var cape_mesh: MeshInstance3D = parts.get("cape")
 		if cape_mesh:
 			cape_mesh.visible = true
-	elif cape_mesh:
-		cape_mesh.visible = true
+		HumanoidBuilder.style_armor(parts, {})
 
 	var weapon_root: Node3D = parts.get("weapon")
 	var wid = GameState.equipped.get("weapon")
@@ -149,12 +154,14 @@ func _apply_appearance() -> void:
 	var hat_root: Node3D = parts.get("hat")
 	var hid = GameState.equipped.get("head")
 	if hat_root:
-		hat_root.visible = hid != null
 		if hid != null:
 			var hitem: Dictionary = ItemDB.get_item(str(hid))
-			var hcol := Color(hitem.get("color", "#5c4033"))
-			HumanoidBuilder.set_color(parts.get("hat_crown"), hcol)
-			HumanoidBuilder.set_color(parts.get("hat_brim"), hcol.darkened(0.15))
+			HumanoidBuilder.style_hat(parts, hitem)
+		else:
+			hat_root.visible = false
+			var jewel: MeshInstance3D = parts.get("hat_jewel")
+			if jewel:
+				jewel.visible = false
 
 	var belt_mesh: MeshInstance3D = parts.get("belt")
 	var bid = GameState.equipped.get("belt")
@@ -301,11 +308,7 @@ func play_attack_swing() -> void:
 	_attacking = true
 	_attack_t = 0.0
 	AudioBus.play_swing()
-	# Bring weapon into hand pose briefly
-	var weapon: Node3D = parts.get("weapon")
-	if weapon and weapon.visible:
-		weapon.position = Vector3(0.32, 1.05, 0.25)
-		weapon.rotation_degrees = Vector3(-20, 0, -70)
+	# Weapon is parented to the right arm, so the swing pose carries it.
 
 func _physics_process(delta: float) -> void:
 	if ui_blocking:

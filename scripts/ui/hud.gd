@@ -53,7 +53,7 @@ func _ready() -> void:
 		$BottomBar.move_child(saves_btn, parent_btn.get_index())
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
 	_ensure_food_lbl()
-	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · 1–5 halls"
+	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
