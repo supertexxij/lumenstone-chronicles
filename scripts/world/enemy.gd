@@ -301,8 +301,16 @@ func _combat_tick() -> void:
 	if not alive:
 		return
 	if randf() < float(def.get("accuracy", 0.7)):
-		var edmg: int = int(def.get("damage", 1))
-		var strong_in: bool = edmg >= 4
+		var base_in: int = int(def.get("damage", 1))
+		# Light incoming variance (±1) — wholesome RuneScape-feel numbers
+		var edmg: int = maxi(1, base_in + randi_range(-1, 1))
+		# Soft player defense from combat level + cape/head gear
+		if GameState.has_method("get_defense"):
+			edmg = maxi(1, edmg - GameState.get_defense())
+		# Occasional slightly firmer poke (~10%)
+		if randf() < 0.10:
+			edmg += 1
+		var strong_in: bool = edmg >= 4 or edmg >= base_in + 1
 		GameState.take_damage(edmg)
 		HitsplatUtil.spawn(player, edmg, false, 2.15, strong_in)
 		AudioBus.play_hit()
@@ -387,7 +395,20 @@ func _respawn() -> void:
 	mesh_root.scale = _base_scale
 	modulate_meshes(1.0)
 	_dissolve_t = -1.0
+	# Restore original mesh colors after kill-flash wash (v1.14 bug fix)
+	_restore_kill_flash_colors()
 	_update_hp_bar()
+
+func _restore_kill_flash_colors() -> void:
+	for mi in _kill_flash_base.keys():
+		if not is_instance_valid(mi):
+			continue
+		if mi.material_override is StandardMaterial3D:
+			var mat := (mi.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
+			mat.albedo_color = _kill_flash_base[mi]
+			mi.material_override = mat
+	_kill_flash_base.clear()
+	_kill_flash_t = -1.0
 
 func _update_hp_bar() -> void:
 	var ratio := float(hp) / float(maxi(1, max_hp))

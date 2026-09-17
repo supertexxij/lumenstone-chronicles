@@ -566,17 +566,23 @@ func _process(delta: float) -> void:
 
 func _landmark_zones() -> Array:
 	## Soft approach radii for wilds landmarks (RuneScape-feel area toasts).
+	## first_toast = first discovery ever; return_toast = later visits (once per visit).
 	return [
 		{"id": "glade", "pos": Vector3(0.5, 0, -48), "enter": 11.0, "exit": 14.0,
-			"toast": "Approaching Lantern Glade — soft light among the trees."},
+			"first_toast": "First discovery: Lantern Glade — lanterns glow soft among the trees.",
+			"return_toast": "Back at Lantern Glade — the soft light still waits."},
 		{"id": "ridge", "pos": Vector3(-24, 0, -54), "enter": 10.0, "exit": 13.0,
-			"toast": "Approaching Pine Ridge — cool air under the pines."},
+			"first_toast": "First discovery: Pine Ridge — cool air under the pines.",
+			"return_toast": "Back at Pine Ridge — the pines still whisper softly."},
 		{"id": "garden", "pos": Vector3(30, 0, 18), "enter": 9.0, "exit": 12.0,
-			"toast": "Approaching the Prayer Garden — a quiet place to give thanks."},
+			"first_toast": "First discovery: Prayer Garden — a quiet place to give thanks.",
+			"return_toast": "Back at the Prayer Garden — a peaceful place to rest."},
 		{"id": "lookout", "pos": Vector3(40, 0, 34), "enter": 9.0, "exit": 12.0,
-			"toast": "Approaching Lookout Rock — a clear view over the green."},
+			"first_toast": "First discovery: Lookout Rock — a clear view over the green.",
+			"return_toast": "Back at Lookout Rock — the green still stretches wide."},
 		{"id": "mill", "pos": Vector3(-36, 0, 30), "enter": 9.0, "exit": 12.0,
-			"toast": "Approaching Mill Bridge — water and stone work together."},
+			"first_toast": "First discovery: Mill Bridge — water and stone work together.",
+			"return_toast": "Back at Mill Bridge — the creek still sings under the planks."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -589,7 +595,7 @@ func _update_landmark_approach() -> void:
 		return
 	var ppos: Vector3 = player.global_position
 	var best_id := ""
-	var best_toast := ""
+	var best_zone: Dictionary = {}
 	var best_d := 9999.0
 	for z in _landmark_zones():
 		var c: Vector3 = z["pos"]
@@ -600,7 +606,7 @@ func _update_landmark_approach() -> void:
 		if active and d < best_d:
 			best_d = d
 			best_id = str(z["id"])
-			best_toast = str(z["toast"])
+			best_zone = z
 	if best_id == "":
 		if _landmark_here != "":
 			GameState.clear_landmark_greeted(_landmark_here)
@@ -612,13 +618,22 @@ func _update_landmark_approach() -> void:
 		_landmark_here = best_id
 		# Once-per-visit: greet if not already remembered (survives save/reload in-zone).
 		if not GameState.has_landmark_greeted(best_id):
-			if _landmark_toast_cd <= 0.0 and best_toast != "":
-				GameState.toast.emit(best_toast)
+			var first := false
+			if GameState.has_method("mark_landmark_discovered"):
+				first = GameState.mark_landmark_discovered(best_id)
+			var msg := ""
+			if first:
+				msg = str(best_zone.get("first_toast", best_zone.get("return_toast", "")))
+			else:
+				msg = str(best_zone.get("return_toast", best_zone.get("first_toast", "")))
+			if _landmark_toast_cd <= 0.0 and msg != "":
+				GameState.toast.emit(msg)
 				_landmark_toast_cd = 2.5
 			GameState.mark_landmark_greeted(best_id)
 
-func note_soft_travel_arrival(pos: Vector3) -> void:
+func note_soft_travel_arrival(pos: Vector3) -> bool:
 	## Soft Travel already toasts the destination — sync zone memory without a second approach toast.
+	## Returns true if this soft-travel was a first-ever discovery of a landmark.
 	var best_id := ""
 	var best_d := 9999.0
 	for z in _landmark_zones():
@@ -630,11 +645,12 @@ func note_soft_travel_arrival(pos: Vector3) -> void:
 	if _landmark_here != "" and _landmark_here != best_id:
 		GameState.clear_landmark_greeted(_landmark_here)
 	_landmark_here = best_id
+	var first := false
 	if best_id != "":
+		if GameState.has_method("mark_landmark_discovered"):
+			first = GameState.mark_landmark_discovered(best_id)
 		GameState.mark_landmark_greeted(best_id)
-	else:
-		# Left all landmark zones (e.g. fountain / hall doors).
-		pass
+	return first
 
 func _setup_day_night() -> void:
 	_sun = get_node_or_null("Sun") as DirectionalLight3D
@@ -1000,21 +1016,24 @@ func _exit_hall(body: Node) -> void:
 	_apply_weather_visuals(false)
 
 func _build_lantern_glade() -> void:
-	## Northern wilds spur — wider continuous dirt path + brook; corridor kept clear.
+	## Northern wilds spur — denser path trim, brook foam, lanterns, side props (Mill/Lookout parity).
 	var root := Node3D.new()
 	root.name = "LanternGlade"
 	static_world.add_child(root)
 	# Continuous dirt ribbon north from village (overlap for no gaps)
-	for i in 12:
-		var z := -14.0 - float(i) * 3.0
-		_mi(_box(Vector3(3.0, 0.04, 3.4)), Vector3(0.5, 0.025, z), root, _mats["dirt"], "Path")
-	# Soft edge trim
-	for i in 6:
-		var z := -16.0 - float(i) * 5.5
-		_mi(_box(Vector3(3.6, 0.02, 0.35)), Vector3(0.5, 0.03, z), root, _mats["dirt_trim"], "Trim")
-	# Stepping stones across a tiny brook (centered on path)
+	for i in 14:
+		var z := -12.0 - float(i) * 2.8
+		_mi(_box(Vector3(3.0, 0.04, 3.2)), Vector3(0.5, 0.025, z), root, _mats["dirt"], "GladePath")
+	# Soft edge trim (Lookout/Mill style)
+	for i in 8:
+		var z := -14.0 - float(i) * 4.5
+		_mi(_box(Vector3(3.6, 0.02, 0.32)), Vector3(0.5, 0.03, z), root, _mats["dirt_trim"], "GladeTrim")
+	# Stepping stones across a tiny brook + foam highlights
 	_mi(_cyl(2.8, 2.8, 0.08), Vector3(0.5, 0.02, -42), root, _mats["water"], "Brook")
 	_mi(_cyl(1.6, 1.6, 0.06), Vector3(3.6, 0.02, -44.5), root, _mats["water"], "BrookPool")
+	_mi(_cyl(0.5, 0.55, 0.04), Vector3(-0.8, 0.05, -41.5), root, _mat(Color("#a8d4ea"), 0.15), "GladeFoam1")
+	_mi(_cyl(0.35, 0.4, 0.03), Vector3(1.6, 0.05, -42.4), root, _mat(Color("#b8dff0"), 0.15), "GladeFoam2")
+	_mi(_cyl(0.3, 0.35, 0.03), Vector3(0.2, 0.05, -43.1), root, _mat(Color("#a8d4ea"), 0.12), "GladeFoam3")
 	for i in 6:
 		_mi(_sphere(0.32, 0.2), Vector3(-0.4 + float(i) * 0.55, 0.12, -42.0), root, _mats["rock"], "Step")
 	# Signpost off the walk line
@@ -1027,19 +1046,32 @@ func _build_lantern_glade() -> void:
 	# Framing props kept outside corridor (side >= 4.5)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 91
-	for i in 12:
+	for i in 14:
 		var side := 1.0 if i % 2 == 0 else -1.0
-		var p := Vector3(0.5 + side * rng.randf_range(5.0, 10.0), 0, -20.0 - float(i) * 2.6)
+		var p := Vector3(0.5 + side * rng.randf_range(5.0, 10.0), 0, -18.0 - float(i) * 2.4)
 		if i % 3 == 0:
 			_add_rock_cluster(p, rng)
 		elif i % 3 == 1:
 			_add_bush(p, rng)
 		else:
 			_add_tree(p, 1 if i > 6 else 0)
-	# Lantern ring at glade end (outside path center)
-	for i in 5:
-		var ang := i * TAU / 5.0
-		_add_lantern_post(Vector3(0.5 + cos(ang) * 5.0, 0, -48.0 + sin(ang) * 5.0))
+	# Lanterns along the spur + ring at glade end
+	_add_lantern_post(Vector3(-3.2, 0, -22))
+	_add_lantern_post(Vector3(4.2, 0, -28))
+	_add_lantern_post(Vector3(-3.5, 0, -36))
+	_add_lantern_post(Vector3(4.0, 0, -40))
+	for i in 6:
+		var ang := i * TAU / 6.0
+		_add_lantern_post(Vector3(0.5 + cos(ang) * 5.2, 0, -48.0 + sin(ang) * 5.2))
+	# Glade yard props (benches, crate, barrel, flower ring)
+	_add_bench(Vector3(-3.8, 0, -46.5), 0.4)
+	_add_bench(Vector3(4.5, 0, -49.0), -0.5)
+	_add_crate(Vector3(5.2, 0, -45.5))
+	_add_barrel(Vector3(-4.6, 0, -50.0), 0.3)
+	for i in 8:
+		var ang := i * TAU / 8.0
+		_add_flowers(Vector3(0.5 + cos(ang) * 6.0, 0, -48.0 + sin(ang) * 6.0), rng)
+	_place_label3d(root, "Soft light among the trees", 28, Vector3(0.5, 3.85, -48), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Lantern Glade", 56, Vector3(0.5, 3.2, -48))
 
 func _setup_weather() -> void:
@@ -1206,17 +1238,23 @@ func _add_guild_theme_props(room: Node3D, guild: String, col: Color) -> void:
 			pass
 
 func _build_pine_ridge() -> void:
-	## Western spur beyond Lantern Glade — continuous ford path + pine stand.
+	## Western spur beyond Lantern Glade — denser ford path, foam, lanterns, camp props.
 	var root := Node3D.new()
 	root.name = "PineRidge"
 	static_world.add_child(root)
 	# Continuous path west from glade brook toward ridge
-	for i in 9:
-		var x := -2.0 - float(i) * 2.8
-		_mi(_box(Vector3(3.2, 0.04, 2.6)), Vector3(x, 0.025, -48.0), root, _mats["dirt"], "RidgePath")
-	# Creek ford (shallow crossing) with centered stepping stones
+	for i in 12:
+		var x := -1.0 - float(i) * 2.4
+		_mi(_box(Vector3(3.0, 0.04, 2.8)), Vector3(x, 0.025, -48.0), root, _mats["dirt"], "RidgePath")
+	for i in 6:
+		var x := -3.0 - float(i) * 4.0
+		_mi(_box(Vector3(0.32, 0.02, 3.4)), Vector3(x, 0.03, -48.0), root, _mats["dirt_trim"], "RidgeTrim")
+	# Creek ford (shallow crossing) with foam + stepping stones
 	_mi(_cyl(3.2, 3.2, 0.07), Vector3(-18, 0.015, -48), root, _mats["water"], "Creek")
 	_mi(_cyl(1.4, 1.4, 0.05), Vector3(-20.5, 0.015, -50.5), root, _mats["water"], "CreekBend")
+	_mi(_cyl(0.45, 0.5, 0.04), Vector3(-17.2, 0.04, -47.4), root, _mat(Color("#a8d4ea"), 0.15), "RidgeFoam1")
+	_mi(_cyl(0.35, 0.4, 0.03), Vector3(-19.0, 0.04, -48.8), root, _mat(Color("#b8dff0"), 0.15), "RidgeFoam2")
+	_mi(_cyl(0.28, 0.32, 0.03), Vector3(-18.4, 0.04, -49.6), root, _mat(Color("#a8d4ea"), 0.12), "RidgeFoam3")
 	for i in 5:
 		_mi(_sphere(0.3, 0.18), Vector3(-16.2 - float(i) * 0.75, 0.12, -48.0), root, _mats["rock"], "FordStone")
 	var sign := Node3D.new()
@@ -1228,15 +1266,32 @@ func _build_pine_ridge() -> void:
 	# Pines kept off the ford corridor
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 113
-	for i in 14:
+	for i in 16:
 		var ang := rng.randf() * TAU
-		var rad := rng.randf_range(4.0, 10.0)
+		var rad := rng.randf_range(4.0, 10.5)
 		var p := Vector3(-24.0 + cos(ang) * rad, 0, -54.0 + sin(ang) * rad * 0.75)
 		if _in_travel_corridor(p):
 			continue
 		_add_pine(p, rng)
-	for i in 4:
-		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.2, 0, -58.0 - (i % 2)), rng)
+	for i in 5:
+		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.0, 0, -58.0 - (i % 2)), rng)
+	# Spur lanterns + ridge camp props
+	_add_lantern_post(Vector3(-6.0, 0, -45.5))
+	_add_lantern_post(Vector3(-14.0, 0, -45.2))
+	_add_lantern_post(Vector3(-22.0, 0, -50.5))
+	_add_lantern_post(Vector3(-27.5, 0, -52.0))
+	_add_lantern_post(Vector3(-20.5, 0, -57.0))
+	# Simple stump seat + fire ring (decorative ash) + crate
+	_mi(_cyl(0.45, 0.5, 0.55), Vector3(-25.5, 0.28, -51.5), root, _mats["wood"], "StumpSeat")
+	_mi(_cyl(0.7, 0.75, 0.12), Vector3(-27.2, 0.08, -55.2), root, _mats["rock"], "RidgeFireRing")
+	_mi(_box(Vector3(0.35, 0.12, 0.12)), Vector3(-27.2, 0.18, -55.2), root, _mats["wood"], "RidgeAshLog")
+	_add_crate(Vector3(-28.5, 0, -52.5))
+	_add_barrel(Vector3(-29.0, 0, -54.0), -0.4)
+	_add_bench(Vector3(-22.5, 0, -56.5), 0.6)
+	for i in 7:
+		var ang := i * TAU / 7.0
+		_add_flowers(Vector3(-24.0 + cos(ang) * 5.5, 0, -54.0 + sin(ang) * 5.5), rng)
+	_place_label3d(root, "Cool air under the pines", 28, Vector3(-24, 4.0, -54), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Pine Ridge", 52, Vector3(-24, 3.4, -54))
 
 func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
@@ -1266,39 +1321,65 @@ func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
 
 
 func _build_prayer_garden() -> void:
-	## Quiet eastern landmark — soft travel (G). Simple benches + stone marker.
+	## Quiet eastern landmark — denser path trim, lanterns, rail, candles (Mill/Lookout parity).
 	var root := Node3D.new()
 	root.name = "PrayerGarden"
 	static_world.add_child(root)
 	# Path east from plaza
-	for i in 7:
-		var x := 14.0 + float(i) * 2.6
-		_mi(_box(Vector3(2.8, 0.04, 2.4)), Vector3(x, 0.025, 18.0), root, _mats["dirt"], "GardenPath")
-	# Garden circle
+	for i in 10:
+		var x := 12.0 + float(i) * 2.0
+		_mi(_box(Vector3(2.6, 0.04, 2.6)), Vector3(x, 0.025, 18.0), root, _mats["dirt"], "GardenPath")
+	for i in 5:
+		var x := 14.0 + float(i) * 3.5
+		_mi(_box(Vector3(0.32, 0.02, 3.2)), Vector3(x, 0.03, 18.0), root, _mats["dirt_trim"], "GardenTrim")
+	# Garden circle + stone cross marker
 	_mi(_cyl(5.5, 5.5, 0.04), Vector3(30, 0.02, 18), root, _mats["grass_light"], "Lawn")
 	_mi(_cyl(1.2, 1.3, 0.35), Vector3(30, 0.2, 18), root, _mats["stone"], "MarkerBase")
 	_mi(_box(Vector3(0.28, 1.8, 0.18)), Vector3(30, 1.2, 18), root, _mats["stone_dark"], "Marker")
 	_mi(_box(Vector3(0.9, 0.22, 0.16)), Vector3(30, 1.55, 18), root, _mats["stone"], "MarkerArm")
+	# Low rail around marker (quiet fence stub)
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		var px := 30.0 + cos(ang) * 2.2
+		var pz := 18.0 + sin(ang) * 2.2
+		_mi(_box(Vector3(0.08, 0.7, 0.08)), Vector3(px, 0.35, pz), root, _mats["fence"], "GardenRailPost")
+	_mi(_cyl(2.15, 2.15, 0.06), Vector3(30, 0.72, 18), root, _mats["fence"], "GardenRailRing")
 	# Quiet benches
 	_add_bench(Vector3(27.5, 0, 20.5), 0.8)
 	_add_bench(Vector3(32.5, 0, 20.5), -0.8)
 	_add_bench(Vector3(30, 0, 14.8), 0.0)
-	# Flower ring
+	_add_bench(Vector3(26.8, 0, 16.2), 0.3)
+	# Flower ring (denser)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 131
-	for i in 8:
-		var ang := i * TAU / 8.0
+	for i in 12:
+		var ang := i * TAU / 12.0
 		_add_flowers(Vector3(30.0 + cos(ang) * 3.8, 0, 18.0 + sin(ang) * 3.8), rng)
+	for i in 8:
+		var ang := i * TAU / 8.0 + 0.2
+		_add_flowers(Vector3(30.0 + cos(ang) * 5.0, 0, 18.0 + sin(ang) * 5.0), rng)
+	# Lanterns along spur + garden corners
+	_add_lantern_post(Vector3(16.0, 0, 15.5))
+	_add_lantern_post(Vector3(22.0, 0, 20.5))
 	_add_lantern_post(Vector3(26.5, 0, 15.5))
 	_add_lantern_post(Vector3(33.5, 0, 15.5))
+	_add_lantern_post(Vector3(26.5, 0, 20.5))
+	_add_lantern_post(Vector3(33.5, 0, 20.5))
+	# Quiet candles near marker
+	for i in 4:
+		var ang := float(i) * TAU / 4.0 + 0.4
+		var cx := 30.0 + cos(ang) * 1.55
+		var cz := 18.0 + sin(ang) * 1.55
+		_mi(_cyl(0.06, 0.07, 0.35), Vector3(cx, 0.55, cz), root, _mat(Color("#f4e4bc")), "GardenCandle")
+		_mi(_sphere(0.05), Vector3(cx, 0.78, cz), root, _mats["lantern_glow"], "GardenFlame")
 	var sign := Node3D.new()
 	sign.position = Vector3(26.2, 0, 18.0)
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.5, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
 	_place_label3d(sign, "Prayer Garden", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "A quiet place to give thanks", 28, Vector3(30, 3.85, 18), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Prayer Garden", 52, Vector3(30, 3.2, 18))
-
 
 
 func _build_lookout_rock() -> void:

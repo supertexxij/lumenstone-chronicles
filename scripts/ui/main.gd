@@ -207,14 +207,17 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false
 	GameState.position_xz = Vector2(pos.x, pos.z)
+	var first_discover := false
 	if world_scene.has_method("note_soft_travel_arrival"):
-		world_scene.note_soft_travel_arrival(pos)
+		first_discover = bool(world_scene.note_soft_travel_arrival(pos))
 	if "Fountain" in label:
 		if GameState.has_method("rest_at_fountain"):
 			GameState.rest_at_fountain(true)
 		elif GameState.has_method("refill_pantry"):
 			GameState.refill_pantry(true)
 		GameState.toast.emit("Traveled to %s — resting." % label)
+	elif first_discover:
+		GameState.toast.emit("First discovery: %s — a new place on your map." % label)
 	else:
 		GameState.toast.emit("Traveled to %s." % label)
 	AudioBus.play_ui()

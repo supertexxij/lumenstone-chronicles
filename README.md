@@ -239,6 +239,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
 
+### Wave 15 overnight (v1.15.0-overnight)
+- Light **player defense** (combat level + cape/head gear) and **enemy hit variance** (±1, occasional firmer poke) — wholesome RuneScape-feel numbers
+- Denser **Lantern Glade**, **Pine Ridge**, and **Prayer Garden** spur props (path trim, lanterns, foam/candles, yard props) toward Mill/Lookout quality
+- Optional **first-discovery vs return** landmark toast flavor (`discovered_landmarks` forever; per-visit greet memory kept)
+- Soft Travel first-discovery toast when you land somewhere new
+- Bug fix: foe **kill-flash colors restore** on respawn (v1.14 gold wash could linger)
+
 ### Wave 14 overnight (v1.14.0-overnight)
 - **Landmark toast memory**: once-per-visit greetings saved in the slot (`greeted_landmarks`); reload in-zone does not re-toast; leave and return greets again
 - Soft Travel no longer double-toasts approach + travel (syncs zone via `note_soft_travel_arrival`)

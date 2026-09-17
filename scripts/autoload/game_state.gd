@@ -48,6 +48,8 @@ var seen_aggro_tutorial: bool = false
 var seen_combat_tutorial: bool = false
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
+## Landmarks ever visited (persists forever) — drives first-discovery vs return toast flavor.
+var discovered_landmarks: Array = []
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
 var created_at: int = 0
@@ -114,6 +116,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
 	greeted_landmarks = []
+	discovered_landmarks = []
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -292,6 +295,7 @@ func save_game() -> void:
 		"seen_aggro_tutorial": seen_aggro_tutorial,
 		"seen_combat_tutorial": seen_combat_tutorial,
 		"greeted_landmarks": greeted_landmarks,
+		"discovered_landmarks": discovered_landmarks,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
 		"created_at": created_at,
@@ -350,6 +354,13 @@ func load_game(slot: int = -1) -> bool:
 			var sid := str(g)
 			if sid != "" and sid not in greeted_landmarks:
 				greeted_landmarks.append(sid)
+	var dl = data.get("discovered_landmarks", [])
+	discovered_landmarks = []
+	if typeof(dl) == TYPE_ARRAY:
+		for d in dl:
+			var did := str(d)
+			if did != "" and did not in discovered_landmarks:
+				discovered_landmarks.append(did)
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
 	created_at = int(data.get("created_at", 0))
@@ -442,6 +453,17 @@ func get_weapon_stats() -> Dictionary:
 	return {"damage": int(item.get("damage", 5)), "accuracy": float(item.get("accuracy", 0.8))}
 
 
+func get_defense() -> int:
+	## Light wholesome defense: a little from combat level + cape/head gear with defense.
+	var d: int = mini(2, int(maxi(0, combat_level - 1) / 3))
+	for slot in ["cape", "head", "accessory", "belt"]:
+		var iid = equipped.get(slot)
+		if iid == null:
+			continue
+		var it := ItemDB.get_item(str(iid))
+		d += int(it.get("defense", 0))
+	return clampi(d, 0, 4)
+
 func mark_aggro_tutorial() -> void:
 	if seen_aggro_tutorial:
 		return
@@ -456,6 +478,20 @@ func mark_combat_tutorial(silent: bool = false) -> bool:
 	seen_combat_tutorial = true
 	if not silent:
 		toast.emit("First fight: auto-attacks tick softly. Click empty ground or walk away to leave.")
+	save_game()
+	return true
+
+
+func has_landmark_discovered(landmark_id: String) -> bool:
+	return landmark_id != "" and landmark_id in discovered_landmarks
+
+func mark_landmark_discovered(landmark_id: String) -> bool:
+	## Remember forever. Returns true if this was the first discovery.
+	if landmark_id == "":
+		return false
+	if landmark_id in discovered_landmarks:
+		return false
+	discovered_landmarks.append(landmark_id)
 	save_game()
 	return true
 

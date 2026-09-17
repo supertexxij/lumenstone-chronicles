@@ -72,6 +72,8 @@ func _update_loadout() -> void:
 		if id != null:
 			name = ItemDB.get_item(str(id)).get("name", str(id))
 		parts.append("%s: %s" % [slot.capitalize(), name])
+	if GameState.has_method("get_defense"):
+		parts.append("Defense: %d" % GameState.get_defense())
 	loadout.text = "\n".join(parts)
 
 func _refresh_detail_only() -> void:
@@ -84,6 +86,8 @@ func _refresh_detail_only() -> void:
 		extra = "\nCombat Lv req: %d" % req
 	if item.get("slot", "") == "weapon":
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
+	if int(item.get("defense", 0)) > 0:
+		extra += "\nDefense +%d" % int(item.get("defense", 0))
 	if str(item.get("slot", "")) == "consumable":
 		extra += "\nHeals %d HP (Use)." % int(item.get("heal", 0))
 		if GameState.has_method("pantry_count"):
