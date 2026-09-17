@@ -132,8 +132,8 @@
     "accuracy": 0.7,
     "max_hp": 40,
     "tick_sec": 0.7,
-    "engage_range": 4.5,
-    "escape_range": 8.0,
-    "attack_range": 3.2
+    "engage_range": 4.2,
+    "escape_range": 9.5,
+    "attack_range": 3.0
   }
 }
