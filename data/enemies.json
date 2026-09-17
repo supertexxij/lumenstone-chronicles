@@ -337,6 +337,19 @@
       "combat_xp": 156,
       "respawn_sec": 68.0,
       "description": "A plump toad of the chestnut wilds \u2014 nudge it gently with a careful step!"
+    },
+    "walnut_weasel": {
+      "kind": "walnut_weasel",
+      "name": "Walnut Weasel",
+      "defeat_verb": "shooed",
+      "color": "#6b4a32",
+      "accent": "#c8a878",
+      "max_hp": 176,
+      "damage": 29,
+      "accuracy": 0.23,
+      "combat_xp": 162,
+      "respawn_sec": 70.0,
+      "description": "A sleek weasel of the walnut wilds \u2014 shoo it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1107,6 +1120,36 @@
       "kind": "chestnut_toad",
       "x": -74,
       "z": -92
+    },
+    {
+      "id": "e129",
+      "kind": "walnut_weasel",
+      "x": -98,
+      "z": 8
+    },
+    {
+      "id": "e130",
+      "kind": "walnut_weasel",
+      "x": 64,
+      "z": -96
+    },
+    {
+      "id": "e131",
+      "kind": "walnut_weasel",
+      "x": -36,
+      "z": 100
+    },
+    {
+      "id": "e132",
+      "kind": "walnut_weasel",
+      "x": 100,
+      "z": -36
+    },
+    {
+      "id": "e133",
+      "kind": "walnut_weasel",
+      "x": -80,
+      "z": -98
     }
   ],
   "base_combat": {

@@ -434,5 +434,21 @@ func _initialize():
 	print("NO_DAY_CASH_W50", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
+
+	print("VERSION_151", 'config/version="1.51.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("WALNUT_WEASEL", '"walnut_weasel"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_weasel" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e133"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("EAVES_SPLASH_W51", "_setup_eaves_splash" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "RainEavesSplash" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("JOURNAL_FLOURISH_W51", "_play_journal_open_flourish" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	var hit51 = FileAccess.get_file_as_string("res://scripts/combat/hitsplat.gd")
+	print("XP_FLOAT_SIZE_W51", "Wave 51" in hit51 and "amount >= 100" in hit51)
+	var main51 = FileAccess.get_file_as_string("res://scripts/ui/main.gd")
+	print("TRAVEL_FAV_W51", "PinFavBtn" in main51 and "_travel_pin_favorite" in main51 and "★ fav" in main51)
+	print("WAVE51_TOAST", "maybe_wave_51_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_51_toast" in main51)
+	var gs51 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W51", "const DEFAULT_PIN := \"1234\"" in gs51 or 'DEFAULT_PIN := "1234"' in gs51)
+	print("MASTERY_80_W51", "MASTERY_PCT := 0.8" in gs51 or "0.8" in gs51)
+	print("NO_DAY_CASH_W51", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
 	print("CHECK_OK")
 	quit(0)

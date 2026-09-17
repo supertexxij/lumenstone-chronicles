@@ -35,6 +35,8 @@ var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoor
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
 var _canopy_drip: CPUParticles3D  # Wave 48: soft rain canopy drip under trees outdoors
+var _eaves_splash: CPUParticles3D  # Wave 51: soft rain splash on hall outdoor eaves
+var _hall_eaves: Array = []  # Wave 51: roof-eave world positions for rain splash
 var _puddle_ripples: CPUParticles3D  # Wave 41: soft rain puddle ripples on ground
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
@@ -322,6 +324,14 @@ func _build_buildings() -> void:
 		_place_label3d(body, str(b["label"]), 64, Vector3(0, h + 2.6, 0), 6)
 		# Small lantern by door
 		_add_lantern(body, Vector3(-1.0, 2.2, d * 0.5 + 0.35))
+		# Wave 51: hall outdoor eaves anchors for soft rain splash
+		var bx := float(b["x"])
+		var bz := float(b["z"])
+		var ey := h + 0.85
+		_hall_eaves.append(Vector3(bx, ey, bz + d * 0.52))
+		_hall_eaves.append(Vector3(bx, ey, bz - d * 0.52))
+		_hall_eaves.append(Vector3(bx - w * 0.52, ey, bz))
+		_hall_eaves.append(Vector3(bx + w * 0.52, ey, bz))
 		static_world.add_child(body)
 
 func _build_trees() -> void:
@@ -1625,6 +1635,7 @@ func _setup_weather() -> void:
 	_setup_dusk_fireflies()
 	_setup_snowdust()
 	_setup_canopy_drip()
+	_setup_eaves_splash()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1837,6 +1848,7 @@ func _update_weather(delta: float) -> void:
 			_snowdust.visible = false
 	# Wave 48: soft rain canopy drip under nearest tree outdoors (off indoors / clear / fog)
 	_update_canopy_drip()
+	_update_eaves_splash()
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -3281,6 +3293,66 @@ func _update_canopy_drip() -> void:
 	_canopy_drip.global_position = Vector3(best.x, 3.4, best.z)
 	_canopy_drip.emitting = true
 	_canopy_drip.visible = true
+
+
+func _setup_eaves_splash() -> void:
+	## Wave 51: soft rain splash on hall outdoor eaves (RuneScape-chunky, wholesome).
+	_eaves_splash = CPUParticles3D.new()
+	_eaves_splash.name = "RainEavesSplash"
+	_eaves_splash.emitting = false
+	_eaves_splash.amount = 22
+	_eaves_splash.lifetime = 0.55
+	_eaves_splash.preprocess = 0.15
+	_eaves_splash.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_eaves_splash.emission_box_extents = Vector3(1.8, 0.08, 0.35)
+	_eaves_splash.direction = Vector3(0, -1, 0.15)
+	_eaves_splash.spread = 28.0
+	_eaves_splash.initial_velocity_min = 0.6
+	_eaves_splash.initial_velocity_max = 1.6
+	_eaves_splash.gravity = Vector3(0, -6.0, 0)
+	_eaves_splash.scale_amount_min = 0.06
+	_eaves_splash.scale_amount_max = 0.14
+	var sm := SphereMesh.new()
+	sm.radius = 0.05
+	sm.height = 0.07
+	_eaves_splash.mesh = sm
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color = Color(0.78, 0.86, 0.95, 0.62)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_eaves_splash.material_override = smat
+	_eaves_splash.position = Vector3(0, 4.0, 0)
+	_eaves_splash.visible = false
+	add_child(_eaves_splash)
+	HeadlessGuard.guard_particles(_eaves_splash)
+
+
+func _update_eaves_splash() -> void:
+	## Soft splash off the nearest hall eave while raining outdoors.
+	if _eaves_splash == null:
+		return
+	var raining_out := player != null and _inside_hall == "" and _weather_mode == 2
+	if not raining_out or _hall_eaves.is_empty():
+		_eaves_splash.emitting = false
+		_eaves_splash.visible = false
+		return
+	var pp: Vector3 = player.global_position
+	var best: Vector3 = _hall_eaves[0]
+	var best_d2: float = 1.0e12
+	for ep in _hall_eaves:
+		var dx: float = pp.x - ep.x
+		var dz: float = pp.z - ep.z
+		var d2: float = dx * dx + dz * dz
+		if d2 < best_d2:
+			best_d2 = d2
+			best = ep
+	if best_d2 > 100.0:  # farther than ~10 paces from any hall eave
+		_eaves_splash.emitting = false
+		_eaves_splash.visible = false
+		return
+	_eaves_splash.global_position = best
+	_eaves_splash.emitting = true
+	_eaves_splash.visible = true
 
 
 func _play_fountain_restore_fx() -> void:

@@ -117,6 +117,20 @@ func _setup_travel_panel() -> void:
 		_travel_search = vbox.get_node_or_null("SearchRow/TravelSearch")
 	if go:
 		go.pressed.connect(_travel_go_selected)
+	# Wave 51: Pin ★ fav button (one landmark favorite; PIN 1234; mastery ≥80%)
+	if vbox and vbox.get_node_or_null("PinFavBtn") == null and go != null:
+		var pin_btn := Button.new()
+		pin_btn.name = "PinFavBtn"
+		pin_btn.text = "Pin ★ Fav"
+		pin_btn.tooltip_text = "Pin one favorite landmark (★ fav). Press again to clear."
+		pin_btn.pressed.connect(_travel_pin_favorite)
+		var go_i: int = go.get_index()
+		vbox.add_child(pin_btn)
+		vbox.move_child(pin_btn, go_i + 1)
+	elif vbox:
+		var existing := vbox.get_node_or_null("PinFavBtn")
+		if existing and not existing.pressed.is_connected(_travel_pin_favorite):
+			existing.pressed.connect(_travel_pin_favorite)
 	if close:
 		close.pressed.connect(func():
 			travel_panel.visible = false
@@ -274,6 +288,8 @@ func _refresh_travel_list() -> void:
 	list.clear()
 	var first_sel := -1
 	var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
+	var fav_lbl: String = str(GameState.favorite_landmark) if "favorite_landmark" in GameState else ""
+	var fav_sel: int = -1
 	var last_sel := -1
 	cur_sec = ""
 	var pending_header: Dictionary = {}
@@ -299,17 +315,26 @@ func _refresh_travel_list() -> void:
 			pending_header = {}
 		var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
 		var mark: String = ""
-		if last_lbl != "" and str(d["label"]) == last_lbl:
+		var is_fav: bool = fav_lbl != "" and str(d["label"]) == fav_lbl
+		var is_last: bool = last_lbl != "" and str(d["label"]) == last_lbl
+		if is_fav:
+			mark = " ★ fav"  # Wave 51: pin/favorite landmark
+		elif is_last:
 			mark = " ★ last"  # Wave 34: mark last-visited landmark
 		var dist_s: String = _travel_distance_label(d.get("pos", Vector3.ZERO))  # Wave 45
 		var ii: int = list.add_item("%s%s%s%s" % [d["label"], key_s, dist_s, mark])
 		_travel_dests.append(d)
-		if mark != "":
+		if is_fav:
+			fav_sel = ii
+			list.set_item_custom_fg_color(ii, Color(1.0, 0.88, 0.35))
+		elif is_last:
 			last_sel = ii
 			list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
 		if first_sel < 0:
 			first_sel = ii
-	if last_sel >= 0:
+	if fav_sel >= 0:
+		list.select(fav_sel)
+	elif last_sel >= 0:
 		list.select(last_sel)
 	elif first_sel >= 0:
 		list.select(first_sel)
@@ -327,6 +352,24 @@ func _travel_distance_label(pos: Vector3) -> String:
 		return " · here"
 	var paces: int = maxi(1, int(round(dist / 1.15)))
 	return " · ~%d paces" % paces
+
+func _travel_pin_favorite() -> void:
+	## Wave 51: pin/favorite the selected Travel landmark (★ fav). PIN 1234; mastery ≥80%.
+	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
+	if list == null or not list.is_anything_selected():
+		GameState.toast.emit("Select a landmark, then Pin ★ Fav.")
+		return
+	var idx: int = list.get_selected_items()[0]
+	if idx < 0 or idx >= _travel_dests.size():
+		return
+	var d: Dictionary = _travel_dests[idx]
+	if bool(d.get("group", false)):
+		GameState.toast.emit("Pick a real landmark to pin, not a section header.")
+		return
+	if GameState.has_method("set_favorite_landmark"):
+		GameState.set_favorite_landmark(str(d.get("label", "")))
+		_refresh_travel_list()
+
 
 func _travel_go_selected() -> void:
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
@@ -561,6 +604,9 @@ func _enter_world() -> void:
 	# Wave 50: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_50_toast"):
 		GameState.maybe_wave_50_toast()
+	# Wave 51: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_51_toast"):
+		GameState.maybe_wave_51_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

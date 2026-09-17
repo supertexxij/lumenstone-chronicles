@@ -49,12 +49,14 @@ var muted: bool = false
 var seen_aggro_tutorial: bool = false
 var seen_combat_tutorial: bool = false
 var seen_wave_50_toast: bool = false  # Wave 50: once-per-save polish tip toast on load
+var seen_wave_51_toast: bool = false  # Wave 51: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
 ## Landmarks ever visited (persists forever) — drives first-discovery vs return toast flavor.
 var discovered_landmarks: Array = []
 var last_travel_label: String = ""  # Wave 34: last soft-travel destination
+var favorite_landmark: String = ""  # Wave 51: pin/favorite one landmark (★ fav)
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
 var last_daily_reminder_date: String = ""
@@ -123,10 +125,12 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
 	seen_wave_50_toast = false
+	seen_wave_51_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
 	last_travel_label = ""
+	favorite_landmark = ""
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -305,10 +309,12 @@ func save_game() -> void:
 		"seen_aggro_tutorial": seen_aggro_tutorial,
 		"seen_combat_tutorial": seen_combat_tutorial,
 		"seen_wave_50_toast": seen_wave_50_toast,
+		"seen_wave_51_toast": seen_wave_51_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
 		"last_travel_label": last_travel_label,
+		"favorite_landmark": favorite_landmark,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
 		"last_daily_reminder_date": last_daily_reminder_date,
@@ -362,6 +368,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_aggro_tutorial = bool(data.get("seen_aggro_tutorial", false))
 	seen_combat_tutorial = bool(data.get("seen_combat_tutorial", false))
 	seen_wave_50_toast = bool(data.get("seen_wave_50_toast", false))
+	seen_wave_51_toast = bool(data.get("seen_wave_51_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -383,6 +390,7 @@ func load_game(slot: int = -1) -> bool:
 			if did != "" and did not in discovered_landmarks:
 				discovered_landmarks.append(did)
 	last_travel_label = str(data.get("last_travel_label", ""))
+	favorite_landmark = str(data.get("favorite_landmark", "")).strip_edges()
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
 	last_daily_reminder_date = str(data.get("last_daily_reminder_date", ""))
@@ -620,6 +628,30 @@ func maybe_wave_50_toast() -> void:
 	seen_wave_50_toast = true
 	toast.emit("Wave 50 polish · soft-aggro names show a countdown · fountain mist + decade festival sparkles · Foes near the minimap.")
 	save_game()
+
+
+func maybe_wave_51_toast() -> void:
+	## Wave 51: once-per-save toast (PIN stays 1234; mastery ≥80%).
+	if seen_wave_51_toast:
+		return
+	seen_wave_51_toast = true
+	toast.emit("Wave 51 polish · pin a Travel ★ fav · rain soft-splashes on hall eaves · journal opens with a flourish · XP floats bloom by size.")
+	save_game()
+
+
+func set_favorite_landmark(label: String) -> void:
+	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
+	var lab := str(label).strip_edges()
+	if lab == "":
+		return
+	if favorite_landmark == lab:
+		favorite_landmark = ""
+		toast.emit("★ Fav cleared.")
+	else:
+		favorite_landmark = lab
+		toast.emit("★ Fav pinned · %s" % lab)
+	save_game()
+	state_changed.emit()
 
 
 func maybe_festival_decade(pct: int) -> bool:

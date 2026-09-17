@@ -29,6 +29,21 @@ func open() -> void:
 	_filter = "current"
 	filter_opt.select(0)
 	refresh()
+	_play_journal_open_flourish()  # Wave 51: clearer journal open flourish
+
+
+func _play_journal_open_flourish() -> void:
+	## Wave 51: soft journal open flourish — gentle scale + cream fade (RuneScape-chunky, wholesome).
+	var panel: Control = get_node_or_null("Panel")
+	if panel == null:
+		return
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(0.94, 0.94)
+	panel.modulate = Color(1, 1, 1, 0.0)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
 
 func _on_filter(idx: int) -> void:
 	AudioBus.play_ui()

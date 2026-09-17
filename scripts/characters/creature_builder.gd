@@ -123,6 +123,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_skink(bob)
 		"chestnut_toad":
 			_build_toad(bob)
+		"walnut_weasel":
+			_build_weasel(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -895,6 +897,43 @@ static func _build_skink(bob: Node3D) -> void:
 	# Long tapering tail (signature)
 	var tail := _mi(_cyl(0.06, 0.015, 0.42), Vector3(0, 0.26, -0.42), bob, "Tail")
 	tail.rotation_degrees = Vector3(78, 0, 0)
+
+
+static func _build_weasel(bob: Node3D) -> void:
+	## Soft walnut-wilds weasel — long sleek body, pointed snout, short legs, bushy tapering tail (distinct from Pine Fox / Elm Raccoon / Oak Hare).
+	# Long low body
+	_mi(_sphere(0.14, 0.42), Vector3(0, 0.34, 0.02), bob, "Body")
+	# Pointed head + snout
+	_mi(_sphere(0.11, 0.14), Vector3(0, 0.40, 0.28), bob, "Head")
+	_mi(_box(Vector3(0.05, 0.04, 0.10)), Vector3(0, 0.36, 0.40), bob, "Snout")
+	# Soft ears
+	_mi(_sphere(0.035, 0.05), Vector3(-0.05, 0.50, 0.26), bob, "EarL")
+	_mi(_sphere(0.035, 0.05), Vector3(0.05, 0.50, 0.26), bob, "EarR")
+	# Bright eyes
+	_mi(_sphere(0.025), Vector3(-0.045, 0.44, 0.34), bob, "EyeL")
+	_mi(_sphere(0.025), Vector3(0.045, 0.44, 0.34), bob, "EyeR")
+	_mi(_sphere(0.012), Vector3(-0.045, 0.445, 0.36), bob, "PupilL")
+	_mi(_sphere(0.012), Vector3(0.045, 0.445, 0.36), bob, "PupilR")
+	# Cream belly stripe (accent-friendly)
+	_mi(_sphere(0.08, 0.28), Vector3(0, 0.26, 0.04), bob, "Belly")
+	# Short scurrying legs
+	for info in [
+		["FL", Vector3(-0.08, 0.16, 0.16)],
+		["FR", Vector3(0.08, 0.16, 0.16)],
+		["BL", Vector3(-0.08, 0.16, -0.14)],
+		["BR", Vector3(0.08, 0.16, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.016, 0.018, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.045, 0.014, 0.055)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Bushy tapering tail (signature)
+	var tail := _mi(_cyl(0.07, 0.02, 0.48), Vector3(0, 0.36, -0.38), bob, "Tail")
+	tail.rotation_degrees = Vector3(55, 0, 0)
+	_mi(_sphere(0.06, 0.10), Vector3(0, 0.42, -0.58), bob, "TailTip")
+
 
 static func _build_toad(bob: Node3D) -> void:
 	## Soft chestnut-wilds toad — squat warty body, wide mouth, short hop legs, bumpy back (distinct from Fir Frog / Sycamore Skink).

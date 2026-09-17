@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 51 overnight (v1.51.0-overnight)
+- Soft **rain eaves splash on halls** — gentle blue-glass drips off outdoor hall roof eaves while raining (off indoors / clear / fog; RuneScape-chunky, wholesome)
+- Clearer **journal open flourish** — soft scale + cream fade when opening the quest journal (J)
+- Combat **XP float color by size** — small cream · mid warm gold · big bright honey (no cheesy combat labels)
+- New wilds foe **Walnut Weasel** — long sleek body, pointed snout, short legs, bushy tapering tail, gentle “shooed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad)
+- Travel QoL: pin/favorite **one landmark** with **★ fav** in Travel (T) via **Pin ★ Fav** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 50 overnight (v1.50.0-overnight)
 - Soft **festival sparkle when Year % hits multiples of 10** — cream/gold motes + warm light at decade marks (RuneScape-chunky, wholesome)
 - Clearer **soft-aggro name+countdown combo** — floating nameplate shows `Name · ~Ns` with the yellow ring (toast matches; no cheesy combat labels)

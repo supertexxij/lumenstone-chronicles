@@ -46,12 +46,24 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		text_col = Color(0.04, 0.18, 0.07)
 		outline_col = Color(0.9, 1.0, 0.92)
 	elif kind == "xp":
-		# Soft cream gold — quiet combat XP float (Wave 40)
-		dmat.albedo_color = Color(0.92, 0.84, 0.45, 0.82)
+		# Wave 51: combat XP float color + size by amount (RuneScape-chunky, no cheesy labels)
+		# small <40 cream · mid 40–99 warm gold · big ≥100 bright honey
+		if amount >= 100:
+			dmat.albedo_color = Color(1.0, 0.82, 0.28, 0.92)
+			font_sz = 58
+			text_col = Color(0.14, 0.08, 0.01)
+			outline_col = Color(1.0, 0.98, 0.82)
+		elif amount >= 40:
+			dmat.albedo_color = Color(0.95, 0.84, 0.38, 0.88)
+			font_sz = 50
+			text_col = Color(0.12, 0.08, 0.02)
+			outline_col = Color(1.0, 0.98, 0.88)
+		else:
+			dmat.albedo_color = Color(0.90, 0.86, 0.55, 0.80)
+			font_sz = 42
+			text_col = Color(0.12, 0.10, 0.04)
+			outline_col = Color(0.98, 0.96, 0.88)
 		label_text = "+%d XP" % maxi(0, amount)
-		font_sz = 44
-		text_col = Color(0.12, 0.08, 0.02)
-		outline_col = Color(1.0, 0.98, 0.88)
 	elif amount <= 0:
 		dmat.albedo_color = Color(0.55, 0.55, 0.6, 0.75)
 	elif kind == "strong_foe":
@@ -100,6 +112,16 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 	var lift := 1.35 if kind == "xp" else (1.4 if kind == "heal" and amount >= 10 else (1.25 if kind in ["strong_foe", "strong_hit"] else 1.1))
 	var dur := 1.15 if kind == "xp" else (1.25 if kind == "heal" and amount >= 10 else (0.95 if kind in ["strong_foe", "strong_hit"] else 0.85))
 	var peak := 1.12 if kind == "xp" else (1.22 if kind == "heal" and amount >= 10 else (1.18 if kind in ["strong_foe", "strong_hit"] else 1.08))
+	# Wave 51: chunkier pop for mid/big XP floats
+	if kind == "xp":
+		if amount >= 100:
+			lift = 1.55
+			dur = 1.30
+			peak = 1.22
+		elif amount >= 40:
+			lift = 1.42
+			dur = 1.20
+			peak = 1.16
 	var tw := parent.get_tree().create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(root, "scale", Vector3(peak, peak, peak), 0.12).set_ease(Tween.EASE_OUT)
