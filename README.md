@@ -89,7 +89,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **U** Quiet Cross · **1–5** halls (outdoors only) |
+| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **U** Quiet Cross · **X** Stone Arch · **1–5** halls (outdoors only) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
@@ -194,7 +194,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
 - Parent dashboard (PIN default **1234**, changeable) with progress, week unlock, skills-by-week, **Needs Help** list
 - **3 save slots** on title screen (legacy `lumenstone_save_v1.json` migrates into Slot 1)
-- Soft **Travel (T)** menu + landmark keys (Fountain / Glade / Ridge / Prayer Garden / Lookout / Mill / Hollow / Willow / Reed / Quiet Cross / halls)
+- Soft **Travel (T)** menu + landmark keys (Fountain / Glade / Ridge / Prayer Garden / Lookout / Mill / Hollow / Willow / Reed / Quiet Cross / Stone Arch / halls)
 - Clearer wilds corridors (wider dirt paths, thinner tree collision, corridor keep-outs)
 - **Prayer Garden** eastern landmark with soft travel (**G**)
 - **Indoor rain drip** SFX when raining + indoors + unmuted
@@ -257,6 +257,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Re-export Linux + Windows.
 
 
+
+### Wave 24 overnight (v1.24.0-overnight)
+- Soft defeat **fountain restore FX** — cream/gold sparkles + soft mist at the village fountain when you respawn (RuneScape-chunky, wholesome)
+- Clearer **food heal toasts** — show healed amount and current HP (`Ate Bread — healed +12 HP (now 28/40) · 4 left`)
+- Denser **village-green / plaza ambient** — a few more bird/bug sites around the fountain
+- New west wilds landmark **Stone Arch** (soft travel **X**) with toasts, minimap mark, path corridor, weathered stone gateway, and denser ambient life
+- Parent QoL: summary header shows **Needs help: N**; Help title updates with count; year/week progress bars gain quarter ticks + `cur/max` fractions (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
 
 ### Wave 23 overnight (v1.23.0-overnight)
 - Clearer **soft-aggro ring**: chunky RuneScape-style yellow **torus rim + soft fill disc** (easier to spot before a pull)
@@ -348,7 +356,7 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 - Equipped hat / crown / cape or tunic / weapon held in the right hand / belt / **accessory** / cloak armor plate show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** + **Willow Bend** + **Reed Pool** + **Quiet Cross** spurs; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** + **Willow Bend** + **Reed Pool** + **Quiet Cross** + **Stone Arch** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
 - Audio is short procedural SFX + soft drone + original village loop + quiet rain / indoor drip loops (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only

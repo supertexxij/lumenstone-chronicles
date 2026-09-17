@@ -676,7 +676,7 @@ func use_consumable(item_id: String) -> bool:
 	if gained > 0:
 		heal_tick.emit(gained)
 	# Starter food stays unlocked; stacks refill at the fountain.
-	toast.emit("Used %s (+%d HP) · %d left." % [item.get("name", item_id), gained, int(consumable_charges[item_id])])
+	toast.emit("Ate %s — healed +%d HP (now %d/%d) · %d left." % [item.get("name", item_id), gained, hp, max_hp, int(consumable_charges[item_id])])
 	AudioBus.play_ui()
 	state_changed.emit()
 	save_game()
@@ -778,7 +778,7 @@ func _tick_fountain_regen(delta: float) -> void:
 		toast.emit("Fully rested.")
 
 func _soft_defeat() -> void:
-	toast.emit("You were restored at the village fountain.")
+	toast.emit("Soft defeat — restored at the village fountain.")
 	position_xz = Vector2(0, 10)
 	_fountain_regen_left = 0
 	heal_full()

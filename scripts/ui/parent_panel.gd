@@ -104,8 +104,10 @@ func _refresh() -> void:
 	var week_bar: String = _week_progress_bar(uw, 36)
 	var mastery_bar: String = _week_progress_bar(mastered, maxi(1, total_q))
 	var year_note: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year: week unlock %d%% · quests mastered %d%%" % [week_pct, mastery_pct]
-	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
-		GameState.child_name, GameState.active_slot + 1,
+	var help_preview: Array = GameState.needs_help_quests()
+	var help_n: int = help_preview.size()
+	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+		help_n, GameState.child_name, GameState.active_slot + 1,
 		GameState.xp, GameState.level, GameState.combat_level,
 		uw, camp, week_bar, next_gate,
 		mastered, total_q, mastery_pct, mastery_bar, year_note
@@ -117,6 +119,12 @@ func _refresh() -> void:
 	_refresh_campaign_tabs(uw)
 	help_list.clear()
 	var help: Array = GameState.needs_help_quests()
+	var help_title: Label = content.get_node_or_null("HelpTitle")
+	if help_title:
+		if help.is_empty():
+			help_title.text = "Needs Help — none right now"
+		else:
+			help_title.text = "Needs Help — %d item%s (lowest scores first)" % [help.size(), "" if help.size() == 1 else "s"]
 	if help.is_empty():
 		help_list.add_item("No needs-help items — great work!")
 	else:
@@ -263,9 +271,18 @@ func _campaign_name(week: int) -> String:
 	return "Campaign IV — Light for the Realm"
 
 func _week_progress_bar(cur: int, mx: int) -> String:
-	var filled: int = clampi(int(round(float(cur) / float(mx) * 20.0)), 0, 20)
-	var empty: int = 20 - filled
-	return "[%s%s] %d%%" % ["█".repeat(filled), "·".repeat(empty), int(round(float(cur) / float(mx) * 100.0))]
+	## Wave 24: clearer year/week bars — quarter ticks + fraction so parents can skim progress.
+	var filled: int = clampi(int(round(float(cur) / float(maxi(1, mx)) * 20.0)), 0, 20)
+	var chars: PackedStringArray = []
+	for i in 20:
+		if i < filled:
+			chars.append("█")
+		elif i % 5 == 0:
+			chars.append("¦")
+		else:
+			chars.append("·")
+	var pct: int = int(round(float(cur) / float(maxi(1, mx)) * 100.0))
+	return "[%s] %d/%d (%d%%)" % ["".join(chars), cur, mx, pct]
 
 func _next_week_gate(uw: int) -> String:
 	if uw >= 36:

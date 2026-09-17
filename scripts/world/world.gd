@@ -33,6 +33,7 @@ var _weather_label_cache: String = "Clear"
 var _landmark_here: String = ""  # current approach zone id (hysteresis)
 var _landmark_toast_cd: float = 0.0
 var _ambient_critters: Array = []  # {node, base: Vector3, phase, kind}
+var _fountain_root: Node3D = null  # Wave 24 soft-defeat fountain FX anchor
 
 signal npc_talk(npc: Node)
 signal weather_changed(mode: int, label: String)
@@ -63,6 +64,7 @@ func _ready() -> void:
 	_build_willow_bend()
 	_build_reed_pool()
 	_build_quiet_cross()
+	_build_stone_arch()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -70,6 +72,8 @@ func _ready() -> void:
 	_setup_indoor_navigation()
 	GameState.in_world = true
 	AudioBus.start_ambient()
+	if not GameState.soft_defeated.is_connected(_play_fountain_restore_fx):
+		GameState.soft_defeated.connect(_play_fountain_restore_fx)
 
 func _init_mats() -> void:
 	_mats["grass"] = _mat(Color("#3d6b3d"))
@@ -367,6 +371,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Quiet Cross plaza keep-clear
 	if abs(pos.x - 48.0) < 5.0 and abs(pos.z - 8.0) < 5.0:
 		return true
+	# West path to Stone Arch (Wave 24)
+	if _near_segment_xz(pos, Vector3(-14, 0, 8), Vector3(-48, 0, 8), 3.4):
+		return true
+	# Stone Arch plaza keep-clear
+	if abs(pos.x + 48.0) < 5.0 and abs(pos.z - 8.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -431,7 +441,9 @@ func _add_bush(pos: Vector3, rng: RandomNumberGenerator) -> void:
 func _build_fountain() -> void:
 	var f: Dictionary = world_data.get("fountain", {"x": 0, "z": 8})
 	var root := Node3D.new()
+	root.name = "Fountain"
 	root.position = Vector3(f["x"], 0, f["z"])
+	_fountain_root = root
 	_mi(_cyl(2.35, 2.55, 0.4), Vector3(0, 0.2, 0), root, _mats["stone"], "Base")
 	_mi(_cyl(1.65, 1.65, 0.15), Vector3(0, 0.35, 0), root, _mats["water"], "Water")
 	_mi(_cyl(0.28, 0.38, 1.6), Vector3(0, 1.0, 0), root, _mats["stone"], "Pillar")
@@ -641,6 +653,9 @@ func _landmark_zones() -> Array:
 		{"id": "cross", "pos": Vector3(48, 0, 8), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Quiet Cross — a simple wooden cross on a grassy knoll for thanksgiving.",
 			"return_toast": "Back at Quiet Cross — a peaceful place to give thanks."},
+		{"id": "arch", "pos": Vector3(-48, 0, 8), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Stone Arch — a weathered stone gateway opens toward the western wilds.",
+			"return_toast": "Back at Stone Arch — the old gateway still welcomes weary feet."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1531,6 +1546,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48"})
 	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a"})
 	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037"})
+	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1914,6 +1930,124 @@ func _build_quiet_cross() -> void:
 	_place_label3d(root, "A place to give thanks", 28, Vector3(48.0, 4.15, 8.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Quiet Cross", 52, Vector3(48.0, 3.55, 8.0))
 
+
+func _build_stone_arch() -> void:
+	## West wilds landmark — weathered stone gateway (soft travel X). Distinct from Quiet Cross.
+	var root := Node3D.new()
+	root.name = "StoneArch"
+	static_world.add_child(root)
+	# Dirt spur west from the village green (along z≈8 fountain latitude)
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -14.0 - tt * 34.0
+		var z := 8.0 + sin(tt * PI) * 0.4
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "ArchPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -16.0 - tt * 28.0
+		var z := 8.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "ArchTrim")
+	# Stone plaza under the arch
+	_mi(_cyl(4.0, 4.0, 0.08), Vector3(-48.0, 0.04, 8.0), root, _mats["stone"], "ArchPlaza")
+	_mi(_cyl(2.2, 2.2, 0.06), Vector3(-48.0, 0.09, 8.0), root, _mats["stone_dark"], "ArchPlazaInner")
+	# Weathered stone gateway (two pillars + lintel + soft keystone)
+	var arch := Node3D.new()
+	arch.name = "Gateway"
+	arch.position = Vector3(-48.0, 0.1, 8.0)
+	root.add_child(arch)
+	_mi(_box(Vector3(0.85, 3.2, 0.85)), Vector3(-1.55, 1.6, 0), arch, _mats["stone"], "PillarL")
+	_mi(_box(Vector3(0.85, 3.2, 0.85)), Vector3(1.55, 1.6, 0), arch, _mats["stone"], "PillarR")
+	_mi(_box(Vector3(4.2, 0.7, 1.0)), Vector3(0, 3.45, 0), arch, _mats["stone_dark"], "Lintel")
+	_mi(_box(Vector3(0.55, 0.55, 1.05)), Vector3(0, 3.85, 0), arch, _mats["stone"], "Keystone")
+	# Soft moss tufts on the lintel (wholesome wilds wear)
+	_mi(_sphere(0.18, 0.22), Vector3(-0.9, 3.75, 0.35), arch, _mats["leaf"], "MossL")
+	_mi(_sphere(0.14, 0.18), Vector3(0.75, 3.7, -0.3), arch, _mats["leaf_alt"], "MossR")
+	_add_lantern_post(Vector3(-44.5, 0, 10.5))
+	_add_lantern_post(Vector3(-51.2, 0, 5.8))
+	_add_lantern_post(Vector3(-28.0, 0, 8.0))
+	_add_lantern_post(Vector3(-20.0, 0, 9.5))
+	_add_bench(Vector3(-45.6, 0, 5.4), -0.2)
+	_add_crate(Vector3(-50.8, 0, 10.2))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 824
+	# Framing rocks/bushes/trees outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -16.0 - tt * 28.0
+		var cz := 8.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx, 0, cz + side * rng.randf_range(4.8, 7.8))
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	for i in 8:
+		var ang := float(i) * TAU / 8.0
+		_add_flowers(Vector3(-48.0 + cos(ang) * 3.2, 0, 8.0 + sin(ang) * 3.2), rng)
+		if i % 2 == 0:
+			_add_tree(Vector3(-48.0 + cos(ang) * 6.5, 0, 8.0 + sin(ang) * 6.5), 1)
+	_add_chunky_sign(root, Vector3(-44.2, 0, 8.0), "Stone Arch", -0.15)
+	_place_label3d(root, "Gateway to the west wilds", 28, Vector3(-48.0, 4.55, 8.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Stone Arch", 52, Vector3(-48.0, 4.0, 8.0))
+
+
+func _play_fountain_restore_fx() -> void:
+	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).
+	if HeadlessGuard.is_headless():
+		return
+	var anchor: Node3D = _fountain_root
+	if anchor == null or not is_instance_valid(anchor):
+		anchor = static_world.get_node_or_null("Fountain")
+	if anchor == null:
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "FountainRestoreFx"
+	fx.position = Vector3(0, 1.6, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.85
+	fx.amount = 28
+	fx.lifetime = 1.15
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 55.0
+	fx.initial_velocity_min = 1.2
+	fx.initial_velocity_max = 2.8
+	fx.gravity = Vector3(0, -1.5, 0)
+	fx.scale_amount_min = 0.12
+	fx.scale_amount_max = 0.28
+	fx.color = Color(1.0, 0.92, 0.65, 0.9)
+	HeadlessGuard.guard_particles(fx)
+	anchor.add_child(fx)
+	# Soft rising mist disc (second layer)
+	var mist := CPUParticles3D.new()
+	mist.name = "FountainRestoreMist"
+	mist.position = Vector3(0, 0.5, 0)
+	mist.emitting = true
+	mist.one_shot = true
+	mist.explosiveness = 0.6
+	mist.amount = 14
+	mist.lifetime = 1.4
+	mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	mist.emission_sphere_radius = 1.4
+	mist.direction = Vector3(0, 1, 0)
+	mist.spread = 30.0
+	mist.initial_velocity_min = 0.4
+	mist.initial_velocity_max = 1.0
+	mist.gravity = Vector3(0, 0.2, 0)
+	mist.scale_amount_min = 0.2
+	mist.scale_amount_max = 0.45
+	mist.color = Color(0.85, 0.95, 1.0, 0.55)
+	HeadlessGuard.guard_particles(mist)
+	anchor.add_child(mist)
+	get_tree().create_timer(2.0).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+		if is_instance_valid(mist):
+			mist.queue_free()
+	)
+
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
 	var root := Node3D.new()
@@ -1931,6 +2065,10 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(2.5, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		# Wave 24 denser plaza ambient
+		{"pos": Vector3(-2.2, 0, 14.8), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(6.8, 0, 9.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(-6.5, 0, 9.2), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
 		# Guild hall doorsteps — closer to plaza density (Wave 19)
 		{"pos": Vector3(22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(-22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
@@ -1968,6 +2106,10 @@ func _build_ambient_life() -> void:
 		# Quiet Cross (Wave 23)
 		{"pos": Vector3(48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		# Stone Arch (Wave 24)
+		{"pos": Vector3(-48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-51.0, 0, 5.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},
