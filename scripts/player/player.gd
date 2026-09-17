@@ -27,6 +27,10 @@ var _last_foot_phase: float = 0.0
 var _weapon_mesh_style: String = ""
 var _stuck_timer: float = 0.0
 var _assist_side: int = 1
+var _nav_ready: bool = false
+var _nav_agent: NavigationAgent3D
+var _path_idx: int = 0
+var _assist_waypoints: Array = []
 
 func _ready() -> void:
 	add_to_group("player")
@@ -34,10 +38,28 @@ func _ready() -> void:
 	GameState.state_changed.connect(_on_state_changed)
 	GameState.soft_defeated.connect(soft_respawn)
 	GameState.combat_target_changed.connect(_on_combat_target)
+	_ensure_nav_agent()
 	_apply_appearance()
 	_apply_camera_zoom()
 	global_position = Vector3(GameState.position_xz.x, 0, GameState.position_xz.y)
 	target_pos = global_position
+
+func _ensure_nav_agent() -> void:
+	_nav_agent = get_node_or_null("NavigationAgent3D")
+	if _nav_agent == null:
+		_nav_agent = NavigationAgent3D.new()
+		_nav_agent.name = "NavigationAgent3D"
+		add_child(_nav_agent)
+	_nav_agent.path_desired_distance = 0.55
+	_nav_agent.target_desired_distance = 0.45
+	_nav_agent.avoidance_enabled = false
+	_nav_agent.radius = 0.4
+	_nav_agent.height = 1.6
+	_nav_agent.max_speed = SPEED
+
+func set_navigation_ready(ok: bool) -> void:
+	_nav_ready = ok
+	_ensure_nav_agent()
 
 func _on_state_changed() -> void:
 	_apply_appearance()
@@ -182,9 +204,49 @@ func _set_move_target(pos: Vector3) -> void:
 	target_pos = Vector3(pos.x, 0, pos.z)
 	has_click_target = true
 	_stuck_timer = 0.0
+	_assist_waypoints.clear()
+	_path_idx = 0
+	# Prefer NavigationAgent path outdoors when navmesh is ready
+	if _nav_ready and _nav_agent and global_position.x < 90.0 and target_pos.x < 90.0:
+		_nav_agent.target_position = target_pos
+	else:
+		_build_assist_waypoints(target_pos)
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		if target_pos.distance_to(GameState.combat_target.global_position) > float(EnemyDB.base_combat.get("escape_range", 8)):
 			GameState.set_combat_target(null)
+
+func _build_assist_waypoints(goal: Vector3) -> void:
+	## Raycast lookahead around props when no navmesh path is available.
+	_assist_waypoints.clear()
+	var space := get_world_3d().direct_space_state if get_world_3d() else null
+	if space == null:
+		return
+	var from := global_position
+	var to := goal
+	var dir := to - from
+	dir.y = 0
+	var dist := dir.length()
+	if dist < 0.5:
+		return
+	dir = dir.normalized()
+	var q := PhysicsRayQueryParameters3D.create(from + Vector3(0, 0.6, 0), from + dir * minf(dist, 14.0) + Vector3(0, 0.6, 0))
+	q.collision_mask = 1
+	q.exclude = [self]
+	var hit := space.intersect_ray(q)
+	if hit.is_empty():
+		return
+	# Bias left then right around the blocker
+	for side in [1.0, -1.0, 2.0, -2.0]:
+		var side_dir: Vector3 = Vector3(-dir.z, 0, dir.x) * side
+		var via: Vector3 = hit.position + side_dir * 1.35
+		via.y = 0.0
+		var q2 := PhysicsRayQueryParameters3D.create(from + Vector3(0, 0.6, 0), via + Vector3(0, 0.6, 0))
+		q2.collision_mask = 1
+		q2.exclude = [self]
+		if space.intersect_ray(q2).is_empty():
+			_assist_waypoints.append(via)
+			_assist_waypoints.append(goal)
+			return
 
 func play_attack_swing() -> void:
 	_attacking = true
@@ -235,17 +297,34 @@ func _physics_process(delta: float) -> void:
 		mesh_root.rotation.y = atan2(wish.x, wish.z)
 		moving = true
 	elif has_click_target:
-		var to: Vector3 = target_pos - global_position
+		var steer_pos: Vector3 = target_pos
+		var using_nav := false
+		if _nav_ready and _nav_agent and global_position.x < 90.0 and not _nav_agent.is_navigation_finished():
+			var next_pos: Vector3 = _nav_agent.get_next_path_position()
+			if next_pos.distance_to(global_position) > 0.05:
+				steer_pos = next_pos
+				using_nav = true
+		elif _path_idx < _assist_waypoints.size():
+			steer_pos = _assist_waypoints[_path_idx]
+			if global_position.distance_to(Vector3(steer_pos.x, 0, steer_pos.z)) < 0.55:
+				_path_idx += 1
+				if _path_idx < _assist_waypoints.size():
+					steer_pos = _assist_waypoints[_path_idx]
+				else:
+					steer_pos = target_pos
+		var to: Vector3 = steer_pos - global_position
 		to.y = 0
-		if to.length() < 0.4:
+		var goal_dist: float = Vector3(target_pos.x - global_position.x, 0, target_pos.z - global_position.z).length()
+		if goal_dist < 0.4:
 			has_click_target = false
 			velocity.x = 0
 			velocity.z = 0
 			_stuck_timer = 0.0
-		else:
+			_assist_waypoints.clear()
+		elif to.length() > 0.05:
 			var wish: Vector3 = to.normalized()
 			# Soft path assist: if recently stuck on a prop, bias around it
-			if _stuck_timer > 0.25:
+			if (not using_nav) and _stuck_timer > 0.25:
 				var side := Vector3(-wish.z, 0, wish.x) * float(_assist_side)
 				wish = (wish + side * 0.85).normalized()
 			velocity.x = move_toward(velocity.x, wish.x * SPEED, ACCEL * delta)
@@ -281,9 +360,9 @@ func _physics_process(delta: float) -> void:
 				_stuck_timer = 0.2
 		else:
 			_stuck_timer = maxf(0.0, _stuck_timer - delta * 1.5)
-	# Village + Glade + Pine Ridge + Lookout clamp — skip when teleported into guild-hall interiors (x >= 100)
+	# Village + wilds clamp (incl. Mill Bridge SW) — skip guild-hall interiors (x >= 100)
 	if global_position.x < 90.0:
-		global_position.x = clampf(global_position.x, -52.0, 52.0)
+		global_position.x = clampf(global_position.x, -54.0, 52.0)
 		global_position.z = clampf(global_position.z, -62.0, 52.0)
 	global_position.y = 0
 	GameState.position_xz = Vector2(global_position.x, global_position.z)

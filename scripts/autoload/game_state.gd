@@ -52,6 +52,9 @@ var unlocked_week: int = 1
 var active_slot: int = 0
 var parent_pin: String = DEFAULT_PIN
 var slot_label: String = ""
+## Pantry stacks for starter food (refill at fountain). Soft combat balance.
+var consumable_charges: Dictionary = {}
+var consumable_cd: float = 0.0
 
 var hp: int = 40
 var max_hp: int = 40
@@ -64,6 +67,11 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if unlocked_items.is_empty():
 		_apply_starters()
+	_ensure_pantry_defaults()
+
+func _process(delta: float) -> void:
+	if consumable_cd > 0.0:
+		consumable_cd = maxf(0.0, consumable_cd - delta)
 
 func _apply_starters() -> void:
 	for id in ItemDB.starter_ids():
@@ -78,6 +86,9 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	child_name = p_name if p_name.strip_edges() != "" else "Apprentice"
 	appearance = appearance_in.duplicate()
 	slot_label = ""
+	consumable_charges = {}
+	consumable_cd = 0.0
+	_ensure_pantry_defaults()
 	xp = 0
 	level = 1
 	lumens = {"math":0,"la":0,"science":0,"history":0,"bible":0}
@@ -261,7 +272,8 @@ func save_game() -> void:
 		"last_played": last_played,
 		"unlocked_week": unlocked_week,
 		"slot_label": slot_label,
-		"save_version": 2,
+		"consumable_charges": consumable_charges,
+		"save_version": 3,
 	}
 	var path := slot_path(active_slot)
 	var f: FileAccess = FileAccess.open(path, FileAccess.WRITE)
@@ -310,6 +322,11 @@ func load_game(slot: int = -1) -> bool:
 	created_at = int(data.get("created_at", 0))
 	unlocked_week = int(data.get("unlocked_week", 1))
 	slot_label = str(data.get("slot_label", ""))
+	consumable_charges = data.get("consumable_charges", {})
+	if typeof(consumable_charges) != TYPE_DICTIONARY:
+		consumable_charges = {}
+	consumable_cd = 0.0
+	_ensure_pantry_defaults()
 	_recalc_unlocked_week()
 	_apply_starters()
 	check_combat_item_unlocks()
@@ -421,6 +438,47 @@ func heal(amount: int) -> int:
 	hp_changed.emit(hp, max_hp)
 	return hp - before
 
+func _ensure_pantry_defaults() -> void:
+	for id in ItemDB.starter_ids():
+		var it: Dictionary = ItemDB.get_item(id)
+		if str(it.get("slot", "")) != "consumable":
+			continue
+		var mx: int = int(it.get("max_stack", 5))
+		if id not in consumable_charges:
+			consumable_charges[id] = mx
+		else:
+			consumable_charges[id] = clampi(int(consumable_charges[id]), 0, mx)
+
+func pantry_count(item_id: String) -> int:
+	return int(consumable_charges.get(item_id, 0))
+
+func pantry_max(item_id: String) -> int:
+	var it: Dictionary = ItemDB.get_item(item_id)
+	return int(it.get("max_stack", 5))
+
+func refill_pantry(announce: bool = false) -> void:
+	_ensure_pantry_defaults()
+	var changed := false
+	for id in consumable_charges.keys():
+		var mx := pantry_max(str(id))
+		if int(consumable_charges[id]) < mx:
+			consumable_charges[id] = mx
+			changed = true
+	# Ensure starter consumables exist even if empty dict
+	for id in ItemDB.starter_ids():
+		var it: Dictionary = ItemDB.get_item(id)
+		if str(it.get("slot", "")) != "consumable":
+			continue
+		var mx: int = int(it.get("max_stack", 5))
+		if int(consumable_charges.get(id, 0)) < mx:
+			consumable_charges[id] = mx
+			changed = true
+	if changed:
+		if announce:
+			toast.emit("Fountain pantry refilled — bread and water restocked.")
+		state_changed.emit()
+		save_game()
+
 func use_consumable(item_id: String) -> bool:
 	var item: Dictionary = ItemDB.get_item(item_id)
 	if item.is_empty() or str(item.get("slot", "")) != "consumable":
@@ -433,9 +491,19 @@ func use_consumable(item_id: String) -> bool:
 	if hp >= max_hp:
 		toast.emit("Already at full health.")
 		return false
+	_ensure_pantry_defaults()
+	var left: int = int(consumable_charges.get(item_id, 0))
+	if left <= 0:
+		toast.emit("%s pantry empty — visit the fountain to refill." % item.get("name", item_id))
+		return false
+	if consumable_cd > 0.05:
+		toast.emit("Give it a moment (%.1fs)." % consumable_cd)
+		return false
 	var gained: int = heal(heal_amt)
-	# Starter food stays available (village pantry); do not remove from unlocked_items.
-	toast.emit("Used %s (+%d HP)." % [item.get("name", item_id), gained])
+	consumable_charges[item_id] = left - 1
+	consumable_cd = float(item.get("cooldown", 1.5))
+	# Starter food stays unlocked; stacks refill at the fountain.
+	toast.emit("Used %s (+%d HP) · %d left." % [item.get("name", item_id), gained, int(consumable_charges[item_id])])
 	AudioBus.play_ui()
 	state_changed.emit()
 	save_game()
@@ -445,6 +513,7 @@ func _soft_defeat() -> void:
 	toast.emit("You were restored at the village fountain.")
 	position_xz = Vector2(0, 10)
 	heal_full()
+	refill_pantry(false)
 	set_combat_target(null)
 	soft_defeated.emit()
 	state_changed.emit()

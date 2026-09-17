@@ -1961,18 +1961,22 @@
   "wholesome_bread": {
     "id": "wholesome_bread",
     "name": "Wholesome Bread",
-    "description": "A warm loaf from the village oven. Restores 12 HP in or out of soft combat.",
+    "description": "A warm loaf from the village oven. Restores 12 HP. Stack of 5; short cooldown. Refill at the fountain.",
     "slot": "consumable",
     "heal": 12,
+    "max_stack": 5,
+    "cooldown": 2.0,
     "starter": true,
     "color": "#d4a574"
   },
   "cool_water": {
     "id": "cool_water",
     "name": "Cool Water",
-    "description": "Fresh water from the fountain. Restores 8 HP — sip anytime.",
+    "description": "Fresh water from the fountain. Restores 8 HP. Stack of 8; short cooldown. Refill at the fountain.",
     "slot": "consumable",
     "heal": 8,
+    "max_stack": 8,
+    "cooldown": 1.2,
     "starter": true,
     "color": "#4a90c8"
   }

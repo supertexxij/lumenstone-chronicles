@@ -130,6 +130,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(30, 0, 18), "Prayer Garden")
 			KEY_L:
 				_goto_landmark(Vector3(40, 0, 34), "Lookout Rock")
+			KEY_K:
+				_goto_landmark(Vector3(-36, 0, 30), "Mill Bridge")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -148,6 +150,7 @@ func _travel_destinations() -> Array:
 		{"label": "Pine Ridge ford", "pos": Vector3(-12, 0, -45.5), "key": "B"},
 		{"label": "Prayer Garden", "pos": Vector3(30, 0, 18), "key": "G"},
 		{"label": "Lookout Rock", "pos": Vector3(40, 0, 34), "key": "L"},
+		{"label": "Mill Bridge", "pos": Vector3(-36, 0, 30), "key": "K"},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
@@ -201,6 +204,8 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false
 	GameState.position_xz = Vector2(pos.x, pos.z)
+	if "Fountain" in label and GameState.has_method("refill_pantry"):
+		GameState.refill_pantry(true)
 	GameState.toast.emit("Traveled to %s." % label)
 	AudioBus.play_ui()
 
@@ -373,9 +378,9 @@ func _setup_save_panel() -> void:
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
 	panel.offset_left = -260
-	panel.offset_top = -220
+	panel.offset_top = -280
 	panel.offset_right = 260
-	panel.offset_bottom = 220
+	panel.offset_bottom = 280
 	_save_panel.add_child(panel)
 	var vbox := VBoxContainer.new()
 	vbox.name = "VBox"
@@ -393,17 +398,43 @@ func _setup_save_panel() -> void:
 	list.name = "SlotList"
 	list.custom_minimum_size = Vector2(0, 140)
 	vbox.add_child(list)
+	var rename_hint := Label.new()
+	rename_hint.name = "RenameHint"
+	rename_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	rename_hint.text = "Name any slot below (selected list row, or per-slot boxes). Parent PIN stays."
+	vbox.add_child(rename_hint)
 	var rename_row := HBoxContainer.new()
+	rename_row.name = "RenameSelectedRow"
 	var rename_edit := LineEdit.new()
 	rename_edit.name = "RenameEdit"
-	rename_edit.placeholder_text = "Optional slot label"
+	rename_edit.placeholder_text = "Label for selected slot"
 	rename_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rename_row.add_child(rename_edit)
 	var rename_btn := Button.new()
-	rename_btn.text = "Rename"
-	rename_btn.pressed.connect(_save_rename_current)
+	rename_btn.text = "Rename selected"
+	rename_btn.pressed.connect(_save_rename_selected)
 	rename_row.add_child(rename_btn)
 	vbox.add_child(rename_row)
+	var per := VBoxContainer.new()
+	per.name = "PerSlotRename"
+	for i in GameState.SLOT_COUNT:
+		var row := HBoxContainer.new()
+		row.name = "SlotRename%d" % i
+		var lab := Label.new()
+		lab.text = "Slot %d" % (i + 1)
+		lab.custom_minimum_size = Vector2(52, 0)
+		row.add_child(lab)
+		var edit := LineEdit.new()
+		edit.name = "Edit"
+		edit.placeholder_text = "Name…"
+		edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(edit)
+		var btn := Button.new()
+		btn.text = "Set"
+		btn.pressed.connect(_save_rename_slot.bind(i))
+		row.add_child(btn)
+		per.add_child(row)
+	vbox.add_child(per)
 	var switch_btn := Button.new()
 	switch_btn.text = "Switch to selected"
 	switch_btn.pressed.connect(_save_switch_selected)
@@ -451,19 +482,51 @@ func _refresh_save_panel() -> void:
 			])
 		if i == GameState.active_slot:
 			list.select(i)
+		var row: HBoxContainer = _save_panel.find_child("SlotRename%d" % i, true, false)
+		if row:
+			var edit: LineEdit = row.get_node_or_null("Edit")
+			if edit:
+				edit.text = "" if sum.get("empty", true) else str(sum.get("slot_label", ""))
+				edit.editable = not bool(sum.get("empty", true))
 	if rename_edit:
 		rename_edit.text = GameState.slot_label
 
-func _save_rename_current() -> void:
+func _save_rename_selected() -> void:
+	var list: ItemList = _save_panel.find_child("SlotList", true, false)
 	var rename_edit: LineEdit = _save_panel.find_child("RenameEdit", true, false)
-	if rename_edit == null:
+	if list == null or rename_edit == null:
 		return
-	GameState.set_slot_label(rename_edit.text)
-	_refresh_save_panel()
-	if title_screen and title_screen.has_method("refresh_slots"):
-		title_screen.refresh_slots()
-	_on_toast("Slot label saved.")
-	AudioBus.play_ui()
+	if not list.is_anything_selected():
+		_on_toast("Select a slot in the list first.")
+		return
+	var idx: int = list.get_selected_items()[0]
+	_save_rename_slot(idx, rename_edit.text)
+
+func _save_rename_slot(slot: int, forced_text: String = "") -> void:
+	var text := forced_text
+	if text == "":
+		var row: HBoxContainer = _save_panel.find_child("SlotRename%d" % slot, true, false)
+		if row == null:
+			return
+		var edit: LineEdit = row.get_node_or_null("Edit")
+		if edit == null:
+			return
+		text = edit.text
+	if not GameState.has_save(slot):
+		_on_toast("That slot is empty — create a save first.")
+		return
+	if GameState.set_slot_label_on_slot(slot, text):
+		_refresh_save_panel()
+		if title_screen and title_screen.has_method("refresh_slots"):
+			title_screen.refresh_slots()
+		_on_toast("Slot %d labeled." % (slot + 1))
+		AudioBus.play_ui()
+	else:
+		_on_toast("Could not rename slot %d." % (slot + 1))
+
+func _save_rename_current() -> void:
+	## Kept for compatibility; renames the list selection.
+	_save_rename_selected()
 
 func _save_switch_selected() -> void:
 	var list: ItemList = _save_panel.find_child("SlotList", true, false)

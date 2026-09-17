@@ -76,6 +76,7 @@ func refresh_slots() -> void:
 			]
 			cont.disabled = false
 			clr.disabled = false
+	_sync_rename_edits()
 	if status_lbl:
 		status_lbl.text = "Pick a save slot (3 slots). Older single saves load in Slot 1."
 
@@ -94,36 +95,64 @@ func _on_clear(slot: int) -> void:
 func _ensure_rename_row() -> void:
 	if slots_box == null:
 		return
-	if slots_box.get_parent().has_node("RenameRow"):
+	if slots_box.get_parent().has_node("RenameRows"):
 		return
-	var row := HBoxContainer.new()
-	row.name = "RenameRow"
-	var edit := LineEdit.new()
-	edit.name = "LabelEdit"
-	edit.placeholder_text = "Optional label for selected slot"
-	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(edit)
-	var btn := Button.new()
-	btn.text = "Set label"
-	btn.pressed.connect(_on_set_label)
-	row.add_child(btn)
-	slots_box.get_parent().add_child(row)
-	slots_box.get_parent().move_child(row, slots_box.get_index() + 1)
+	var box := VBoxContainer.new()
+	box.name = "RenameRows"
+	var hint := Label.new()
+	hint.text = "Name each save slot (optional). Parent PIN is unchanged."
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(hint)
+	for i in GameState.SLOT_COUNT:
+		var row := HBoxContainer.new()
+		row.name = "RenameRow%d" % i
+		var lab := Label.new()
+		lab.text = "Slot %d" % (i + 1)
+		lab.custom_minimum_size = Vector2(52, 0)
+		row.add_child(lab)
+		var edit := LineEdit.new()
+		edit.name = "LabelEdit"
+		edit.placeholder_text = "Name…"
+		edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(edit)
+		var btn := Button.new()
+		btn.text = "Set"
+		btn.pressed.connect(_on_set_label_slot.bind(i))
+		row.add_child(btn)
+		box.add_child(row)
+	slots_box.get_parent().add_child(box)
+	slots_box.get_parent().move_child(box, slots_box.get_index() + 1)
 
-func _on_set_label() -> void:
-	var row = slots_box.get_parent().get_node_or_null("RenameRow")
+func _sync_rename_edits() -> void:
+	var box = slots_box.get_parent().get_node_or_null("RenameRows") if slots_box else null
+	if box == null:
+		return
+	for i in GameState.SLOT_COUNT:
+		var row = box.get_node_or_null("RenameRow%d" % i)
+		if row == null:
+			continue
+		var edit: LineEdit = row.get_node_or_null("LabelEdit")
+		if edit == null:
+			continue
+		var sum: Dictionary = GameState.slot_summary(i)
+		if sum.get("empty", true):
+			edit.text = ""
+			edit.editable = false
+		else:
+			edit.editable = true
+			edit.text = str(sum.get("slot_label", ""))
+
+func _on_set_label_slot(slot: int) -> void:
+	var box = slots_box.get_parent().get_node_or_null("RenameRows")
+	if box == null:
+		return
+	var row = box.get_node_or_null("RenameRow%d" % slot)
 	if row == null:
 		return
 	var edit: LineEdit = row.get_node("LabelEdit")
-	var slot := GameState.active_slot
-	if not GameState.has_save(slot):
-		for i in GameState.SLOT_COUNT:
-			if GameState.has_save(i):
-				slot = i
-				break
 	if not GameState.has_save(slot):
 		if status_lbl:
-			status_lbl.text = "Create or continue a save before setting a label."
+			status_lbl.text = "Create a save in slot %d before naming it." % (slot + 1)
 		return
 	if GameState.set_slot_label_on_slot(slot, edit.text):
 		AudioBus.play_ui()
@@ -133,3 +162,10 @@ func _on_set_label() -> void:
 	else:
 		if status_lbl:
 			status_lbl.text = "Could not save that label."
+
+func _on_set_label() -> void:
+	## Compatibility shim — names first non-empty slot if old UI called.
+	for i in GameState.SLOT_COUNT:
+		if GameState.has_save(i):
+			_on_set_label_slot(i)
+			return

@@ -55,8 +55,10 @@ func _ready() -> void:
 	_build_pine_ridge()
 	_build_prayer_garden()
 	_build_lookout_rock()
+	_build_mill_bridge()
 	_setup_day_night()
 	_setup_weather()
+	_setup_outdoor_navigation()
 	GameState.in_world = true
 	AudioBus.start_ambient()
 
@@ -131,6 +133,18 @@ func _build_ground() -> void:
 	ground.material_override = _mats["grass"]
 	ground.position.y = -0.01
 	static_world.add_child(ground)
+	# Thin floor collider — outdoor click-to-move NavigationMesh bake + footing
+	var floor_body := StaticBody3D.new()
+	floor_body.name = "GroundBody"
+	floor_body.collision_layer = 1
+	floor_body.collision_mask = 0
+	var floor_col := CollisionShape3D.new()
+	var floor_shape := BoxShape3D.new()
+	floor_shape.size = Vector3(120, 0.2, 120)
+	floor_col.shape = floor_shape
+	floor_col.position = Vector3(0, -0.1, 0)
+	floor_body.add_child(floor_col)
+	static_world.add_child(floor_body)
 	# Soft wild tint edges
 	for i in 10:
 		var patch := MeshInstance3D.new()
@@ -262,6 +276,18 @@ func _build_wilds() -> void:
 				_add_bush(p + Vector3(rng.randf_range(-1.5, 1.5), 0, rng.randf_range(-1.5, 1.5)), rng)
 		placed += 1
 
+func _near_segment_xz(pos: Vector3, a: Vector3, b: Vector3, half_w: float) -> bool:
+	## Distance from point to segment on XZ plane (y ignored).
+	var p := Vector2(pos.x, pos.z)
+	var aa := Vector2(a.x, a.z)
+	var bb := Vector2(b.x, b.z)
+	var ab := bb - aa
+	var len2 := ab.length_squared()
+	if len2 < 0.0001:
+		return p.distance_to(aa) < half_w
+	var t := clampf((p - aa).dot(ab) / len2, 0.0, 1.0)
+	return p.distance_to(aa + ab * t) < half_w
+
 func _in_travel_corridor(pos: Vector3) -> bool:
 	## Keep soft-travel routes walkable: north glade spur, west ridge spur, east garden spur.
 	# North path to Lantern Glade (around x=0.5)
@@ -276,11 +302,17 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Village plaza keep-clear near fountain soft-travel
 	if abs(pos.x) < 4.0 and abs(pos.z - 12.0) < 3.0:
 		return true
-	# Southeast path to Lookout Rock
-	if abs(pos.z - 34.0) < 3.2 and pos.x > 8.0 and pos.x < 44.0:
+	# Southeast diagonal path to Lookout Rock (v1.6 bugfix: was only z≈34 band)
+	if _near_segment_xz(pos, Vector3(10, 0, 14), Vector3(40, 0, 34), 3.4):
 		return true
 	# Lookout plaza keep-clear
 	if abs(pos.x - 40.0) < 4.0 and abs(pos.z - 34.0) < 4.0:
+		return true
+	# Southwest path to Mill Bridge
+	if _near_segment_xz(pos, Vector3(-8, 0, 14), Vector3(-36, 0, 30), 3.4):
+		return true
+	# Mill Bridge plaza keep-clear
+	if abs(pos.x + 36.0) < 5.0 and abs(pos.z - 30.0) < 5.0:
 		return true
 	return false
 
@@ -348,6 +380,24 @@ func _build_fountain() -> void:
 	lbl.position = Vector3(0, 2.5, 0)
 	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	root.add_child(lbl)
+	# Soft pantry refill when walking near the fountain
+	var refill := Area3D.new()
+	refill.name = "PantryRefill"
+	refill.monitoring = true
+	refill.collision_layer = 0
+	refill.collision_mask = 2
+	refill.position = Vector3(0, 1.0, 0)
+	var rcol := CollisionShape3D.new()
+	var rbox := CylinderShape3D.new()
+	rbox.radius = 3.2
+	rbox.height = 2.4
+	rcol.shape = rbox
+	refill.add_child(rcol)
+	refill.body_entered.connect(func(body: Node):
+		if body.is_in_group("player") and GameState.has_method("refill_pantry"):
+			GameState.refill_pantry(true)
+	)
+	root.add_child(refill)
 	static_world.add_child(root)
 
 func _build_village_props() -> void:
@@ -613,6 +663,19 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_add_bookshelf(room, Vector3(-5.2, 0, -3.5), col)
 	_add_bookshelf(room, Vector3(5.2, 0, -3.5), col)
 	_add_bookshelf(room, Vector3(-5.2, 0, 2.0), col)
+	_add_bookshelf(room, Vector3(5.2, 0, 2.0), col)  # denser east wall
+	# Extra study nook + desk-side chair
+	_add_study_table(room, Vector3(0.0, 0, 2.4), 0.0)
+	_add_chair(room, Vector3(0.0, 0, 3.4), 0.0)
+	_add_chair(room, Vector3(-0.9, 0, -2.2), 0.4)  # seat at quest desk
+	# Wall plaque near desk
+	_mi(_box(Vector3(1.1, 0.7, 0.06)), Vector3(-2.2, 1.8, -5.7), room, _mat(col.darkened(0.25)), "Plaque")
+	var plaque := Label3D.new()
+	plaque.text = "Mastery Desk"
+	plaque.font_size = 26
+	plaque.position = Vector3(-2.2, 2.35, -5.5)
+	plaque.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	room.add_child(plaque)
 	# Benches along walls
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(-2.5, 0.55, 4.2), room, _mats["bench"], "BenchL")
 	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(2.5, 0.55, 4.2), room, _mats["bench"], "BenchR")
@@ -690,6 +753,11 @@ func _add_quest_desk(room: Node3D, pos: Vector3, guild_col: Color, guild: String
 	_mi(_box(Vector3(2.9, 0.08, 1.3)), Vector3(0, 1.0, 0), root, _mats["wood_light"], "DeskTop")
 	_mi(_box(Vector3(0.45, 0.12, 0.55)), Vector3(-0.7, 1.1, 0.1), root, _mat(guild_col), "Book")
 	_mi(_box(Vector3(0.35, 0.08, 0.45)), Vector3(0.6, 1.08, -0.15), root, _mats["iron"], "Inkwell")
+	_mi(_box(Vector3(0.4, 0.05, 0.5)), Vector3(0.05, 1.08, 0.25), root, _mat(Color("#f4e4bc")), "Scroll")
+	_mi(_cyl(0.05, 0.06, 0.28), Vector3(0.95, 1.22, 0.25), root, _mat(Color("#f4e4bc")), "DeskCandle")
+	_mi(_sphere(0.045), Vector3(0.95, 1.4, 0.25), root, _mats["lantern_glow"], "DeskFlame")
+	_mi(_cyl(0.16, 0.14, 0.22), Vector3(-1.05, 1.18, -0.25), root, _mats["barrel"], "DeskPot")
+	_mi(_sphere(0.18, 0.28), Vector3(-1.05, 1.42, -0.25), root, _mats["leaf"], "DeskPlant")
 	# Interactable volume — opens outdoor mentor for this guild
 	var area := Area3D.new()
 	area.name = "QuestDesk"
@@ -1213,6 +1281,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32"})
 	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037"})
 	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a"})
+	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1240,3 +1309,85 @@ func get_minimap_markers() -> Dictionary:
 		"day": _day_phase,
 		"weather": _weather_label_cache,
 	}
+
+func _build_mill_bridge() -> void:
+	## Southwest landmark — soft travel (K). Wooden mill + creek bridge spur.
+	var root := Node3D.new()
+	root.name = "MillBridge"
+	static_world.add_child(root)
+	# Dirt spur southwest from plaza
+	for i in 8:
+		var t := float(i) / 7.0
+		var x := -8.0 + t * (-28.0)
+		var z := 14.0 + t * 16.0
+		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "MillPath")
+	# Creek under the bridge
+	_mi(_cyl(3.4, 3.4, 0.08), Vector3(-36.0, 0.015, 30.0), root, _mats["water"], "MillCreek")
+	_mi(_cyl(1.5, 1.5, 0.05), Vector3(-39.0, 0.015, 32.5), root, _mats["water"], "MillCreekBend")
+	# Bridge planks
+	_mi(_box(Vector3(5.2, 0.12, 1.8)), Vector3(-36.0, 0.35, 30.0), root, _mats["wood"], "BridgeDeck")
+	_mi(_box(Vector3(5.2, 0.35, 0.12)), Vector3(-36.0, 0.65, 29.0), root, _mats["wood_light"], "RailS")
+	_mi(_box(Vector3(5.2, 0.35, 0.12)), Vector3(-36.0, 0.65, 31.0), root, _mats["wood_light"], "RailN")
+	for i in 5:
+		var px := -38.0 + float(i) * 1.0
+		_mi(_cyl(0.08, 0.1, 0.7), Vector3(px, 0.2, 29.0), root, _mats["wood"], "PillarS")
+		_mi(_cyl(0.08, 0.1, 0.7), Vector3(px, 0.2, 31.0), root, _mats["wood"], "PillarN")
+	# Small mill house + water wheel
+	_mi(_box(Vector3(3.2, 2.4, 2.8)), Vector3(-40.5, 1.2, 27.0), root, _mats["wood"], "MillHouse")
+	_mi(_box(Vector3(3.6, 0.2, 3.2)), Vector3(-40.5, 2.5, 27.0), root, _mats["roof"], "MillRoof")
+	_mi(_cyl(1.1, 1.1, 0.22), Vector3(-38.2, 1.3, 28.6), root, _mats["wood_light"], "Wheel")
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		var bx := -38.2 + cos(ang) * 1.05
+		var by := 1.3 + sin(ang) * 1.05
+		_mi(_box(Vector3(0.12, 0.7, 0.08)), Vector3(bx, by, 28.6), root, _mats["wood"], "Blade")
+	_mi(_cyl(0.12, 0.14, 1.6), Vector3(-38.2, 1.3, 27.8), root, _mats["iron"], "Axle")
+	_add_lantern_post(Vector3(-33.5, 0, 28.0))
+	_add_lantern_post(Vector3(-33.5, 0, 32.0))
+	_add_bench(Vector3(-34.0, 0, 33.5), 0.3)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 307
+	for i in 5:
+		var ang := i * TAU / 5.0
+		_add_flowers(Vector3(-36.0 + cos(ang) * 5.5, 0, 30.0 + sin(ang) * 5.5), rng)
+	var sign := Node3D.new()
+	sign.position = Vector3(-32.5, 0, 30.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.7, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	var sl := Label3D.new()
+	sl.text = "Mill Bridge"
+	sl.font_size = 40
+	sl.position = Vector3(0, 2.3, 0)
+	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.add_child(sl)
+	var lbl := Label3D.new()
+	lbl.text = "Mill Bridge"
+	lbl.font_size = 52
+	lbl.position = Vector3(-36.0, 3.4, 30.0)
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(lbl)
+
+func _setup_outdoor_navigation() -> void:
+	## Lightweight outdoor NavigationRegion3D bake (static colliders + ground).
+	## Skips guild-hall interiors (x >= 90). Falls back gracefully if bake is empty.
+	var region := NavigationRegion3D.new()
+	region.name = "OutdoorNavRegion"
+	add_child(region)
+	var nm := NavigationMesh.new()
+	nm.agent_radius = 0.5
+	nm.agent_height = 1.5
+	nm.agent_max_climb = 0.5
+	nm.agent_max_slope = 45.0
+	nm.cell_size = 0.25
+	nm.cell_height = 0.25
+	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+	nm.geometry_collision_mask = 1
+	nm.filter_baking_aabb = AABB(Vector3(-54, -1, -64), Vector3(108, 5, 118))
+	var source := NavigationMeshSourceGeometryData3D.new()
+	NavigationServer3D.parse_source_geometry_data(nm, source, static_world)
+	NavigationServer3D.bake_from_source_geometry_data(nm, source)
+	region.navigation_mesh = nm
+	if player and player.has_method("set_navigation_ready"):
+		player.set_navigation_ready(true)
+

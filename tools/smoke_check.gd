@@ -30,5 +30,8 @@ func _initialize():
 	print("PIN_RESET_API", "func reset_parent_pin_to_default" in gs_src)
 	print("PATH_ASSIST_API", "Soft path assist" in FileAccess.get_file_as_string("res://scripts/player/player.gd") or "_stuck_timer" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("LOOKOUT_API", "_build_lookout_rock" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MILL_API", "_build_mill_bridge" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("NAV_API", "_setup_outdoor_navigation" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("PANTRY_API", "func refill_pantry" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("CHECK_OK")
 	quit(0)

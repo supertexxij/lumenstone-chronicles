@@ -36,7 +36,10 @@ func refresh() -> void:
 		for slot in GameState.equipped:
 			if GameState.equipped[slot] == id:
 				equipped_mark = " [E]"
-		list.add_item("%s%s" % [item.get("name", id), equipped_mark])
+		var stack_mark := ""
+		if str(item.get("slot", "")) == "consumable" and GameState.has_method("pantry_count"):
+			stack_mark = " ×%d/%d" % [GameState.pantry_count(id), GameState.pantry_max(id)]
+		list.add_item("%s%s%s" % [item.get("name", id), equipped_mark, stack_mark])
 		list.set_item_metadata(list.item_count - 1, id)
 	_update_loadout()
 	detail.text = "Select an item to equip."
@@ -62,6 +65,10 @@ func _on_select(idx: int) -> void:
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
 	if str(item.get("slot", "")) == "consumable":
 		extra += "\nHeals %d HP (Use)." % int(item.get("heal", 0))
+		if GameState.has_method("pantry_count"):
+			extra += "\nPantry %d / %d" % [GameState.pantry_count(selected_id), GameState.pantry_max(selected_id)]
+			if GameState.consumable_cd > 0.05:
+				extra += "\nCooldown %.1fs" % GameState.consumable_cd
 	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name",""), item.get("description",""), item.get("slot",""), extra]
 	if use_btn:
 		use_btn.disabled = str(item.get("slot", "")) != "consumable"
