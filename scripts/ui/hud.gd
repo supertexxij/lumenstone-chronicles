@@ -35,6 +35,9 @@ var _map_data: Dictionary = {}
 var _hurt_vignette: Control = null
 var _year_chip: Label = null
 var _vignette_edges: Array = []
+var _landmark_tick: ColorRect = null
+var _def_flash_t: float = 0.0
+var _def_flash_active: bool = false
 
 func _ready() -> void:
 	inv_btn.pressed.connect(func(): AudioBus.play_ui(); inventory_pressed.emit())
@@ -55,10 +58,13 @@ func _ready() -> void:
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
 	_ensure_food_lbl()
 	_ensure_year_chip()
-	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · 1–5 halls"
+	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
+	if GameState.has_signal("hurt") and not GameState.hurt.is_connected(_on_hurt_def_flash):
+		GameState.hurt.connect(_on_hurt_def_flash)
+	_ensure_landmark_tick()
 	set_process(true)
 
 func set_world(world: Node) -> void:
@@ -76,7 +82,9 @@ func refresh() -> void:
 	var def_n: int = 0
 	if GameState.has_method("get_defense"):
 		def_n = int(GameState.get_defense())
-	if def_n > 0:
+	if _def_flash_active and def_n > 0:
+		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d softens the hit" % [GameState.combat_level, GameState.combat_xp, def_n]
+	elif def_n > 0:
 		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d" % [GameState.combat_level, GameState.combat_xp, def_n]
 	else:
 		combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
@@ -95,7 +103,14 @@ func set_hp(cur: int, mx: int) -> void:
 	hp_bar.get_node("HpText").text = "%d / %d" % [cur, mx]
 	_update_hurt_vignette(cur, mx)
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if _def_flash_t > 0.0:
+		_def_flash_t -= delta
+		if _def_flash_t <= 0.0 and _def_flash_active:
+			_def_flash_active = false
+			if combat_lbl:
+				combat_lbl.modulate = Color(1, 1, 1, 1)
+			refresh()
 	if not visible or _world == null:
 		return
 	if _world.has_method("get_minimap_markers"):
@@ -114,6 +129,7 @@ func _update_compass() -> void:
 	compass_needle.rotation = -yaw
 	if compass_n:
 		compass_n.rotation = -yaw
+	_update_landmark_tick(yaw)
 
 func _update_day_label() -> void:
 	if day_lbl == null:
@@ -282,3 +298,69 @@ func _refresh_year_chip() -> void:
 	_year_chip.text = "Year %d%%" % pct
 	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
 
+
+func _on_hurt_def_flash(_amount: int) -> void:
+	## Wave 25 QoL: when soft armor is active, flash Def on the combat line after a hit.
+	var def_n: int = 0
+	if GameState.has_method("get_defense"):
+		def_n = int(GameState.get_defense())
+	if def_n <= 0:
+		return
+	_def_flash_active = true
+	_def_flash_t = 1.35
+	if combat_lbl:
+		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d softens the hit" % [GameState.combat_level, GameState.combat_xp, def_n]
+		combat_lbl.modulate = Color(1.0, 0.92, 0.55, 1.0)
+
+
+func _ensure_landmark_tick() -> void:
+	## Soft gold tick on the compass ring pointing toward the nearest wilds landmark.
+	if compass == null:
+		return
+	if _landmark_tick != null and is_instance_valid(_landmark_tick):
+		return
+	_landmark_tick = ColorRect.new()
+	_landmark_tick.name = "LandmarkTick"
+	_landmark_tick.color = Color(1.0, 0.85, 0.35, 0.95)
+	_landmark_tick.size = Vector2(6, 10)
+	_landmark_tick.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_landmark_tick.pivot_offset = Vector2(3, 28)
+	compass.add_child(_landmark_tick)
+
+
+func _update_landmark_tick(yaw: float) -> void:
+	_ensure_landmark_tick()
+	if _landmark_tick == null:
+		return
+	var px: float = float(_map_data.get("player", {}).get("x", 0))
+	var pz: float = float(_map_data.get("player", {}).get("z", 0))
+	var best_d := 1.0e9
+	var best_ang := 0.0
+	var found := false
+	for h in _map_data.get("halls", []):
+		# Prefer wilds/village landmarks (skip guild hall squares)
+		var icon := str(h.get("icon", ""))
+		if icon == "hall":
+			continue
+		var dx: float = float(h["x"]) - px
+		var dz: float = float(h["z"]) - pz
+		var d: float = sqrt(dx * dx + dz * dz)
+		if d < 2.5:
+			continue  # already here — look for next
+		if d < best_d:
+			best_d = d
+			# 0 = world -Z (north), matching minimap forward
+			best_ang = atan2(dx, -dz)
+			found = true
+	if not found or str(_map_data.get("inside", "")) != "":
+		_landmark_tick.visible = false
+		return
+	_landmark_tick.visible = true
+	var sz: Vector2 = compass.size
+	var center := sz * 0.5
+	# Screen angle: world bearing minus camera yaw
+	var screen_ang: float = best_ang - yaw
+	var ring_r: float = minf(sz.x, sz.y) * 0.42
+	var tip: Vector2 = Vector2(0, -ring_r).rotated(screen_ang)
+	_landmark_tick.position = center + tip - Vector2(3, 5)
+	_landmark_tick.rotation = screen_ang

@@ -449,10 +449,20 @@ func equip_item(id: String) -> void:
 
 func unequip_slot(slot: String) -> void:
 	## Cape always falls back to Travel Cape so the armor slot stays clear.
+	var prev_id = equipped.get(slot)
+	var prev_name := ""
+	if prev_id != null and str(prev_id) != "":
+		prev_name = str(ItemDB.get_item(str(prev_id)).get("name", str(prev_id)))
 	if slot == "cape":
 		equipped["cape"] = "default_cape"
+		if prev_name != "" and str(prev_id) != "default_cape":
+			toast.emit("Unequipped %s — Travel Cape restored." % prev_name)
+		elif prev_name != "":
+			toast.emit("Travel Cape already on.")
 	else:
 		equipped[slot] = null
+		if prev_name != "":
+			toast.emit("Unequipped %s." % prev_name)
 	state_changed.emit()
 	save_game()
 

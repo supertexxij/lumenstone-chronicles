@@ -776,7 +776,7 @@ horizontal_alignment = 1
 [node name="Hint" type="Label" parent="UI/TravelPanel/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Outdoors only. Keys: H Fountain · N Glade · B Ridge · G Prayer Garden · L Lookout · K Mill · O Hollow · P Willow · Y Reed · U Cross · X Arch · 1–5 Halls"
+text = "Outdoors only. Keys: H Fountain · N Glade · B Ridge · G Prayer Garden · L Lookout · K Mill · O Hollow · P Willow · Y Reed · U Cross · X Arch · Z Knoll · 1–5 Halls"
 autowrap_mode = 2
 horizontal_alignment = 1
 

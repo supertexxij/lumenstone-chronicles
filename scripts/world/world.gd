@@ -65,6 +65,7 @@ func _ready() -> void:
 	_build_reed_pool()
 	_build_quiet_cross()
 	_build_stone_arch()
+	_build_amber_knoll()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -102,6 +103,8 @@ func _init_mats() -> void:
 	_mats["leaf_cedar"] = _mat(Color("#1e4a32"))
 	_mats["leaf_willow"] = _mat(Color("#4a7a48"))
 	_mats["bush"] = _mat(Color("#356b45"))
+	_mats["amber"] = _mat(Color("#c9a227"))
+	_mats["amber_dark"] = _mat(Color("#8a6a20"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -376,6 +379,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 		return true
 	# Stone Arch plaza keep-clear
 	if abs(pos.x + 48.0) < 5.0 and abs(pos.z - 8.0) < 5.0:
+		return true
+	# Northeast-east path to Amber Knoll (Wave 25)
+	if _near_segment_xz(pos, Vector3(16, 0, -4), Vector3(48, 0, -22), 3.4):
+		return true
+	# Amber Knoll plaza keep-clear
+	if abs(pos.x - 48.0) < 5.0 and abs(pos.z + 22.0) < 5.0:
 		return true
 	return false
 
@@ -656,6 +665,9 @@ func _landmark_zones() -> Array:
 		{"id": "arch", "pos": Vector3(-48, 0, 8), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Stone Arch — a weathered stone gateway opens toward the western wilds.",
 			"return_toast": "Back at Stone Arch — the old gateway still welcomes weary feet."},
+		{"id": "knoll", "pos": Vector3(48, 0, -22), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Amber Knoll — a warm honey-stone rise with soft wildflowers.",
+			"return_toast": "Back at Amber Knoll — the amber stones still catch the light kindly."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1535,19 +1547,20 @@ func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
 	var halls: Array = []
 	for b in world_data.get("buildings", []):
-		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888"))})
-	# Landmarks for wilds spurs
-	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8"})
-	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32"})
-	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037"})
-	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a"})
-	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40"})
-	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32"})
-	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48"})
-	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a"})
-	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037"})
-	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a"})
-	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
+		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888")), "icon": "hall"})
+	# Landmarks for wilds spurs (Wave 25: icon kinds for chunky minimap marks)
+	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8", "icon": "tree"})
+	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32", "icon": "tree"})
+	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037", "icon": "tree"})
+	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a", "icon": "rock"})
+	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40", "icon": "mill"})
+	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32", "icon": "tree"})
+	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48", "icon": "tree"})
+	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a", "icon": "water"})
+	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
+	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
+	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
+	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
 		# Hide indoor duplicates on minimap (keep outdoor mentors)
@@ -1993,6 +2006,62 @@ func _build_stone_arch() -> void:
 	_place_label3d(root, "Stone Arch", 52, Vector3(-48.0, 4.0, 8.0))
 
 
+
+func _build_amber_knoll() -> void:
+	## East-northeast wilds landmark — warm honey-stone rise with wildflowers (soft travel Z).
+	## Distinct from Quiet Cross (wooden cross) and Cedar Hollow (cedar stand).
+	var root := Node3D.new()
+	root.name = "AmberKnoll"
+	static_world.add_child(root)
+	# Dirt spur toward the knoll (from near Quiet Cross latitude, angling north)
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 16.0 + tt * 32.0
+		var z := -4.0 + tt * (-18.0)
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "KnollPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 18.0 + tt * 26.0
+		var z := -5.0 + tt * (-14.0)
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "KnollTrim")
+	# Amber stone rise (chunky layered knoll)
+	_mi(_cyl(4.4, 4.4, 0.1), Vector3(48.0, 0.05, -22.0), root, _mats["grass_dark"], "KnollGrass")
+	_mi(_cyl(3.2, 3.2, 0.35), Vector3(48.0, 0.22, -22.0), root, _mats["amber_dark"], "KnollBase")
+	_mi(_cyl(2.2, 2.2, 0.45), Vector3(48.0, 0.55, -22.0), root, _mats["amber"], "KnollMid")
+	_mi(_cyl(1.1, 1.1, 0.4), Vector3(48.0, 0.95, -22.0), root, _mats["amber_dark"], "KnollCap")
+	# Soft honey-glow lantern stone on the crest
+	_mi(_sphere(0.28, 0.32), Vector3(48.0, 1.35, -22.0), root, _mats["lantern_glow"], "AmberGlow")
+	_add_lantern_post(Vector3(44.2, 0, -19.5))
+	_add_lantern_post(Vector3(51.5, 0, -24.8))
+	_add_lantern_post(Vector3(28.0, 0, -10.0))
+	_add_lantern_post(Vector3(22.0, 0, -6.0))
+	_add_bench(Vector3(45.4, 0, -24.6), 0.35)
+	_add_crate(Vector3(50.6, 0, -19.2))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 925
+	# Framing props outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 18.0 + tt * 26.0
+		var cz := -5.0 + tt * (-14.0)
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx, 0, cz + side * rng.randf_range(4.8, 7.8))
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	for i in 10:
+		var ang := float(i) * TAU / 10.0
+		_add_flowers(Vector3(48.0 + cos(ang) * 3.4, 0, -22.0 + sin(ang) * 3.4), rng)
+		if i % 2 == 0:
+			_add_tree(Vector3(48.0 + cos(ang) * 6.6, 0, -22.0 + sin(ang) * 6.6), 1)
+	_add_chunky_sign(root, Vector3(44.0, 0, -22.0), "Amber Knoll", 0.2)
+	_place_label3d(root, "Warm stones catch the light", 28, Vector3(48.0, 4.2, -22.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Amber Knoll", 52, Vector3(48.0, 3.6, -22.0))
+
+
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
@@ -2110,6 +2179,10 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(-48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(-45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-51.0, 0, 5.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		# Amber Knoll (Wave 25)
+		{"pos": Vector3(48.0, 0, -22.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(45.0, 0, -19.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(51.0, 0, -24.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},
