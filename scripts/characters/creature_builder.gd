@@ -127,6 +127,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_weasel(bob)
 		"pecan_possum":
 			_build_possum(bob)
+		"magnolia_beaver":
+			_build_beaver(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1015,4 +1017,44 @@ static func _build_possum(bob: Node3D) -> void:
 	var curl := _mi(_cyl(0.035, 0.015, 0.22), Vector3(0, 0.48, -0.48), bob, "TailCurl")
 	curl.rotation_degrees = Vector3(-55, 0, 0)
 	_mi(_sphere(0.04), Vector3(0, 0.58, -0.55), bob, "TailTip")
+
+
+static func _build_beaver(bob: Node3D) -> void:
+	## Soft magnolia-wilds beaver — chunky body, flat paddle tail, buck teeth, soft ears (distinct from Pecan Possum / Walnut Weasel / Aspen Otter).
+	# Chunky rounded body
+	_mi(_sphere(0.22, 0.30), Vector3(0, 0.38, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.13, 0.20), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Broad head
+	_mi(_sphere(0.14, 0.13), Vector3(0, 0.44, 0.28), bob, "Head")
+	# Soft rounded snout
+	_mi(_box(Vector3(0.08, 0.05, 0.10)), Vector3(0, 0.40, 0.40), bob, "Snout")
+	# Buck teeth (signature)
+	_mi(_box(Vector3(0.018, 0.04, 0.012)), Vector3(-0.016, 0.37, 0.46), bob, "ToothL")
+	_mi(_box(Vector3(0.018, 0.04, 0.012)), Vector3(0.016, 0.37, 0.46), bob, "ToothR")
+	# Soft rounded ears
+	_mi(_sphere(0.04, 0.05), Vector3(-0.08, 0.56, 0.24), bob, "EarL")
+	_mi(_sphere(0.04, 0.05), Vector3(0.08, 0.56, 0.24), bob, "EarR")
+	# Bright eyes
+	_mi(_sphere(0.028), Vector3(-0.055, 0.48, 0.36), bob, "EyeL")
+	_mi(_sphere(0.028), Vector3(0.055, 0.48, 0.36), bob, "EyeR")
+	_mi(_sphere(0.012), Vector3(-0.055, 0.485, 0.38), bob, "PupilL")
+	_mi(_sphere(0.012), Vector3(0.055, 0.485, 0.38), bob, "PupilR")
+	# Short sturdy legs
+	for info in [
+		["FL", Vector3(-0.11, 0.16, 0.14)],
+		["FR", Vector3(0.11, 0.16, 0.14)],
+		["BL", Vector3(-0.11, 0.16, -0.12)],
+		["BR", Vector3(0.11, 0.16, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.022, 0.024, 0.14), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.055, 0.018, 0.07)), Vector3(0, -0.10, 0.01), leg, "Foot")
+	# Flat paddle tail (signature — horizontal flat vs possum curl / weasel bush)
+	var paddle := _mi(_box(Vector3(0.22, 0.035, 0.42)), Vector3(0, 0.30, -0.38), bob, "Paddle")
+	paddle.rotation_degrees = Vector3(12, 0, 0)
+	_mi(_box(Vector3(0.16, 0.028, 0.12)), Vector3(0, 0.28, -0.58), bob, "PaddleTip")
 

@@ -33,6 +33,7 @@ var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
+var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
 var _canopy_drip: CPUParticles3D  # Wave 48: soft rain canopy drip under trees outdoors
 var _eaves_splash: CPUParticles3D  # Wave 51: soft rain splash on hall outdoor eaves
@@ -1666,6 +1667,7 @@ func _setup_weather() -> void:
 	_setup_edge_fog_banks()
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
+	_setup_garden_fireflies()
 	_setup_snowdust()
 	_setup_canopy_drip()
 	_setup_eaves_splash()
@@ -1870,6 +1872,11 @@ func _update_weather(delta: float) -> void:
 		else:
 			_dusk_fireflies.emitting = false
 			_dusk_fireflies.visible = false
+	# Wave 53: denser soft fireflies gather near Prayer Garden at dusk (RuneScape-chunky, wholesome)
+	if _garden_fireflies:
+		var garden_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_garden_fireflies.emitting = garden_dusk
+		_garden_fireflies.visible = garden_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3178,6 +3185,51 @@ func _setup_wind_leaves() -> void:
 	add_child(_wind_leaves)
 	HeadlessGuard.guard_particles(_wind_leaves)
 
+
+
+
+func _setup_garden_fireflies() -> void:
+	## Wave 53: denser gold-green fireflies fixed near Prayer Garden at dusk (player-visible feel).
+	_garden_fireflies = CPUParticles3D.new()
+	_garden_fireflies.name = "PrayerGardenFireflies"
+	_garden_fireflies.emitting = false
+	_garden_fireflies.amount = 52
+	_garden_fireflies.lifetime = 4.2
+	_garden_fireflies.preprocess = 1.4
+	_garden_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_garden_fireflies.emission_box_extents = Vector3(6.5, 1.6, 6.5)
+	_garden_fireflies.direction = Vector3(0, 0.4, 0)
+	_garden_fireflies.spread = 155.0
+	_garden_fireflies.initial_velocity_min = 0.06
+	_garden_fireflies.initial_velocity_max = 0.38
+	_garden_fireflies.gravity = Vector3(0, 0.012, 0)
+	_garden_fireflies.angular_velocity_min = -18.0
+	_garden_fireflies.angular_velocity_max = 18.0
+	_garden_fireflies.scale_amount_min = 0.5
+	_garden_fireflies.scale_amount_max = 1.15
+	var fm := SphereMesh.new()
+	fm.radius = 0.04
+	fm.height = 0.08
+	_garden_fireflies.mesh = fm
+	var fmat := StandardMaterial3D.new()
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.albedo_color = Color(0.94, 0.96, 0.48, 0.82)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.88, 0.95, 0.38)
+	fmat.emission_energy_multiplier = 1.65
+	_garden_fireflies.material_override = fmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.9, 0.95, 0.4, 0.0),
+		Color(1.0, 0.98, 0.55, 0.9),
+		Color(0.85, 0.9, 0.35, 0.0),
+	])
+	_garden_fireflies.color_ramp = ramp
+	# Prayer Garden landmark at (30, 0, 18)
+	_garden_fireflies.position = Vector3(30, 1.55, 18)
+	add_child(_garden_fireflies)
+	HeadlessGuard.guard_particles(_garden_fireflies)
 
 
 func _setup_dusk_fireflies() -> void:

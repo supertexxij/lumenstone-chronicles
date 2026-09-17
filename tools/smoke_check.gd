@@ -466,5 +466,22 @@ func _initialize():
 	print("NO_DAY_CASH_W52", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
+
+
+	print("VERSION_153", 'config/version="1.53.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("MAGNOLIA_BEAVER", '"magnolia_beaver"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_beaver" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e143"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("GARDEN_FIREFLIES_W53", "PrayerGardenFireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_garden_fireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_PULSE_W53", "_pulse_mute_plate" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("SOFT_PULL_COLOR_W53", "Wave 53: soft color shift yellow" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	var inv53 = FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd")
+	print("BAG_DEF_W53", "Worn gear · Def %d" in inv53)
+	print("READY_GLOW_W53", "Wave 53: stronger Ready glow" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") or "longer Ready bloom" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE53_TOAST", "maybe_wave_53_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_53_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs53 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W53", "const DEFAULT_PIN := \"1234\"" in gs53 or 'DEFAULT_PIN := "1234"' in gs53)
+	print("MASTERY_80_W53", "MASTERY_PCT := 0.8" in gs53 or "0.8" in gs53)
+	print("NO_DAY_CASH_W53", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
 	print("CHECK_OK")
 	quit(0)

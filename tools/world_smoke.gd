@@ -412,5 +412,16 @@ func _finish():
 	print("VERSION_152_SRC", 'config/version="1.52.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
+
+
+	print("MAGNOLIA_BEAVER_SRC", '"magnolia_beaver"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("GARDEN_FIREFLIES_SRC", "PrayerGardenFireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_PULSE_SRC", "_pulse_mute_plate" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("SOFT_PULL_COLOR_SRC", "Wave 53: soft color shift yellow" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("BAG_DEF_SRC", "Worn gear · Def %d" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("WAVE53_TOAST_SRC", "maybe_wave_53_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_153_SRC", 'config/version="1.53.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
 	print("WORLD_SMOKE_OK")
 	quit(0)

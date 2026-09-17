@@ -187,7 +187,14 @@ func _update_loadout() -> void:
 	_ensure_slot_icons()
 	_ensure_loadout_nodes()
 	if loadout_title:
-		loadout_title.text = "— Worn gear (slot labels) —"  # Wave 37: clearer equipped slots
+		# Wave 53: bag header shows total Def from equipped armor (PIN 1234; mastery ≥80%)
+		var total_def: int = 0
+		if GameState.has_method("get_defense"):
+			total_def = int(GameState.get_defense())
+		if total_def > 0:
+			loadout_title.text = "— Worn gear · Def %d —" % total_def
+		else:
+			loadout_title.text = "— Worn gear (slot labels) —"  # Wave 37: clearer equipped slots
 	var by_slot: Dictionary = {}
 	if GameState.has_method("get_defense_breakdown"):
 		by_slot = GameState.get_defense_breakdown().get("by_slot", {})

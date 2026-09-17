@@ -166,6 +166,7 @@ func _process(delta: float) -> void:
 			_hit_edge_flash_t = -1.0
 	if _food_ready_flash_t > 0.0:
 		_food_ready_flash_t = maxf(0.0, _food_ready_flash_t - delta)
+	_pulse_mute_plate()
 	if _year_chip_flash_t > 0.0:
 		_year_chip_flash_t = maxf(0.0, _year_chip_flash_t - delta)
 		_apply_year_chip_flash()
@@ -283,13 +284,19 @@ func _refresh_food_lbl() -> void:
 	else:
 		if _food_was_waiting:
 			_food_was_waiting = false
-			_food_ready_flash_t = 0.55
+			_food_ready_flash_t = 0.75  # Wave 53: longer Ready bloom
 		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
 		if _food_ready_flash_t > 0.0:
-			var u := clampf(_food_ready_flash_t / 0.55, 0.0, 1.0)
-			food_lbl.modulate = Color(0.75, 1.0, 0.75, 1.0).lerp(Color(1.0, 1.0, 0.75, 1.0), sin(u * PI))
+			# Wave 53: stronger Ready glow (cream-lime bloom) when food cooldown ends
+			var u := clampf(_food_ready_flash_t / 0.75, 0.0, 1.0)
+			var bloom := Color(0.55, 1.0, 0.62, 1.0).lerp(Color(1.0, 1.0, 0.72, 1.0), sin(u * PI))
+			food_lbl.modulate = bloom
+			food_lbl.add_theme_color_override("font_outline_color", Color(0.25, 0.55, 0.28, 0.55 + 0.35 * sin(u * PI)))
+			food_lbl.add_theme_constant_override("outline_size", 3)
 		else:
 			food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
+			food_lbl.remove_theme_color_override("font_outline_color")
+			food_lbl.remove_theme_constant_override("outline_size")
 
 
 func _ensure_hurt_vignette() -> void:
@@ -491,6 +498,16 @@ func _refresh_foe_count() -> void:
 		n = foes.size()
 	_foe_count_lbl.text = "Foes · %d" % n
 	_foe_count_lbl.tooltip_text = "Alive wilds foes on the map (soft count near minimap)"
+
+
+func _pulse_mute_plate() -> void:
+	## Wave 53: clearer mute plate pulse — warm border breath while muted (RuneScape-chunky, wholesome).
+	if not GameState.muted or _mute_style_on == null:
+		return
+	var breath: float = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.0038))
+	_mute_style_on.border_color = Color(0.98, 0.82, 0.42, breath)
+	_mute_style_on.bg_color = Color(0.42, 0.28, 0.12, 0.88 + 0.08 * abs(sin(Time.get_ticks_msec() * 0.0038)))
+	_mute_style_on.set_border_width_all(2 + int(round(breath)))
 
 
 func _ensure_mute_styles() -> void:

@@ -51,6 +51,7 @@ var seen_combat_tutorial: bool = false
 var seen_wave_50_toast: bool = false  # Wave 50: once-per-save polish tip toast on load
 var seen_wave_51_toast: bool = false  # Wave 51: once-per-save polish tip toast on load
 var seen_wave_52_toast: bool = false  # Wave 52: once-per-save polish tip toast on load
+var seen_wave_53_toast: bool = false  # Wave 53: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
@@ -128,6 +129,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_50_toast = false
 	seen_wave_51_toast = false
 	seen_wave_52_toast = false
+	seen_wave_53_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
@@ -313,6 +315,7 @@ func save_game() -> void:
 		"seen_wave_50_toast": seen_wave_50_toast,
 		"seen_wave_51_toast": seen_wave_51_toast,
 		"seen_wave_52_toast": seen_wave_52_toast,
+		"seen_wave_53_toast": seen_wave_53_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
@@ -373,6 +376,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_50_toast = bool(data.get("seen_wave_50_toast", false))
 	seen_wave_51_toast = bool(data.get("seen_wave_51_toast", false))
 	seen_wave_52_toast = bool(data.get("seen_wave_52_toast", false))
+	seen_wave_53_toast = bool(data.get("seen_wave_53_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -650,6 +654,17 @@ func maybe_wave_52_toast() -> void:
 	seen_wave_52_toast = true
 	toast.emit("Wave 52 polish · soft wind chimes by the halls · soft-defeat camera settles gently · wardrobe colors pulse · journal Open-only + locked weeks.")
 	save_game()
+
+
+
+func maybe_wave_53_toast() -> void:
+	## Wave 53: once-per-save toast (PIN stays 1234; mastery ≥80%).
+	if seen_wave_53_toast:
+		return
+	seen_wave_53_toast = true
+	toast.emit("Wave 53 polish · denser fireflies at the Prayer Garden · mute plate soft-pulses · soft-pull ring warms as it nears · bag shows Def · Magnolia Beaver in the wilds.")
+	save_game()
+
 
 
 func set_favorite_landmark(label: String) -> void:

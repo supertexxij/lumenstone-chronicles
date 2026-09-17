@@ -316,15 +316,21 @@ func _set_warning(on: bool) -> void:
 			label.text = "%s · ~%.1fs" % [foe_n, remain_lbl]
 			label.outline_size = 10
 		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
+		# Wave 53: soft color shift yellow → warm honey as telegraph nears pull (no cheesy combat labels)
 		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
 		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
+		var prog: float = clampf(_aggro_pulse / 1.15, 0.0, 1.0)
+		var disc_a := Color(0.99, 0.92, 0.32, pulse * 0.78)
+		var disc_b := Color(1.0, 0.72, 0.28, pulse * 0.88)
+		var rim_a := Color(1.0, 0.96, 0.42, 0.48 + pulse * 0.4)
+		var rim_b := Color(1.0, 0.78, 0.32, 0.55 + pulse * 0.42)
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
-			mat.albedo_color = Color(0.99, 0.92, 0.32, pulse * 0.78)
+			mat.albedo_color = disc_a.lerp(disc_b, prog)
 			_telegraph.scale = Vector3(s, 1.0, s)
 		if rim and rim.material_override is StandardMaterial3D:
 			var rmat: StandardMaterial3D = rim.material_override
-			rmat.albedo_color = Color(1.0, 0.96, 0.42, 0.48 + pulse * 0.4)
+			rmat.albedo_color = rim_a.lerp(rim_b, prog)
 			rim.scale = Vector3(s, 1.0, s)
 	else:
 		if label:
