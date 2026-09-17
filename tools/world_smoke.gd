@@ -25,6 +25,10 @@ func _go():
 	print("STATIC", world.static_world.get_child_count())
 	print("INTERIORS", world.get_node_or_null("Interiors") != null)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null)
+	print("PINE", world.static_world.get_node_or_null("PineRidge") != null)
+	print("DESKS", root.get_tree().get_nodes_in_group("quest_desks").size())
+	print("RAIN_AUDIO", aud != null and aud.has_method("set_rain_audio"))
+	print("COMBAT_TUT", gs != null and gs.has_method("mark_combat_tutorial"))
 	print("WEATHER", world.has_method("get_weather_label"), world.get_weather_label() if world.has_method("get_weather_label") else "?")
 	print("MARKERS", world.has_method("get_minimap_markers"))
 	if world.has_method("toggle_weather_auto"):

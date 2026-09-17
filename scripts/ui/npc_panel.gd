@@ -12,16 +12,52 @@ signal quest_chosen(quest_id: String)
 var current_npc: Node = null
 var selected_quest: String = ""
 
+const GREETINGS := {
+	"math": [
+		"Welcome, apprentice. Numbers are tools the High King gave for careful work — shall we build with them today?",
+		"Steady hands and clear place value keep every bridge strong. Ready for a lesson?",
+		"Come count with me. Small facts practiced well become great help.",
+	],
+	"la": [
+		"A kind word well written can light a whole hall. Shall we shape sentences together?",
+		"Ink and patience — that is how stories grow. Pick a lesson when you are ready.",
+		"Listen for clear nouns and honest verbs. The page is waiting for you.",
+	],
+	"science": [
+		"Look closely at what was made — leaves, light, and living things all point to the Maker.",
+		"Stewards notice, measure, and care. Shall we study creation together?",
+		"The world is orderly and good. Let us learn to tend it with wonder.",
+	],
+	"history": [
+		"Remember the roads that brought us here — courage, hardship, and hope in many homes.",
+		"Chronicles keep true names and true days. Ready to walk a page of the past?",
+		"Texas and the wider land have stories worth telling carefully. Choose a lesson.",
+	],
+	"bible": [
+		"The Word is a lamp for our feet. Shall we read and remember together?",
+		"Quiet hearts hear clearly. Come learn virtue and Scripture with gladness.",
+		"Worship is wonder with obedience. Pick a lesson when you are ready.",
+	],
+}
+
+
 func _ready() -> void:
 	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	start_btn.pressed.connect(_on_start)
 	list.item_selected.connect(_on_select)
 	list.item_activated.connect(func(i): _on_select(i); _on_start())
 
+func _greeting_for(npc: Node) -> String:
+	var guild := str(npc.guild)
+	var lines: Array = GREETINGS.get(guild, ["Peace to you. Choose a lesson-quest when you are ready."])
+	var idx: int = abs(hash(str(npc.npc_id) + str(GameState.unlocked_week))) % lines.size()
+	var line: String = str(lines[idx])
+	return "%s\n\nMastery (≥80%%) unlocks gear and XP. Weeks unlock after each Friday Raid Review." % line
+
 func open(npc: Node) -> void:
 	current_npc = npc
 	title_lbl.text = "%s — %s" % [npc.npc_name, npc.title]
-	desc_lbl.text = "Choose a lesson-quest. Mastery (≥80%%) unlocks gear and XP. Weeks unlock after each Friday Raid Review."
+	desc_lbl.text = _greeting_for(npc)
 	list.clear()
 	selected_quest = ""
 	for qid in npc.quest_ids:

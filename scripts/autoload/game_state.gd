@@ -39,6 +39,8 @@ var position_xz: Vector2 = Vector2(0, 10)
 var combat_xp: int = 0
 var combat_level: int = 1
 var muted: bool = false
+var seen_aggro_tutorial: bool = false
+var seen_combat_tutorial: bool = false
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
 var created_at: int = 0
@@ -79,6 +81,8 @@ func new_game(p_name: String, appearance_in: Dictionary) -> void:
 	checkpoint_date = ""
 	created_at = int(Time.get_unix_time_from_system())
 	unlocked_week = 1
+	seen_aggro_tutorial = false
+	seen_combat_tutorial = false
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -105,6 +109,8 @@ func save_game() -> void:
 		"combat_xp": combat_xp,
 		"combat_level": combat_level,
 		"muted": muted,
+		"seen_aggro_tutorial": seen_aggro_tutorial,
+		"seen_combat_tutorial": seen_combat_tutorial,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
 		"created_at": created_at,
@@ -139,6 +145,8 @@ func load_game() -> bool:
 	combat_xp = int(data.get("combat_xp", 0))
 	combat_level = int(data.get("combat_level", 1))
 	muted = bool(data.get("muted", false))
+	seen_aggro_tutorial = bool(data.get("seen_aggro_tutorial", false))
+	seen_combat_tutorial = bool(data.get("seen_combat_tutorial", false))
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
 	created_at = int(data.get("created_at", 0))
@@ -215,6 +223,24 @@ func get_weapon_stats() -> Dictionary:
 		return {"damage": int(EnemyDB.base_combat.get("damage", 2)), "accuracy": float(EnemyDB.base_combat.get("accuracy", 0.7))}
 	var item := ItemDB.get_item(str(wid))
 	return {"damage": int(item.get("damage", 5)), "accuracy": float(item.get("accuracy", 0.8))}
+
+
+func mark_aggro_tutorial() -> void:
+	if seen_aggro_tutorial:
+		return
+	seen_aggro_tutorial = true
+	toast.emit("Yellow ring means a creature noticed you — walk away, or wait and it may approach.")
+	save_game()
+
+func mark_combat_tutorial(silent: bool = false) -> bool:
+	## Returns true if this was the first fight tip.
+	if seen_combat_tutorial:
+		return false
+	seen_combat_tutorial = true
+	if not silent:
+		toast.emit("First fight: auto-attacks tick softly. Click empty ground or walk away to leave.")
+	save_game()
+	return true
 
 func set_combat_target(enemy: Node) -> void:
 	combat_target = enemy

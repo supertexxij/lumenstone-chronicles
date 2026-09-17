@@ -89,7 +89,8 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull |
+| Soft travel | **N** Lantern Glade path · **B** Pine Ridge ford (outdoors only) |
+| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN `1234` |
 
 Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compass (top) aid village/wilds orientation. Soft defeat respawns at the village fountain; unlocks and gear are kept.
@@ -179,9 +180,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Enterable guild halls** — door volumes teleport to simple interior rooms with exit glow
 - Soft-aggro **softer yellow telegraph** (~1.15s, translucent ring) + gentle “notices you…” toast before pull
 - **Denser guild-hall interiors** — quest desks (F), bookshelves, study tables/chairs, rugs, notice boards, indoor attendants
-- **Weather cycle** (clear → fog → rain particles) — HUD/R toggle, mute-friendly (no weather SFX), readable fog
+- **Weather cycle** (clear → fog → rain particles) — HUD/R toggle; quiet rain loop when unmuted; readable fog
 - **Later-tier weapons** (cedar/bronze/iron/Lightbearer, crook, longbow, Steward’s Mallet) gated by mid/late quests + combat level
 - **Lantern Glade** northern brook path spur + landmark + a few extra wild spawns (small map expansion)
+- **Pine Ridge** western spur beyond the glade — pine stand, creek ford, signpost, a few wild spawns (**B** soft travel)
+- **Stronger hall lighting** (warm omni lanterns) + light **per-guild prop themes** (blocks/abacus, scrolls, plants, map table, lectern/candles)
+- **Richer NPC greetings** (short wholesome lines per guild; no combat jargon)
+- Soft **combat tutorial toasts** on first yellow telegraph and first fight
+- **Quest-desk highlight** pulse when standing nearby (F still talks to mentor)
+- **Quiet rain audio loop** during rain weather when unmuted (respects **M**)
 - **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
 - Parent dashboard (PIN **1234**) with progress, week unlock, skills-by-week, **Needs Help** list
 - Saves to `user://lumenstone_save_v1.json`
@@ -213,9 +220,9 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 - Equipped hat / cape / weapon (sword/axe/staff/bow/dagger/mallet meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** northern spur; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
-- Audio is short procedural SFX + soft drone + original village loop (intentionally no copyrighted songs)
+- Audio is short procedural SFX + soft drone + original village loop + quiet rain loop (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only
 - Learning challenges are in guild quest UI overlays, not mid-fight quizzes
 

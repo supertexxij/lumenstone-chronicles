@@ -159,6 +159,7 @@ func _handle_click() -> void:
 				pass
 			else:
 				GameState.set_combat_target(collider)
+				GameState.mark_combat_tutorial()
 				_set_move_target(collider.global_position)
 				return
 		if collider and collider.is_in_group("npcs"):
@@ -249,10 +250,10 @@ func _physics_process(delta: float) -> void:
 
 	velocity.y = 0
 	move_and_slide()
-	# Village + Lantern Glade clamp — skip when teleported into guild-hall interiors (x >= 100)
+	# Village + Glade + Pine Ridge clamp — skip when teleported into guild-hall interiors (x >= 100)
 	if global_position.x < 90.0:
-		global_position.x = clampf(global_position.x, -48.0, 48.0)
-		global_position.z = clampf(global_position.z, -56.0, 48.0)
+		global_position.x = clampf(global_position.x, -52.0, 48.0)
+		global_position.z = clampf(global_position.z, -62.0, 48.0)
 	global_position.y = 0
 	GameState.position_xz = Vector2(global_position.x, global_position.z)
 

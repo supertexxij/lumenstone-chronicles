@@ -36,7 +36,7 @@ func _ready() -> void:
 	if weather_btn:
 		weather_btn.pressed.connect(func(): AudioBus.play_ui(); weather_pressed.emit())
 	parent_btn.pressed.connect(func(): AudioBus.play_ui(); parent_pressed.emit())
-	hint_lbl.text = "Click ground · WASD · Scroll/=/- zoom · Click NPC/enemy · Q/E camera · I inv · J journal · C wardrobe · M mute · R weather · F talk · Enter glowing doors · N to Lantern Glade"
+	hint_lbl.text = "Click ground · WASD · Scroll/=/- zoom · Click NPC/enemy · Q/E camera · I inv · J journal · C wardrobe · M mute · R weather · F talk · Enter glowing doors · N Glade · B Pine Ridge"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)

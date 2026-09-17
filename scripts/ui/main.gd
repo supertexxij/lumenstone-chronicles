@@ -79,6 +79,28 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cycle_weather()
 	if event.is_action_pressed("interact"):
 		_try_nearby_npc()
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_N or event.physical_keycode == KEY_N:
+			_goto_landmark(Vector3(0.5, 0, -30), "Lantern Glade path")
+		elif event.keycode == KEY_B or event.physical_keycode == KEY_B:
+			_goto_landmark(Vector3(-12, 0, -45.5), "Pine Ridge ford")
+
+
+func _goto_landmark(pos: Vector3, label: String) -> void:
+	if not world_scene or not world_scene.player:
+		return
+	if world_scene.player.get("ui_blocking"):
+		return
+	# Soft travel only outdoors (not from hall interiors)
+	if world_scene.player.global_position.x >= 90.0:
+		GameState.toast.emit("Exit the hall first, then travel to %s." % label)
+		return
+	world_scene.player.global_position = pos
+	if "has_click_target" in world_scene.player:
+		world_scene.player.has_click_target = false
+	GameState.position_xz = Vector2(pos.x, pos.z)
+	GameState.toast.emit("Traveled to %s." % label)
+	AudioBus.play_ui()
 
 func _open_journal() -> void:
 	journal_panel.open()
@@ -182,4 +204,4 @@ func _on_ui_open(panel: String) -> void:
 func _on_toast(msg: String) -> void:
 	toast_label.text = msg
 	toast_label.visible = true
-	toast_timer = 3.5
+	toast_timer = 5.0 if msg.length() > 60 else 3.5

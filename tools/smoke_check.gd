@@ -9,7 +9,8 @@ func _initialize():
 	var h = load("res://scripts/combat/hitsplat.gd")
 	var hb = load("res://scripts/characters/humanoid_builder.gd")
 	var mm = load("res://scripts/ui/minimap.gd")
-	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null, mm!=null)
+	var np = load("res://scripts/ui/npc_panel.gd")
+	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null, mm!=null, np!=null)
 	var root = Node3D.new()
 	root.name = "T"
 	get_root().add_child(root)

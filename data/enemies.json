@@ -149,6 +149,24 @@
       "kind": "dim_wisp",
       "x": -18,
       "z": -46
+    },
+    {
+      "id": "e17",
+      "kind": "dim_wisp",
+      "x": -22,
+      "z": -54
+    },
+    {
+      "id": "e18",
+      "kind": "shadow_moth",
+      "x": -28,
+      "z": -50
+    },
+    {
+      "id": "e19",
+      "kind": "briar_boar",
+      "x": -30,
+      "z": -56
     }
   ],
   "base_combat": {

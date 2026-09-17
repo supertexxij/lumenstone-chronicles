@@ -174,13 +174,20 @@ func _soft_aggro(delta: float) -> void:
 		var warning := _aggro_pulse > 0.08 and _aggro_pulse < telegraph_sec
 		_set_warning(warning or (dist <= engage and _aggro_pulse < telegraph_sec))
 		if not _was_warning and warning:
-			GameState.toast.emit("%s notices you nearby…" % def.get("name", "Foe"))
+			var first_warn := not GameState.seen_aggro_tutorial
+			GameState.mark_aggro_tutorial()
+			if not first_warn:
+				GameState.toast.emit("%s notices you nearby…" % def.get("name", "Foe"))
 		_was_warning = warning
 		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
 			_was_warning = false
 			GameState.set_combat_target(self)
-			GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
+			var first_fight := GameState.mark_combat_tutorial(true)
+			if first_fight:
+				GameState.toast.emit("First fight tip: attacks tick softly. Walk away or click ground to leave. %s approaches." % def.get("name", "Foe"))
+			else:
+				GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
 	else:
 		# Faster decay so stepping back clears warning quickly

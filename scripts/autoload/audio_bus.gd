@@ -6,6 +6,8 @@ signal mute_changed(muted: bool)
 var _players: Dictionary = {}  # kind -> AudioStreamPlayer
 var _ambient: AudioStreamPlayer
 var _music: AudioStreamPlayer
+var _rain: AudioStreamPlayer
+var _rain_wanted: bool = false
 var _streams: Dictionary = {}
 var _foot_cooldown: float = 0.0
 var _ready_ok: bool = false
@@ -31,6 +33,12 @@ func _ready() -> void:
 	_music.volume_db = -18.0
 	_music.stream = _streams.get("music")
 	add_child(_music)
+	_rain = AudioStreamPlayer.new()
+	_rain.name = "Rain"
+	_rain.bus = "Master"
+	_rain.volume_db = -28.0
+	_rain.stream = _streams.get("rain")
+	add_child(_rain)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -66,12 +74,15 @@ func _apply_mute() -> void:
 			_ambient.stop()
 		if _music and _music.playing:
 			_music.stop()
+		if _rain and _rain.playing:
+			_rain.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
 				_ambient.play()
 			if _music and not _music.playing and _music.stream:
 				_music.play()
+			_sync_rain_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -86,6 +97,7 @@ func stop_ambient() -> void:
 		_ambient.stop()
 	if _music and _music.playing:
 		_music.stop()
+	set_rain_audio(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -128,6 +140,26 @@ func _build_streams() -> void:
 	_streams["quest"] = _arpeggio([523.25, 659.25, 783.99], 0.12, 0.28)
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
+	_streams["rain"] = _soft_rain(6.0, 0.09)
+
+
+func set_rain_audio(on: bool) -> void:
+	## Quiet rain loop while weather is rain outdoors; always respects mute.
+	_rain_wanted = on
+	_sync_rain_audio()
+
+func _sync_rain_audio() -> void:
+	if not _ready_ok or _rain == null:
+		return
+	var should: bool = _rain_wanted and not GameState.muted and GameState.in_world
+	if should:
+		if _rain.stream == null:
+			_rain.stream = _streams.get("rain")
+		if not _rain.playing and _rain.stream:
+			_rain.play()
+	else:
+		if _rain.playing:
+			_rain.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -238,6 +270,30 @@ func _village_tune(dur: float, amp: float) -> AudioStreamWAV:
 		var bed := sin(TAU * 130.81 * t) * 0.12 + sin(TAU * 196.00 * t) * 0.08
 		var breathe := 0.75 + 0.25 * sin(TAU * 0.12 * t)
 		samples[i] = (pluck * env + bed) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _soft_rain(dur: float, amp: float) -> AudioStreamWAV:
+	## Soft loopable rain — filtered noise, intentionally quiet and non-startling.
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	for i in n:
+		var t := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		# Simple low-pass for soft hush
+		prev = prev * 0.86 + noise * 0.14
+		var breathe := 0.85 + 0.15 * sin(TAU * 0.07 * t)
+		var drip := 0.0
+		if int(t * 11.0) % 17 == 0:
+			drip = sin(TAU * 900.0 * fmod(t, 0.09)) * exp(-fmod(t, 0.09) * 40.0) * 0.08
+		samples[i] = (prev * 0.7 + drip) * amp * breathe
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

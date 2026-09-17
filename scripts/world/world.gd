@@ -52,6 +52,7 @@ func _ready() -> void:
 	_spawn_player()
 	_build_interiors()
 	_build_lantern_glade()
+	_build_pine_ridge()
 	_setup_day_night()
 	_setup_weather()
 	GameState.in_world = true
@@ -390,13 +391,21 @@ func _add_lantern_post(pos: Vector3) -> void:
 	_add_lantern(root, Vector3(0.25, 2.0, 0))
 	static_world.add_child(root)
 
-func _add_lantern(parent: Node, pos: Vector3) -> void:
+func _add_lantern(parent: Node, pos: Vector3, with_light: bool = false) -> void:
 	var holder := Node3D.new()
 	holder.position = pos
 	parent.add_child(holder)
 	_mi(_box(Vector3(0.22, 0.28, 0.22)), Vector3(0, 0, 0), holder, _mats["iron"], "Cage")
 	_mi(_sphere(0.1), Vector3(0, 0, 0), holder, _mats["lantern_glow"], "Glow")
 	_mi(_cyl(0.04, 0.06, 0.12), Vector3(0, 0.2, 0), holder, _mats["lantern"], "Cap")
+	if with_light:
+		var light := OmniLight3D.new()
+		light.light_color = Color(1.0, 0.88, 0.62)
+		light.light_energy = 1.35
+		light.omni_range = 7.5
+		light.omni_attenuation = 1.2
+		light.shadow_enabled = false
+		holder.add_child(light)
 
 func _add_flowers(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	var root := Node3D.new()
@@ -444,6 +453,7 @@ func _process(delta: float) -> void:
 		_door_cooldown -= delta
 	_update_day_night(delta)
 	_update_weather(delta)
+	_update_quest_desk_highlights()
 
 func _setup_day_night() -> void:
 	_sun = get_node_or_null("Sun") as DirectionalLight3D
@@ -583,12 +593,14 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	notice.position = Vector3(0, 2.3, 5.5)
 	notice.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	room.add_child(notice)
-	# Warm indoor lanterns
-	_add_lantern(room, Vector3(-3.5, 2.6, -4.0))
-	_add_lantern(room, Vector3(3.5, 2.6, -4.0))
-	_add_lantern(room, Vector3(-3.5, 2.6, 3.5))
-	_add_lantern(room, Vector3(3.5, 2.6, 3.5))
+	# Warm indoor lanterns + real omni lights (stronger, cozy halls)
+	_add_lantern(room, Vector3(-3.5, 2.6, -4.0), true)
+	_add_lantern(room, Vector3(3.5, 2.6, -4.0), true)
+	_add_lantern(room, Vector3(-3.5, 2.6, 3.5), true)
+	_add_lantern(room, Vector3(3.5, 2.6, 3.5), true)
+	_add_lantern(room, Vector3(0, 2.8, 0.2), true)  # center fill
 	_mi(_box(Vector3(2.8, 1.1, 0.08)), Vector3(0, 2.5, -5.7), room, _mat(col.darkened(0.2)), "Banner")
+	_add_guild_theme_props(room, str(b.get("guild", "")), col)
 	var lbl := Label3D.new()
 	lbl.text = "%s Hall" % b.get("label", "Guild")
 	lbl.font_size = 56
@@ -655,25 +667,38 @@ func _add_quest_desk(room: Node3D, pos: Vector3, guild_col: Color, guild: String
 	col.shape = box
 	area.add_child(col)
 	var tip := Label3D.new()
+	tip.name = "DeskTip"
 	tip.text = "Quest Desk (F)"
 	tip.font_size = 30
 	tip.position = Vector3(0, 1.5, 0)
 	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tip.modulate = Color(1, 1, 1, 0.55)
 	area.add_child(tip)
-	var glow := _mat(Color(guild_col.r, guild_col.g, guild_col.b, 0.25), 0.5)
-	glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mi(_box(Vector3(2.0, 0.05, 1.2)), Vector3(0, -0.7, 0), area, glow, "DeskGlow")
+	var glow_mat := _mat(Color(guild_col.r, guild_col.g, guild_col.b, 0.18), 0.5)
+	glow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var glow_mi := _mi(_box(Vector3(2.0, 0.05, 1.2)), Vector3(0, -0.7, 0), area, glow_mat, "DeskGlow")
+	var ring_mat := _mat(Color(guild_col.r, guild_col.g, guild_col.b, 0.0), 0.5)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ring := _mi(_cyl(1.15, 1.15, 0.04), Vector3(0, -0.85, 0), area, ring_mat, "DeskHighlight")
 	area.set_meta("guild", guild)
+	area.set_meta("glow_mi", glow_mi)
+	area.set_meta("ring_mi", ring)
+	area.set_meta("tip", tip)
+	area.set_meta("guild_col", guild_col)
+	area.set_meta("player_near", false)
 	area.add_to_group("quest_desks")
 	area.body_entered.connect(func(body: Node):
 		if body.is_in_group("player") and guild != "":
 			body.set_meta("nearby_guild_desk", guild)
+			area.set_meta("player_near", true)
 			GameState.toast.emit("Quest desk — press F to speak with the hall mentor.")
 	)
 	area.body_exited.connect(func(body: Node):
 		if body.is_in_group("player") and body.has_meta("nearby_guild_desk"):
 			if str(body.get_meta("nearby_guild_desk")) == guild:
 				body.remove_meta("nearby_guild_desk")
+			area.set_meta("player_near", false)
 	)
 	root.add_child(area)
 
@@ -755,6 +780,7 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 				body.has_click_target = false
 			GameState.toast.emit("Entered %s Hall — desk for quests, blue glow to leave." % label)
 			GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
+			_apply_weather_visuals(false)
 			return
 
 func _exit_hall(body: Node) -> void:
@@ -767,6 +793,7 @@ func _exit_hall(body: Node) -> void:
 		body.has_click_target = false
 	GameState.toast.emit("Back on the village green.")
 	GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
+	_apply_weather_visuals(false)
 
 func _build_lantern_glade() -> void:
 	## Small northern wilds spur — brook path + landmark; keeps village map intact.
@@ -877,6 +904,7 @@ func get_weather_label() -> String:
 	return _weather_label_cache
 
 func _apply_weather_visuals(announce: bool = false) -> void:
+	var rain_on := false
 	match _weather_mode:
 		1:
 			_weather_label_cache = "Fog"
@@ -888,22 +916,164 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 			_fog_boost = 0.0025
 			if _rain and _inside_hall == "":
 				_rain.emitting = true
+				rain_on = true
+			elif _rain:
+				_rain.emitting = false
 		_:
 			_weather_label_cache = "Clear"
 			_fog_boost = 0.0
 			if _rain:
 				_rain.emitting = false
+	if AudioBus.has_method("set_rain_audio"):
+		AudioBus.set_rain_audio(rain_on)
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
 		GameState.toast.emit("Weather: %s" % _weather_label_cache)
+
+
+func _update_quest_desk_highlights() -> void:
+	## Soft pulse when the player stands at a quest desk.
+	for area in get_tree().get_nodes_in_group("quest_desks"):
+		var near: bool = bool(area.get_meta("player_near", false))
+		var tip: Label3D = area.get_meta("tip") if area.has_meta("tip") else null
+		var glow_mi: MeshInstance3D = area.get_meta("glow_mi") if area.has_meta("glow_mi") else null
+		var ring_mi: MeshInstance3D = area.get_meta("ring_mi") if area.has_meta("ring_mi") else null
+		var gc: Color = area.get_meta("guild_col") if area.has_meta("guild_col") else Color(1, 0.9, 0.5)
+		var pulse: float = 0.35 + 0.35 * abs(sin(Time.get_ticks_msec() * 0.004))
+		if tip:
+			tip.modulate = Color(1, 1, 0.85, 0.95 if near else 0.5)
+			tip.font_size = 36 if near else 30
+		if glow_mi and glow_mi.material_override is StandardMaterial3D:
+			var m: StandardMaterial3D = glow_mi.material_override
+			m.albedo_color = Color(gc.r, gc.g, gc.b, (0.45 * pulse) if near else 0.14)
+		if ring_mi:
+			ring_mi.visible = near
+			if near and ring_mi.material_override is StandardMaterial3D:
+				var rm: StandardMaterial3D = ring_mi.material_override
+				rm.albedo_color = Color(gc.r, gc.g, gc.b, 0.25 + 0.35 * pulse)
+				var s: float = 0.95 + 0.12 * pulse
+				ring_mi.scale = Vector3(s, 1.0, s)
+
+func _add_guild_theme_props(room: Node3D, guild: String, col: Color) -> void:
+	## Light per-guild prop flavor — keeps halls distinct without heavy budgets.
+	match guild:
+		"math":
+			# Counting blocks + abacus bar
+			for i in 5:
+				var c := Color("#d4a017").lightened(0.05 * i)
+				_mi(_box(Vector3(0.28, 0.28, 0.28)), Vector3(-4.2 + float(i) * 0.35, 0.35, 1.8), room, _mat(c), "Block")
+			_mi(_box(Vector3(1.4, 0.08, 0.12)), Vector3(4.0, 1.2, -2.0), room, _mats["wood"], "AbacusBar")
+			for i in 6:
+				_mi(_sphere(0.08), Vector3(3.5 + float(i) * 0.18, 1.35, -2.0), room, _mat(Color("#c9a227")), "Bead")
+		"la":
+			# Scroll racks + ink pots
+			for i in 4:
+				_mi(_cyl(0.08, 0.08, 0.7), Vector3(-4.0 + float(i) * 0.35, 0.9, 1.5), room, _mats["wood_light"], "Scroll")
+				_mi(_cyl(0.1, 0.1, 0.06), Vector3(-4.0 + float(i) * 0.35, 1.25, 1.5), room, _mat(col), "ScrollCap")
+			_mi(_cyl(0.12, 0.14, 0.2), Vector3(4.2, 1.15, -2.2), room, _mats["iron"], "Ink")
+			_mi(_box(Vector3(0.5, 0.04, 0.7)), Vector3(3.6, 1.08, -2.0), room, _mat(Color("#f4e4bc")), "Parchment")
+		"science":
+			# Potted plants + observation tray
+			_mi(_cyl(0.22, 0.18, 0.35), Vector3(-4.3, 0.35, 1.6), room, _mats["barrel"], "Pot")
+			_mi(_sphere(0.35, 0.55), Vector3(-4.3, 0.85, 1.6), room, _mats["leaf"], "Plant")
+			_mi(_cyl(0.2, 0.16, 0.3), Vector3(4.2, 0.3, 1.4), room, _mats["stone"], "Pot2")
+			_mi(_sphere(0.28, 0.45), Vector3(4.2, 0.75, 1.4), room, _mats["leaf_alt"], "Plant2")
+			_mi(_box(Vector3(1.1, 0.08, 0.7)), Vector3(3.5, 1.08, -2.1), room, _mats["stone_dark"], "Tray")
+			_mi(_sphere(0.12), Vector3(3.3, 1.2, -2.1), room, _mats["rock"], "Sample")
+			_mi(_sphere(0.1, 0.14), Vector3(3.7, 1.18, -2.0), room, _mat(Color("#6aaa6a")), "LeafSample")
+		"history":
+			# Map table + timeline posts
+			_mi(_box(Vector3(1.8, 0.7, 1.1)), Vector3(-3.8, 0.45, 1.5), room, _mats["wood"], "MapTable")
+			_mi(_box(Vector3(1.5, 0.04, 0.9)), Vector3(-3.8, 0.85, 1.5), room, _mat(Color("#c2b280")), "Map")
+			for i in 4:
+				_mi(_cyl(0.06, 0.06, 1.1), Vector3(3.6 + float(i) * 0.35, 0.7, 1.8), room, _mats["wood"], "Post")
+				_mi(_box(Vector3(0.2, 0.15, 0.05)), Vector3(3.6 + float(i) * 0.35, 1.2, 1.8), room, _mat(col.lightened(0.1 * i)), "Flag")
+		"bible":
+			# Simple lectern + quiet candles
+			_mi(_box(Vector3(0.7, 1.1, 0.5)), Vector3(-3.8, 0.7, 1.4), room, _mats["wood"], "Lectern")
+			_mi(_box(Vector3(0.55, 0.08, 0.45)), Vector3(-3.8, 1.3, 1.55), room, _mats["wood_light"], "LecternTop")
+			_mi(_box(Vector3(0.35, 0.1, 0.28)), Vector3(-3.8, 1.4, 1.55), room, _mat(Color("#f4e4bc")), "OpenWord")
+			for i in 3:
+				var cx := 3.5 + float(i) * 0.4
+				_mi(_cyl(0.06, 0.07, 0.35), Vector3(cx, 1.2, -2.0), room, _mat(Color("#f4e4bc")), "Candle")
+				_mi(_sphere(0.05), Vector3(cx, 1.42, -2.0), room, _mats["lantern_glow"], "Flame")
+		_:
+			pass
+
+func _build_pine_ridge() -> void:
+	## Small western spur beyond Lantern Glade — pine stand + creek ford. Scope kept small.
+	var root := Node3D.new()
+	root.name = "PineRidge"
+	static_world.add_child(root)
+	# Path west from glade brook toward ridge
+	for i in 6:
+		var x := -4.0 - float(i) * 3.4
+		_mi(_box(Vector3(3.6, 0.04, 2.0)), Vector3(x, 0.025, -48.0), root, _mats["dirt"], "RidgePath")
+	# Creek ford (shallow crossing)
+	_mi(_cyl(3.2, 3.2, 0.07), Vector3(-18, 0.015, -48), root, _mats["water"], "Creek")
+	_mi(_cyl(1.4, 1.4, 0.05), Vector3(-20.5, 0.015, -50.5), root, _mats["water"], "CreekBend")
+	for i in 4:
+		_mi(_sphere(0.32, 0.2), Vector3(-16.5 - float(i) * 0.85, 0.12, -48.0 + (i % 2) * 0.35), root, _mats["rock"], "FordStone")
+	var sign := Node3D.new()
+	sign.position = Vector3(-12, 0, -45.5)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.9), Vector3(0, 0.95, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.5, 0.65, 0.1)), Vector3(0, 1.7, 0), sign, _mats["wood_light"], "Board")
+	var sl := Label3D.new()
+	sl.text = "Pine Ridge"
+	sl.font_size = 40
+	sl.position = Vector3(0, 2.4, 0)
+	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.add_child(sl)
+	# Pine trees (cone foliage)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 113
+	for i in 12:
+		var ang := rng.randf() * TAU
+		var rad := rng.randf_range(3.5, 9.0)
+		var p := Vector3(-24.0 + cos(ang) * rad, 0, -52.0 + sin(ang) * rad * 0.7)
+		_add_pine(p, rng)
+	# A few ridge rocks
+	for i in 4:
+		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.2, 0, -56.0 - (i % 2)), rng)
+	var ridge_lbl := Label3D.new()
+	ridge_lbl.text = "Pine Ridge"
+	ridge_lbl.font_size = 52
+	ridge_lbl.position = Vector3(-24, 3.4, -54)
+	ridge_lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(ridge_lbl)
+
+func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var trunk_h := rng.randf_range(1.6, 2.2)
+	_mi(_cyl(0.14, 0.22, trunk_h), Vector3(0, trunk_h * 0.5, 0), body, _mats["wood"], "Trunk")
+	var pine := _mat(Color("#1f4d32"))
+	for j in 3:
+		var y := trunk_h * 0.45 + float(j) * 0.55
+		var r := 0.95 - float(j) * 0.22
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.05
+		cone.bottom_radius = r
+		cone.height = 0.85
+		_mi(cone, Vector3(0, y, 0), body, pine, "Pine%d" % j)
+	var col := CollisionShape3D.new()
+	var shape := CylinderShape3D.new()
+	shape.radius = 0.45
+	shape.height = 2.2
+	col.shape = shape
+	col.position.y = 1.1
+	body.add_child(col)
+	static_world.add_child(body)
 
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
 	var halls: Array = []
 	for b in world_data.get("buildings", []):
 		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888"))})
-	# Landmark for second wilds spur
+	# Landmarks for wilds spurs
 	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8"})
+	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
 		# Hide indoor duplicates on minimap (keep outdoor mentors)
