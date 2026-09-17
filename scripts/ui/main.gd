@@ -558,6 +558,9 @@ func _enter_world() -> void:
 	AudioBus.start_ambient()
 	if GameState.has_method("maybe_daily_checkpoint_reminder"):
 		GameState.maybe_daily_checkpoint_reminder()
+	# Wave 50: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_50_toast"):
+		GameState.maybe_wave_50_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

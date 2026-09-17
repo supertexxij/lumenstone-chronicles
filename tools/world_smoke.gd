@@ -62,6 +62,7 @@ func _finish():
 	var quails := 0
 	var jays := 0
 	var skinks := 0
+	var toads := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -103,6 +104,8 @@ func _finish():
 			jays += 1
 		if str(foe.get("kind")) == "sycamore_skink":
 			skinks += 1
+		if str(foe.get("kind")) == "chestnut_toad":
+			toads += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -124,6 +127,7 @@ func _finish():
 	print("QUAILS", quails)
 	print("JAYS", jays)
 	print("SKINKS", skinks)
+	print("TOADS", toads)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -371,6 +375,16 @@ func _finish():
 	print("FOOD_HEAL_SPARKLE_SRC", "FoodHealSparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("NEEDS_HELP_HL_SRC", "Wave 49: highlight needs-help count when >0" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd") and "set_tab_tooltip" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("VERSION_149_SRC", 'config/version="1.49.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+
+	print("CHESTNUT_TOAD_SRC", '"chestnut_toad"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FESTIVAL_SRC", "play_festival_decade_sparkle" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("FOUNTAIN_MIST_SRC", "FountainPlazaMist" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("SOFT_AGGRO_COMBO_SRC", "Wave 50: clearer soft-aggro name+countdown combo" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("FOE_COUNT_SRC", "_ensure_foe_count" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE50_TOAST_SRC", "maybe_wave_50_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_150_SRC", 'config/version="1.50.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("WORLD_SMOKE_OK")

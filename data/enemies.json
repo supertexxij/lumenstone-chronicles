@@ -324,6 +324,19 @@
       "combat_xp": 150,
       "respawn_sec": 66.0,
       "description": "A sleek skink of the sycamore wilds \u2014 usher it gently with a careful step!"
+    },
+    "chestnut_toad": {
+      "kind": "chestnut_toad",
+      "name": "Chestnut Toad",
+      "defeat_verb": "nudged",
+      "color": "#7a5a38",
+      "accent": "#c4a060",
+      "max_hp": 170,
+      "damage": 28,
+      "accuracy": 0.24,
+      "combat_xp": 156,
+      "respawn_sec": 68.0,
+      "description": "A plump toad of the chestnut wilds \u2014 nudge it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1064,6 +1077,36 @@
       "kind": "sycamore_skink",
       "x": -68,
       "z": -70
+    },
+    {
+      "id": "e124",
+      "kind": "chestnut_toad",
+      "x": -94,
+      "z": 32
+    },
+    {
+      "id": "e125",
+      "kind": "chestnut_toad",
+      "x": 58,
+      "z": -88
+    },
+    {
+      "id": "e126",
+      "kind": "chestnut_toad",
+      "x": -24,
+      "z": 96
+    },
+    {
+      "id": "e127",
+      "kind": "chestnut_toad",
+      "x": 90,
+      "z": -18
+    },
+    {
+      "id": "e128",
+      "kind": "chestnut_toad",
+      "x": -74,
+      "z": -92
     }
   ],
   "base_combat": {

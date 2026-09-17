@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 50 overnight (v1.50.0-overnight)
+- Soft **festival sparkle when Year % hits multiples of 10** — cream/gold motes + warm light at decade marks (RuneScape-chunky, wholesome)
+- Clearer **soft-aggro name+countdown combo** — floating nameplate shows `Name · ~Ns` with the yellow ring (toast matches; no cheesy combat labels)
+- Soft **plaza fountain mist polish** — gentle cream mist over the village fountain water
+- New wilds foe **Chestnut Toad** — squat warty body, wide mouth, short hop legs, bumpy back, gentle “nudged” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink)
+- HUD QoL: **Wave 50 toast once per save on load** + compact **Foes · N** count near the minimap (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 49 overnight (v1.49.0-overnight)
 - Soft **dusk owl hoot outdoors** — gentle low who-who at dusk (respects mute; RuneScape-chunky, wholesome)
 - Clearer **soft-travel landing puff** — cream ground bloom at feet when Travel (T) arrives

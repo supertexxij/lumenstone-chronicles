@@ -44,6 +44,8 @@ var _save_chip: Label = null
 var _save_chip_panel: PanelContainer = null  # Wave 38: slot nickname chip
 var _landmark_chip: Label = null
 var _landmark_chip_panel: PanelContainer = null  # Wave 46: near-landmark name chip
+var _foe_count_lbl: Label = null  # Wave 50: compact foe count near minimap
+var _foe_count_panel: PanelContainer = null
 var _mute_style_on: StyleBoxFlat = null
 var _mute_style_off: StyleBoxFlat = null
 var _vignette_edges: Array = []
@@ -73,6 +75,7 @@ func _ready() -> void:
 	_ensure_year_chip()
 	_ensure_save_chip()
 	_ensure_landmark_chip()
+	_ensure_foe_count()
 	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
@@ -182,6 +185,7 @@ func _process(delta: float) -> void:
 	_refresh_landmark_chip()
 	if minimap and minimap.has_method("set_data"):
 		minimap.set_data(_map_data)
+	_refresh_foe_count()
 	_refresh_food_lbl()
 
 func _update_compass() -> void:
@@ -407,6 +411,10 @@ func _refresh_year_chip() -> void:
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
 		_year_chip_flash_t = 0.85
 		_apply_year_chip_flash()
+		# Wave 50: soft festival sparkle when year % hits multiples of 10
+		if GameState.has_method("maybe_festival_decade") and GameState.maybe_festival_decade(pct):
+			if _world != null and _world.has_method("play_festival_decade_sparkle"):
+				_world.play_festival_decade_sparkle()
 	_year_chip_last_pct = pct
 
 
@@ -432,6 +440,57 @@ func _apply_year_chip_flash() -> void:
 			_year_chip_style.bg_color = Color(0.14, 0.18, 0.14, 0.72)
 
 
+
+
+func _ensure_foe_count() -> void:
+	## Wave 50: compact alive-foe count near minimap (PIN stays 1234; mastery ≥80%).
+	if _foe_count_lbl != null and is_instance_valid(_foe_count_lbl):
+		return
+	if has_node("FoeCountPanel"):
+		_foe_count_panel = $FoeCountPanel
+		_foe_count_lbl = _foe_count_panel.get_node_or_null("FoeCount")
+		if _foe_count_lbl != null:
+			return
+	_foe_count_panel = PanelContainer.new()
+	_foe_count_panel.name = "FoeCountPanel"
+	_foe_count_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_foe_count_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_foe_count_panel.offset_left = -168.0
+	_foe_count_panel.offset_top = -252.0
+	_foe_count_panel.offset_right = -16.0
+	_foe_count_panel.offset_bottom = -224.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.16, 0.14, 0.14, 0.72)
+	style.border_color = Color(0.78, 0.55, 0.42, 0.75)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 3
+	style.content_margin_bottom = 3
+	_foe_count_panel.add_theme_stylebox_override("panel", style)
+	_foe_count_lbl = Label.new()
+	_foe_count_lbl.name = "FoeCount"
+	_foe_count_lbl.add_theme_font_size_override("font_size", 13)
+	_foe_count_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_foe_count_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_foe_count_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_foe_count_lbl.modulate = Color(0.98, 0.88, 0.78, 1.0)
+	_foe_count_lbl.text = "Foes · 0"
+	_foe_count_panel.add_child(_foe_count_lbl)
+	add_child(_foe_count_panel)
+
+
+func _refresh_foe_count() -> void:
+	_ensure_foe_count()
+	if _foe_count_lbl == null:
+		return
+	var n := 0
+	var foes = _map_data.get("foes", [])
+	if typeof(foes) == TYPE_ARRAY:
+		n = foes.size()
+	_foe_count_lbl.text = "Foes · %d" % n
+	_foe_count_lbl.tooltip_text = "Alive wilds foes on the map (soft count near minimap)"
 
 
 func _ensure_mute_styles() -> void:

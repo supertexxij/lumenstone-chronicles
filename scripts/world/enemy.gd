@@ -116,6 +116,9 @@ func _ready() -> void:
 		"sycamore_skink":
 			if label: label.position.y = 1.15
 			hp_bar.position.y = 0.9
+		"chestnut_toad":
+			if label: label.position.y = 1.2
+			hp_bar.position.y = 0.95
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -307,6 +310,11 @@ func _set_warning(on: bool) -> void:
 		# Gentle warm tint — not alarm-red
 		if label:
 			label.modulate = Color(1.0, 0.96, 0.72)
+			# Wave 50: clearer soft-aggro name+countdown combo on the floating nameplate
+			var foe_n: String = str(def.get("name", kind))
+			var remain_lbl: float = maxf(0.1, 1.15 - _aggro_pulse)
+			label.text = "%s · ~%.1fs" % [foe_n, remain_lbl]
+			label.outline_size = 10
 		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
 		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
 		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
@@ -321,6 +329,11 @@ func _set_warning(on: bool) -> void:
 	else:
 		if label:
 			label.modulate = Color.WHITE
+			# Restore plain name when soft-aggro clears (Wave 50 combo)
+			var base_n: String = str(def.get("name", kind))
+			if GameState.combat_target != self:
+				label.text = base_n
+				label.outline_size = 6
 		if _telegraph:
 			_telegraph.scale = Vector3.ONE
 		if rim:
@@ -361,14 +374,14 @@ func _soft_aggro(delta: float) -> void:
 			var foe_name: String = str(def.get("name", "Foe"))
 			var remain: float = maxf(0.1, telegraph_sec - _aggro_pulse)
 			if first_warn:
-				GameState.toast.emit("%s notices you — soft yellow ring · ~%.1fs to step back." % [foe_name, remain])
+				GameState.toast.emit("%s · soft yellow · ~%.1fs to step back (name shows countdown)." % [foe_name, remain])
 			else:
-				GameState.toast.emit("%s notices you — ~%.1fs to step back…" % [foe_name, remain])
+				GameState.toast.emit("%s · ~%.1fs to step back…" % [foe_name, remain])
 		elif warning and (not _countdown_nudge) and _aggro_pulse >= telegraph_sec * 0.55:
 			_countdown_nudge = true
 			var foe_mid: String = str(def.get("name", "Foe"))
 			var remain_mid: float = maxf(0.1, telegraph_sec - _aggro_pulse)
-			GameState.toast.emit("%s still watching — ~%.1fs…" % [foe_mid, remain_mid])
+			GameState.toast.emit("%s · still watching · ~%.1fs…" % [foe_mid, remain_mid])
 		_was_warning = warning
 		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
@@ -683,6 +696,26 @@ func _idle_anim(delta: float) -> void:
 			var head_sk := creature_bob.get_node_or_null("Head")
 			if head_sk:
 				head_sk.rotation.y = sin(t * 0.85) * 0.08
+		"chestnut_toad":
+			# Soft squat settle — warty bob, belly puff, hind pad flex (Wave 50)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.85)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.35) * 0.08
+			var tbelly := creature_bob.get_node_or_null("Belly")
+			if tbelly:
+				tbelly.scale = Vector3.ONE * (1.0 + sin(t * 1.15) * 0.06)
+			var twart := creature_bob.get_node_or_null("WartM")
+			if twart:
+				var wart_s := 1.0 + sin(t * 1.4) * 0.05
+				twart.scale = Vector3.ONE * wart_s
+			var tbl := creature_bob.get_node_or_null("LegBL")
+			var tbr := creature_bob.get_node_or_null("LegBR")
+			if tbl:
+				tbl.rotation.x = sin(t * 0.85) * 0.1
+			if tbr:
+				tbr.rotation.x = sin(t * 0.85 + 0.4) * 0.1
+			var thead := creature_bob.get_node_or_null("Head")
+			if thead:
+				thead.rotation.y = sin(t * 0.7) * 0.06
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

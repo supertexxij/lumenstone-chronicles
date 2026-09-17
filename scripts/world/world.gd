@@ -51,6 +51,7 @@ var _landmark_here: String = ""  # current approach zone id (hysteresis)
 var _landmark_toast_cd: float = 0.0
 var _ambient_critters: Array = []  # {node, base: Vector3, phase, kind}
 var _fountain_root: Node3D = null  # Wave 24 soft-defeat fountain FX anchor
+var _fountain_mist: CPUParticles3D = null  # Wave 50: soft plaza fountain mist polish
 
 signal npc_talk(npc: Node)
 signal weather_changed(mode: int, label: String)
@@ -534,6 +535,26 @@ func _build_fountain() -> void:
 		var ang := i * TAU / 6.0
 		_mi(_cyl(0.12, 0.14, 0.55), Vector3(cos(ang) * 2.7, 0.28, sin(ang) * 2.7), root, _mats["stone"], "Post%d" % i)
 	_place_label3d(root, "Fountain", 48, Vector3(0, 2.5, 0))
+	# Wave 50: soft plaza fountain mist polish — gentle cream mist over the water (RuneScape-chunky, wholesome)
+	_fountain_mist = CPUParticles3D.new()
+	_fountain_mist.name = "FountainPlazaMist"
+	_fountain_mist.position = Vector3(0, 0.55, 0)
+	_fountain_mist.emitting = true
+	_fountain_mist.amount = 18
+	_fountain_mist.lifetime = 2.4
+	_fountain_mist.preprocess = 1.0
+	_fountain_mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_fountain_mist.emission_sphere_radius = 1.55
+	_fountain_mist.direction = Vector3(0, 1, 0)
+	_fountain_mist.spread = 40.0
+	_fountain_mist.initial_velocity_min = 0.15
+	_fountain_mist.initial_velocity_max = 0.45
+	_fountain_mist.gravity = Vector3(0, 0.08, 0)
+	_fountain_mist.scale_amount_min = 0.18
+	_fountain_mist.scale_amount_max = 0.42
+	_fountain_mist.color = Color(0.88, 0.96, 1.0, 0.42)
+	HeadlessGuard.guard_particles(_fountain_mist)
+	root.add_child(_fountain_mist)
 	# Soft pantry refill when walking near the fountain
 	var refill := Area3D.new()
 	refill.name = "PantryRefill"
@@ -3326,6 +3347,49 @@ func _play_fountain_restore_fx() -> void:
 			fx.queue_free()
 		if is_instance_valid(mist):
 			mist.queue_free()
+		if is_instance_valid(glow):
+			glow.queue_free()
+	)
+
+
+func play_festival_decade_sparkle() -> void:
+	## Wave 50: soft festival sparkle when year % hits a multiple of 10 (RuneScape-chunky, wholesome).
+	if HeadlessGuard.is_headless():
+		return
+	var anchor: Node3D = player
+	if anchor == null or not is_instance_valid(anchor):
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "FestivalDecadeSparkle"
+	fx.position = Vector3(0, 1.5, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.88
+	fx.amount = 32
+	fx.lifetime = 1.25
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 70.0
+	fx.initial_velocity_min = 1.2
+	fx.initial_velocity_max = 2.8
+	fx.gravity = Vector3(0, -1.0, 0)
+	fx.scale_amount_min = 0.12
+	fx.scale_amount_max = 0.32
+	fx.color = Color(1.0, 0.92, 0.55, 0.95)
+	HeadlessGuard.guard_particles(fx)
+	anchor.add_child(fx)
+	var glow := OmniLight3D.new()
+	glow.name = "FestivalDecadeGlow"
+	glow.position = Vector3(0, 1.6, 0)
+	glow.light_color = Color(1.0, 0.9, 0.55)
+	glow.light_energy = 2.0
+	glow.omni_range = 5.5
+	glow.shadow_enabled = false
+	anchor.add_child(glow)
+	var tw := create_tween()
+	tw.tween_property(glow, "light_energy", 0.1, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(2.0).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
 		if is_instance_valid(glow):
 			glow.queue_free()
 	)

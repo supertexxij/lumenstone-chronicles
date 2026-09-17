@@ -419,5 +419,20 @@ func _initialize():
 	print("NO_DAY_CASH_W49", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
+
+	print("VERSION_150", 'config/version="1.50.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("CHESTNUT_TOAD", '"chestnut_toad"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_toad" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e128"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FESTIVAL_SPARKLE_W50", "play_festival_decade_sparkle" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "maybe_festival_decade" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("SOFT_AGGRO_COMBO_W50", "Wave 50: clearer soft-aggro name+countdown combo" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("FOUNTAIN_MIST_W50", "FountainPlazaMist" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	var hud50 = FileAccess.get_file_as_string("res://scripts/ui/hud.gd")
+	print("FOE_COUNT_W50", "_ensure_foe_count" in hud50 and "Foes · %d" in hud50)
+	print("WAVE50_TOAST", "maybe_wave_50_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_50_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs50 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W50", "const DEFAULT_PIN := \"1234\"" in gs50 or 'DEFAULT_PIN := "1234"' in gs50)
+	print("MASTERY_80_W50", "MASTERY_PCT := 0.8" in gs50 or "0.8" in gs50)
+	print("NO_DAY_CASH_W50", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
 	print("CHECK_OK")
 	quit(0)

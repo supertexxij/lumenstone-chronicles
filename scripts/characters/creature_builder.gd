@@ -121,6 +121,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_jay(bob)
 		"sycamore_skink":
 			_build_skink(bob)
+		"chestnut_toad":
+			_build_toad(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -893,4 +895,46 @@ static func _build_skink(bob: Node3D) -> void:
 	# Long tapering tail (signature)
 	var tail := _mi(_cyl(0.06, 0.015, 0.42), Vector3(0, 0.26, -0.42), bob, "Tail")
 	tail.rotation_degrees = Vector3(78, 0, 0)
+
+static func _build_toad(bob: Node3D) -> void:
+	## Soft chestnut-wilds toad — squat warty body, wide mouth, short hop legs, bumpy back (distinct from Fir Frog / Sycamore Skink).
+	# Wide squat body (chunkier than frog)
+	_mi(_sphere(0.26, 0.20), Vector3(0, 0.32, 0), bob, "Body")
+	# Warty back bumps (signature vs smooth frog)
+	_mi(_sphere(0.05), Vector3(-0.08, 0.44, -0.04), bob, "WartL")
+	_mi(_sphere(0.045), Vector3(0.09, 0.43, 0.02), bob, "WartR")
+	_mi(_sphere(0.04), Vector3(0.0, 0.46, -0.08), bob, "WartM")
+	# Broad head + wide mouth ridge
+	_mi(_sphere(0.15, 0.12), Vector3(0, 0.38, 0.18), bob, "Head")
+	_mi(_box(Vector3(0.18, 0.03, 0.05)), Vector3(0, 0.34, 0.30), bob, "Mouth")
+	# Soft side-set eyes (less bulging than frog)
+	_mi(_sphere(0.04), Vector3(-0.09, 0.46, 0.22), bob, "EyeL")
+	_mi(_sphere(0.04), Vector3(0.09, 0.46, 0.22), bob, "EyeR")
+	_mi(_sphere(0.018), Vector3(-0.09, 0.47, 0.25), bob, "PupilL")
+	_mi(_sphere(0.018), Vector3(0.09, 0.47, 0.25), bob, "PupilR")
+	# Cream belly patch (accent-friendly)
+	_mi(_sphere(0.12, 0.09), Vector3(0, 0.26, 0.08), bob, "Belly")
+	# Short front toes + stout hind hop pads
+	for info in [
+		["FL", Vector3(-0.12, 0.14, 0.12)],
+		["FR", Vector3(0.12, 0.14, 0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.028, 0.08), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.07, 0.022, 0.07)), Vector3(0, -0.07, 0.02), leg, "Toe")
+	for info in [
+		["BL", Vector3(-0.14, 0.16, -0.10)],
+		["BR", Vector3(0.14, 0.16, -0.10)],
+	]:
+		var leg2 := Node3D.new()
+		leg2.name = "Leg" + str(info[0])
+		leg2.position = info[1]
+		bob.add_child(leg2)
+		_mi(_capsule(0.05, 0.12), Vector3(0, -0.02, 0), leg2, "Thigh")
+		_mi(_box(Vector3(0.11, 0.028, 0.10)), Vector3(0, -0.10, 0.03), leg2, "Pad")
+	# Tiny stubby nub (no long skink tail)
+	_mi(_sphere(0.04), Vector3(0, 0.28, -0.22), bob, "Nub")
 

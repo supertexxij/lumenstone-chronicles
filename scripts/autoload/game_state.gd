@@ -48,6 +48,8 @@ var combat_level: int = 1
 var muted: bool = false
 var seen_aggro_tutorial: bool = false
 var seen_combat_tutorial: bool = false
+var seen_wave_50_toast: bool = false  # Wave 50: once-per-save polish tip toast on load
+var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
 ## Landmarks ever visited (persists forever) — drives first-discovery vs return toast flavor.
@@ -120,6 +122,8 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	unlocked_week = 1
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
+	seen_wave_50_toast = false
+	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
 	last_travel_label = ""
@@ -300,6 +304,8 @@ func save_game() -> void:
 		"muted": muted,
 		"seen_aggro_tutorial": seen_aggro_tutorial,
 		"seen_combat_tutorial": seen_combat_tutorial,
+		"seen_wave_50_toast": seen_wave_50_toast,
+		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
 		"last_travel_label": last_travel_label,
@@ -355,6 +361,12 @@ func load_game(slot: int = -1) -> bool:
 	muted = bool(data.get("muted", false))
 	seen_aggro_tutorial = bool(data.get("seen_aggro_tutorial", false))
 	seen_combat_tutorial = bool(data.get("seen_combat_tutorial", false))
+	seen_wave_50_toast = bool(data.get("seen_wave_50_toast", false))
+	var fd = data.get("festival_decades_seen", [])
+	festival_decades_seen = []
+	if typeof(fd) == TYPE_ARRAY:
+		for v in fd:
+			festival_decades_seen.append(int(v))
 	var gl = data.get("greeted_landmarks", [])
 	greeted_landmarks = []
 	if typeof(gl) == TYPE_ARRAY:
@@ -598,6 +610,31 @@ func get_parent_export_line() -> String:
 		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0)), help_n
 	]
 
+
+
+
+func maybe_wave_50_toast() -> void:
+	## Wave 50: once-per-save toast celebrating polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_50_toast:
+		return
+	seen_wave_50_toast = true
+	toast.emit("Wave 50 polish · soft-aggro names show a countdown · fountain mist + decade festival sparkles · Foes near the minimap.")
+	save_game()
+
+
+func maybe_festival_decade(pct: int) -> bool:
+	## Wave 50: soft festival when year % hits a multiple of 10. Returns true if newly celebrated.
+	if pct < 10 or pct > 100:
+		return false
+	if pct % 10 != 0:
+		return false
+	var decade: int = pct
+	if decade in festival_decades_seen:
+		return false
+	festival_decades_seen.append(decade)
+	toast.emit("✦ Festival sparkle · Year · %d%% — a soft tenth-mark celebration!" % decade)
+	save_game()
+	return true
 
 
 func maybe_daily_checkpoint_reminder() -> void:
