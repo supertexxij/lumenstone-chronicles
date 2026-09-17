@@ -153,6 +153,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_capybara(bob)
 		"raspberry_ram":
 			_build_ram(bob)
+		"strawberry_stoat":
+			_build_stoat(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1561,4 +1563,39 @@ static func _build_ram(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.08, 0.025, 0.10)), Vector3(0, -0.10, 0.01), leg, "Hoof")
 	# Soft fluff tuft tail
 	_mi(_sphere(0.08), Vector3(0, 0.34, -0.30), bob, "Tail")
+
+static func _build_stoat(bob: Node3D) -> void:
+	## Soft strawberry-wilds stoat — slender body, pointed snout, short rounded ears, long soft tail with dark tip tuft (distinct from Walnut Weasel / Pine Fox / Raspberry Ram / Blueberry Bunny).
+	# Slender low body
+	_mi(_sphere(0.13, 0.36), Vector3(0, 0.32, 0.02), bob, "Body")
+	# Cream-strawberry belly
+	_mi(_sphere(0.07, 0.22), Vector3(0, 0.24, 0.05), bob, "Belly")
+	# Pointed head + soft rounded ears + blunt-pink snout
+	_mi(_sphere(0.10, 0.12), Vector3(0, 0.38, 0.26), bob, "Head")
+	_mi(_sphere(0.032, 0.04), Vector3(-0.05, 0.48, 0.24), bob, "EarL")
+	_mi(_sphere(0.032, 0.04), Vector3(0.05, 0.48, 0.24), bob, "EarR")
+	_mi(_box(Vector3(0.045, 0.035, 0.09)), Vector3(0, 0.34, 0.38), bob, "Snout")
+	_mi(_sphere(0.022), Vector3(0, 0.33, 0.44), bob, "Nose")
+	_mi(_sphere(0.022), Vector3(-0.04, 0.42, 0.32), bob, "EyeL")
+	_mi(_sphere(0.022), Vector3(0.04, 0.42, 0.32), bob, "EyeR")
+	# Soft cheek blush tufts (strawberry pink)
+	_mi(_sphere(0.035, 0.03), Vector3(-0.10, 0.34, 0.24), bob, "BlushL")
+	_mi(_sphere(0.035, 0.03), Vector3(0.10, 0.34, 0.24), bob, "BlushR")
+	# Short dainty legs
+	for info in [
+		["FL", Vector3(-0.07, 0.14, 0.14)],
+		["FR", Vector3(0.07, 0.14, 0.14)],
+		["BL", Vector3(-0.07, 0.14, -0.12)],
+		["BR", Vector3(0.07, 0.14, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.014, 0.016, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
+	# Long soft tail with dark tip tuft (stoat signature — not weasel bushy taper alone)
+	var tail := _mi(_cyl(0.045, 0.022, 0.42), Vector3(0, 0.32, -0.34), bob, "Tail")
+	tail.rotation_degrees = Vector3(48, 0, 0)
+	_mi(_sphere(0.055, 0.07), Vector3(0, 0.38, -0.55), bob, "TailTip")
 

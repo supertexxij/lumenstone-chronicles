@@ -44,6 +44,7 @@ var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
 var _cross_dusk_lights: Array = []  # Wave 65: soft quiet cross lantern at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
+var _birch_fireflies: CPUParticles3D  # Wave 66: soft birch-rest firefly wink at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
@@ -1771,6 +1772,7 @@ func _setup_weather() -> void:
 	_setup_maple_leaves()
 	_setup_dusk_fireflies()
 	_setup_garden_fireflies()
+	_setup_birch_fireflies()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -1986,6 +1988,11 @@ func _update_weather(delta: float) -> void:
 		var garden_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_garden_fireflies.emitting = garden_dusk
 		_garden_fireflies.visible = garden_dusk
+	# Wave 66: soft birch-rest firefly wink at dusk (RuneScape-chunky, wholesome)
+	if _birch_fireflies:
+		var birch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_birch_fireflies.emitting = birch_dusk
+		_birch_fireflies.visible = birch_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3577,6 +3584,51 @@ func _setup_garden_fireflies() -> void:
 	HeadlessGuard.guard_particles(_garden_fireflies)
 
 
+
+
+func _setup_birch_fireflies() -> void:
+	## Wave 66: soft birch-rest firefly wink at dusk — warm gold-green motes among pale trunks (RuneScape-chunky, wholesome).
+	_birch_fireflies = CPUParticles3D.new()
+	_birch_fireflies.name = "BirchRestFireflies"
+	_birch_fireflies.emitting = false
+	_birch_fireflies.amount = 38
+	_birch_fireflies.lifetime = 3.6
+	_birch_fireflies.preprocess = 1.1
+	_birch_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_birch_fireflies.emission_box_extents = Vector3(5.2, 1.5, 5.2)
+	_birch_fireflies.direction = Vector3(0, 0.32, 0)
+	_birch_fireflies.spread = 150.0
+	_birch_fireflies.initial_velocity_min = 0.05
+	_birch_fireflies.initial_velocity_max = 0.34
+	_birch_fireflies.gravity = Vector3(0, 0.01, 0)
+	_birch_fireflies.angular_velocity_min = -16.0
+	_birch_fireflies.angular_velocity_max = 16.0
+	_birch_fireflies.scale_amount_min = 0.42
+	_birch_fireflies.scale_amount_max = 1.0
+	var fm := SphereMesh.new()
+	fm.radius = 0.035
+	fm.height = 0.07
+	_birch_fireflies.mesh = fm
+	var fmat := StandardMaterial3D.new()
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.albedo_color = Color(0.96, 0.94, 0.55, 0.78)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.92, 0.96, 0.42)
+	fmat.emission_energy_multiplier = 1.55
+	_birch_fireflies.material_override = fmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.9, 0.95, 0.4, 0.0),
+		Color(1.0, 0.98, 0.62, 0.88),
+		Color(0.88, 0.92, 0.38, 0.0),
+	])
+	_birch_fireflies.color_ramp = ramp
+	# Birch Rest landmark at (-42, 0, -20)
+	_birch_fireflies.position = Vector3(-42.0, 1.5, -20.0)
+	add_child(_birch_fireflies)
+	HeadlessGuard.guard_particles(_birch_fireflies)
+
 func _setup_brook_sparkle() -> void:
 	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).
 	_brook_sparkle = CPUParticles3D.new()
@@ -4022,7 +4074,7 @@ func play_festival_decade_sparkle() -> void:
 	)
 
 func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
-	## Wave 29/46: soft cream/gold victory sparkle + warm light pulse when a quest is mastered (RuneScape-chunky, wholesome).
+	## Wave 29/46/66: soft cream/gold victory sparkle + warm light pulse when a quest is mastered (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
 		return
 	var anchor: Node3D = player
@@ -4033,17 +4085,17 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 	fx.position = Vector3(0, 1.4, 0)
 	fx.emitting = true
 	fx.one_shot = true
-	fx.explosiveness = 0.82
-	fx.amount = 28  # Wave 46: slightly richer burst
-	fx.lifetime = 1.15
+	fx.explosiveness = 0.84
+	fx.amount = 36  # Wave 66: softer richer victory sparkle polish
+	fx.lifetime = 1.25
 	fx.direction = Vector3(0, 1, 0)
-	fx.spread = 62.0
-	fx.initial_velocity_min = 1.05
-	fx.initial_velocity_max = 2.55
-	fx.gravity = Vector3(0, -1.15, 0)
-	fx.scale_amount_min = 0.11
-	fx.scale_amount_max = 0.28
-	fx.color = Color(1.0, 0.95, 0.58, 0.94)
+	fx.spread = 66.0
+	fx.initial_velocity_min = 1.1
+	fx.initial_velocity_max = 2.7
+	fx.gravity = Vector3(0, -1.1, 0)
+	fx.scale_amount_min = 0.12
+	fx.scale_amount_max = 0.32
+	fx.color = Color(1.0, 0.96, 0.62, 0.95)
 	HeadlessGuard.guard_particles(fx)
 	anchor.add_child(fx)
 	var ring := CPUParticles3D.new()
@@ -4072,9 +4124,9 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 	var glow := OmniLight3D.new()
 	glow.name = "QuestVictoryGlow"
 	glow.position = Vector3(0, 1.5, 0)
-	glow.light_color = Color(1.0, 0.93, 0.65)
-	glow.light_energy = 2.0
-	glow.omni_range = 5.5
+	glow.light_color = Color(1.0, 0.94, 0.68)
+	glow.light_energy = 2.35  # Wave 66: softer warmer victory glow
+	glow.omni_range = 5.9
 	glow.shadow_enabled = false
 	anchor.add_child(glow)
 	var tw := create_tween()

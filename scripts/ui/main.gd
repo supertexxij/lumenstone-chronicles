@@ -328,16 +328,33 @@ func _refresh_travel_list() -> void:
 			if fav_lbl != "" and str(d["label"]) == fav_lbl and not fav_dest.is_empty():
 				continue
 			section_counts[cur_sec] = int(section_counts.get(cur_sec, 0)) + 1
+	# Wave 66: resolve nearest landmark for soft highlight (PIN 1234; mastery ≥80%)
+	var nearest_lbl: String = ""
+	var nearest_d: float = 1.0e9
+	if world_scene != null and world_scene.player != null:
+		var ppos: Vector3 = world_scene.player.global_position
+		for d_n in all_dests:
+			if bool(d_n.get("group", false)):
+				continue
+			var npos: Vector3 = d_n.get("pos", Vector3.ZERO)
+			var ndx: float = float(npos.x) - ppos.x
+			var ndz: float = float(npos.z) - ppos.z
+			var nd: float = sqrt(ndx * ndx + ndz * ndz)
+			if nd < nearest_d:
+				nearest_d = nd
+				nearest_lbl = str(d_n["label"])
 	_travel_dests = []
 	list.clear()
 	var first_sel := -1
 	var fav_sel: int = -1
 	var last_sel := -1
+	var near_sel: int = -1
 	# Wave 56: show ★ fav at top of travel list
 	if not fav_dest.is_empty():
 		var key_f: String = (" [%s]" % fav_dest["key"]) if str(fav_dest.get("key", "")) != "" else ""
 		var dist_f: String = _travel_distance_label(fav_dest.get("pos", Vector3.ZERO))
-		fav_sel = list.add_item("%s%s%s ★ fav" % [fav_dest["label"], key_f, dist_f])
+		var near_f: String = " · near" if nearest_lbl != "" and str(fav_dest["label"]) == nearest_lbl else ""
+		fav_sel = list.add_item("%s%s%s ★ fav%s" % [fav_dest["label"], key_f, dist_f, near_f])
 		list.set_item_custom_fg_color(fav_sel, Color(1.0, 0.88, 0.35))
 		_travel_dests.append(fav_dest)
 		first_sel = fav_sel
@@ -369,14 +386,20 @@ func _refresh_travel_list() -> void:
 		var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
 		var mark: String = ""
 		var is_last: bool = last_lbl != "" and str(d["label"]) == last_lbl
+		var is_near: bool = nearest_lbl != "" and str(d["label"]) == nearest_lbl
 		if is_last:
 			mark = " ★ last"  # Wave 34: mark last-visited landmark (sticky select below)
+		elif is_near:
+			mark = " · near"  # Wave 66: highlight nearest landmark
 		var dist_s: String = _travel_distance_label(d.get("pos", Vector3.ZERO))  # Wave 45
 		var ii: int = list.add_item("%s%s%s%s" % [d["label"], key_s, dist_s, mark])
 		_travel_dests.append(d)
 		if is_last:
 			last_sel = ii
 			list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
+		elif is_near:
+			near_sel = ii
+			list.set_item_custom_fg_color(ii, Color(0.55, 0.92, 0.72))  # soft mint nearest
 		if first_sel < 0:
 			first_sel = ii
 	if fav_sel >= 0:
@@ -385,6 +408,38 @@ func _refresh_travel_list() -> void:
 		list.select(last_sel)  # last-visited stays sticky when no fav
 	elif first_sel >= 0:
 		list.select(first_sel)
+
+
+
+func _travel_landmark_short(full: String) -> String:
+	## Wave 66: compact short name for landmark arrival toast (RuneScape-chunky, wholesome).
+	var n := full.strip_edges()
+	var map := {
+		"Village Fountain": "Fountain",
+		"Fountain": "Fountain",
+		"Lantern Glade": "Glade",
+		"Pine Ridge": "Ridge",
+		"Prayer Garden": "Garden",
+		"Lookout Rock": "Lookout",
+		"Mill Bridge": "Mill",
+		"Cedar Hollow": "Hollow",
+		"Willow Bend": "Willow",
+		"Reed Pool": "Reed",
+		"Quiet Cross": "Cross",
+		"Stone Arch": "Arch",
+		"Amber Knoll": "Knoll",
+		"Birch Rest": "Birch",
+		"Fern Dell": "Fern",
+		"Heather Heath": "Heath",
+		"Thistle Rise": "Thistle",
+		"Maple Copse": "Maple",
+	}
+	if n in map:
+		return str(map[n])
+	var parts := n.split(" ")
+	if parts.size() >= 2:
+		return str(parts[-1]).replace("(door)", "").strip_edges()
+	return n
 
 
 func _travel_distance_label(pos: Vector3) -> String:
@@ -541,16 +596,18 @@ func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
 	var first_discover := false
 	if world_scene.has_method("note_soft_travel_arrival"):
 		first_discover = bool(world_scene.note_soft_travel_arrival(pos))
+	var short_n: String = _travel_landmark_short(label)
+	# Wave 66: clearer landmark arrival toast with short name (RuneScape-chunky, wholesome)
 	if "Fountain" in label:
 		if GameState.has_method("rest_at_fountain"):
 			GameState.rest_at_fountain(true)
 		elif GameState.has_method("refill_pantry"):
 			GameState.refill_pantry(true)
-		GameState.toast.emit("Soft travel — %s. Resting." % label)
+		GameState.toast.emit("Arrived · %s — resting." % short_n)
 	elif first_discover:
-		GameState.toast.emit("Soft travel — first discovery: %s." % label)
+		GameState.toast.emit("Arrived · %s — first discovery!" % short_n)
 	else:
-		GameState.toast.emit("Soft travel — arrived at %s." % label)
+		GameState.toast.emit("Arrived · %s" % short_n)
 	_play_soft_travel_landing_puff()
 	AudioBus.play_ui()
 
@@ -745,6 +802,9 @@ func _enter_world() -> void:
 	# Wave 65: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_65_toast"):
 		GameState.maybe_wave_65_toast()
+	# Wave 66: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_66_toast"):
+		GameState.maybe_wave_66_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

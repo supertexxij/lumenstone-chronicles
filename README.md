@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 66 overnight (v1.66.0-overnight)
+- Soft **birch-rest firefly wink at dusk** — warm gold-green motes among pale birch trunks (RuneScape-chunky, wholesome)
+- Clearer **landmark arrival toast with short name** — `Arrived · Birch` / first-discovery / Fountain resting
+- Soft **victory sparkle polish** — richer cream/gold burst + warmer mastery glow (no cheesy combat labels)
+- New wilds foe **Strawberry Stoat** — slender body, pointed snout, short rounded ears, long soft tail with dark tip tuft, cheek blush, gentle “snuffled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram)
+- HUD/travel QoL: **Open-only journal sticky shows count when toggled**; Travel (T) list **highlights nearest landmark** (`· near`, soft mint) — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 65 overnight (v1.65.0-overnight)
 - Soft **quiet cross lantern at dusk** — warm honey OmniLight on the Quiet Cross knoll (RuneScape-chunky, wholesome)
 - Clearer **first-fight tip with foe name** — leads with who you’re facing, then soft ticks + how to leave

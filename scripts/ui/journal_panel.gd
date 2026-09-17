@@ -265,6 +265,10 @@ func _unlock_progress_text(uw: int) -> String:
 	if year_total <= 0:
 		year_total = maxi(1, total_stars)
 	lines.insert(0, "★ Total mastered: %d / %d" % [total_stars, year_total])
+	# Wave 66: Open-only sticky shows count when toggled (PIN 1234; mastery ≥80% unchanged)
+	if _open_only:
+		var open_n: int = _count_open_quests()
+		lines.insert(0, "Open only · %d quests still open" % open_n)
 	return "\n".join(lines)
 
 

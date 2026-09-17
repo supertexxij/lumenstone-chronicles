@@ -140,6 +140,9 @@ func _ready() -> void:
 		"raspberry_ram":
 			if label: label.position.y = 1.55
 			hp_bar.position.y = 1.3
+		"strawberry_stoat":
+			if label: label.position.y = 1.35
+			hp_bar.position.y = 1.1
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -874,6 +877,27 @@ func _idle_anim(delta: float) -> void:
 			if rhead:
 				rhead.rotation.y = sin(t * 0.65) * 0.06
 				rhead.rotation.x = sin(t * 0.55) * 0.04
+		"strawberry_stoat":
+			# Soft snuffle-bob — slender dart, ear twitch, dark tip tail sway (Wave 66)
+			creature_bob.position.y = 0.01 + abs(sin(t * 1.15)) * 0.028
+			creature_bob.rotation.y = sin(t * 0.38) * 0.09
+			var sear_l := creature_bob.get_node_or_null("EarL")
+			var sear_r := creature_bob.get_node_or_null("EarR")
+			if sear_l:
+				sear_l.rotation.z = sin(t * 1.4) * 0.08
+			if sear_r:
+				sear_r.rotation.z = -sin(t * 1.4 + 0.25) * 0.08
+			var stail := creature_bob.get_node_or_null("Tail")
+			if stail:
+				stail.rotation.y = sin(t * 1.05) * 0.16
+				stail.rotation.x = deg_to_rad(48) + sin(t * 0.7) * 0.05
+			var tip := creature_bob.get_node_or_null("TailTip")
+			if tip:
+				tip.rotation.y = sin(t * 1.2) * 0.1
+			var shead := creature_bob.get_node_or_null("Head")
+			if shead:
+				shead.rotation.y = sin(t * 0.8) * 0.07
+				shead.rotation.x = sin(t * 0.6) * 0.05
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
