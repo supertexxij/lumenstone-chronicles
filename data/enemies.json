@@ -142,6 +142,19 @@
       "combat_xp": 66,
       "respawn_sec": 38.0,
       "description": "A masked raccoon of the elm wilds \u2014 hush it with a careful step!"
+    },
+    "hazel_hedgehog": {
+      "kind": "hazel_hedgehog",
+      "name": "Hazel Hedgehog",
+      "defeat_verb": "stilled",
+      "color": "#8b6f47",
+      "accent": "#d4c4a8",
+      "max_hp": 86,
+      "damage": 14,
+      "accuracy": 0.48,
+      "combat_xp": 72,
+      "respawn_sec": 40.0,
+      "description": "A prickly hedgehog of the hazel wilds \u2014 still it with a careful step!"
     }
   },
   "spawns": [
@@ -462,6 +475,36 @@
       "kind": "elm_raccoon",
       "x": -8,
       "z": -72
+    },
+    {
+      "id": "e54",
+      "kind": "hazel_hedgehog",
+      "x": -60,
+      "z": -20
+    },
+    {
+      "id": "e55",
+      "kind": "hazel_hedgehog",
+      "x": 50,
+      "z": -56
+    },
+    {
+      "id": "e56",
+      "kind": "hazel_hedgehog",
+      "x": -44,
+      "z": 58
+    },
+    {
+      "id": "e57",
+      "kind": "hazel_hedgehog",
+      "x": 62,
+      "z": 18
+    },
+    {
+      "id": "e58",
+      "kind": "hazel_hedgehog",
+      "x": 12,
+      "z": -74
     }
   ],
   "base_combat": {

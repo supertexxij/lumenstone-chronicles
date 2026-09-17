@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 36 overnight (v1.36.0-overnight)
+- Clearer **combat swing whoosh** — chunkier soft band-sweep with gentle pitch variety (respects mute; no cheesy combat labels)
+- Clearer **minimap zoom feel** — camera zoom in/out scales the map world radius + soft inner tick when close
+- New wilds foe **Hazel Hedgehog** — round body + spine tufts, gentle “stilled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon)
+- Journal QoL: filter label **Mastered ★**; **All weeks** section headers (Available / Mastered / Locked); attempted-not-mastered rows show **mastery %** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 35 overnight (v1.35.0-overnight)
 - Soft **footstep pitch variety** — gentle left/right thud pitch so walks feel alive (respects mute)
 - Clearer **combat HP number on HUD** — bold cream **HP N / M** with soft outline (RuneScape-chunky, no cheesy combat labels)

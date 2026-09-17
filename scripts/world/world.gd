@@ -1953,12 +1953,14 @@ func get_minimap_markers() -> Dictionary:
 	var px := 0.0
 	var pz := 0.0
 	var yaw := 0.0
+	var zoom := 1.0
 	if player:
 		px = player.global_position.x
 		pz = player.global_position.z
 		yaw = float(player.get("cam_yaw"))
+		zoom = float(player.get("cam_zoom"))
 	return {
-		"player": {"x": px, "z": pz, "yaw": yaw},
+		"player": {"x": px, "z": pz, "yaw": yaw, "zoom": zoom},
 		"halls": halls,
 		"npcs": npcs,
 		"foes": foes,

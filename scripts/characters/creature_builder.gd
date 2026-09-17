@@ -93,6 +93,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_otter(bob)
 		"elm_raccoon":
 			_build_raccoon(bob)
+		"hazel_hedgehog":
+			_build_hedgehog(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -417,4 +419,37 @@ static func _build_raccoon(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.045, 0.22), Vector3(0, -0.04, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.08, 0.04, 0.11)), Vector3(0, -0.18, 0.02), leg, "Paw")
+
+static func _build_hedgehog(bob: Node3D) -> void:
+	## Prickly hazel-wilds hedgehog — round body, soft snout, spine tufts (distinct from raccoon/otter/squirrel).
+_mi(_sphere(0.28, 0.42), Vector3(0, 0.38, 0), bob, "Body")
+	_mi(_sphere(0.16), Vector3(0, 0.42, 0.28), bob, "Head")
+	_mi(_sphere(0.07), Vector3(0, 0.38, 0.40), bob, "Snout")
+	# Soft rounded ears
+	_mi(_sphere(0.05), Vector3(-0.10, 0.52, 0.22), bob, "EarL")
+	_mi(_sphere(0.05), Vector3(0.10, 0.52, 0.22), bob, "EarR")
+	# Soft face tip (accent)
+	_mi(_sphere(0.04), Vector3(0, 0.40, 0.46), bob, "Nose")
+	# Spine tufts on back (chunky wholesome prickles)
+	for i in 7:
+		var ang := float(i) / 7.0 * TAU
+		var r := 0.16
+		var sx := cos(ang) * r
+		var sz := sin(ang) * r * 0.7 - 0.04
+		var sp := _mi(_cyl(0.01, 0.035, 0.22), Vector3(sx, 0.58, sz), bob, "Spine%d" % i)
+		sp.rotation_degrees = Vector3(-18 + (i % 3) * 6, float(i) * 40.0, (i % 2) * 10 - 5)
+	_mi(_cyl(0.012, 0.04, 0.26), Vector3(0, 0.66, -0.02), bob, "SpineTop")
+	# Four stubby legs
+	for info in [
+		["FL", Vector3(-0.12, 0.18, 0.14)],
+		["FR", Vector3(0.12, 0.18, 0.14)],
+		["BL", Vector3(-0.12, 0.18, -0.12)],
+		["BR", Vector3(0.12, 0.18, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.04, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.07, 0.035, 0.09)), Vector3(0, -0.14, 0.02), leg, "Paw")
 

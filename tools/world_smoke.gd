@@ -48,6 +48,7 @@ func _finish():
 	var hares := 0
 	var squirrels := 0
 	var raccoons := 0
+	var hedgehogs := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -61,6 +62,8 @@ func _finish():
 			squirrels += 1
 		if str(foe.get("kind")) == "elm_raccoon":
 			raccoons += 1
+		if str(foe.get("kind")) == "hazel_hedgehog":
+			hedgehogs += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -68,6 +71,7 @@ func _finish():
 	print("HARES", hares)
 	print("SQUIRRELS", squirrels)
 	print("RACCOONS", raccoons)
+	print("HEDGEHOGS", hedgehogs)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -213,5 +217,10 @@ func _finish():
 	print("DUSK_FLICKER_SRC", "Wave 35: soft dusk lamp flicker" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("PARENT_HELP_BOLD_SRC", "WEEK %d" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("VERSION_135_SRC", 'config/version="1.35.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("HAZEL_HEDGEHOG_SRC", '"hazel_hedgehog"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("SWING_WHOOSH_SRC", "_play_swing_varied" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("MINIMAP_ZOOM_SRC", "Wave 36: clearer minimap zoom feel" in FileAccess.get_file_as_string("res://scripts/ui/minimap.gd"))
+	print("JOURNAL_ATTEMPT_SRC", "get_latest_attempt_percent" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_136_SRC", 'config/version="1.36.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

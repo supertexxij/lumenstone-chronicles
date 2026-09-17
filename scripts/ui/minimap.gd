@@ -16,7 +16,16 @@ func _draw() -> void:
 	var bg := Color(0.14, 0.14, 0.2, 0.78) if indoors else Color(0.12, 0.18, 0.14, 0.72)
 	draw_circle(center, radius, bg)
 	draw_arc(center, radius, 0, TAU, 48, Color(0.75, 0.85, 0.65, 0.9), 2.0, true)
-	var world_r := 56.0
+	# Wave 36: soft zoom feel — inner tick ring when camera is zoomed in (closer)
+	var cz: float = float(map_data.get("player", {}).get("zoom", 1.0))
+	if cz < 0.92:
+		var inner_r: float = radius * lerpf(0.78, 0.92, clampf((cz - 0.55) / (0.92 - 0.55), 0.0, 1.0))
+		draw_arc(center, inner_r, 0, TAU, 40, Color(0.85, 0.9, 0.7, 0.35), 1.2, true)
+	elif cz > 1.08:
+		draw_arc(center, radius * 0.97, 0, TAU, 40, Color(0.65, 0.75, 0.55, 0.28), 1.0, true)
+	# Wave 36: clearer minimap zoom feel — camera zoom in/out scales map world radius
+	var cam_zoom: float = float(map_data.get("player", {}).get("zoom", 1.0))
+	var world_r := clampf(56.0 * cam_zoom, 38.0, 80.0)
 	var scale: float = (radius * 0.92) / world_r
 	var px: float = float(map_data.get("player", {}).get("x", 0))
 	var pz: float = float(map_data.get("player", {}).get("z", 0))

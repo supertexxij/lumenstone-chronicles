@@ -868,6 +868,18 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 	state_changed.emit()
 	return attempt
 
+func get_latest_attempt_percent(quest_id: String) -> float:
+	## Wave 36: latest attempt percent for journal QoL (−1 if never attempted). Mastery gate unchanged (≥80%).
+	var found := false
+	var latest := 0.0
+	for a in quest_attempts:
+		if str(a.get("quest_id", "")) != quest_id:
+			continue
+		found = true
+		latest = float(a.get("percent", 0.0))
+	return latest if found else -1.0
+
+
 func needs_help_quests() -> Array:
 	## Quests attempted but not mastered, or latest attempt < 80%
 	var help: Array = []
