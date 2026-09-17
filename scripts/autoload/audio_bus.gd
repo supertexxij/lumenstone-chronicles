@@ -41,7 +41,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop", "ready_chime"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -292,6 +292,10 @@ func play_ember_pop() -> void:
 	## Wave 55: soft campfire ember pop — brief warm crackle tick (RuneScape-chunky, wholesome).
 	_play("ember_pop", -11.0)
 
+func play_ready_chime() -> void:
+	## Wave 65: tiny pantry Ready chime — soft high blip when food cooldown ends (RuneScape-chunky, wholesome; respects mute).
+	_play("ready_chime", -12.0)
+
 func play_footstep() -> void:
 	if _foot_cooldown > 0.0:
 		return
@@ -340,6 +344,7 @@ func _build_streams() -> void:
 	_streams["dusk_owl"] = _dusk_owl_hoot(9.0, 0.06)  # Wave 49: soft dusk owl hoot outdoors
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 	_streams["ember_pop"] = _ember_pop_sfx()  # Wave 55: soft campfire ember pop
+	_streams["ready_chime"] = _tone_blip(990.0, 0.07, 0.18)  # Wave 65: tiny pantry Ready chime
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
 	_streams["hall_chatter"] = _soft_hall_chatter(7.0, 0.055)  # Wave 42: soft guild-hall ambient chatter

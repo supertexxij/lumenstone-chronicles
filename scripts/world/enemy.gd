@@ -137,6 +137,9 @@ func _ready() -> void:
 		"cranberry_capybara":
 			if label: label.position.y = 1.45
 			hp_bar.position.y = 1.2
+		"raspberry_ram":
+			if label: label.position.y = 1.55
+			hp_bar.position.y = 1.3
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -428,8 +431,9 @@ func _soft_aggro(delta: float) -> void:
 			GameState.set_combat_target(self)
 			var first_fight := GameState.mark_combat_tutorial(true)
 			if first_fight:
-				# Wave 41: clearer first-fight tip — soft ticks + how to leave (RuneScape-chunky, wholesome)
-				GameState.toast.emit("First fight: soft ticks (~0.7s). Walk away or click the ground to leave. %s approaches." % def.get("name", "Foe"))
+				# Wave 65: clearer first-fight tip with foe name — lead with who, then soft ticks + how to leave (RuneScape-chunky, wholesome)
+				var foe_nm := str(def.get("name", "Foe"))
+				GameState.toast.emit("First fight · %s: soft ticks (~0.7s). Walk away or click the ground to leave." % foe_nm)
 			else:
 				GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
@@ -847,6 +851,29 @@ func _idle_anim(delta: float) -> void:
 			var chead := creature_bob.get_node_or_null("Head")
 			if chead:
 				chead.rotation.y = sin(t * 0.7) * 0.05
+		"raspberry_ram":
+			# Soft graze-bob — woolly breathe, curled horns nod, fluff tuft sway (Wave 65)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.9)) * 0.024
+			creature_bob.rotation.y = sin(t * 0.3) * 0.08
+			var rear_l := creature_bob.get_node_or_null("EarL")
+			var rear_r := creature_bob.get_node_or_null("EarR")
+			if rear_l:
+				rear_l.rotation.z = sin(t * 1.15) * 0.06
+			if rear_r:
+				rear_r.rotation.z = -sin(t * 1.15 + 0.2) * 0.06
+			var horn_l := creature_bob.get_node_or_null("HornL")
+			var horn_r := creature_bob.get_node_or_null("HornR")
+			if horn_l:
+				horn_l.rotation.z = deg_to_rad(-35) + sin(t * 0.75) * 0.05
+			if horn_r:
+				horn_r.rotation.z = deg_to_rad(35) - sin(t * 0.75 + 0.15) * 0.05
+			var rtail := creature_bob.get_node_or_null("Tail")
+			if rtail:
+				rtail.rotation.y = sin(t * 0.9) * 0.14
+			var rhead := creature_bob.get_node_or_null("Head")
+			if rhead:
+				rhead.rotation.y = sin(t * 0.65) * 0.06
+				rhead.rotation.x = sin(t * 0.55) * 0.04
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

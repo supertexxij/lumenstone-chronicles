@@ -41,6 +41,7 @@ var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Hea
 var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
+var _cross_dusk_lights: Array = []  # Wave 65: soft quiet cross lantern at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -1013,6 +1014,7 @@ func _update_day_night(delta: float) -> void:
 	_update_village_dusk_lamps(dayness)
 	_update_knoll_dusk_glow(dayness)  # Wave 59: soft amber knoll glow at dusk
 	_update_arch_dusk_glow(dayness)  # Wave 64: soft stone arch glow at dusk
+	_update_cross_dusk_glow(dayness)  # Wave 65: soft quiet cross lantern at dusk
 	_update_plaza_campfire(dayness)
 
 
@@ -1272,6 +1274,27 @@ func _update_arch_dusk_glow(dayness: float) -> void:
 		if light == null or not is_instance_valid(light):
 			continue
 		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.015 + float(i) * 1.2)
+		var e: float = energy * clampf(phase, 0.88, 1.12)
+		if "Rim" in str(light.name):
+			e *= 0.55
+		light.light_energy = e
+		light.visible = e > 0.04
+		i += 1
+
+
+func _update_cross_dusk_glow(dayness: float) -> void:
+	## Wave 65: soft quiet cross lantern at dusk — warm honey OmniLight on Quiet Cross knoll (RuneScape-chunky, wholesome).
+	if _cross_dusk_lights.is_empty():
+		return
+	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
+	var t_ms: float = float(Time.get_ticks_msec())
+	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0021))
+	var energy: float = dusk * 1.80 * pulse
+	var i: int = 0
+	for light in _cross_dusk_lights:
+		if light == null or not is_instance_valid(light):
+			continue
+		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.016 + float(i) * 1.15)
 		var e: float = energy * clampf(phase, 0.88, 1.12)
 		if "Rim" in str(light.name):
 			e *= 0.55
@@ -2881,6 +2904,27 @@ func _build_quiet_cross() -> void:
 	_add_chunky_sign(root, Vector3(44.2, 0, 8.0), "Quiet Cross", 0.15)
 	_place_label3d(root, "A place to give thanks", 28, Vector3(48.0, 4.15, 8.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Quiet Cross", 52, Vector3(48.0, 3.55, 8.0))
+	# Wave 65: soft quiet cross lantern at dusk — warm honey OmniLight on beam + knoll rim (RuneScape-chunky, wholesome)
+	var cross_light := OmniLight3D.new()
+	cross_light.name = "CrossDuskGlow"
+	cross_light.light_color = Color(1.0, 0.82, 0.48)  # soft warm lantern honey
+	cross_light.light_energy = 0.0
+	cross_light.omni_range = 8.5
+	cross_light.omni_attenuation = 1.25
+	cross_light.shadow_enabled = false
+	cross_light.position = Vector3(48.0, 2.55, 8.0)  # near wooden cross beam
+	root.add_child(cross_light)
+	_cross_dusk_lights.append(cross_light)
+	var cross_rim := OmniLight3D.new()
+	cross_rim.name = "CrossDuskRim"
+	cross_rim.light_color = Color(0.98, 0.78, 0.42)
+	cross_rim.light_energy = 0.0
+	cross_rim.omni_range = 5.2
+	cross_rim.omni_attenuation = 1.4
+	cross_rim.shadow_enabled = false
+	cross_rim.position = Vector3(48.0, 1.15, 8.0)
+	root.add_child(cross_rim)
+	_cross_dusk_lights.append(cross_rim)
 
 
 func _build_stone_arch() -> void:

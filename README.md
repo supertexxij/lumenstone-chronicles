@@ -258,6 +258,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 65 overnight (v1.65.0-overnight)
+- Soft **quiet cross lantern at dusk** — warm honey OmniLight on the Quiet Cross knoll (RuneScape-chunky, wholesome)
+- Clearer **first-fight tip with foe name** — leads with who you’re facing, then soft ticks + how to leave
+- Pantry **Ready flash + tiny chime** when food cooldown ends (respects mute)
+- HUD QoL: **weather icon letter** beside Year chip (`C`/`F`/`R` for Clear/Fog/Rain)
+- New wilds foe **Raspberry Ram** — plump woolly body, curled spiral horns, short sturdy legs, soft fluff tuft, gentle “grazed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara)
+- PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 64 overnight (v1.64.0-overnight)
 - Soft **stone arch glow at dusk** — cool limestone OmniLight on the Stone Arch gateway (RuneScape-chunky, wholesome)
 - Clearer **soft-aggro ring when armor Def high** — cream-bright telegraph scales with Def (no cheesy combat labels)

@@ -151,6 +151,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_bunny(bob)
 		"cranberry_capybara":
 			_build_capybara(bob)
+		"raspberry_ram":
+			_build_ram(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1510,4 +1512,53 @@ static func _build_capybara(bob: Node3D) -> void:
 	tail.rotation_degrees = Vector3(40, 0, 0)
 	_mi(_sphere(0.04), Vector3(0, 0.22, -0.42), bob, "TailTip")
 
+static func _build_ram(bob: Node3D) -> void:
+	## Soft raspberry-wilds ram — plump woolly body, curled spiral horns, short sturdy legs, soft fluff tuft (distinct from Cedar Stag / Magnolia Beaver / Cranberry Capybara / Blueberry Bunny).
+	# Plump woolly barrel
+	_mi(_sphere(0.24, 0.34), Vector3(0, 0.38, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.13, 0.17), Vector3(0, 0.26, 0.06), bob, "Belly")
+	# Round head + soft ears + blunt muzzle
+	_mi(_sphere(0.14), Vector3(0, 0.48, 0.32), bob, "Head")
+	_mi(_sphere(0.05, 0.06), Vector3(-0.09, 0.58, 0.28), bob, "EarL")
+	_mi(_sphere(0.05, 0.06), Vector3(0.09, 0.58, 0.28), bob, "EarR")
+	_mi(_box(Vector3(0.08, 0.06, 0.11)), Vector3(0, 0.42, 0.46), bob, "Snout")
+	_mi(_sphere(0.03), Vector3(0, 0.41, 0.53), bob, "Nose")
+	_mi(_sphere(0.026), Vector3(-0.05, 0.50, 0.42), bob, "EyeL")
+	_mi(_sphere(0.026), Vector3(0.05, 0.50, 0.42), bob, "EyeR")
+	# Curled spiral horns (signature — not branching antlers)
+	var horn_l := Node3D.new()
+	horn_l.name = "HornL"
+	horn_l.position = Vector3(-0.10, 0.58, 0.26)
+	horn_l.rotation_degrees = Vector3(15, -25, -35)
+	bob.add_child(horn_l)
+	_mi(_cyl(0.035, 0.028, 0.16), Vector3(0, 0.06, 0), horn_l, "CurlA")
+	_mi(_cyl(0.028, 0.022, 0.12), Vector3(-0.04, 0.14, -0.02), horn_l, "CurlB")
+	_mi(_sphere(0.03), Vector3(-0.06, 0.20, -0.04), horn_l, "HornTip")
+	var horn_r := Node3D.new()
+	horn_r.name = "HornR"
+	horn_r.position = Vector3(0.10, 0.58, 0.26)
+	horn_r.rotation_degrees = Vector3(15, 25, 35)
+	bob.add_child(horn_r)
+	_mi(_cyl(0.035, 0.028, 0.16), Vector3(0, 0.06, 0), horn_r, "CurlA")
+	_mi(_cyl(0.028, 0.022, 0.12), Vector3(0.04, 0.14, -0.02), horn_r, "CurlB")
+	_mi(_sphere(0.03), Vector3(0.06, 0.20, -0.04), horn_r, "HornTip")
+	# Soft wool cheek tufts (raspberry blush)
+	_mi(_sphere(0.045, 0.04), Vector3(-0.13, 0.44, 0.28), bob, "WoolL")
+	_mi(_sphere(0.045, 0.04), Vector3(0.13, 0.44, 0.28), bob, "WoolR")
+	# Short sturdy legs
+	for info in [
+		["FL", Vector3(-0.12, 0.18, 0.14)],
+		["FR", Vector3(0.12, 0.18, 0.14)],
+		["BL", Vector3(-0.13, 0.18, -0.14)],
+		["BR", Vector3(0.13, 0.18, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.036, 0.04, 0.14), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.08, 0.025, 0.10)), Vector3(0, -0.10, 0.01), leg, "Hoof")
+	# Soft fluff tuft tail
+	_mi(_sphere(0.08), Vector3(0, 0.34, -0.30), bob, "Tail")
 

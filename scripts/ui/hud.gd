@@ -301,6 +301,9 @@ func _refresh_food_lbl() -> void:
 		if _food_was_waiting:
 			_food_was_waiting = false
 			_food_ready_flash_t = 0.75  # Wave 53: longer Ready bloom
+			# Wave 65: pantry Ready flash + tiny chime (respects mute via AudioBus)
+			if AudioBus.has_method("play_ready_chime"):
+				AudioBus.play_ready_chime()
 		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
 		if _food_ready_flash_t > 0.0:
 			# Wave 57: clearer Ready flash color — bright mint→gold bloom (distinct from idle Ready green)
@@ -393,7 +396,7 @@ func _ensure_year_chip() -> void:
 	_year_chip_panel.name = "YearChipPanel"
 	_year_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_year_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_year_chip_panel.offset_left = -196.0
+	_year_chip_panel.offset_left = -220.0
 	_year_chip_panel.offset_top = 74.0
 	_year_chip_panel.offset_right = -12.0
 	_year_chip_panel.offset_bottom = 108.0
@@ -429,8 +432,29 @@ func _refresh_year_chip() -> void:
 		pct = int(GameState.get_quest_mastery_progress().get("percent", 0))
 	# Wave 32: clearer wording so the chip reads at a glance
 	# Wave 63: clearer Year chip when quest mastery % — mastery word reads at a glance
-	_year_chip.text = "Year · mastery %d%%" % pct
-	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
+	# Wave 65: weather icon letter beside Year chip (C/F/R for Clear/Fog/Rain)
+	var wx_letter := "C"
+	var wx_name := "Clear"
+	if _world != null and _world.has_method("get_weather_label"):
+		wx_name = str(_world.get_weather_label()).strip_edges()
+		var wl := wx_name.to_lower()
+		if "fog" in wl:
+			wx_letter = "F"
+		elif "rain" in wl:
+			wx_letter = "R"
+		else:
+			wx_letter = "C"
+	elif typeof(_map_data) == TYPE_DICTIONARY:
+		var mw := str(_map_data.get("weather", "Clear")).strip_edges().to_lower()
+		if "fog" in mw:
+			wx_letter = "F"
+			wx_name = "Fog"
+		elif "rain" in mw:
+			wx_letter = "R"
+			wx_name = "Rain"
+	_year_chip.text = "Year · mastery %d%% · %s" % [pct, wx_letter]
+	var ynote := GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
+	_year_chip.tooltip_text = "%s · weather %s (%s)" % [ynote, wx_letter, wx_name]
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
 		_year_chip_flash_dur = 0.85

@@ -11,7 +11,7 @@
       "accuracy": 0.7,
       "combat_xp": 8,
       "respawn_sec": 12.0,
-      "description": "A fluttering moth of dim shadow — send it fluttering away!"
+      "description": "A fluttering moth of dim shadow \u2014 send it fluttering away!"
     },
     "briar_boar": {
       "kind": "briar_boar",
@@ -24,7 +24,7 @@
       "accuracy": 0.68,
       "combat_xp": 16,
       "respawn_sec": 18.0,
-      "description": "A bristly boar tangled in briars — settle it down!"
+      "description": "A bristly boar tangled in briars \u2014 settle it down!"
     },
     "dust_golem": {
       "kind": "dust_golem",
@@ -37,7 +37,7 @@
       "accuracy": 0.64,
       "combat_xp": 24,
       "respawn_sec": 22.0,
-      "description": "A sturdy pile of dust given form — sweep it back into the ground!"
+      "description": "A sturdy pile of dust given form \u2014 sweep it back into the ground!"
     },
     "dim_wisp": {
       "kind": "dim_wisp",
@@ -50,7 +50,7 @@
       "accuracy": 0.75,
       "combat_xp": 6,
       "respawn_sec": 10.0,
-      "description": "A lantern wisp gone dim — brighten it again!"
+      "description": "A lantern wisp gone dim \u2014 brighten it again!"
     },
     "moss_badger": {
       "kind": "moss_badger",
@@ -63,7 +63,7 @@
       "accuracy": 0.62,
       "combat_xp": 30,
       "respawn_sec": 26.0,
-      "description": "A sturdy badger dusted in soft moss — settle it gently!"
+      "description": "A sturdy badger dusted in soft moss \u2014 settle it gently!"
     },
     "cedar_stag": {
       "kind": "cedar_stag",
@@ -76,7 +76,7 @@
       "accuracy": 0.6,
       "combat_xp": 36,
       "respawn_sec": 28.0,
-      "description": "A tall stag of the cedar grove — quiet it with a careful step!"
+      "description": "A tall stag of the cedar grove \u2014 quiet it with a careful step!"
     },
     "pine_fox": {
       "kind": "pine_fox",
@@ -89,7 +89,7 @@
       "accuracy": 0.58,
       "combat_xp": 42,
       "respawn_sec": 30.0,
-      "description": "A slender fox of the pine wilds — soothe it with a careful step!"
+      "description": "A slender fox of the pine wilds \u2014 soothe it with a careful step!"
     },
     "oak_hare": {
       "kind": "oak_hare",
@@ -102,7 +102,7 @@
       "accuracy": 0.56,
       "combat_xp": 48,
       "respawn_sec": 32.0,
-      "description": "A soft hare of the oak wilds — ease it with a careful step!"
+      "description": "A soft hare of the oak wilds \u2014 ease it with a careful step!"
     },
     "birch_squirrel": {
       "kind": "birch_squirrel",
@@ -115,7 +115,7 @@
       "accuracy": 0.54,
       "combat_xp": 54,
       "respawn_sec": 34.0,
-      "description": "A quick squirrel of the birch wilds — gentle it with a careful step!"
+      "description": "A quick squirrel of the birch wilds \u2014 gentle it with a careful step!"
     },
     "aspen_otter": {
       "kind": "aspen_otter",
@@ -128,7 +128,7 @@
       "accuracy": 0.52,
       "combat_xp": 60,
       "respawn_sec": 36.0,
-      "description": "A sleek otter of the aspen wilds — lull it with a careful step!"
+      "description": "A sleek otter of the aspen wilds \u2014 lull it with a careful step!"
     },
     "elm_raccoon": {
       "kind": "elm_raccoon",
@@ -141,7 +141,7 @@
       "accuracy": 0.5,
       "combat_xp": 66,
       "respawn_sec": 38.0,
-      "description": "A masked raccoon of the elm wilds — hush it with a careful step!"
+      "description": "A masked raccoon of the elm wilds \u2014 hush it with a careful step!"
     },
     "hazel_hedgehog": {
       "kind": "hazel_hedgehog",
@@ -154,7 +154,7 @@
       "accuracy": 0.48,
       "combat_xp": 72,
       "respawn_sec": 40.0,
-      "description": "A prickly hedgehog of the hazel wilds — still it with a careful step!"
+      "description": "A prickly hedgehog of the hazel wilds \u2014 still it with a careful step!"
     },
     "willow_wren": {
       "kind": "willow_wren",
@@ -167,7 +167,7 @@
       "accuracy": 0.46,
       "combat_xp": 78,
       "respawn_sec": 42.0,
-      "description": "A tiny wren of the willow wilds — coax it gently with a careful step!"
+      "description": "A tiny wren of the willow wilds \u2014 coax it gently with a careful step!"
     },
     "maple_mouse": {
       "kind": "maple_mouse",
@@ -180,7 +180,7 @@
       "accuracy": 0.44,
       "combat_xp": 84,
       "respawn_sec": 44.0,
-      "description": "A tiny mouse of the maple wilds — settle it gently with a careful step!"
+      "description": "A tiny mouse of the maple wilds \u2014 settle it gently with a careful step!"
     },
     "spruce_mole": {
       "kind": "spruce_mole",
@@ -193,7 +193,7 @@
       "accuracy": 0.42,
       "combat_xp": 90,
       "respawn_sec": 46.0,
-      "description": "A soft burrowing mole of the spruce wilds — tuck it gently with a careful step!"
+      "description": "A soft burrowing mole of the spruce wilds \u2014 tuck it gently with a careful step!"
     },
     "beech_chipmunk": {
       "kind": "beech_chipmunk",
@@ -206,7 +206,7 @@
       "accuracy": 0.4,
       "combat_xp": 96,
       "respawn_sec": 48.0,
-      "description": "A striped chipmunk of the beech wilds — nestle it gently with a careful step!"
+      "description": "A striped chipmunk of the beech wilds \u2014 nestle it gently with a careful step!"
     },
     "alder_duck": {
       "kind": "alder_duck",
@@ -219,7 +219,7 @@
       "accuracy": 0.38,
       "combat_xp": 102,
       "respawn_sec": 50.0,
-      "description": "A plump duck of the alder wilds — cradle it gently with a careful step!"
+      "description": "A plump duck of the alder wilds \u2014 cradle it gently with a careful step!"
     },
     "fir_frog": {
       "kind": "fir_frog",
@@ -232,7 +232,7 @@
       "accuracy": 0.36,
       "combat_xp": 108,
       "respawn_sec": 52.0,
-      "description": "A plump frog of the fir wilds — cushion it gently with a careful step!"
+      "description": "A plump frog of the fir wilds \u2014 cushion it gently with a careful step!"
     },
     "cypress_turtle": {
       "kind": "cypress_turtle",
@@ -245,7 +245,7 @@
       "accuracy": 0.34,
       "combat_xp": 114,
       "respawn_sec": 54.0,
-      "description": "A shelled turtle of the cypress wilds — shelter it gently with a careful step!"
+      "description": "A shelled turtle of the cypress wilds \u2014 shelter it gently with a careful step!"
     },
     "poplar_dove": {
       "kind": "poplar_dove",
@@ -258,7 +258,7 @@
       "accuracy": 0.32,
       "combat_xp": 120,
       "respawn_sec": 56.0,
-      "description": "A soft dove of the poplar wilds — gather it gently with a careful step!"
+      "description": "A soft dove of the poplar wilds \u2014 gather it gently with a careful step!"
     },
     "rowan_robin": {
       "kind": "rowan_robin",
@@ -271,7 +271,7 @@
       "accuracy": 0.3,
       "combat_xp": 126,
       "respawn_sec": 58.0,
-      "description": "A bright robin of the rowan wilds — cheer it gently with a careful step!"
+      "description": "A bright robin of the rowan wilds \u2014 cheer it gently with a careful step!"
     },
     "ash_sparrow": {
       "kind": "ash_sparrow",
@@ -284,7 +284,7 @@
       "accuracy": 0.28,
       "combat_xp": 132,
       "respawn_sec": 60.0,
-      "description": "A soft sparrow of the ash wilds — greet it gently with a careful step!"
+      "description": "A soft sparrow of the ash wilds \u2014 greet it gently with a careful step!"
     },
     "hickory_quail": {
       "kind": "hickory_quail",
@@ -297,7 +297,7 @@
       "accuracy": 0.27,
       "combat_xp": 138,
       "respawn_sec": 62.0,
-      "description": "A plump quail of the hickory wilds — flush it gently with a careful step!"
+      "description": "A plump quail of the hickory wilds \u2014 flush it gently with a careful step!"
     },
     "juniper_jay": {
       "kind": "juniper_jay",
@@ -310,7 +310,7 @@
       "accuracy": 0.26,
       "combat_xp": 144,
       "respawn_sec": 64.0,
-      "description": "A bright jay of the juniper wilds — shoo it gently with a careful step!"
+      "description": "A bright jay of the juniper wilds \u2014 shoo it gently with a careful step!"
     },
     "sycamore_skink": {
       "kind": "sycamore_skink",
@@ -323,7 +323,7 @@
       "accuracy": 0.25,
       "combat_xp": 150,
       "respawn_sec": 66.0,
-      "description": "A sleek skink of the sycamore wilds — usher it gently with a careful step!"
+      "description": "A sleek skink of the sycamore wilds \u2014 usher it gently with a careful step!"
     },
     "chestnut_toad": {
       "kind": "chestnut_toad",
@@ -336,7 +336,7 @@
       "accuracy": 0.24,
       "combat_xp": 156,
       "respawn_sec": 68.0,
-      "description": "A plump toad of the chestnut wilds — nudge it gently with a careful step!"
+      "description": "A plump toad of the chestnut wilds \u2014 nudge it gently with a careful step!"
     },
     "walnut_weasel": {
       "kind": "walnut_weasel",
@@ -349,7 +349,7 @@
       "accuracy": 0.23,
       "combat_xp": 162,
       "respawn_sec": 70.0,
-      "description": "A sleek weasel of the walnut wilds — shoo it gently with a careful step!"
+      "description": "A sleek weasel of the walnut wilds \u2014 shoo it gently with a careful step!"
     },
     "pecan_possum": {
       "kind": "pecan_possum",
@@ -362,7 +362,7 @@
       "accuracy": 0.22,
       "combat_xp": 168,
       "respawn_sec": 72.0,
-      "description": "A gentle possum of the pecan wilds — coax it kindly with a careful step!"
+      "description": "A gentle possum of the pecan wilds \u2014 coax it kindly with a careful step!"
     },
     "magnolia_beaver": {
       "kind": "magnolia_beaver",
@@ -375,7 +375,7 @@
       "accuracy": 0.21,
       "combat_xp": 174,
       "respawn_sec": 74.0,
-      "description": "A chunky beaver of the magnolia wilds — settle it gently with a careful step!"
+      "description": "A chunky beaver of the magnolia wilds \u2014 settle it gently with a careful step!"
     },
     "olive_owl": {
       "kind": "olive_owl",
@@ -388,7 +388,7 @@
       "accuracy": 0.2,
       "combat_xp": 180,
       "respawn_sec": 76.0,
-      "description": "A round owl of the olive wilds — hush it gently with a careful step!"
+      "description": "A round owl of the olive wilds \u2014 hush it gently with a careful step!"
     },
     "palm_pika": {
       "kind": "palm_pika",
@@ -401,7 +401,7 @@
       "accuracy": 0.19,
       "combat_xp": 186,
       "respawn_sec": 78.0,
-      "description": "A round pika of the palm wilds — ease it gently with a careful step!"
+      "description": "A round pika of the palm wilds \u2014 ease it gently with a careful step!"
     },
     "lemon_lemming": {
       "kind": "lemon_lemming",
@@ -414,7 +414,7 @@
       "accuracy": 0.18,
       "combat_xp": 192,
       "respawn_sec": 80.0,
-      "description": "A soft lemming of the lemon wilds — snug it gently with a careful step!"
+      "description": "A soft lemming of the lemon wilds \u2014 snug it gently with a careful step!"
     },
     "cherry_chinchilla": {
       "kind": "cherry_chinchilla",
@@ -427,7 +427,7 @@
       "accuracy": 0.18,
       "combat_xp": 198,
       "respawn_sec": 82.0,
-      "description": "A fluffy chinchilla of the cherry wilds — fluff it gently with a careful step!"
+      "description": "A fluffy chinchilla of the cherry wilds \u2014 fluff it gently with a careful step!"
     },
     "plum_porcupine": {
       "kind": "plum_porcupine",
@@ -440,7 +440,7 @@
       "accuracy": 0.17,
       "combat_xp": 204,
       "respawn_sec": 84.0,
-      "description": "A gentle porcupine of the plum wilds — nestle it kindly with a careful step!"
+      "description": "A gentle porcupine of the plum wilds \u2014 nestle it kindly with a careful step!"
     },
     "peach_puffin": {
       "kind": "peach_puffin",
@@ -453,7 +453,7 @@
       "accuracy": 0.17,
       "combat_xp": 210,
       "respawn_sec": 86.0,
-      "description": "A chunky puffin of the peach wilds — tuck it gently with a careful step!"
+      "description": "A chunky puffin of the peach wilds \u2014 tuck it gently with a careful step!"
     },
     "fig_finch": {
       "kind": "fig_finch",
@@ -466,7 +466,7 @@
       "accuracy": 0.17,
       "combat_xp": 216,
       "respawn_sec": 88.0,
-      "description": "A plump finch of the fig wilds — perch it gently with a careful step!"
+      "description": "A plump finch of the fig wilds \u2014 perch it gently with a careful step!"
     },
     "grape_gecko": {
       "kind": "grape_gecko",
@@ -479,7 +479,7 @@
       "accuracy": 0.17,
       "combat_xp": 222,
       "respawn_sec": 90.0,
-      "description": "A soft gecko of the grape wilds — bask it gently with a careful step!"
+      "description": "A soft gecko of the grape wilds \u2014 bask it gently with a careful step!"
     },
     "apricot_armadillo": {
       "kind": "apricot_armadillo",
@@ -492,7 +492,7 @@
       "accuracy": 0.17,
       "combat_xp": 228,
       "respawn_sec": 92.0,
-      "description": "A plump armadillo of the apricot wilds — shell it gently with a careful step!"
+      "description": "A plump armadillo of the apricot wilds \u2014 shell it gently with a careful step!"
     },
     "blueberry_bunny": {
       "kind": "blueberry_bunny",
@@ -505,7 +505,7 @@
       "accuracy": 0.17,
       "combat_xp": 234,
       "respawn_sec": 94.0,
-      "description": "A plump bunny of the blueberry wilds — hop it gently with a careful step!"
+      "description": "A plump bunny of the blueberry wilds \u2014 hop it gently with a careful step!"
     },
     "cranberry_capybara": {
       "kind": "cranberry_capybara",
@@ -518,7 +518,20 @@
       "accuracy": 0.17,
       "combat_xp": 240,
       "respawn_sec": 96.0,
-      "description": "A plump capybara of the cranberry wilds — lounge it gently with a careful step!"
+      "description": "A plump capybara of the cranberry wilds \u2014 lounge it gently with a careful step!"
+    },
+    "raspberry_ram": {
+      "kind": "raspberry_ram",
+      "name": "Raspberry Ram",
+      "defeat_verb": "grazed",
+      "color": "#a83c5c",
+      "accent": "#f0b8c8",
+      "max_hp": 260,
+      "damage": 43,
+      "accuracy": 0.17,
+      "combat_xp": 246,
+      "respawn_sec": 98.0,
+      "description": "A plump ram of the raspberry wilds \u2014 graze it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1709,6 +1722,36 @@
       "kind": "cranberry_capybara",
       "x": -75,
       "z": -160
+    },
+    {
+      "id": "e199",
+      "kind": "raspberry_ram",
+      "x": -148,
+      "z": 72
+    },
+    {
+      "id": "e200",
+      "kind": "raspberry_ram",
+      "x": 142,
+      "z": -72
+    },
+    {
+      "id": "e201",
+      "kind": "raspberry_ram",
+      "x": -102,
+      "z": -155
+    },
+    {
+      "id": "e202",
+      "kind": "raspberry_ram",
+      "x": 168,
+      "z": 48
+    },
+    {
+      "id": "e203",
+      "kind": "raspberry_ram",
+      "x": -52,
+      "z": 168
     }
   ],
   "base_combat": {
