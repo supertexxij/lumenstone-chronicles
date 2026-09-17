@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 54 overnight (v1.54.0-overnight)
+- Soft **brook sparkle near water** — cream-cyan motes gather by brooks and pools outdoors (RuneScape-chunky, wholesome)
+- Clearer **soft-travel menu open** — gentle scale + cream fade when opening Travel (T)
+- Soft **quest near-miss chime** — quieter two-note tone, softer than mastery (no cheesy combat labels)
+- New wilds foe **Olive Owl** — round body, big eyes, ear tufts, short hooked beak, gentle “hushed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver)
+- Parent QoL: clearer **wrong-PIN toast** (default stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 53 overnight (v1.53.0-overnight)
 - Soft **fireflies denser near Prayer Garden** — warmer gold-green motes gather at the garden at dusk (RuneScape-chunky, wholesome)
 - Clearer **mute plate pulse** — warm border breath while Muted (respects mute; easy to spot)

@@ -262,8 +262,24 @@ func _open_travel() -> void:
 	_travel_filter = ""
 	_refresh_travel_list()
 	travel_panel.visible = true
+	_play_travel_open_flourish()  # Wave 54: clearer soft-travel menu open
 	_set_player_ui_block(true)
 	AudioBus.play_ui()
+
+func _play_travel_open_flourish() -> void:
+	## Wave 54: clearer soft-travel menu open — gentle scale + cream fade (RuneScape-chunky, wholesome).
+	if travel_panel == null:
+		return
+	var panel: Control = travel_panel.get_node_or_null("Panel")
+	if panel == null:
+		panel = travel_panel
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(0.94, 0.94)
+	panel.modulate = Color(1, 1, 1, 0.0)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
 
 func _refresh_travel_list() -> void:
 	## Wave 39/45: search/filter by name + group counts in section headers + distance estimate in rows (PIN 1234; mastery ≥80%).
@@ -613,6 +629,9 @@ func _enter_world() -> void:
 	# Wave 53: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_53_toast"):
 		GameState.maybe_wave_53_toast()
+	# Wave 54: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_54_toast"):
+		GameState.maybe_wave_54_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

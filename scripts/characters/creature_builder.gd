@@ -129,6 +129,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_possum(bob)
 		"magnolia_beaver":
 			_build_beaver(bob)
+		"olive_owl":
+			_build_owl(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1057,4 +1059,44 @@ static func _build_beaver(bob: Node3D) -> void:
 	var paddle := _mi(_box(Vector3(0.22, 0.035, 0.42)), Vector3(0, 0.30, -0.38), bob, "Paddle")
 	paddle.rotation_degrees = Vector3(12, 0, 0)
 	_mi(_box(Vector3(0.16, 0.028, 0.12)), Vector3(0, 0.28, -0.58), bob, "PaddleTip")
+
+static func _build_owl(bob: Node3D) -> void:
+	## Soft olive-wilds owl — round body, big eyes, ear tufts, short hooked beak (distinct from Juniper Jay / Willow Wren / Poplar Dove / Rowan Robin / Ash Sparrow).
+	# Round plump body
+	_mi(_sphere(0.22, 0.26), Vector3(0, 0.42, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.12, 0.16), Vector3(0, 0.34, 0.06), bob, "Belly")
+	# Round head (large relative to birds)
+	_mi(_sphere(0.16), Vector3(0, 0.66, 0.04), bob, "Head")
+	# Ear tufts (signature)
+	var tl := _mi(_box(Vector3(0.04, 0.10, 0.035)), Vector3(-0.07, 0.82, -0.01), bob, "TuftL")
+	tl.rotation_degrees = Vector3(-18, 0, -12)
+	var tr := _mi(_box(Vector3(0.04, 0.10, 0.035)), Vector3(0.07, 0.82, -0.01), bob, "TuftR")
+	tr.rotation_degrees = Vector3(-18, 0, 12)
+	# Big wholesome eyes
+	_mi(_sphere(0.055), Vector3(-0.06, 0.68, 0.14), bob, "EyeL")
+	_mi(_sphere(0.055), Vector3(0.06, 0.68, 0.14), bob, "EyeR")
+	_mi(_sphere(0.022), Vector3(-0.06, 0.685, 0.175), bob, "PupilL")
+	_mi(_sphere(0.022), Vector3(0.06, 0.685, 0.175), bob, "PupilR")
+	# Short hooked beak
+	_mi(_box(Vector3(0.035, 0.03, 0.055)), Vector3(0, 0.62, 0.18), bob, "Beak")
+	# Folded soft wings
+	var lw := _mi(_box(Vector3(0.26, 0.035, 0.16)), Vector3(-0.16, 0.44, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(6, 0, 18)
+	var rw := _mi(_box(Vector3(0.26, 0.035, 0.16)), Vector3(0.16, 0.44, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(6, 0, -18)
+	# Short fan tail
+	var tail := _mi(_box(Vector3(0.12, 0.03, 0.12)), Vector3(0, 0.40, -0.22), bob, "Tail")
+	tail.rotation_degrees = Vector3(-10, 0, 0)
+	# Perchy feet
+	for info in [
+		["FL", Vector3(-0.05, 0.18, 0.04)],
+		["FR", Vector3(0.05, 0.18, 0.04)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.012, 0.014, 0.11), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
 

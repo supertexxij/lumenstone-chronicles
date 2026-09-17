@@ -423,5 +423,16 @@ func _finish():
 	print("VERSION_153_SRC", 'config/version="1.53.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
+
+	print("OLIVE_OWL_SRC", '"olive_owl"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("BROOK_SPARKLE_SRC", "BrookSparkle" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TRAVEL_FLOURISH_SRC", "_play_travel_open_flourish" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("NEAR_MISS_CHIME_SRC", "play_quest_near_miss" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("PIN_WRONG_TOAST_SRC", "Wrong PIN" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
+	print("WAVE54_TOAST_SRC", "maybe_wave_54_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_154_SRC", 'config/version="1.54.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+
 	print("WORLD_SMOKE_OK")
 	quit(0)

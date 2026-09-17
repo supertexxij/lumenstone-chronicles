@@ -34,6 +34,8 @@ var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
+var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
+var _brook_sparkle_check_t: float = 0.0
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
 var _canopy_drip: CPUParticles3D  # Wave 48: soft rain canopy drip under trees outdoors
 var _eaves_splash: CPUParticles3D  # Wave 51: soft rain splash on hall outdoor eaves
@@ -981,6 +983,7 @@ func _update_day_night(delta: float) -> void:
 		AudioBus.set_hall_chatter(_inside_hall != "")
 	_update_leaf_rustle()
 	_update_brook_murmur()
+	_update_brook_sparkle()
 	_update_hall_wind_chime()
 	_update_village_dusk_lamps(dayness)
 	_update_plaza_campfire(dayness)
@@ -1668,6 +1671,7 @@ func _setup_weather() -> void:
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
 	_setup_garden_fireflies()
+	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
 	_setup_eaves_splash()
@@ -3230,6 +3234,79 @@ func _setup_garden_fireflies() -> void:
 	_garden_fireflies.position = Vector3(30, 1.55, 18)
 	add_child(_garden_fireflies)
 	HeadlessGuard.guard_particles(_garden_fireflies)
+
+
+func _setup_brook_sparkle() -> void:
+	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).
+	_brook_sparkle = CPUParticles3D.new()
+	_brook_sparkle.name = "BrookSparkle"
+	_brook_sparkle.emitting = false
+	_brook_sparkle.amount = 28
+	_brook_sparkle.lifetime = 2.4
+	_brook_sparkle.preprocess = 0.6
+	_brook_sparkle.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_brook_sparkle.emission_sphere_radius = 2.8
+	_brook_sparkle.direction = Vector3(0, 0.55, 0)
+	_brook_sparkle.spread = 140.0
+	_brook_sparkle.initial_velocity_min = 0.05
+	_brook_sparkle.initial_velocity_max = 0.32
+	_brook_sparkle.gravity = Vector3(0, 0.04, 0)
+	_brook_sparkle.angular_velocity_min = -25.0
+	_brook_sparkle.angular_velocity_max = 25.0
+	_brook_sparkle.scale_amount_min = 0.35
+	_brook_sparkle.scale_amount_max = 0.85
+	var sm := SphereMesh.new()
+	sm.radius = 0.028
+	sm.height = 0.056
+	_brook_sparkle.mesh = sm
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(0.78, 0.94, 0.96, 0.75)
+	mat.emission_enabled = true
+	mat.emission = Color(0.72, 0.92, 0.95)
+	mat.emission_energy_multiplier = 1.35
+	_brook_sparkle.material_override = mat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.7, 0.9, 0.95, 0.0),
+		Color(0.92, 0.98, 1.0, 0.85),
+		Color(0.75, 0.92, 0.94, 0.0),
+	])
+	_brook_sparkle.color_ramp = ramp
+	_brook_sparkle.position = Vector3(0.5, 0.55, -42)
+	add_child(_brook_sparkle)
+	HeadlessGuard.guard_particles(_brook_sparkle)
+
+
+func _update_brook_sparkle() -> void:
+	## Wave 54: soft sparkle emits near water when outdoors (player-visible feel).
+	if _brook_sparkle == null:
+		return
+	if _inside_hall != "" or player == null or _water_positions.is_empty():
+		_brook_sparkle.emitting = false
+		_brook_sparkle.visible = false
+		return
+	var now: float = float(Time.get_ticks_msec()) * 0.001
+	if now - _brook_sparkle_check_t < 0.28:
+		return
+	_brook_sparkle_check_t = now
+	var pp: Vector3 = player.global_position
+	var best: Vector3 = _water_positions[0]
+	var best_d2: float = 1.0e12
+	for wp in _water_positions:
+		var dx: float = pp.x - wp.x
+		var dz: float = pp.z - wp.z
+		var d2: float = dx * dx + dz * dz
+		if d2 < best_d2:
+			best_d2 = d2
+			best = wp
+	var near: bool = best_d2 < 100.0  # 10^2 — same soft distance as brook murmur
+	_brook_sparkle.emitting = near
+	_brook_sparkle.visible = near
+	if near:
+		_brook_sparkle.global_position = Vector3(best.x, 0.55, best.z)
+
 
 
 func _setup_dusk_fireflies() -> void:

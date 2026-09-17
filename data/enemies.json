@@ -376,6 +376,19 @@
       "combat_xp": 174,
       "respawn_sec": 74.0,
       "description": "A chunky beaver of the magnolia wilds — settle it gently with a careful step!"
+    },
+    "olive_owl": {
+      "kind": "olive_owl",
+      "name": "Olive Owl",
+      "defeat_verb": "hushed",
+      "color": "#6a7a48",
+      "accent": "#c8d4a0",
+      "max_hp": 194,
+      "damage": 32,
+      "accuracy": 0.20,
+      "combat_xp": 180,
+      "respawn_sec": 76.0,
+      "description": "A round owl of the olive wilds — hush it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1236,6 +1249,36 @@
       "kind": "magnolia_beaver",
       "x": -92,
       "z": -100
+    },
+    {
+      "id": "e144",
+      "kind": "olive_owl",
+      "x": -112,
+      "z": 36
+    },
+    {
+      "id": "e145",
+      "kind": "olive_owl",
+      "x": 88,
+      "z": -112
+    },
+    {
+      "id": "e146",
+      "kind": "olive_owl",
+      "x": -64,
+      "z": -116
+    },
+    {
+      "id": "e147",
+      "kind": "olive_owl",
+      "x": 112,
+      "z": 44
+    },
+    {
+      "id": "e148",
+      "kind": "olive_owl",
+      "x": -104,
+      "z": 92
     }
   ],
   "base_combat": {

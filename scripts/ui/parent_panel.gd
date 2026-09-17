@@ -63,7 +63,11 @@ func open() -> void:
 
 func _try_pin() -> void:
 	if not GameState.verify_pin(pin_edit.text.strip_edges()):
-		summary.text = "Incorrect PIN."
+		# Wave 54: clearer PIN wrong toast (default stays 1234; mastery ≥80% unchanged)
+		summary.text = "That PIN didn't match — try again (default is 1234 until you change it)."
+		GameState.toast.emit("Wrong PIN — try again (default 1234 unless you changed it).")
+		pin_edit.text = ""
+		pin_edit.grab_focus()
 		content.visible = true
 		return
 	content.visible = true

@@ -483,5 +483,21 @@ func _initialize():
 	print("NO_DAY_CASH_W53", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
+
+	print("VERSION_154", 'config/version="1.54.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("OLIVE_OWL", '"olive_owl"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_owl" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e148"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("BROOK_SPARKLE_W54", "BrookSparkle" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_brook_sparkle" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TRAVEL_FLOURISH_W54", "_play_travel_open_flourish" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("NEAR_MISS_CHIME_W54", "play_quest_near_miss" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "_quest_near_miss_chime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "play_quest_near_miss" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	var pp54 = FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd")
+	print("PIN_WRONG_TOAST_W54", "Wrong PIN" in pp54 and "Wave 54: clearer PIN wrong toast" in pp54)
+	print("WAVE54_TOAST", "maybe_wave_54_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_54_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs54 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W54", "const DEFAULT_PIN := \"1234\"" in gs54 or 'DEFAULT_PIN := "1234"' in gs54)
+	print("MASTERY_80_W54", "MASTERY_PCT := 0.8" in gs54 or "0.8" in gs54)
+	print("NO_DAY_CASH_W54", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
 	print("CHECK_OK")
 	quit(0)

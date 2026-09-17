@@ -40,7 +40,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "swing", "door"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -276,6 +276,10 @@ func play_quest_complete() -> void:
 	# Wave 38: clearer wholesome quest-complete chime (soft rising sparkle, no combat cheese)
 	_play("quest", -3.0)
 
+func play_quest_near_miss() -> void:
+	## Wave 54: softer near-miss chime than mastery — quieter, fewer notes, lower pitch (wholesome, no combat cheese).
+	_play("quest_near_miss", -9.0)
+
 func play_footstep() -> void:
 	if _foot_cooldown > 0.0:
 		return
@@ -314,6 +318,7 @@ func _build_streams() -> void:
 	_streams["swing"] = _whoosh(0.16, 0.28)  # Wave 36: clearer chunky swing whoosh
 	_streams["door"] = _door_whoosh(0.32, 0.22)  # Wave 47: soft hall door open whoosh
 	_streams["quest"] = _quest_chime()  # Wave 38: clearer quest-complete chime
+	_streams["quest_near_miss"] = _quest_near_miss_chime()  # Wave 54: softer near-miss than mastery
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
 	_streams["rain"] = _soft_rain(6.0, 0.065)  # Wave 33: softer rain mix
@@ -941,6 +946,29 @@ func _quest_chime() -> AudioStreamWAV:
 					s += sin(TAU * float(freqs[fi]) * 2.0 * u) * env * 0.08
 		samples[i] = clampf(s, -1.0, 1.0)
 	return _make_wav(samples, rate)
+
+
+func _quest_near_miss_chime() -> AudioStreamWAV:
+	## Wave 54: softer near-miss than mastery — two gentle lower notes, quieter decay (wholesome).
+	var rate := 22050
+	var freqs := [392.0, 440.0]  # G4 → A4, softer than mastery C-E-G-C
+	var note_dur := 0.13
+	var total := note_dur * float(freqs.size()) + 0.22
+	var n := int(total * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		for fi in freqs.size():
+			var start := float(fi) * note_dur
+			var u := tsec - start
+			if u >= 0.0 and u < note_dur + 0.10:
+				var env := exp(-u * 9.0)
+				s += sin(TAU * float(freqs[fi]) * u) * env * 0.20
+		samples[i] = clampf(s, -1.0, 1.0)
+	return _make_wav(samples, rate)
+
 
 
 func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
