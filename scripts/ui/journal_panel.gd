@@ -125,6 +125,9 @@ func _unlock_progress_text(uw: int) -> String:
 			lines.append("Next unlock: master “%s”, or master 4+ quests this week (%d/4)." % [rtitle, mastered])
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
+	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
+	if year_line != "":
+		lines.insert(0, year_line)
 	return "\n".join(lines)
 
 func _all_raw() -> Array:

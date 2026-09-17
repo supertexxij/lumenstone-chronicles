@@ -95,14 +95,20 @@ func _refresh() -> void:
 	var uw: int = GameState.unlocked_week
 	var camp: String = _campaign_name(uw)
 	var next_gate: String = _next_week_gate(uw)
-	var mastered: int = GameState.completed_quests.size()
-	var total_q: int = QuestDB.quests.size()
-	var bar: String = _week_progress_bar(uw, 36)
-	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\nQuests mastered: %d / %d\n\n[b]Lumens[/b]\n" % [
+	var week_prog: Dictionary = GameState.get_week_unlock_progress() if GameState.has_method("get_week_unlock_progress") else {"current": uw, "total": 36, "percent": int(round(float(uw) / 36.0 * 100.0))}
+	var quest_prog: Dictionary = GameState.get_quest_mastery_progress() if GameState.has_method("get_quest_mastery_progress") else {"current": GameState.completed_quests.size(), "total": QuestDB.quests.size(), "percent": 0}
+	var mastered: int = int(quest_prog.get("current", GameState.completed_quests.size()))
+	var total_q: int = int(quest_prog.get("total", QuestDB.quests.size()))
+	var mastery_pct: int = int(quest_prog.get("percent", 0))
+	var week_pct: int = int(week_prog.get("percent", 0))
+	var week_bar: String = _week_progress_bar(uw, 36)
+	var mastery_bar: String = _week_progress_bar(mastered, maxi(1, total_q))
+	var year_note: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year: week unlock %d%% · quests mastered %d%%" % [week_pct, mastery_pct]
+	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
 		GameState.child_name, GameState.active_slot + 1,
 		GameState.xp, GameState.level, GameState.combat_level,
-		uw, camp, bar, next_gate,
-		mastered, total_q
+		uw, camp, week_bar, next_gate,
+		mastered, total_q, mastery_pct, mastery_bar, year_note
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]

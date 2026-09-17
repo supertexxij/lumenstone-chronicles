@@ -17,6 +17,7 @@ var creature_bob: Node3D = null
 var wing_phase: float = 0.0
 var _flinch_t: float = 0.0
 var _kill_flash_t: float = -1.0
+var _hit_flash_t: float = -1.0
 var _kill_flash_base: Dictionary = {}  # MeshInstance3D -> Color
 var _dissolve_t: float = -1.0
 var _base_scale: Vector3 = Vector3.ONE
@@ -99,6 +100,7 @@ func _ensure_nav_obstacle() -> void:
 func _physics_process(delta: float) -> void:
 	if _dissolve_t >= 0.0:
 		_tick_kill_flash(delta)
+		_tick_hit_flash(delta)
 		_dissolve_t += delta
 		var u := clampf(_dissolve_t / 0.7, 0.0, 1.0)
 		mesh_root.scale = _base_scale * (1.0 - u)
@@ -344,6 +346,8 @@ func _take_hit(dmg: int) -> void:
 	hp = maxi(0, hp - dmg)
 	_flinch_t = 0.28
 	_update_hp_bar()
+	if hp > 0:
+		_begin_hit_flash()
 	if hp <= 0:
 		_defeat()
 
@@ -364,6 +368,41 @@ func _defeat() -> void:
 	_begin_kill_flash()
 	_dissolve_t = 0.0
 	respawn_timer = float(def.get("respawn_sec", 12))
+
+
+
+func _begin_hit_flash() -> void:
+	## Brief soft cream flash on a landed hit (Wave 21). Skips if kill flash running.
+	if HeadlessGuard.is_headless():
+		return
+	if _kill_flash_t >= 0.0:
+		return
+	if _kill_flash_base.is_empty():
+		_capture_mesh_colors(creature_bob)
+	_hit_flash_t = 0.12
+	_apply_kill_flash_color(Color(1.0, 0.92, 0.82, 1.0))
+
+
+func _tick_hit_flash(delta: float) -> void:
+	if _hit_flash_t < 0.0:
+		return
+	if _kill_flash_t >= 0.0:
+		_hit_flash_t = -1.0
+		return
+	_hit_flash_t -= delta
+	var u: float = clampf(1.0 - (_hit_flash_t / 0.12), 0.0, 1.0)
+	var flash := Color(1.0, 0.92, 0.82, 1.0).lerp(Color(1, 1, 1, 1), u)
+	# Restore toward base colors
+	for mi in _kill_flash_base.keys():
+		if not is_instance_valid(mi):
+			continue
+		if mi.material_override is StandardMaterial3D:
+			var mat := (mi.material_override as StandardMaterial3D).duplicate() as StandardMaterial3D
+			mat.albedo_color = flash.lerp(_kill_flash_base[mi], u)
+			mi.material_override = mat
+	if _hit_flash_t <= 0.0:
+		_hit_flash_t = -1.0
+		_restore_kill_flash_colors()
 
 
 func _begin_kill_flash() -> void:

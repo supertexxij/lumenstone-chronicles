@@ -60,6 +60,7 @@ func _ready() -> void:
 	_build_lookout_rock()
 	_build_mill_bridge()
 	_build_cedar_hollow()
+	_build_willow_bend()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -93,6 +94,7 @@ func _init_mats() -> void:
 	_mats["flower_y"] = _mat(Color("#d4a017"))
 	_mats["rock"] = _mat(Color("#7a7a70"))
 	_mats["leaf_cedar"] = _mat(Color("#1e4a32"))
+	_mats["leaf_willow"] = _mat(Color("#4a7a48"))
 	_mats["bush"] = _mat(Color("#356b45"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
@@ -345,6 +347,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Cedar Hollow plaza keep-clear
 	if abs(pos.x - 38.0) < 5.0 and abs(pos.z + 36.0) < 5.0:
 		return true
+	# Northwest path to Willow Bend
+	if _near_segment_xz(pos, Vector3(-10, 0, -12), Vector3(-38, 0, -34), 3.4):
+		return true
+	# Willow Bend plaza keep-clear
+	if abs(pos.x + 38.0) < 5.0 and abs(pos.z + 34.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -352,13 +360,20 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		return
 	var body := StaticBody3D.new()
 	body.position = pos
-	var trunk_h := 1.4 if style == 0 else (2.15 if style == 2 else 1.8)
+	var trunk_h := 1.4 if style == 0 else (2.15 if style == 2 else (1.95 if style == 3 else 1.8))
 	_mi(_cyl(0.22, 0.34, trunk_h), Vector3(0, trunk_h * 0.5, 0), body, _mats["wood"], "Trunk")
 	if style == 2:
 		# Cedar — taller stacked dark cones
 		_mi(_sphere(0.95, 1.7), Vector3(0, trunk_h + 0.35, 0), body, _mats["leaf_cedar"], "Leaves")
 		_mi(_sphere(0.72, 1.3), Vector3(0, trunk_h + 1.05, 0), body, _mats["leaf_cedar"], "Leaves2")
 		_mi(_sphere(0.45, 0.9), Vector3(0, trunk_h + 1.65, 0), body, _mats["leaf"], "Leaves3")
+	elif style == 3:
+		# Willow — soft weeping canopy (Wave 21)
+		_mi(_sphere(1.15, 1.5), Vector3(0, trunk_h + 0.55, 0), body, _mats["leaf_willow"], "Leaves")
+		_mi(_sphere(0.55, 1.1), Vector3(-0.55, trunk_h + 0.05, 0.15), body, _mats["leaf_willow"], "WeepL")
+		_mi(_sphere(0.55, 1.1), Vector3(0.55, trunk_h + 0.05, -0.1), body, _mats["leaf_willow"], "WeepR")
+		_mi(_sphere(0.45, 0.95), Vector3(0.1, trunk_h - 0.15, 0.55), body, _mats["leaf_willow"], "WeepF")
+		_mi(_sphere(0.4, 0.85), Vector3(-0.05, trunk_h - 0.1, -0.5), body, _mats["leaf_alt"], "WeepB")
 	else:
 		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
 		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
@@ -603,6 +618,9 @@ func _landmark_zones() -> Array:
 		{"id": "hollow", "pos": Vector3(38, 0, -36), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Cedar Hollow — quiet trees and a gentle clearing.",
 			"return_toast": "Back at Cedar Hollow — the cedars still stand still and kind."},
+		{"id": "willow", "pos": Vector3(-38, 0, -34), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Willow Bend — soft leaves trail over quiet water.",
+			"return_toast": "Back at Willow Bend — the willows still lean gently by the brook."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1490,6 +1508,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a"})
 	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40"})
 	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32"})
+	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1669,6 +1688,62 @@ func _build_cedar_hollow() -> void:
 	_place_label3d(root, "Cedar Hollow", 52, Vector3(38.0, 3.4, -36.0))
 
 
+
+func _build_willow_bend() -> void:
+	## Northwest wilds landmark — weeping willows by a quiet brook bend (soft travel P).
+	var root := Node3D.new()
+	root.name = "WillowBend"
+	static_world.add_child(root)
+	# Dirt spur northwest from the village / glade edge
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -10.0 + tt * (-28.0)
+		var z := -12.0 + tt * (-22.0)
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "WillowPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -12.0 + tt * (-22.0)
+		var z := -14.0 + tt * (-16.0)
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "WillowTrim")
+	# Soft grass ring + quiet brook crescent
+	_mi(_cyl(4.0, 4.0, 0.05), Vector3(-38.0, 0.02, -34.0), root, _mats["grass_dark"], "WillowBed")
+	_mi(_cyl(2.6, 2.6, 0.06), Vector3(-41.5, 0.015, -36.5), root, _mats["water"], "BrookBend")
+	_mi(_cyl(1.2, 1.2, 0.04), Vector3(-43.0, 0.015, -34.2), root, _mats["water"], "BrookFoam")
+	_add_lantern_post(Vector3(-34.8, 0, -31.5))
+	_add_lantern_post(Vector3(-41.0, 0, -37.2))
+	_add_lantern_post(Vector3(-24.0, 0, -22.0))
+	_add_lantern_post(Vector3(-16.5, 0, -16.5))
+	_add_bench(Vector3(-36.2, 0, -31.2), -0.5)
+	_add_crate(Vector3(-40.2, 0, -31.8))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 521
+	# Framing willows outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -12.0 + tt * (-22.0)
+		var cz := -14.0 + tt * (-16.0)
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(5.0, 8.5), 0, cz + side * rng.randf_range(1.5, 4.0) * 0.4)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 3)
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		_add_tree(Vector3(-38.0 + cos(ang) * 6.2, 0, -34.0 + sin(ang) * 6.2), 3)
+		_add_flowers(Vector3(-38.0 + cos(ang) * 4.4, 0, -34.0 + sin(ang) * 4.4), rng)
+	var sign := Node3D.new()
+	sign.position = Vector3(-34.0, 0, -34.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.7, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	_place_label3d(sign, "Willow Bend", 40, Vector3(0, 2.3, 0))
+	_place_label3d(root, "Quiet willow brook", 28, Vector3(-38.0, 3.95, -34.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Willow Bend", 52, Vector3(-38.0, 3.4, -34.0))
+
+
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
 	var root := Node3D.new()
@@ -1712,6 +1787,10 @@ func _build_ambient_life() -> void:
 		# Cedar Hollow (Wave 20)
 		{"pos": Vector3(38.0, 0, -36.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(41.0, 0, -33.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		# Willow Bend (Wave 21)
+		{"pos": Vector3(-38.0, 0, -34.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(-35.0, 0, -31.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-41.0, 0, -36.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},

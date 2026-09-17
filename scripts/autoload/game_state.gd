@@ -538,6 +538,29 @@ func clear_landmark_greeted(landmark_id: String) -> void:
 	greeted_landmarks.erase(landmark_id)
 	save_game()
 
+
+func get_week_unlock_progress() -> Dictionary:
+	## Week unlock bar: unlocked_week / 36.
+	var uw: int = clampi(unlocked_week, 0, 36)
+	var pct: int = int(round(float(uw) / 36.0 * 100.0)) if 36 > 0 else 0
+	return {"current": uw, "total": 36, "percent": pct}
+
+
+func get_quest_mastery_progress() -> Dictionary:
+	## Quest mastery bar: completed_quests.size() / QuestDB.quests.size().
+	var done: int = completed_quests.size()
+	var total: int = QuestDB.quests.size()
+	var pct: int = int(round(float(done) / float(total) * 100.0)) if total > 0 else 0
+	return {"current": done, "total": total, "percent": pct}
+
+
+func get_year_progress_note() -> String:
+	## Combined parent/journal line: week unlock X% · quests mastered Y%.
+	var w: Dictionary = get_week_unlock_progress()
+	var q: Dictionary = get_quest_mastery_progress()
+	return "Year: week unlock %d%% · quests mastered %d%%" % [int(w["percent"]), int(q["percent"])]
+
+
 func set_combat_target(enemy: Node) -> void:
 	combat_target = enemy
 	combat_target_changed.emit(enemy)
