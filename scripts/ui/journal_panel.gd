@@ -54,15 +54,25 @@ func refresh() -> void:
 		var week_n: int = int(q.get("week", 1))
 		var done: bool = qid in GameState.completed_quests
 		var unlocked: bool = GameState.is_quest_unlocked(qid)
+		var title_s: String = str(q.get("title", qid))
+		var is_raid := _is_friday_raid(qid, title_s)
 		var mark := "✓" if done else ("·" if unlocked else "🔒")
+		if is_raid:
+			mark = "★✓" if done else ("★" if unlocked else "★🔒")
 		var guild: String = str(q.get("guild", ""))
 		var gname: String = str(GameState.GUILDS.get(guild, {}).get("short", guild))
-		list.add_item("W%d %s [%s] %s" % [week_n, mark, gname, q.get("title", qid)])
+		var raid_tag := " · Friday Raid" if is_raid else ""
+		list.add_item("W%d %s [%s] %s%s" % [week_n, mark, gname, title_s, raid_tag])
 		list.set_item_metadata(list.item_count - 1, qid)
 		if not unlocked:
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.55, 0.55, 0.6))
+		elif is_raid and not done:
+			# Wave 23: gold highlight so Friday Raid Review stands out in the journal
+			list.set_item_custom_fg_color(list.item_count - 1, Color(0.92, 0.78, 0.28))
 		elif done:
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.45, 0.75, 0.45))
+		elif is_raid and done:
+			list.set_item_custom_fg_color(list.item_count - 1, Color(0.55, 0.8, 0.4))
 
 func _collect_quests() -> Array:
 	var out: Array = []
@@ -120,15 +130,26 @@ func _unlock_progress_text(uw: int) -> String:
 	if raid_id != "":
 		var rtitle: String = QuestDB.get_quest(raid_id).get("title", raid_id)
 		if raid_done:
-			lines.append("Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
+			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
 		else:
-			lines.append("Next unlock: master “%s”, or master 4+ quests this week (%d/4)." % [rtitle, mastered])
+			lines.append("★ Next unlock: master Friday Raid “%s” (≥80%%), or master 4+ quests this week (%d/4)." % [rtitle, mastered])
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
 	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
 	if year_line != "":
 		lines.insert(0, year_line)
 	return "\n".join(lines)
+
+
+func _is_friday_raid(qid: String, title: String = "") -> bool:
+	## Wave 23: flag Friday Raid Review / Feast / Supreme for clearer journal marks.
+	var idl := qid.to_lower()
+	var tl := title.to_lower()
+	if "raid" in idl or "feast" in idl or "supreme" in idl:
+		return true
+	if "raid" in tl or "feast" in tl:
+		return true
+	return false
 
 func _all_raw() -> Array:
 	return QuestDB.all_quests()
@@ -141,11 +162,15 @@ func _on_select(idx: int) -> void:
 	var status := "Completed" if done else ("Available — talk to the guild NPC" if unlocked else "Locked")
 	var guild: String = str(q.get("guild", ""))
 	var gfull: String = str(GameState.GUILDS.get(guild, {}).get("name", guild))
-	detail.text = "[b]%s[/b]\nWeek %d · %s\n%s\n\n%s\n\nStatus: %s" % [
+	var raid_note := ""
+	if _is_friday_raid(qid, str(q.get("title", ""))):
+		raid_note = "\n\n[color=#e8c44a]★ Friday Raid Review[/color] — master at ≥80% to unlock the next week (or master 4+ quests this week)."
+	detail.text = "[b]%s[/b]\nWeek %d · %s\n%s\n\n%s\n\nStatus: %s%s" % [
 		q.get("title", qid),
 		int(q.get("week", 1)),
 		q.get("subject_label", gfull),
 		gfull,
 		q.get("hook", q.get("description", "")),
 		status,
+		raid_note,
 	]

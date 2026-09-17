@@ -144,6 +144,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(-38, 0, -34), "Willow Bend")
 			KEY_Y:
 				_goto_landmark(Vector3(-20, 0, 48), "Reed Pool")
+			KEY_U:
+				_goto_landmark(Vector3(48, 0, 8), "Quiet Cross")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -166,6 +168,7 @@ func _travel_destinations() -> Array:
 		{"label": "Cedar Hollow", "pos": Vector3(38, 0, -36), "key": "O"},
 		{"label": "Willow Bend", "pos": Vector3(-38, 0, -34), "key": "P"},
 		{"label": "Reed Pool", "pos": Vector3(-20, 0, 48), "key": "Y"},
+		{"label": "Quiet Cross", "pos": Vector3(48, 0, 8), "key": "U"},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},

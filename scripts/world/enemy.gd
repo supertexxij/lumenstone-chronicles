@@ -147,46 +147,75 @@ func _fade_node(n: Node, a: float) -> void:
 		_fade_node(c, a)
 
 func _ensure_telegraph() -> void:
+	## Wave 23: chunkier RuneScape-style soft-aggro ring — bright torus rim + soft fill disc.
 	if _telegraph != null:
 		return
 	_telegraph = MeshInstance3D.new()
 	_telegraph.name = "AggroTelegraph"
-	var cyl := CylinderMesh.new()
-	cyl.top_radius = 1.35
-	cyl.bottom_radius = 1.35
-	cyl.height = 0.03
-	_telegraph.mesh = cyl
+	# Soft warm fill disc under the rim
+	var disc := CylinderMesh.new()
+	disc.top_radius = 1.42
+	disc.bottom_radius = 1.42
+	disc.height = 0.025
+	_telegraph.mesh = disc
 	HeadlessGuard.guard_mesh(_telegraph)
 	var mat := StandardMaterial3D.new()
-	# Softer, more translucent ring — readable but less urgent
-	mat.albedo_color = Color(0.98, 0.92, 0.35, 0.28)
+	mat.albedo_color = Color(0.98, 0.9, 0.28, 0.22)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.roughness = 0.95
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_telegraph.material_override = mat
-	_telegraph.position = Vector3(0, 0.04, 0)
+	_telegraph.position = Vector3(0, 0.035, 0)
 	_telegraph.visible = false
 	add_child(_telegraph)
+	# Bright outer rim (torus) — clearer at a glance than a flat disc alone
+	var rim := MeshInstance3D.new()
+	rim.name = "AggroRim"
+	var torus := TorusMesh.new()
+	torus.inner_radius = 1.28
+	torus.outer_radius = 1.52
+	torus.rings = 12
+	torus.ring_segments = 24
+	rim.mesh = torus
+	HeadlessGuard.guard_mesh(rim)
+	var rmat := StandardMaterial3D.new()
+	rmat.albedo_color = Color(1.0, 0.94, 0.35, 0.55)
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.roughness = 0.9
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rim.material_override = rmat
+	rim.position = Vector3(0, 0.05, 0)
+	rim.visible = false
+	add_child(rim)
 
 func _set_warning(on: bool) -> void:
 	_ensure_telegraph()
+	var rim: MeshInstance3D = get_node_or_null("AggroRim") as MeshInstance3D
 	if _telegraph:
 		_telegraph.visible = on
+	if rim:
+		rim.visible = on
 	if on:
 		# Gentle warm tint — not alarm-red
 		if label:
 			label.modulate = Color(1.0, 0.96, 0.72)
+		var pulse: float = 0.2 + 0.18 * abs(sin(Time.get_ticks_msec() * 0.004))
+		var s: float = 0.94 + 0.1 * abs(sin(Time.get_ticks_msec() * 0.0035))
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
-			var pulse: float = 0.18 + 0.16 * abs(sin(Time.get_ticks_msec() * 0.004))
-			mat.albedo_color = Color(0.98, 0.92, 0.4, pulse)
-			var s: float = 0.92 + 0.12 * abs(sin(Time.get_ticks_msec() * 0.0035))
+			mat.albedo_color = Color(0.98, 0.9, 0.3, pulse * 0.7)
 			_telegraph.scale = Vector3(s, 1.0, s)
+		if rim and rim.material_override is StandardMaterial3D:
+			var rmat: StandardMaterial3D = rim.material_override
+			rmat.albedo_color = Color(1.0, 0.95, 0.4, 0.42 + pulse * 0.35)
+			rim.scale = Vector3(s, 1.0, s)
 	else:
 		if label:
 			label.modulate = Color.WHITE
 		if _telegraph:
 			_telegraph.scale = Vector3.ONE
+		if rim:
+			rim.scale = Vector3.ONE
 
 func _soft_aggro(delta: float) -> void:
 	## Soft RuneScape-like pull: long yellow telegraph, easy escape, muted toast spam.

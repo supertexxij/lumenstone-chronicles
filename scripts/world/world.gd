@@ -62,6 +62,7 @@ func _ready() -> void:
 	_build_cedar_hollow()
 	_build_willow_bend()
 	_build_reed_pool()
+	_build_quiet_cross()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -360,6 +361,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Reed Pool plaza keep-clear
 	if abs(pos.x + 20.0) < 5.0 and abs(pos.z - 48.0) < 5.0:
 		return true
+	# East path to Quiet Cross (Wave 23)
+	if _near_segment_xz(pos, Vector3(14, 0, 8), Vector3(48, 0, 8), 3.4):
+		return true
+	# Quiet Cross plaza keep-clear
+	if abs(pos.x - 48.0) < 5.0 and abs(pos.z - 8.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -631,6 +638,9 @@ func _landmark_zones() -> Array:
 		{"id": "reed", "pos": Vector3(-20, 0, 48), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Reed Pool — tall reeds ring a quiet south pool.",
 			"return_toast": "Back at Reed Pool — the reeds still whisper by the water."},
+		{"id": "cross", "pos": Vector3(48, 0, 8), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Quiet Cross — a simple wooden cross on a grassy knoll for thanksgiving.",
+			"return_toast": "Back at Quiet Cross — a peaceful place to give thanks."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1520,6 +1530,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32"})
 	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48"})
 	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a"})
+	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -1821,6 +1832,88 @@ func _build_reed_pool() -> void:
 	_place_label3d(root, "Reed Pool", 52, Vector3(-20.0, 3.4, 48.0))
 
 
+
+
+func _add_chunky_sign(parent: Node, pos: Vector3, title: String, yaw: float = 0.0) -> Node3D:
+	## Wave 23 feel: chunkier RuneScape-style landmark sign — thick post, framed board, clear label.
+	var sign := Node3D.new()
+	sign.name = "LandmarkSign"
+	sign.position = pos
+	sign.rotation.y = yaw
+	parent.add_child(sign)
+	# Thick post + cross-brace
+	_mi(_cyl(0.11, 0.13, 2.05), Vector3(0, 1.02, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(0.22, 0.14, 0.22)), Vector3(0, 0.08, 0), sign, _mats["wood"], "PostBase")
+	# Framed board (dark border + lighter face)
+	_mi(_box(Vector3(2.05, 0.85, 0.12)), Vector3(0, 1.72, 0), sign, _mats["wood"], "Frame")
+	_mi(_box(Vector3(1.78, 0.62, 0.08)), Vector3(0, 1.72, 0.02), sign, _mats["wood_light"], "Board")
+	# Soft gold corner studs
+	if _mats.has("lantern"):
+		_mi(_sphere(0.06), Vector3(-0.88, 1.95, 0.08), sign, _mats["lantern"], "StudTL")
+		_mi(_sphere(0.06), Vector3(0.88, 1.95, 0.08), sign, _mats["lantern"], "StudTR")
+		_mi(_sphere(0.06), Vector3(-0.88, 1.48, 0.08), sign, _mats["lantern"], "StudBL")
+		_mi(_sphere(0.06), Vector3(0.88, 1.48, 0.08), sign, _mats["lantern"], "StudBR")
+	_place_label3d(sign, title, 42, Vector3(0, 2.45, 0))
+	return sign
+
+
+func _build_quiet_cross() -> void:
+	## East wilds landmark — simple wooden cross on a grassy knoll (soft travel U). Christian/creationist tone.
+	var root := Node3D.new()
+	root.name = "QuietCross"
+	static_world.add_child(root)
+	# Dirt spur east from the village green (along z≈8 fountain latitude)
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 14.0 + tt * 34.0
+		var z := 8.0 + sin(tt * PI) * 0.4
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "CrossPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 16.0 + tt * 28.0
+		var z := 8.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "CrossTrim")
+	# Grassy knoll + soft flowers
+	_mi(_cyl(4.2, 4.2, 0.08), Vector3(48.0, 0.04, 8.0), root, _mats["grass_dark"], "Knoll")
+	_mi(_cyl(2.4, 2.4, 0.12), Vector3(48.0, 0.1, 8.0), root, _mats["grass_light"], "KnollTop")
+	# Simple wooden cross (wholesome — not occult)
+	var cross := Node3D.new()
+	cross.name = "WoodCross"
+	cross.position = Vector3(48.0, 0.15, 8.0)
+	root.add_child(cross)
+	_mi(_box(Vector3(0.22, 2.6, 0.18)), Vector3(0, 1.4, 0), cross, _mats["wood"], "Upright")
+	_mi(_box(Vector3(1.35, 0.2, 0.16)), Vector3(0, 2.25, 0), cross, _mats["wood_light"], "Beam")
+	_mi(_box(Vector3(0.32, 0.18, 0.28)), Vector3(0, 0.12, 0), cross, _mats["stone"], "CrossBase")
+	_add_lantern_post(Vector3(44.5, 0, 10.5))
+	_add_lantern_post(Vector3(51.2, 0, 5.8))
+	_add_lantern_post(Vector3(28.0, 0, 8.0))
+	_add_lantern_post(Vector3(20.0, 0, 9.5))
+	_add_bench(Vector3(45.6, 0, 5.4), 0.2)
+	_add_crate(Vector3(50.8, 0, 10.2))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 723
+	# Framing trees/bushes outside the walk corridor
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 16.0 + tt * 28.0
+		var cz := 8.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx, 0, cz + side * rng.randf_range(4.8, 7.8))
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	for i in 8:
+		var ang := float(i) * TAU / 8.0
+		_add_flowers(Vector3(48.0 + cos(ang) * 3.2, 0, 8.0 + sin(ang) * 3.2), rng)
+		if i % 2 == 0:
+			_add_tree(Vector3(48.0 + cos(ang) * 6.5, 0, 8.0 + sin(ang) * 6.5), 1)
+	_add_chunky_sign(root, Vector3(44.2, 0, 8.0), "Quiet Cross", 0.15)
+	_place_label3d(root, "A place to give thanks", 28, Vector3(48.0, 4.15, 8.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Quiet Cross", 52, Vector3(48.0, 3.55, 8.0))
+
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
 	var root := Node3D.new()
@@ -1872,6 +1965,9 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(-17.0, 0, 45.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-23.0, 0, 50.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(-41.0, 0, -36.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		# Quiet Cross (Wave 23)
+		{"pos": Vector3(48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},

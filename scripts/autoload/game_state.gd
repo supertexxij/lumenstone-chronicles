@@ -888,7 +888,9 @@ func _recalc_unlocked_week() -> void:
 	var prev: int = unlocked_week
 	unlocked_week = clampi(maxi(unlocked_week, week), 1, max_week)
 	if unlocked_week > prev:
-		toast.emit("Campaign Week %d unlocked! Visit the guild halls." % unlocked_week)
+		# Wave 23: include year progress % so the learning loop feels paced
+		var year_pct: int = int(round(float(unlocked_week) / 36.0 * 100.0))
+		toast.emit("Campaign Week %d unlocked! (~%d%% of the year). Visit the guild halls." % [unlocked_week, year_pct])
 
 func is_quest_unlocked(quest_id: String) -> bool:
 	var q: Dictionary = QuestDB.get_quest(quest_id)
