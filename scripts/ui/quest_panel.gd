@@ -64,7 +64,9 @@ func _show_challenge() -> void:
 	dialogue_lbl.text = ""
 	prompt_lbl.text = ch.get("prompt", "")
 	hint_lbl.text = ch.get("hint", "")
-	progress_lbl.text = "Question %d / %d · Correct so far: %d" % [challenge_i + 1, challenges.size(), correct_count]
+	var total_q: int = challenges.size()
+	var run_pct: int = int(round(float(correct_count) / float(maxi(1, total_q)) * 100.0))
+	progress_lbl.text = "Question %d / %d · Correct so far: %d · Toward mastery: %d%% (need ≥80%%)" % [challenge_i + 1, total_q, correct_count, run_pct]
 	_clear_options()
 	var ctype: String = ch.get("type", "multiple-choice")
 	if ctype == "fill-blank":

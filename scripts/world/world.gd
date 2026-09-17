@@ -28,6 +28,7 @@ var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
 var _rain: CPUParticles3D
+var _clouds: CPUParticles3D
 var _fog_boost: float = 0.0
 var _weather_label_cache: String = "Clear"
 var _landmark_here: String = ""  # current approach zone id (hysteresis)
@@ -66,6 +67,7 @@ func _ready() -> void:
 	_build_quiet_cross()
 	_build_stone_arch()
 	_build_amber_knoll()
+	_build_birch_rest()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -105,6 +107,10 @@ func _init_mats() -> void:
 	_mats["bush"] = _mat(Color("#356b45"))
 	_mats["amber"] = _mat(Color("#c9a227"))
 	_mats["amber_dark"] = _mat(Color("#8a6a20"))
+	_mats["birch"] = _mat(Color("#e8e0d0"))
+	_mats["birch_dark"] = _mat(Color("#c4b8a0"))
+	_mats["leaf_birch"] = _mat(Color("#6a9a4a"))
+	_mats["heather"] = _mat(Color("#9a6a9a"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -385,6 +391,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 		return true
 	# Amber Knoll plaza keep-clear
 	if abs(pos.x - 48.0) < 5.0 and abs(pos.z + 22.0) < 5.0:
+		return true
+	# Southwest path to Birch Rest (Wave 26)
+	if _near_segment_xz(pos, Vector3(-14, 0, -6), Vector3(-42, 0, -20), 3.4):
+		return true
+	# Birch Rest plaza keep-clear
+	if abs(pos.x + 42.0) < 5.0 and abs(pos.z + 20.0) < 5.0:
 		return true
 	return false
 
@@ -668,6 +680,9 @@ func _landmark_zones() -> Array:
 		{"id": "knoll", "pos": Vector3(48, 0, -22), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Amber Knoll — a warm honey-stone rise with soft wildflowers.",
 			"return_toast": "Back at Amber Knoll — the amber stones still catch the light kindly."},
+		{"id": "birch", "pos": Vector3(-42, 0, -20), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Birch Rest — pale birch trunks and a quiet place to sit awhile.",
+			"return_toast": "Back at Birch Rest — the pale trunks still stand gentle and calm."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -780,6 +795,12 @@ func _update_day_night(delta: float) -> void:
 			_env.fog_density = 0.0004
 		else:
 			_env.fog_density = base_fog + _fog_boost
+
+	if AudioBus.has_method("set_day_night_audio") and _inside_hall == "":
+		AudioBus.set_day_night_audio(dayness)
+	elif AudioBus.has_method("set_day_night_audio") and _inside_hall != "":
+		# Soft indoor: bias toward quiet day pad
+		AudioBus.set_day_night_audio(0.55)
 
 func _build_interiors() -> void:
 	## Simple enterable guild-hall volumes: walk into the door, teleport to a cozy interior.
@@ -1184,6 +1205,33 @@ func _setup_weather() -> void:
 	_rain.position = Vector3(0, 14, 6)
 	add_child(_rain)
 	HeadlessGuard.guard_particles(_rain)
+
+	# Wave 26: soft cloud puffs — density scales with weather (clear sparse, fog dense, rain medium)
+	_clouds = CPUParticles3D.new()
+	_clouds.name = "WeatherClouds"
+	_clouds.emitting = true
+	_clouds.amount = 12
+	_clouds.lifetime = 14.0
+	_clouds.preprocess = 6.0
+	_clouds.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_clouds.emission_box_extents = Vector3(40, 2, 40)
+	_clouds.direction = Vector3(1, 0.02, 0.15)
+	_clouds.spread = 12.0
+	_clouds.initial_velocity_min = 0.35
+	_clouds.initial_velocity_max = 0.85
+	_clouds.gravity = Vector3(0, 0, 0)
+	var cm := SphereMesh.new()
+	cm.radius = 1.6
+	cm.height = 2.2
+	_clouds.mesh = cm
+	var cmat := StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.92, 0.94, 0.98, 0.35)
+	cmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_clouds.material_override = cmat
+	_clouds.position = Vector3(0, 22, 0)
+	add_child(_clouds)
+	HeadlessGuard.guard_particles(_clouds)
 	_apply_weather_visuals()
 
 func _update_weather(delta: float) -> void:
@@ -1195,6 +1243,12 @@ func _update_weather(delta: float) -> void:
 		else:
 			_rain.emitting = false
 			_rain.visible = false
+	if player and _clouds:
+		if _inside_hall == "":
+			_clouds.global_position = Vector3(player.global_position.x, 22, player.global_position.z)
+			_clouds.visible = true
+		else:
+			_clouds.visible = false
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -1242,6 +1296,20 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 			_fog_boost = 0.0
 			if _rain:
 				_rain.emitting = false
+	# Wave 26: weather cloud density (clear sparse · fog dense · rain medium)
+	if _clouds:
+		match _weather_mode:
+			1:
+				_clouds.amount = 28
+				_clouds.emitting = true
+			2:
+				_clouds.amount = 18
+				_clouds.emitting = true
+			_:
+				_clouds.amount = 10
+				_clouds.emitting = true
+		if _inside_hall != "":
+			_clouds.emitting = false
 	if AudioBus.has_method("set_indoor_drip"):
 		AudioBus.set_indoor_drip(drip_on)
 	if AudioBus.has_method("set_rain_audio"):
@@ -1560,6 +1628,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
 	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
 	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
+	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -2060,6 +2129,68 @@ func _build_amber_knoll() -> void:
 	_add_chunky_sign(root, Vector3(44.0, 0, -22.0), "Amber Knoll", 0.2)
 	_place_label3d(root, "Warm stones catch the light", 28, Vector3(48.0, 4.2, -22.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Amber Knoll", 52, Vector3(48.0, 3.6, -22.0))
+
+
+
+func _build_birch_rest() -> void:
+	## Southwest wilds landmark — pale birch stand with resting benches (soft travel 6).
+	## Distinct from Willow Bend (weeping water) and Stone Arch (gateway).
+	var root := Node3D.new()
+	root.name = "BirchRest"
+	static_world.add_child(root)
+	# Dirt spur southwest from the green
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -14.0 + tt * (-28.0)
+		var z := -6.0 + tt * (-14.0)
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "BirchPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -16.0 + tt * (-24.0)
+		var z := -7.0 + tt * (-12.0)
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "BirchTrim")
+	# Soft clearing under birches
+	_mi(_cyl(4.2, 4.2, 0.08), Vector3(-42.0, 0.04, -20.0), root, _mats["grass_dark"], "BirchClearing")
+	_mi(_cyl(2.4, 2.4, 0.06), Vector3(-42.0, 0.08, -20.0), root, _mats["grass_light"], "BirchClearingInner")
+	# Pale birch trunks (white bark + dark marks)
+	for i in 7:
+		var ang := float(i) * TAU / 7.0 + 0.2
+		var bx := -42.0 + cos(ang) * 3.6
+		var bz := -20.0 + sin(ang) * 3.6
+		var th := 2.4 + float(i % 3) * 0.25
+		_mi(_cyl(0.16, 0.20, th), Vector3(bx, th * 0.5, bz), root, _mats["birch"], "BirchTrunk%d" % i)
+		_mi(_cyl(0.05, 0.06, 0.35), Vector3(bx + 0.08, th * 0.55, bz), root, _mats["birch_dark"], "BirchMark%d" % i)
+		_mi(_sphere(0.85, 1.2), Vector3(bx, th + 0.45, bz), root, _mats["leaf_birch"], "BirchCanopy%d" % i)
+	# Resting benches + crate + lanterns
+	_add_bench(Vector3(-40.2, 0, -18.4), -0.4)
+	_add_bench(Vector3(-44.0, 0, -21.6), 0.55)
+	_add_crate(Vector3(-39.5, 0, -22.0))
+	_add_lantern_post(Vector3(-38.5, 0, -17.5))
+	_add_lantern_post(Vector3(-45.5, 0, -22.5))
+	_add_lantern_post(Vector3(-28.0, 0, -12.0))
+	_add_lantern_post(Vector3(-20.0, 0, -8.0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1026
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -16.0 + tt * (-24.0)
+		var cz := -7.0 + tt * (-12.0)
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx, 0, cz + side * rng.randf_range(4.8, 7.8))
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	for i in 10:
+		var ang := float(i) * TAU / 10.0
+		# Soft heather / flower tufts
+		_mi(_sphere(0.18, 0.22), Vector3(-42.0 + cos(ang) * 2.8, 0.12, -20.0 + sin(ang) * 2.8), root, _mats["heather"], "Heather%d" % i)
+		_add_flowers(Vector3(-42.0 + cos(ang) * 3.5, 0, -20.0 + sin(ang) * 3.5), rng)
+	_add_chunky_sign(root, Vector3(-38.5, 0, -20.0), "Birch Rest", -0.25)
+	_place_label3d(root, "Pale trunks, quiet rest", 28, Vector3(-42.0, 4.1, -20.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Birch Rest", 52, Vector3(-42.0, 3.5, -20.0))
 
 
 func _play_fountain_restore_fx() -> void:

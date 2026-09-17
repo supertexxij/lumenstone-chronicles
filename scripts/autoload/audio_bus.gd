@@ -10,6 +10,10 @@ var _rain: AudioStreamPlayer
 var _drip: AudioStreamPlayer
 var _rain_wanted: bool = false
 var _indoor_drip_wanted: bool = false
+var _day_birds: AudioStreamPlayer
+var _night_hush: AudioStreamPlayer
+var _day_audio_wanted: bool = true
+var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
 var _streams: Dictionary = {}
 var _foot_cooldown: float = 0.0
 var _ready_ok: bool = false
@@ -47,6 +51,18 @@ func _ready() -> void:
 	_drip.volume_db = -22.0
 	_drip.stream = _streams.get("drip")
 	add_child(_drip)
+	_day_birds = AudioStreamPlayer.new()
+	_day_birds.name = "DayBirds"
+	_day_birds.bus = "Master"
+	_day_birds.volume_db = -26.0
+	_day_birds.stream = _streams.get("day_birds")
+	add_child(_day_birds)
+	_night_hush = AudioStreamPlayer.new()
+	_night_hush.name = "NightHush"
+	_night_hush.bus = "Master"
+	_night_hush.volume_db = -27.0
+	_night_hush.stream = _streams.get("night_hush")
+	add_child(_night_hush)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -86,6 +102,10 @@ func _apply_mute() -> void:
 			_rain.stop()
 		if _drip and _drip.playing:
 			_drip.stop()
+		if _day_birds and _day_birds.playing:
+			_day_birds.stop()
+		if _night_hush and _night_hush.playing:
+			_night_hush.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -93,6 +113,7 @@ func _apply_mute() -> void:
 			if _music and not _music.playing and _music.stream:
 				_music.play()
 			_sync_rain_audio()
+			_sync_day_night_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -109,6 +130,10 @@ func stop_ambient() -> void:
 		_music.stop()
 	set_rain_audio(false)
 	set_indoor_drip(false)
+	if _day_birds and _day_birds.playing:
+		_day_birds.stop()
+	if _night_hush and _night_hush.playing:
+		_night_hush.stop()
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -153,6 +178,8 @@ func _build_streams() -> void:
 	_streams["music"] = _village_tune(12.0, 0.11)
 	_streams["rain"] = _soft_rain(6.0, 0.09)
 	_streams["drip"] = _indoor_drip(5.0, 0.14)
+	_streams["day_birds"] = _day_birds_loop(7.0, 0.07)
+	_streams["night_hush"] = _night_hush_loop(8.0, 0.06)
 
 
 func set_rain_audio(on: bool) -> void:
@@ -168,6 +195,41 @@ func set_indoor_drip(on: bool) -> void:
 	if on:
 		_rain_wanted = false
 	_sync_rain_audio()
+
+
+func set_day_night_audio(dayness: float) -> void:
+	## Wave 26: soft day bird chirps vs night hush (respects mute). Hysteresis avoids flicker.
+	var want_day: bool = dayness >= 0.48
+	var mode: int = 1 if want_day else 0
+	if mode == _last_day_audio:
+		_day_audio_wanted = want_day
+		return
+	_last_day_audio = mode
+	_day_audio_wanted = want_day
+	_sync_day_night_audio()
+
+func _sync_day_night_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _day_birds:
+		var on: bool = can and _day_audio_wanted
+		if on:
+			if _day_birds.stream == null:
+				_day_birds.stream = _streams.get("day_birds")
+			if not _day_birds.playing and _day_birds.stream:
+				_day_birds.play()
+		elif _day_birds.playing:
+			_day_birds.stop()
+	if _night_hush:
+		var on_n: bool = can and (not _day_audio_wanted)
+		if on_n:
+			if _night_hush.stream == null:
+				_night_hush.stream = _streams.get("night_hush")
+			if not _night_hush.playing and _night_hush.stream:
+				_night_hush.play()
+		elif _night_hush.playing:
+			_night_hush.stop()
 
 func _sync_rain_audio() -> void:
 	if not _ready_ok:
@@ -356,3 +418,50 @@ func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
 	stream.loop_begin = 0
 	stream.loop_end = n
 	return stream
+
+func _day_birds_loop(dur: float, amp: float) -> AudioStreamWAV:
+	## Soft sparse daytime chirps — wholesome, non-startling, loopable.
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var chirps := [0.55, 1.7, 2.35, 3.6, 4.85, 5.9]
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		for c in chirps:
+			var u := tsec - float(c)
+			if u >= 0.0 and u < 0.09:
+				var env := exp(-u * 40.0)
+				s += sin(TAU * (1800.0 + 400.0 * sin(u * 90.0)) * u) * env * 0.55
+				s += sin(TAU * 2400.0 * u) * exp(-u * 55.0) * 0.2
+		var hush := (randf() * 2.0 - 1.0) * 0.015
+		samples[i] = (s + hush) * amp
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _night_hush_loop(dur: float, amp: float) -> AudioStreamWAV:
+	## Soft night hush — low drone with sparse gentle ticks.
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var bed := sin(TAU * 72.0 * tsec) * 0.35 + sin(TAU * 96.0 * tsec) * 0.22
+		var breathe := 0.7 + 0.3 * sin(TAU * 0.08 * tsec)
+		var tick := 0.0
+		if int(tsec * 7.0) % 11 == 0:
+			var u := fmod(tsec, 0.12)
+			tick = sin(TAU * 1400.0 * u) * exp(-u * 50.0) * 0.06
+		samples[i] = (bed * breathe + tick) * amp
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+

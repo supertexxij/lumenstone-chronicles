@@ -117,6 +117,14 @@ func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
 				pos + Vector2(-3.5, 0),
 			])
 			draw_colored_polygon(kpts2, col)
+		"birch":
+			# Pale vertical trunks mark
+			draw_rect(Rect2(pos + Vector2(-3.5, -4.5), Vector2(2.0, 9.0)), outline)
+			draw_rect(Rect2(pos + Vector2(1.5, -4.5), Vector2(2.0, 9.0)), outline)
+			draw_rect(Rect2(pos + Vector2(-3.0, -4.0), Vector2(1.2, 8.0)), col)
+			draw_rect(Rect2(pos + Vector2(2.0, -4.0), Vector2(1.2, 8.0)), col)
+			draw_circle(pos + Vector2(-2.4, -4.8), 2.2, col)
+			draw_circle(pos + Vector2(2.6, -4.8), 2.2, col)
 		"hall":
 			draw_rect(Rect2(pos + Vector2(-3.2, -3.2), Vector2(6.4, 6.4)), outline)
 			draw_rect(Rect2(pos + Vector2(-2.4, -2.4), Vector2(4.8, 4.8)), col)

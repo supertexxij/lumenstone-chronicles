@@ -32,7 +32,7 @@ func _ready() -> void:
 	var skin_keys := ["fair", "light", "medium", "tan", "deep"]
 	var skin_hex: String = str(GameState.SKIN_HEX[skin_keys[abs(npc_id.hash()) % skin_keys.size()]])
 	HumanoidBuilder.apply_npc_colors(parts, accent, Color(skin_hex))
-	_idle_style = abs(npc_id.hash()) % 4
+	_idle_style = abs(npc_id.hash()) % 6
 	_phase = float(abs(npc_id.hash() % 1000)) * 0.01
 	# Slight facing toward plaza center
 	var to_center := Vector3(0, 0, 8) - global_position
@@ -75,7 +75,7 @@ func _process(delta: float) -> void:
 				l_arm.rotation.x = 0.1
 			if r_arm:
 				r_arm.rotation.x = 0.1
-		_:  # Shift weight / nod
+		3:  # Shift weight / nod
 			var l_leg: Node3D = parts.get("l_leg")
 			var r_leg: Node3D = parts.get("r_leg")
 			if l_leg:
@@ -85,6 +85,22 @@ func _process(delta: float) -> void:
 			var head: MeshInstance3D = parts.get("head")
 			if head:
 				head.rotation.x = sin(t * 1.1) * 0.05
+		4:  # Soft stretch (arms open, gentle lean) — hall-yard variety Wave 26
+			if l_arm:
+				l_arm.rotation.x = -0.35 + sin(t * 0.5) * 0.08
+				l_arm.rotation.z = deg_to_rad(-18)
+			if r_arm:
+				r_arm.rotation.x = -0.35 + cos(t * 0.5) * 0.08
+				r_arm.rotation.z = deg_to_rad(18)
+			bob.rotation.z = sin(t * 0.4) * 0.03
+		_:  # Soft toe-tap / idle hop
+			var l_leg2: Node3D = parts.get("l_leg")
+			var r_leg2: Node3D = parts.get("r_leg")
+			if l_leg2:
+				l_leg2.rotation.x = abs(sin(t * 2.2)) * 0.08
+			if r_leg2:
+				r_leg2.rotation.x = abs(sin(t * 2.2 + 1.2)) * 0.05
+			bob.position.y = sin(t * 2.0) * 0.02 + abs(sin(t * 1.1)) * 0.01
 
 func request_talk() -> void:
 	talk_requested.emit(self)
