@@ -30,6 +30,7 @@ var _plaza_campfire_light: OmniLight3D = null  # Wave 31: soft campfire glow nea
 var _plaza_campfire_pos: Vector3 = Vector3(6.8, 0, 9.2)  # Wave 33: crackle proximity
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
+var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _puddle_ripples: CPUParticles3D  # Wave 41: soft rain puddle ripples on ground
@@ -768,6 +769,44 @@ func _landmark_zones() -> Array:
 			"first_toast": "First discovery: Maple Copse — warm maple leaves drift in a quiet northwest stand.",
 			"return_toast": "Back at Maple Copse — the maples still rustle kindly in the soft wind."},
 	]
+
+func _landmark_display_name(lid: String) -> String:
+	## Wave 46: plain landmark names for HUD near-chip.
+	match lid:
+		"glade":
+			return "Lantern Glade"
+		"ridge":
+			return "Pine Ridge"
+		"garden":
+			return "Prayer Garden"
+		"lookout":
+			return "Lookout Rock"
+		"mill":
+			return "Mill Bridge"
+		"hollow":
+			return "Cedar Hollow"
+		"willow":
+			return "Willow Bend"
+		"reed":
+			return "Reed Pool"
+		"cross":
+			return "Quiet Cross"
+		"arch":
+			return "Stone Arch"
+		"knoll":
+			return "Amber Knoll"
+		"birch":
+			return "Birch Rest"
+		"fern":
+			return "Fern Dell"
+		"heather":
+			return "Heather Heath"
+		"thistle":
+			return "Thistle Rise"
+		"maple":
+			return "Maple Copse"
+		_:
+			return lid.capitalize()
 
 func _update_landmark_approach() -> void:
 	if player == null or not is_instance_valid(player):
@@ -1555,6 +1594,7 @@ func _setup_weather() -> void:
 	_setup_rain_splash()
 	_setup_rain_puddle_ripples()
 	_setup_fog_mist()
+	_setup_edge_fog_banks()
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
 
@@ -1658,6 +1698,48 @@ func _setup_fog_mist() -> void:
 	add_child(_fog_mist)
 	HeadlessGuard.guard_particles(_fog_mist)
 
+func _setup_edge_fog_banks() -> void:
+	## Wave 46: soft fog banks along outdoor map edges (RuneScape-chunky, wholesome; off indoors).
+	_edge_fog_banks.clear()
+	var root := Node3D.new()
+	root.name = "EdgeFogBanks"
+	add_child(root)
+	var spots: Array = [
+		Vector3(0, 0.9, -78), Vector3(0, 0.9, 78),
+		Vector3(-78, 0.9, 0), Vector3(78, 0.9, 0),
+		Vector3(-62, 0.9, -62), Vector3(62, 0.9, -62),
+		Vector3(-62, 0.9, 62), Vector3(62, 0.9, 62),
+	]
+	for i in spots.size():
+		var fx := CPUParticles3D.new()
+		fx.name = "EdgeFog%d" % i
+		fx.emitting = true
+		fx.amount = 18
+		fx.lifetime = 5.5
+		fx.preprocess = 2.5
+		fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		fx.emission_box_extents = Vector3(10, 0.6, 10)
+		fx.direction = Vector3(0.1, 0.04, 0.05)
+		fx.spread = 28.0
+		fx.initial_velocity_min = 0.08
+		fx.initial_velocity_max = 0.28
+		fx.gravity = Vector3(0, 0.015, 0)
+		fx.scale_amount_min = 1.2
+		fx.scale_amount_max = 2.4
+		var sm := SphereMesh.new()
+		sm.radius = 0.55
+		sm.height = 0.9
+		fx.mesh = sm
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = Color(0.86, 0.90, 0.94, 0.22)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fx.material_override = mat
+		fx.position = spots[i]
+		root.add_child(fx)
+		HeadlessGuard.guard_particles(fx)
+		_edge_fog_banks.append(fx)
+
 func _update_weather(delta: float) -> void:
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
 	if player and _rain:
@@ -1691,6 +1773,13 @@ func _update_weather(delta: float) -> void:
 			_fog_mist.visible = true
 		else:
 			_fog_mist.visible = false
+	# Wave 46: soft edge fog banks outdoors (always gentle; denser in Fog via _apply_weather_visuals)
+	for fx in _edge_fog_banks:
+		if fx == null or not is_instance_valid(fx):
+			continue
+		var out := (_inside_hall == "")
+		fx.visible = out
+		fx.emitting = out
 	if player and _wind_leaves:
 		if _inside_hall == "":
 			_wind_leaves.global_position = Vector3(player.global_position.x, 2.4, player.global_position.z)
@@ -1797,6 +1886,11 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		AudioBus.set_indoor_drip(drip_on)
 	if AudioBus.has_method("set_rain_audio"):
 		AudioBus.set_rain_audio(rain_on)
+	# Wave 46: edge fog denser in Fog weather
+	for fx in _edge_fog_banks:
+		if fx == null or not is_instance_valid(fx):
+			continue
+		fx.amount = 28 if _weather_mode == 1 else 16
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
@@ -2144,6 +2238,9 @@ func get_minimap_markers() -> Dictionary:
 		pz = player.global_position.z
 		yaw = float(player.get("cam_yaw"))
 		zoom = float(player.get("cam_zoom"))
+	var landmark_name := ""
+	if _inside_hall == "" and _landmark_here != "":
+		landmark_name = _landmark_display_name(_landmark_here)
 	return {
 		"player": {"x": px, "z": pz, "yaw": yaw, "zoom": zoom},
 		"halls": halls,
@@ -2152,6 +2249,7 @@ func get_minimap_markers() -> Dictionary:
 		"inside": _inside_hall,
 		"day": _day_phase,
 		"weather": _weather_label_cache,
+		"landmark_name": landmark_name,
 	}
 
 func _build_mill_bridge() -> void:
@@ -3119,7 +3217,7 @@ func _play_fountain_restore_fx() -> void:
 	)
 
 func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
-	## Wave 29: soft cream/gold victory sparkle near the player when a quest is mastered (RuneScape-chunky, wholesome).
+	## Wave 29/46: soft cream/gold victory sparkle + warm light pulse when a quest is mastered (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
 		return
 	var anchor: Node3D = player
@@ -3130,17 +3228,17 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 	fx.position = Vector3(0, 1.4, 0)
 	fx.emitting = true
 	fx.one_shot = true
-	fx.explosiveness = 0.8
-	fx.amount = 22
-	fx.lifetime = 1.05
+	fx.explosiveness = 0.82
+	fx.amount = 28  # Wave 46: slightly richer burst
+	fx.lifetime = 1.15
 	fx.direction = Vector3(0, 1, 0)
-	fx.spread = 60.0
-	fx.initial_velocity_min = 1.0
-	fx.initial_velocity_max = 2.4
-	fx.gravity = Vector3(0, -1.2, 0)
-	fx.scale_amount_min = 0.1
-	fx.scale_amount_max = 0.24
-	fx.color = Color(1.0, 0.94, 0.55, 0.92)
+	fx.spread = 62.0
+	fx.initial_velocity_min = 1.05
+	fx.initial_velocity_max = 2.55
+	fx.gravity = Vector3(0, -1.15, 0)
+	fx.scale_amount_min = 0.11
+	fx.scale_amount_max = 0.28
+	fx.color = Color(1.0, 0.95, 0.58, 0.94)
 	HeadlessGuard.guard_particles(fx)
 	anchor.add_child(fx)
 	var ring := CPUParticles3D.new()
@@ -3148,28 +3246,41 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 	ring.position = Vector3(0, 0.35, 0)
 	ring.emitting = true
 	ring.one_shot = true
-	ring.explosiveness = 0.9
-	ring.amount = 12
-	ring.lifetime = 0.9
+	ring.explosiveness = 0.92
+	ring.amount = 16
+	ring.lifetime = 1.0
 	ring.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
-	ring.emission_ring_radius = 0.7
-	ring.emission_ring_inner_radius = 0.45
+	ring.emission_ring_radius = 0.78
+	ring.emission_ring_inner_radius = 0.48
 	ring.emission_ring_height = 0.05
 	ring.direction = Vector3(0, 1, 0)
-	ring.spread = 20.0
-	ring.initial_velocity_min = 0.3
-	ring.initial_velocity_max = 0.8
-	ring.gravity = Vector3(0, 0.4, 0)
-	ring.scale_amount_min = 0.12
-	ring.scale_amount_max = 0.28
-	ring.color = Color(0.95, 0.88, 0.5, 0.7)
+	ring.spread = 22.0
+	ring.initial_velocity_min = 0.35
+	ring.initial_velocity_max = 0.9
+	ring.gravity = Vector3(0, 0.45, 0)
+	ring.scale_amount_min = 0.13
+	ring.scale_amount_max = 0.3
+	ring.color = Color(0.97, 0.90, 0.52, 0.75)
 	HeadlessGuard.guard_particles(ring)
 	anchor.add_child(ring)
-	get_tree().create_timer(1.8).timeout.connect(func():
+	# Wave 46: soft warm mastery light pulse (no cheesy combat labels)
+	var glow := OmniLight3D.new()
+	glow.name = "QuestVictoryGlow"
+	glow.position = Vector3(0, 1.5, 0)
+	glow.light_color = Color(1.0, 0.93, 0.65)
+	glow.light_energy = 2.0
+	glow.omni_range = 5.5
+	glow.shadow_enabled = false
+	anchor.add_child(glow)
+	var tw := create_tween()
+	tw.tween_property(glow, "light_energy", 0.1, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(1.9).timeout.connect(func():
 		if is_instance_valid(fx):
 			fx.queue_free()
 		if is_instance_valid(ring):
 			ring.queue_free()
+		if is_instance_valid(glow):
+			glow.queue_free()
 	)
 
 

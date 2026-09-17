@@ -272,6 +272,19 @@
       "combat_xp": 126,
       "respawn_sec": 58.0,
       "description": "A bright robin of the rowan wilds \u2014 cheer it gently with a careful step!"
+    },
+    "ash_sparrow": {
+      "kind": "ash_sparrow",
+      "name": "Ash Sparrow",
+      "defeat_verb": "greeted",
+      "color": "#6e6558",
+      "accent": "#e8d4a8",
+      "max_hp": 146,
+      "damage": 24,
+      "accuracy": 0.28,
+      "combat_xp": 132,
+      "respawn_sec": 60.0,
+      "description": "A soft sparrow of the ash wilds \u2014 greet it gently with a careful step!"
     }
   },
   "spawns": [
@@ -892,6 +905,36 @@
       "kind": "rowan_robin",
       "x": 22,
       "z": 76
+    },
+    {
+      "id": "e104",
+      "kind": "ash_sparrow",
+      "x": -74,
+      "z": 32
+    },
+    {
+      "id": "e105",
+      "kind": "ash_sparrow",
+      "x": 68,
+      "z": -58
+    },
+    {
+      "id": "e106",
+      "kind": "ash_sparrow",
+      "x": -18,
+      "z": 84
+    },
+    {
+      "id": "e107",
+      "kind": "ash_sparrow",
+      "x": 82,
+      "z": -8
+    },
+    {
+      "id": "e108",
+      "kind": "ash_sparrow",
+      "x": 30,
+      "z": -84
     }
   ],
   "base_combat": {

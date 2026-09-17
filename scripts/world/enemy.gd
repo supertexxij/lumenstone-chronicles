@@ -104,6 +104,9 @@ func _ready() -> void:
 		"rowan_robin":
 			if label: label.position.y = 1.4
 			hp_bar.position.y = 1.15
+		"ash_sparrow":
+			if label: label.position.y = 1.35
+			hp_bar.position.y = 1.1
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -575,6 +578,25 @@ func _idle_anim(delta: float) -> void:
 			var breast := creature_bob.get_node_or_null("Breast")
 			if breast:
 				breast.scale = Vector3.ONE * (1.0 + sin(t * 1.4) * 0.05)
+		"ash_sparrow":
+			# Soft ground-hop — gentle wing tuck, short tail tip, cream bib puff (Wave 46)
+			creature_bob.position.y = 0.03 + abs(sin(t * 1.5)) * 0.04
+			creature_bob.rotation.y = sin(t * 0.65) * 0.10
+			wing_phase += delta * 10.5
+			var slw := creature_bob.get_node_or_null("LWing")
+			var srw := creature_bob.get_node_or_null("RWing")
+			var sflap := sin(wing_phase) * 0.22
+			if slw:
+				slw.rotation.z = deg_to_rad(14) + sflap
+			if srw:
+				srw.rotation.z = deg_to_rad(-14) - sflap
+			var stail := creature_bob.get_node_or_null("Tail")
+			if stail:
+				stail.rotation.y = sin(t * 0.95) * 0.10
+				stail.rotation.x = deg_to_rad(-22) + sin(t * 0.8) * 0.04
+			var bib := creature_bob.get_node_or_null("Bib")
+			if bib:
+				bib.scale = Vector3.ONE * (1.0 + sin(t * 1.25) * 0.045)
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

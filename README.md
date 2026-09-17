@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 46 overnight (v1.46.0-overnight)
+- Soft **fog banks at outdoor map edges** — gentle mist along the wilds rim (denser in Fog weather; off indoors; RuneScape-chunky, wholesome)
+- Clearer **Year chip when % changes** — soft gold flash on the Year · N% plate
+- Soft **quest-mastery sparkle tweak** — richer cream/gold burst + warm light pulse (no cheesy combat labels)
+- New wilds foe **Ash Sparrow** — round body, cream bib, stubby beak, short barred tail, gentle “greeted” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin)
+- HUD QoL: compact **landmark name chip** when near a wilds place (`✦ Name`) (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 45 overnight (v1.45.0-overnight)
 - Soft **campfire smoke wisps** lofting above the plaza hearth (with embers/sparks; RuneScape-chunky, wholesome)
 - Clearer **mute / unmute toast** — soft hush when muted; village sounds return when unmuted

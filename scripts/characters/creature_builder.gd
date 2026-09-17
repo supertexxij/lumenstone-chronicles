@@ -113,6 +113,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_dove(bob)
 		"rowan_robin":
 			_build_robin(bob)
+		"ash_sparrow":
+			_build_sparrow(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -755,3 +757,34 @@ static func _build_robin(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.012, 0.015, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
+
+static func _build_sparrow(bob: Node3D) -> void:
+	## Soft ash-wilds sparrow — round body, cream bib, stubby beak, short barred tail (distinct from robin/dove/wren).
+	_mi(_sphere(0.15, 0.18), Vector3(0, 0.44, 0), bob, "Body")
+	# Soft cream bib (signature vs robin red breast)
+	_mi(_sphere(0.09, 0.11), Vector3(0, 0.40, 0.09), bob, "Bib")
+	_mi(_sphere(0.10), Vector3(0, 0.58, 0.10), bob, "Head")
+	# Tiny eye beads
+	_mi(_sphere(0.02), Vector3(-0.04, 0.61, 0.18), bob, "EyeL")
+	_mi(_sphere(0.02), Vector3(0.04, 0.61, 0.18), bob, "EyeR")
+	# Stubby cone beak (shorter than robin)
+	_mi(_box(Vector3(0.03, 0.02, 0.045)), Vector3(0, 0.56, 0.20), bob, "Beak")
+	# Compact wings folded close
+	var lw := _mi(_box(Vector3(0.18, 0.03, 0.14)), Vector3(-0.12, 0.46, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(5, 0, 14)
+	var rw := _mi(_box(Vector3(0.18, 0.03, 0.14)), Vector3(0.12, 0.46, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(5, 0, -14)
+	# Short barred tail (lower angle than robin perky tail)
+	var tail := _mi(_box(Vector3(0.07, 0.025, 0.11)), Vector3(0, 0.44, -0.16), bob, "Tail")
+	tail.rotation_degrees = Vector3(-22, 0, 0)
+	# Tiny hop feet
+	for info in [
+		["FL", Vector3(-0.045, 0.18, 0.03)],
+		["FR", Vector3(0.045, 0.18, 0.03)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.01, 0.012, 0.09), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.035, 0.01, 0.045)), Vector3(0, -0.07, 0.01), leg, "Foot")

@@ -366,5 +366,18 @@ func _initialize():
 	print("MASTERY_80_W45", "MASTERY_PCT := 0.8" in gs45 or "0.8" in gs45)
 	print("NO_DAY_CASH_W45", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+	print("VERSION_146", 'config/version="1.46.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("ASH_SPARROW", '"ash_sparrow"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_sparrow" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e108"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("EDGE_FOG_W46", "_setup_edge_fog_banks" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "EdgeFogBanks" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("YEAR_CHIP_FLASH_W46", "_year_chip_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "_apply_year_chip_flash" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("MASTERY_SPARKLE_W46", "QuestVictoryGlow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 29/46" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	var hud46 = FileAccess.get_file_as_string("res://scripts/ui/hud.gd")
+	print("LANDMARK_CHIP_W46", "_ensure_landmark_chip" in hud46 and "landmark_name" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	var gs46 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W46", "const DEFAULT_PIN := \"1234\"" in gs46 or 'DEFAULT_PIN := "1234"' in gs46)
+	print("MASTERY_80_W46", "MASTERY_PCT := 0.8" in gs46 or "0.8" in gs46)
+	print("NO_DAY_CASH_W46", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

@@ -58,6 +58,7 @@ func _finish():
 	var turtles := 0
 	var doves := 0
 	var robins := 0
+	var sparrows := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -91,6 +92,8 @@ func _finish():
 			doves += 1
 		if str(foe.get("kind")) == "rowan_robin":
 			robins += 1
+		if str(foe.get("kind")) == "ash_sparrow":
+			sparrows += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -108,6 +111,7 @@ func _finish():
 	print("TURTLES", turtles)
 	print("DOVES", doves)
 	print("ROBINS", robins)
+	print("SPARROWS", sparrows)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -322,6 +326,14 @@ func _finish():
 	print("PULLBACK_SPARKLE_SRC", "CombatPullbackSparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("TRAVEL_DIST_SRC", "_travel_distance_label" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
 	print("VERSION_145_SRC", 'config/version="1.45.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+	print("ASH_SPARROW_SRC", '"ash_sparrow"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("EDGE_FOG_SRC", "_setup_edge_fog_banks" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("YEAR_FLASH_SRC", "_apply_year_chip_flash" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("MASTERY_GLOW_SRC", "QuestVictoryGlow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("LANDMARK_CHIP_SRC", "_ensure_landmark_chip" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "landmark_name" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("VERSION_146_SRC", 'config/version="1.46.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)
