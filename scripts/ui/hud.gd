@@ -48,6 +48,8 @@ var _landmark_chip: Label = null
 var _landmark_chip_panel: PanelContainer = null  # Wave 46: near-landmark name chip
 var _foe_count_lbl: Label = null  # Wave 50: compact foe count near minimap
 var _foe_count_panel: PanelContainer = null
+var _foe_count_prev: int = -1  # Wave 67: track rises for soft pulse
+var _foe_pulse_t: float = 0.0  # Wave 67: soft pulse timer when foe count rises
 var _fav_paces_lbl: Label = null  # Wave 59: paces to ★ fav on HUD when far
 var _fav_paces_panel: PanelContainer = null
 var _mute_style_on: StyleBoxFlat = null
@@ -202,6 +204,7 @@ func _process(delta: float) -> void:
 	if minimap and minimap.has_method("set_data"):
 		minimap.set_data(_map_data)
 	_refresh_foe_count()
+	_update_foe_pulse(delta)
 	_refresh_fav_paces()
 	_refresh_food_lbl()
 
@@ -551,8 +554,29 @@ func _refresh_foe_count() -> void:
 	var foes = _map_data.get("foes", [])
 	if typeof(foes) == TYPE_ARRAY:
 		n = foes.size()
+	# Wave 67: soft pulse when foe count rises (PIN stays 1234; mastery ≥80%)
+	if _foe_count_prev >= 0 and n > _foe_count_prev:
+		_foe_pulse_t = 0.9
+	_foe_count_prev = n
 	_foe_count_lbl.text = "Foes · %d" % n
 	_foe_count_lbl.tooltip_text = "Alive wilds foes on the map (soft count near minimap)"
+
+
+func _update_foe_pulse(delta: float) -> void:
+	## Wave 67: soft cream pulse on Foes chip when count rises (RuneScape-chunky, wholesome).
+	if _foe_count_panel == null or not is_instance_valid(_foe_count_panel):
+		return
+	if _foe_pulse_t > 0.0:
+		_foe_pulse_t = maxf(0.0, _foe_pulse_t - delta)
+		var u: float = _foe_pulse_t / 0.9
+		var breath: float = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.012))
+		_foe_count_panel.modulate = Color(1.0, 0.92 + 0.08 * breath, 0.78 + 0.12 * u, 1.0).lerp(Color(1, 1, 1, 1), 1.0 - u)
+		if _foe_count_lbl:
+			_foe_count_lbl.modulate = Color(1.0, 0.95, 0.82, 1.0).lerp(Color(0.98, 0.88, 0.78, 1.0), 1.0 - u)
+	else:
+		_foe_count_panel.modulate = Color(1, 1, 1, 1)
+		if _foe_count_lbl:
+			_foe_count_lbl.modulate = Color(0.98, 0.88, 0.78, 1.0)
 
 
 func _pulse_mute_plate() -> void:

@@ -65,6 +65,8 @@ var seen_wave_63_toast: bool = false  # Wave 63: once-per-save polish tip toast 
 var seen_wave_64_toast: bool = false  # Wave 64: once-per-save polish tip toast on load
 var seen_wave_65_toast: bool = false  # Wave 65: once-per-save polish tip toast on load
 var seen_wave_66_toast: bool = false  # Wave 66: once-per-save polish tip toast on load
+var seen_wave_67_toast: bool = false  # Wave 67: once-per-save polish tip toast on load
+var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
@@ -157,6 +159,8 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_64_toast = false
 	seen_wave_65_toast = false
 	seen_wave_66_toast = false
+	seen_wave_67_toast = false
+	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
 	greeted_landmarks = []
@@ -357,6 +361,7 @@ func save_game() -> void:
 		"seen_wave_64_toast": seen_wave_64_toast,
 		"seen_wave_65_toast": seen_wave_65_toast,
 		"seen_wave_66_toast": seen_wave_66_toast,
+		"seen_wave_67_toast": seen_wave_67_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -432,6 +437,8 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_64_toast = bool(data.get("seen_wave_64_toast", false))
 	seen_wave_65_toast = bool(data.get("seen_wave_65_toast", false))
 	seen_wave_66_toast = bool(data.get("seen_wave_66_toast", false))
+	seen_wave_67_toast = bool(data.get("seen_wave_67_toast", false))
+	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
@@ -871,6 +878,16 @@ func maybe_wave_66_toast() -> bool:
 	save_game()
 	return true
 
+
+func maybe_wave_67_toast() -> bool:
+	## Wave 67: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_67_toast:
+		return false
+	seen_wave_67_toast = true
+	toast.emit("Wave 67 polish · Reed Pool ripple gleam at dusk · clearer low-HP toast · softer campfire smoke · Foes chip pulses when count rises · Needs Help shows days since last try · Blackberry Bear in the wilds.")
+	save_game()
+	return true
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -931,17 +948,36 @@ func take_damage(amount: int) -> void:
 	hp_changed.emit(hp, max_hp)
 	if dealt > 0:
 		hurt.emit(dealt)
+		_maybe_low_hp_toast()
 	if hp <= 0:
 		_soft_defeat()
+
+func _maybe_low_hp_toast() -> void:
+	## Wave 67: clearer low-HP toast with plain wording (RuneScape-chunky, wholesome; no cheesy combat labels).
+	if max_hp <= 0:
+		return
+	var frac: float = float(hp) / float(max_hp)
+	if frac > 0.28:
+		_low_hp_toast_armed = true
+		return
+	if hp <= 0:
+		return
+	if not _low_hp_toast_armed:
+		return
+	_low_hp_toast_armed = false
+	toast.emit("HP low · press V to eat · or H for Fountain rest")
 
 func heal_full() -> void:
 	hp = max_hp
 	hp_changed.emit(hp, max_hp)
+	_low_hp_toast_armed = true  # Wave 67: re-arm low-HP toast after full heal
 
 func heal(amount: int) -> int:
 	var before: int = hp
 	hp = mini(max_hp, hp + maxi(0, amount))
 	hp_changed.emit(hp, max_hp)
+	if max_hp > 0 and float(hp) / float(max_hp) > 0.28:
+		_low_hp_toast_armed = true  # Wave 67: re-arm low-HP toast after recovery
 	return hp - before
 
 func _ensure_pantry_defaults() -> void:
@@ -1204,7 +1240,7 @@ func needs_help_quests() -> Array:
 		var a = latest[qid]
 		if not a.get("mastered", false):
 			var q: Dictionary = QuestDB.get_quest(qid)
-			help.append({"quest_id": qid, "title": q.get("title", qid), "percent": a.get("percent", 0), "correct": a.get("correct", 0), "total": a.get("total", 0)})
+			help.append({"quest_id": qid, "title": q.get("title", qid), "percent": a.get("percent", 0), "correct": a.get("correct", 0), "total": a.get("total", 0), "timestamp": int(a.get("timestamp", 0))})  # Wave 67: days-since for parent Needs Help
 	return help
 
 func verify_pin(pin: String) -> bool:

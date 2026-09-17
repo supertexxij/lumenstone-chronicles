@@ -170,10 +170,11 @@ func _refresh() -> void:
 			var guild_short: String = str(GameState.GUILDS.get(guild, {}).get("short", guild)).to_upper()
 			var pct: int = int(float(h.get("percent", 0)) * 100)
 			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
-			var line: String = "▶ WEEK %d · %s  ·  %s — %d/%d (%d%%) — needs practice" % [
+			var age: String = _days_since_attempt(int(h.get("timestamp", 0)))
+			var line: String = "▶ WEEK %d · %s  ·  %s — %d/%d (%d%%) — needs practice · %s" % [
 				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
-				int(h.get("correct", 0)), int(h.get("total", 0)), pct
-			]
+				int(h.get("correct", 0)), int(h.get("total", 0)), pct, age
+			]  # Wave 67: days-since last attempt (PIN stays 1234; mastery ≥80%)
 			help_list.add_item(line)
 
 func _ensure_campaign_tabs() -> void:
@@ -339,6 +340,24 @@ func _format_last_session() -> String:
 	]
 	var rel: String = _relative_session_age(ts)
 	return "Last session: %s (%s)" % [absolute, rel]
+
+
+func _days_since_attempt(ts: int) -> String:
+	## Wave 67: compact days-since last Needs Help attempt for parent skim (PIN stays 1234; mastery ≥80%).
+	if ts <= 0:
+		return "last try unknown"
+	var now: int = int(Time.get_unix_time_from_system())
+	var sec: int = maxi(0, now - ts)
+	if sec < 3600:
+		return "last try today"
+	var d: int = int(sec / 86400)
+	if d <= 0:
+		return "last try today"
+	if d == 1:
+		return "1 day since last try"
+	if d < 14:
+		return "%d days since last try" % d
+	return "%d weeks since last try" % maxi(1, int(round(float(d) / 7.0)))
 
 
 func _relative_session_age(ts: int) -> String:

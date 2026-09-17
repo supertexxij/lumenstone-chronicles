@@ -143,6 +143,9 @@ func _ready() -> void:
 		"strawberry_stoat":
 			if label: label.position.y = 1.35
 			hp_bar.position.y = 1.1
+		"blackberry_bear":
+			if label: label.position.y = 1.55
+			hp_bar.position.y = 1.3
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -898,6 +901,23 @@ func _idle_anim(delta: float) -> void:
 			if shead:
 				shead.rotation.y = sin(t * 0.8) * 0.07
 				shead.rotation.x = sin(t * 0.6) * 0.05
+		"blackberry_bear":
+			# Soft snuggle-bob — plump cub breathe, ear twitch, stubby fluff sway (Wave 67)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.85)) * 0.026
+			creature_bob.rotation.y = sin(t * 0.28) * 0.07
+			var bear_l := creature_bob.get_node_or_null("EarL")
+			var bear_r := creature_bob.get_node_or_null("EarR")
+			if bear_l:
+				bear_l.rotation.z = sin(t * 1.05) * 0.07
+			if bear_r:
+				bear_r.rotation.z = -sin(t * 1.05 + 0.2) * 0.07
+			var btail := creature_bob.get_node_or_null("Tail")
+			if btail:
+				btail.rotation.y = sin(t * 0.9) * 0.12
+			var bhead := creature_bob.get_node_or_null("Head")
+			if bhead:
+				bhead.rotation.y = sin(t * 0.6) * 0.05
+				bhead.rotation.x = sin(t * 0.5) * 0.03
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -155,6 +155,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_ram(bob)
 		"strawberry_stoat":
 			_build_stoat(bob)
+		"blackberry_bear":
+			_build_bear(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1598,4 +1600,37 @@ static func _build_stoat(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.045, 0.022, 0.42), Vector3(0, 0.32, -0.34), bob, "Tail")
 	tail.rotation_degrees = Vector3(48, 0, 0)
 	_mi(_sphere(0.055, 0.07), Vector3(0, 0.38, -0.55), bob, "TailTip")
+
+static func _build_bear(bob: Node3D) -> void:
+	## Soft blackberry-wilds bear cub — plump round body, rounded ears, short snout, stubby fluff tail (distinct from Magnolia Beaver / Raspberry Ram / Strawberry Stoat / Blueberry Bunny).
+	# Plump low body
+	_mi(_sphere(0.22, 0.28), Vector3(0, 0.36, 0.0), bob, "Body")
+	# Soft cream-lavender belly
+	_mi(_sphere(0.12, 0.16), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Round head + soft rounded ears + blunt snout
+	_mi(_sphere(0.14, 0.15), Vector3(0, 0.58, 0.18), bob, "Head")
+	_mi(_sphere(0.045, 0.05), Vector3(-0.09, 0.72, 0.14), bob, "EarL")
+	_mi(_sphere(0.045, 0.05), Vector3(0.09, 0.72, 0.14), bob, "EarR")
+	_mi(_box(Vector3(0.07, 0.05, 0.08)), Vector3(0, 0.52, 0.32), bob, "Snout")
+	_mi(_sphere(0.028), Vector3(0, 0.51, 0.38), bob, "Nose")
+	_mi(_sphere(0.028), Vector3(-0.05, 0.62, 0.26), bob, "EyeL")
+	_mi(_sphere(0.028), Vector3(0.05, 0.62, 0.26), bob, "EyeR")
+	# Soft cheek tufts (blackberry blush)
+	_mi(_sphere(0.04, 0.035), Vector3(-0.13, 0.52, 0.16), bob, "BlushL")
+	_mi(_sphere(0.04, 0.035), Vector3(0.13, 0.52, 0.16), bob, "BlushR")
+	# Short sturdy cub legs
+	for info in [
+		["FL", Vector3(-0.10, 0.16, 0.12)],
+		["FR", Vector3(0.10, 0.16, 0.12)],
+		["BL", Vector3(-0.10, 0.16, -0.10)],
+		["BR", Vector3(0.10, 0.16, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.028, 0.032, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.06, 0.018, 0.07)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Stubby fluff tail
+	_mi(_sphere(0.07, 0.08), Vector3(0, 0.34, -0.26), bob, "Tail")
 

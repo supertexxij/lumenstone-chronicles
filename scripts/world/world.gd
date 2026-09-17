@@ -45,6 +45,7 @@ var _cross_dusk_lights: Array = []  # Wave 65: soft quiet cross lantern at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _birch_fireflies: CPUParticles3D  # Wave 66: soft birch-rest firefly wink at dusk
+var _reed_pool_gleam: CPUParticles3D  # Wave 67: soft Reed Pool ripple gleam at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
@@ -1098,19 +1099,19 @@ func _build_plaza_campfire() -> void:
 	var smoke := CPUParticles3D.new()
 	smoke.name = "CampfireSmoke"
 	smoke.emitting = true
-	smoke.amount = 12
-	smoke.lifetime = 3.4
-	smoke.preprocess = 1.2
+	smoke.amount = 18  # Wave 67: denser soft smoke wisps polish
+	smoke.lifetime = 3.8
+	smoke.preprocess = 1.4
 	smoke.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	smoke.emission_sphere_radius = 0.18
+	smoke.emission_sphere_radius = 0.22
 	smoke.direction = Vector3(0, 1, 0)
-	smoke.spread = 22.0
-	smoke.initial_velocity_min = 0.25
-	smoke.initial_velocity_max = 0.55
-	smoke.gravity = Vector3(0.05, 0.08, 0.02)
-	smoke.scale_amount_min = 0.22
-	smoke.scale_amount_max = 0.55
-	smoke.color = Color(0.55, 0.52, 0.48, 0.35)
+	smoke.spread = 26.0
+	smoke.initial_velocity_min = 0.22
+	smoke.initial_velocity_max = 0.62
+	smoke.gravity = Vector3(0.04, 0.1, 0.02)
+	smoke.scale_amount_min = 0.2
+	smoke.scale_amount_max = 0.68
+	smoke.color = Color(0.55, 0.52, 0.48, 0.32)  # Wave 67: softer campfire smoke wisps polish
 	var smoke_ramp := Gradient.new()
 	smoke_ramp.colors = PackedColorArray([
 		Color(0.65, 0.62, 0.58, 0.28),
@@ -1773,6 +1774,7 @@ func _setup_weather() -> void:
 	_setup_dusk_fireflies()
 	_setup_garden_fireflies()
 	_setup_birch_fireflies()
+	_setup_reed_pool_gleam()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -1993,6 +1995,11 @@ func _update_weather(delta: float) -> void:
 		var birch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_birch_fireflies.emitting = birch_dusk
 		_birch_fireflies.visible = birch_dusk
+	# Wave 67: soft Reed Pool ripple gleam at dusk (RuneScape-chunky, wholesome)
+	if _reed_pool_gleam:
+		var reed_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_reed_pool_gleam.emitting = reed_dusk
+		_reed_pool_gleam.visible = reed_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3628,6 +3635,49 @@ func _setup_birch_fireflies() -> void:
 	_birch_fireflies.position = Vector3(-42.0, 1.5, -20.0)
 	add_child(_birch_fireflies)
 	HeadlessGuard.guard_particles(_birch_fireflies)
+
+func _setup_reed_pool_gleam() -> void:
+	## Wave 67: soft Reed Pool ripple gleam at dusk — cool mint-silver rings on the quiet south pool (RuneScape-chunky, wholesome).
+	_reed_pool_gleam = CPUParticles3D.new()
+	_reed_pool_gleam.name = "ReedPoolRippleGleam"
+	_reed_pool_gleam.emitting = false
+	_reed_pool_gleam.amount = 10
+	_reed_pool_gleam.lifetime = 2.4
+	_reed_pool_gleam.preprocess = 0.6
+	_reed_pool_gleam.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_reed_pool_gleam.emission_sphere_radius = 1.6
+	_reed_pool_gleam.direction = Vector3(0, 1, 0)
+	_reed_pool_gleam.spread = 8.0
+	_reed_pool_gleam.initial_velocity_min = 0.0
+	_reed_pool_gleam.initial_velocity_max = 0.03
+	_reed_pool_gleam.gravity = Vector3(0, 0, 0)
+	_reed_pool_gleam.scale_amount_min = 0.45
+	_reed_pool_gleam.scale_amount_max = 1.8
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.08
+	ring.outer_radius = 0.22
+	ring.rings = 8
+	ring.ring_segments = 12
+	_reed_pool_gleam.mesh = ring
+	var rmat := StandardMaterial3D.new()
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rmat.albedo_color = Color(0.72, 0.92, 0.95, 0.42)
+	rmat.emission_enabled = true
+	rmat.emission = Color(0.55, 0.85, 0.9)
+	rmat.emission_energy_multiplier = 0.55
+	_reed_pool_gleam.material_override = rmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.75, 0.95, 0.98, 0.0),
+		Color(0.7, 0.9, 0.95, 0.45),
+		Color(0.65, 0.85, 0.92, 0.0),
+	])
+	_reed_pool_gleam.color_ramp = ramp
+	_reed_pool_gleam.position = Vector3(-20.0, 0.06, 48.0)
+	add_child(_reed_pool_gleam)
+	HeadlessGuard.guard_particles(_reed_pool_gleam)
+
 
 func _setup_brook_sparkle() -> void:
 	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).

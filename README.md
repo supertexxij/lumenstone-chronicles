@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 67 overnight (v1.67.0-overnight)
+- Soft **Reed Pool ripple gleam at dusk** — cool mint-silver rings on the quiet south pool (RuneScape-chunky, wholesome)
+- Clearer **low-HP toast** — plain wording `HP low · press V to eat · or H for Fountain rest` (re-arms after recovery)
+- Soft **campfire smoke wisps polish** — denser loft + softer fade above the plaza hearth
+- New wilds foe **Blackberry Bear** — plump cub body, rounded ears, short snout, stubby fluff tail, cheek blush, gentle “snuggled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat)
+- HUD/parent QoL: **Foes chip soft pulse when count rises**; Parent **Needs Help** rows show **days since last try** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 66 overnight (v1.66.0-overnight)
 - Soft **birch-rest firefly wink at dusk** — warm gold-green motes among pale birch trunks (RuneScape-chunky, wholesome)
 - Clearer **landmark arrival toast with short name** — `Arrived · Birch` / first-discovery / Fountain resting
