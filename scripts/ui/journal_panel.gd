@@ -85,6 +85,11 @@ func refresh() -> void:
 	var locked_weeks: int = maxi(0, 36 - uw)
 	var locked_tag := (" · 🔒 %d weeks locked" % locked_weeks) if locked_weeks > 0 else " · Full year open"
 	week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
+	# Wave 57: show Open only count in toggle label (PIN 1234; mastery ≥80% unchanged)
+	_ensure_open_only_toggle()
+	if _open_only_btn != null and is_instance_valid(_open_only_btn):
+		var open_n: int = _count_open_quests()
+		_open_only_btn.text = "Open only · %d" % open_n
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -236,6 +241,9 @@ func _unlock_progress_text(uw: int) -> String:
 		lines.insert(0, year_line)
 	if sticky_raid != "":
 		lines.insert(0, sticky_raid)
+	# Wave 57: ★ mastered this week in sticky line (PIN 1234; mastery ≥80% unchanged)
+	var of_week_sticky := (" / %d" % total_week) if total_week > 0 else ""
+	lines.insert(0, "★ Mastered this week: %d%s" % [mastered, of_week_sticky])
 	return "\n".join(lines)
 
 
@@ -249,6 +257,20 @@ func _section_rank(q: Dictionary) -> int:
 	if GameState.is_quest_unlocked(qid):
 		return 0
 	return 2
+
+
+func _count_open_quests() -> int:
+	## Wave 57: unlocked & not mastered count for Open-only toggle label (PIN 1234; mastery ≥80% unchanged).
+	var n := 0
+	for q in _all_raw():
+		var qid: String = str(q.get("id", ""))
+		if qid == "":
+			continue
+		if qid in GameState.completed_quests:
+			continue
+		if GameState.is_quest_unlocked(qid):
+			n += 1
+	return n
 
 func _count_week_mastered(week_n: int) -> int:
 	var n := 0

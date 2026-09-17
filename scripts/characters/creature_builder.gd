@@ -135,6 +135,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_pika(bob)
 		"lemon_lemming":
 			_build_lemming(bob)
+		"cherry_chinchilla":
+			_build_chinchilla(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1174,4 +1176,48 @@ static func _build_lemming(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.016, 0.018, 0.09), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.038, 0.012, 0.042)), Vector3(0, -0.065, 0.01), leg, "Foot")
+
+
+static func _build_chinchilla(bob: Node3D) -> void:
+	## Soft cherry-wilds chinchilla — plump body, oversized round ears, short snout, fluffy bushy tail (distinct from Lemon Lemming / Palm Pika / Maple Mouse / Birch Squirrel / Beech Chipmunk).
+	# Plump rounded body
+	_mi(_sphere(0.19, 0.20), Vector3(0, 0.34, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.11, 0.10), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Round head
+	_mi(_sphere(0.13), Vector3(0, 0.50, 0.05), bob, "Head")
+	# Oversized round ears (signature — bigger than Palm Pika)
+	_mi(_sphere(0.07, 0.022), Vector3(-0.11, 0.64, -0.02), bob, "EarL")
+	_mi(_sphere(0.07, 0.022), Vector3(0.11, 0.64, -0.02), bob, "EarR")
+	_mi(_sphere(0.035, 0.012), Vector3(-0.11, 0.64, 0.01), bob, "EarInnerL")
+	_mi(_sphere(0.035, 0.012), Vector3(0.11, 0.64, 0.01), bob, "EarInnerR")
+	# Soft eyes
+	_mi(_sphere(0.026), Vector3(-0.045, 0.52, 0.14), bob, "EyeL")
+	_mi(_sphere(0.026), Vector3(0.045, 0.52, 0.14), bob, "EyeR")
+	_mi(_sphere(0.011), Vector3(-0.045, 0.525, 0.155), bob, "PupilL")
+	_mi(_sphere(0.011), Vector3(0.045, 0.525, 0.155), bob, "PupilR")
+	# Short blunt snout
+	_mi(_sphere(0.038, 0.032), Vector3(0, 0.46, 0.15), bob, "Snout")
+	# Fluffy bushy tail (signature — fuller than lemming tuft / pika puff)
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.32, -0.14)
+	bob.add_child(tail)
+	_mi(_cyl(0.04, 0.055, 0.14), Vector3(0, 0.0, -0.06), tail, "TailBase")
+	_mi(_sphere(0.09, 0.11), Vector3(0, 0.02, -0.16), tail, "TailFluff")
+	_mi(_sphere(0.05), Vector3(0, 0.04, -0.22), tail, "TailTip")
+	# Short soft legs
+	for info in [
+		["FL", Vector3(-0.07, 0.14, 0.06)],
+		["FR", Vector3(0.07, 0.14, 0.06)],
+		["BL", Vector3(-0.07, 0.14, -0.05)],
+		["BR", Vector3(0.07, 0.14, -0.05)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.015, 0.017, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.036, 0.012, 0.04)), Vector3(0, -0.07, 0.01), leg, "Foot")
+
 

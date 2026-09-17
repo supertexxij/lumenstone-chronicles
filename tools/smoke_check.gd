@@ -512,7 +512,7 @@ func _initialize():
 	print("MASTERY_80_W55", "MASTERY_PCT := 0.8" in gs55 or "0.8" in gs55)
 	print("NO_DAY_CASH_W55", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
-	print("VERSION_156", 'config/version="1.56.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_156", 'config/version="1.56.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("LEMON_LEMMING", '"lemon_lemming"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_lemming" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e158"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("MAPLE_LEAVES_W56", "_setup_maple_leaves" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_maple_leaves" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("COMPASS_PULSE_W56", "Wave 56: clearer compass tick pulse" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
@@ -524,6 +524,21 @@ func _initialize():
 	print("MASTERY_80_W56", "MASTERY_PCT := 0.8" in gs56 or "0.8" in gs56)
 	print("NO_DAY_CASH_W56", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+
+
+	print("VERSION_157", 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("CHERRY_CHINCHILLA", '"cherry_chinchilla"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_chinchilla" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e163"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("REED_SWAY_W57", "_update_reed_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 57: soft reed sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("READY_FLASH_W57", "Wave 57: clearer Ready flash color" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("DEFEAT_FOUNTAIN_TOAST_W57", "rest safe at Fountain" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("JOURNAL_OPEN_COUNT_W57", "Open only · %d" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd") and "_count_open_quests" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("JOURNAL_MASTERED_STICKY_W57", "★ Mastered this week:" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("WAVE57_TOAST", "maybe_wave_57_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_57_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs57 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W57", "const DEFAULT_PIN := \"1234\"" in gs57 or 'DEFAULT_PIN := "1234"' in gs57)
+	print("MASTERY_80_W57", "MASTERY_PCT := 0.8" in gs57 or "0.8" in gs57)
+	print("NO_DAY_CASH_W57", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
 	print("CHECK_OK")

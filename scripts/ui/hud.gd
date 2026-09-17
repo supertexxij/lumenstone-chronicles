@@ -289,12 +289,12 @@ func _refresh_food_lbl() -> void:
 			_food_ready_flash_t = 0.75  # Wave 53: longer Ready bloom
 		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
 		if _food_ready_flash_t > 0.0:
-			# Wave 53: stronger Ready glow (cream-lime bloom) when food cooldown ends
+			# Wave 57: clearer Ready flash color — bright mint→gold bloom (distinct from idle Ready green)
 			var u := clampf(_food_ready_flash_t / 0.75, 0.0, 1.0)
-			var bloom := Color(0.55, 1.0, 0.62, 1.0).lerp(Color(1.0, 1.0, 0.72, 1.0), sin(u * PI))
+			var bloom := Color(0.28, 1.0, 0.78, 1.0).lerp(Color(1.0, 0.92, 0.38, 1.0), sin(u * PI))
 			food_lbl.modulate = bloom
-			food_lbl.add_theme_color_override("font_outline_color", Color(0.25, 0.55, 0.28, 0.55 + 0.35 * sin(u * PI)))
-			food_lbl.add_theme_constant_override("outline_size", 3)
+			food_lbl.add_theme_color_override("font_outline_color", Color(0.12, 0.48, 0.32, 0.6 + 0.35 * sin(u * PI)))
+			food_lbl.add_theme_constant_override("outline_size", 4)
 		else:
 			food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
 			food_lbl.remove_theme_color_override("font_outline_color")

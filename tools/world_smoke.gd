@@ -449,8 +449,18 @@ func _finish():
 	print("MASTERY_WEEK_TOAST_SRC", "Quest mastered · Week" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("TRAVEL_FAV_TOP_SRC", "show ★ fav at top of travel list" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
 	print("WAVE56_TOAST_SRC", "maybe_wave_56_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_156_SRC", 'config/version="1.56.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_156_SRC", 'config/version="1.56.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
+
+
+
+	print("CHERRY_CHINCHILLA_SRC", '"cherry_chinchilla"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("REED_SWAY_SRC", "_update_reed_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("READY_FLASH_SRC", "Wave 57: clearer Ready flash color" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("DEFEAT_FOUNTAIN_SRC", "rest safe at Fountain" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("JOURNAL_OPEN_COUNT_SRC", "Open only · %d" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("WAVE57_TOAST_SRC", "maybe_wave_57_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_157_SRC", 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("WORLD_SMOKE_OK")

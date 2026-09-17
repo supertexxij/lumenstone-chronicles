@@ -119,6 +119,9 @@ func _ready() -> void:
 		"chestnut_toad":
 			if label: label.position.y = 1.2
 			hp_bar.position.y = 0.95
+		"cherry_chinchilla":
+			if label: label.position.y = 1.45
+			hp_bar.position.y = 1.2
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -722,6 +725,20 @@ func _idle_anim(delta: float) -> void:
 			var thead := creature_bob.get_node_or_null("Head")
 			if thead:
 				thead.rotation.y = sin(t * 0.7) * 0.06
+		"cherry_chinchilla":
+			# Soft fluff-bob — big ears twitch, bushy tail sways (Wave 57)
+			creature_bob.position.y = abs(sin(t * 0.85)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.42) * 0.1
+			var cel := creature_bob.get_node_or_null("EarL")
+			var cer := creature_bob.get_node_or_null("EarR")
+			if cel:
+				cel.rotation.z = deg_to_rad(-6) + sin(t * 1.15) * 0.09
+			if cer:
+				cer.rotation.z = deg_to_rad(6) - sin(t * 1.15) * 0.09
+			var ctail := creature_bob.get_node_or_null("Tail")
+			if ctail:
+				ctail.rotation.y = sin(t * 0.95) * 0.2
+				ctail.rotation.x = deg_to_rad(-22) + sin(t * 0.7) * 0.07
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

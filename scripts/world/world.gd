@@ -33,6 +33,7 @@ var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Copse
+var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -752,6 +753,7 @@ func _process(delta: float) -> void:
 	_update_door_glows()
 	_update_landmark_approach()
 	_update_ambient_critters(delta)
+	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
 
 
 func _landmark_zones() -> Array:
@@ -2629,6 +2631,20 @@ func _build_reed_pool() -> void:
 	_place_label3d(root, "Quiet reed pool", 28, Vector3(-20.0, 3.95, 48.0), 6, Color(1, 1, 1, 0.75))
 	_place_label3d(root, "Reed Pool", 52, Vector3(-20.0, 3.4, 48.0))
 
+
+func _update_reed_sway(_delta: float) -> void:
+	## Wave 57: soft reed sway near Reed Pool — gentle wind lean (RuneScape-chunky, wholesome).
+	if _reed_sway_nodes.is_empty():
+		return
+	var t := Time.get_ticks_msec() * 0.001
+	for reed in _reed_sway_nodes:
+		if reed == null or not is_instance_valid(reed):
+			continue
+		var phase := float(reed.get_meta("sway_phase", 0.0))
+		var amp := float(reed.get_meta("sway_amp", 0.06))
+		var lean := sin(t * 1.15 + phase) * amp
+		reed.rotation.z = lean
+		reed.rotation.x = cos(t * 0.95 + phase * 0.7) * amp * 0.55
 
 
 

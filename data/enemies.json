@@ -415,6 +415,19 @@
       "combat_xp": 192,
       "respawn_sec": 80.0,
       "description": "A soft lemming of the lemon wilds \u2014 snug it gently with a careful step!"
+    },
+    "cherry_chinchilla": {
+      "kind": "cherry_chinchilla",
+      "name": "Cherry Chinchilla",
+      "defeat_verb": "fluffed",
+      "color": "#b85a6a",
+      "accent": "#f0d8d0",
+      "max_hp": 212,
+      "damage": 35,
+      "accuracy": 0.18,
+      "combat_xp": 198,
+      "respawn_sec": 82.0,
+      "description": "A fluffy chinchilla of the cherry wilds \u2014 fluff it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1365,6 +1378,36 @@
       "kind": "lemon_lemming",
       "x": -56,
       "z": -124
+    },
+    {
+      "id": "e159",
+      "kind": "cherry_chinchilla",
+      "x": -126,
+      "z": -12
+    },
+    {
+      "id": "e160",
+      "kind": "cherry_chinchilla",
+      "x": 112,
+      "z": -128
+    },
+    {
+      "id": "e161",
+      "kind": "cherry_chinchilla",
+      "x": -88,
+      "z": 128
+    },
+    {
+      "id": "e162",
+      "kind": "cherry_chinchilla",
+      "x": 128,
+      "z": 84
+    },
+    {
+      "id": "e163",
+      "kind": "cherry_chinchilla",
+      "x": -40,
+      "z": -128
     }
   ],
   "base_combat": {

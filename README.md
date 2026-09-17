@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 57 overnight (v1.57.0-overnight)
+- Soft **reed sway near Reed Pool** — tall reeds lean gently in the wind (RuneScape-chunky, wholesome)
+- Clearer **food Ready flash color** — bright mint→gold bloom when pantry cooldown ends (no cheesy combat labels)
+- Soft-defeat toast names **Fountain** landmark — `rest safe at Fountain` with HP & pantry restore
+- New wilds foe **Cherry Chinchilla** — plump body, oversized round ears, short snout, fluffy bushy tail, gentle “fluffed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming)
+- Journal QoL: **Open only · N** count on toggle + **★ Mastered this week** sticky line (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 56 overnight (v1.56.0-overnight)
 - Soft **leaf fall denser in Maple Copse** — warmer autumn flakes gather at the northwest maple stand (RuneScape-chunky, wholesome)
 - Clearer **compass tick pulse near landmarks** — soft gold tick breathes when you are close (no cheesy combat labels)
