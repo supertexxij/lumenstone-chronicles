@@ -32,6 +32,9 @@ var _nav_ready: bool = false
 var _nav_agent: NavigationAgent3D
 var _path_idx: int = 0
 var _assist_waypoints: Array = []
+var _manual_move: bool = false
+var _was_manual: bool = false
+var _desired_vel: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
 	add_to_group("player")
@@ -82,18 +85,24 @@ func soft_respawn() -> void:
 	global_position = Vector3(0, 0, 10)
 	target_pos = global_position
 	has_click_target = false
+	_manual_move = false
+	_desired_vel = Vector3.ZERO
 	velocity = Vector3.ZERO
 	if _nav_agent:
-		_nav_agent.set_velocity(Vector3.ZERO)
+		_nav_agent.set_velocity_forced(Vector3.ZERO)
 
 func _on_heal_tick(amount: int) -> void:
 	if amount > 0:
 		HitsplatUtil.spawn_heal(self, amount, 2.05)
 
 func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
-	## Apply lightly avoided velocity from NavigationServer RVO.
-	velocity.x = safe_velocity.x
-	velocity.z = safe_velocity.z
+	## Apply RVO-safe velocity. WASD prefers player intent so avoidance does not fight the stick.
+	if _manual_move:
+		velocity.x = lerpf(safe_velocity.x, _desired_vel.x, 0.78)
+		velocity.z = lerpf(safe_velocity.z, _desired_vel.z, 0.78)
+	else:
+		velocity.x = safe_velocity.x
+		velocity.z = safe_velocity.z
 
 func _apply_appearance() -> void:
 	if parts.is_empty():
@@ -320,13 +329,18 @@ func _physics_process(delta: float) -> void:
 	input_dir.x = Input.get_action_strength("move_right") - Input.get_action_strength("move_left")
 	input_dir.y = Input.get_action_strength("move_back") - Input.get_action_strength("move_forward")
 	var moving := false
-	if input_dir.length() > 0.1:
+	_manual_move = input_dir.length() > 0.1
+	if _manual_move:
 		has_click_target = false
 		if has_meta("pending_npc"):
 			remove_meta("pending_npc")
+		# On WASD press, cancel click-nav so RVO does not keep steering to an old goal
+		if (not _was_manual) and _nav_agent and _nav_ready:
+			_nav_agent.target_position = global_position
 		var forward: Vector3 = Vector3(-sin(cam_yaw), 0, -cos(cam_yaw))
 		var right: Vector3 = Vector3(cos(cam_yaw), 0, -sin(cam_yaw))
 		var wish: Vector3 = (right * input_dir.x + forward * input_dir.y).normalized()
+		# Soft mentor/foe sidestep only — do not let nav RVO yank WASD
 		wish = _soft_avoid_entities(wish)
 		velocity.x = move_toward(velocity.x, wish.x * SPEED, ACCEL * delta)
 		velocity.z = move_toward(velocity.z, wish.z * SPEED, ACCEL * delta)
@@ -373,11 +387,15 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, ACCEL * delta)
 		_stuck_timer = 0.0
 
+	_was_manual = _manual_move
 	velocity.y = 0
-	# Feed desired velocity into avoidance (light sidestep around NPCs / obstacles)
+	_desired_vel = Vector3(velocity.x, 0.0, velocity.z)
+	# Feed desired velocity into avoidance. WASD uses forced velocity so RVO does not fight keys.
 	if _nav_agent and _nav_agent.avoidance_enabled:
-		_nav_agent.set_velocity(Vector3(velocity.x, 0.0, velocity.z))
-		# velocity_computed may fire sync; keep current if not
+		if _manual_move:
+			_nav_agent.set_velocity_forced(_desired_vel)
+		else:
+			_nav_agent.set_velocity(_desired_vel)
 	var pre_pos := global_position
 	move_and_slide()
 	# Slide-along + stuck detection for click-to-move against barrels/trees/fences
@@ -435,11 +453,11 @@ func _soft_avoid_entities(wish: Vector3) -> Vector3:
 		if not is_instance_valid(n):
 			continue
 		var d: float = global_position.distance_to(n.global_position)
-		if d < 1.4 and d > 0.05:
+		if d < 1.55 and d > 0.05:
 			var away: Vector3 = global_position - n.global_position
 			away.y = 0.0
 			if away.length() > 0.01:
-				push += away.normalized() * ((1.4 - d) / 1.4)
+				push += away.normalized() * ((1.55 - d) / 1.55) * 1.15
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(e):
 			continue
@@ -452,7 +470,7 @@ func _soft_avoid_entities(wish: Vector3) -> Vector3:
 			if away2.length() > 0.01:
 				push += away2.normalized() * ((1.25 - d2) / 1.25) * 0.55
 	if push.length() > 0.01:
-		wish = (wish + push * 0.9).normalized()
+		wish = (wish + push * 1.05).normalized()
 	return wish
 
 func _animate_walk(moving: bool, delta: float) -> void:

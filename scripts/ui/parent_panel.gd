@@ -81,31 +81,98 @@ func _change_pin() -> void:
 	AudioBus.play_ui()
 
 func _refresh() -> void:
-	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\nCampaign week unlocked: %d / 36\nQuests mastered: %d / %d\n\n[b]Lumens[/b]\n" % [
+	var uw: int = GameState.unlocked_week
+	var camp: String = _campaign_name(uw)
+	var next_gate: String = _next_week_gate(uw)
+	var mastered: int = GameState.completed_quests.size()
+	var total_q: int = QuestDB.quests.size()
+	var bar: String = _week_progress_bar(uw, 36)
+	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\nQuests mastered: %d / %d\n\n[b]Lumens[/b]\n" % [
 		GameState.child_name, GameState.active_slot + 1,
 		GameState.xp, GameState.level, GameState.combat_level,
-		GameState.unlocked_week,
-		GameState.completed_quests.size(), QuestDB.quests.size()
+		uw, camp, bar, next_gate,
+		mastered, total_q
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]
-	lines += "\n[b]Skills / quests by week[/b]\n"
+	lines += "\n[b]Skills / quests by week[/b]  (✓ mastered · open · [locked])\n"
 	for w in range(1, 37):
 		var titles: Array = []
+		var done_n := 0
+		var total_n := 0
 		for q in QuestDB.quests:
 			if int(q.get("week", 1)) != w:
 				continue
-			var mark := "✓" if str(q["id"]) in GameState.completed_quests else "·"
-			titles.append("%s %s" % [mark, q.get("title", q["id"])])
-		lines += "Week %d: %s\n" % [w, ", ".join(titles)]
+			total_n += 1
+			var qid: String = str(q["id"])
+			var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")
+			if qid in GameState.completed_quests:
+				done_n += 1
+			titles.append("%s %s" % [mark, q.get("title", qid)])
+		var lock: String = "" if w <= uw else " [locked]"
+		var head: String = "Week %d (%d/%d)%s" % [w, done_n, total_n, lock]
+		if w == uw:
+			head = "[b]%s ← current[/b]" % head
+		lines += "%s: %s\n" % [head, ", ".join(titles)]
 	summary.text = lines
 	help_list.clear()
 	var help: Array = GameState.needs_help_quests()
 	if help.is_empty():
 		help_list.add_item("No needs-help items — great work!")
 	else:
+		# Sort by lowest percent first so weakest skills rise to the top
+		help.sort_custom(func(a, b): return float(a.get("percent", 0)) < float(b.get("percent", 0)))
 		for h in help:
-			help_list.add_item("%s — %d/%d (%d%%)" % [h["title"], h["correct"], h["total"], int(h["percent"] * 100)])
+			var q: Dictionary = QuestDB.get_quest(str(h.get("quest_id", "")))
+			var week_n: int = int(q.get("week", 0))
+			var guild: String = str(q.get("guild", ""))
+			var guild_short: String = str(GameState.GUILDS.get(guild, {}).get("short", guild))
+			var pct: int = int(float(h.get("percent", 0)) * 100)
+			var line: String = "Wk %d · %s · %s — %d/%d (%d%%) — needs practice" % [
+				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
+				int(h.get("correct", 0)), int(h.get("total", 0)), pct
+			]
+			help_list.add_item(line)
+
+func _campaign_name(week: int) -> String:
+	if week <= 9:
+		return "Campaign I — Kindling the Lamps"
+	if week <= 18:
+		return "Campaign II — Scrolls of the Free"
+	if week <= 27:
+		return "Campaign III — Builders of the Republic"
+	return "Campaign IV — Light for the Realm"
+
+func _week_progress_bar(cur: int, mx: int) -> String:
+	var filled: int = clampi(int(round(float(cur) / float(mx) * 20.0)), 0, 20)
+	var empty: int = 20 - filled
+	return "[%s%s] %d%%" % ["█".repeat(filled), "·".repeat(empty), int(round(float(cur) / float(mx) * 100.0))]
+
+func _next_week_gate(uw: int) -> String:
+	if uw >= 36:
+		return "Year complete — Festival of Lumens!"
+	var raid_gate := {
+		1: "w1-raid-review", 2: "w2-raid-review", 3: "w3-raid-review", 4: "w4-raid-review",
+		5: "w5-raid-review", 6: "w6-raid-review", 7: "w7-raid-review", 8: "w8-raid-review",
+		9: "w9-raid-feast",
+		10: "w10-raid-review", 11: "w11-raid-review", 12: "w12-raid-review", 13: "w13-raid-review",
+		14: "w14-raid-review", 15: "w15-raid-review", 16: "w16-raid-review", 17: "w17-raid-review",
+		18: "w18-raid-feast",
+		19: "w19-raid-review", 20: "w20-raid-review", 21: "w21-raid-review", 22: "w22-raid-review",
+		23: "w23-raid-review", 24: "w24-raid-review", 25: "w25-raid-review", 26: "w26-raid-review",
+		27: "w27-raid-feast",
+		28: "w28-raid-review", 29: "w29-raid-review", 30: "w30-raid-review", 31: "w31-raid-review",
+		32: "w32-raid-review", 33: "w33-raid-review", 34: "w34-raid-review",
+		35: "w35-raid-supreme", 36: "w36-raid-feast",
+	}
+	var rid: String = str(raid_gate.get(uw, ""))
+	if rid == "":
+		return "Master more Week %d quests (or the Friday raid)." % uw
+	var q: Dictionary = QuestDB.get_quest(rid)
+	var title: String = str(q.get("title", rid))
+	if rid in GameState.completed_quests:
+		return "Week %d raid done — week unlock should advance soon." % uw
+	return "Master Week %d Friday raid: %s (or 4+ quests that week)." % [uw, title]
 
 func _ensure_recovery_ui() -> void:
 	var vbox: VBoxContainer = $Panel/VBox

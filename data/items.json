@@ -53,7 +53,7 @@
   "builders_belt": {
     "id": "builders_belt",
     "name": "Builder's Belt",
-    "description": "A sturdy belt with a golden buckle \u2014 place value ready!",
+    "description": "A sturdy belt with a golden buckle — place value ready!",
     "slot": "belt",
     "color": "#d4a017",
     "unlock_quest_id": "w1-math-place-value"
@@ -61,7 +61,7 @@
   "scripture_bookmark": {
     "id": "scripture_bookmark",
     "name": "Scripture Bookmark",
-    "description": "Marks Genesis 1:1 \u2014 In the beginning, God created\u2026",
+    "description": "Marks Genesis 1:1 — In the beginning, God created…",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w1-bible-genesis"
@@ -85,7 +85,7 @@
   "default_cape": {
     "id": "default_cape",
     "name": "Travel Cape",
-    "description": "Your colorful travel cape \u2014 dye it any hall color.",
+    "description": "Your colorful travel cape — dye it any hall color.",
     "slot": "cape",
     "color": "#c1121f",
     "starter": true
@@ -477,7 +477,7 @@
   "campaign_i_badge": {
     "id": "campaign_i_badge",
     "name": "Campaign I Badge",
-    "description": "The Kindling the Lamps campaign badge \u2014 foundations complete.",
+    "description": "The Kindling the Lamps campaign badge — foundations complete.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w9-raid-feast"
@@ -541,7 +541,7 @@
   "joshua_band": {
     "id": "joshua_band",
     "name": "Joshua Band",
-    "description": "A band for courage \u2014 the Lord is with you.",
+    "description": "A band for courage — the Lord is with you.",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w11-bible-courage"
@@ -637,7 +637,7 @@
   "psalm_travel_band": {
     "id": "psalm_travel_band",
     "name": "Travel Psalm Band",
-    "description": "Band for trust on long roads \u2014 help from the Lord.",
+    "description": "Band for trust on long roads — help from the Lord.",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w13-bible-trust"
@@ -917,7 +917,7 @@
   "campaign_ii_badge": {
     "id": "campaign_ii_badge",
     "name": "Campaign II Badge",
-    "description": "The Scrolls of the Free campaign badge \u2014 fluency and freedom.",
+    "description": "The Scrolls of the Free campaign badge — fluency and freedom.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w18-raid-feast"
@@ -1101,7 +1101,7 @@
   "star_season_chart": {
     "id": "star_season_chart",
     "name": "Star Season Chart",
-    "description": "A chart of seasons and star patterns \u2014 no fortune-telling.",
+    "description": "A chart of seasons and star patterns — no fortune-telling.",
     "slot": "accessory",
     "color": "#14213d",
     "unlock_quest_id": "w22-science-stars"
@@ -1349,7 +1349,7 @@
   "republic_timeline_ribbon": {
     "id": "republic_timeline_ribbon",
     "name": "Republic Timeline Ribbon",
-    "description": "A ribbon for Republic\u2192statehood\u2192growth review.",
+    "description": "A ribbon for Republic→statehood→growth review.",
     "slot": "accessory",
     "color": "#9b2226",
     "unlock_quest_id": "w27-history-review"
@@ -1357,7 +1357,7 @@
   "campaign_iii_badge": {
     "id": "campaign_iii_badge",
     "name": "Campaign III Badge",
-    "description": "The Builders of the Republic campaign badge \u2014 measurement, geometry, and stewardship.",
+    "description": "The Builders of the Republic campaign badge — measurement, geometry, and stewardship.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w27-raid-feast"
@@ -1381,7 +1381,7 @@
   "fluency_millstone": {
     "id": "fluency_millstone",
     "name": "Fluency Millstone",
-    "description": "A small millstone token for \u00d70\u201312 clinic mastery.",
+    "description": "A small millstone token for ×0–12 clinic mastery.",
     "slot": "belt",
     "color": "#d4a017",
     "unlock_quest_id": "w28-math-fluency"
@@ -1797,7 +1797,7 @@
   "campaign_iv_badge": {
     "id": "campaign_iv_badge",
     "name": "Campaign IV Badge",
-    "description": "The Light for the Realm campaign badge \u2014 mastery, projects, and celebration.",
+    "description": "The Light for the Realm campaign badge — mastery, projects, and celebration.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w36-raid-feast"
@@ -1813,7 +1813,7 @@
   "year_champion_certificate": {
     "id": "year_champion_certificate",
     "name": "Year Champion Certificate",
-    "description": "A certificate token for year completion \u2014 archive with the portfolio.",
+    "description": "A certificate token for year completion — archive with the portfolio.",
     "slot": "accessory",
     "color": "#f0e6d2",
     "unlock_quest_id": "w36-raid-feast"
@@ -1821,7 +1821,7 @@
   "oak_training_axe": {
     "id": "oak_training_axe",
     "name": "Oak Training Axe",
-    "description": "A safe wooden axe for Builder yard practice \u2014 wholesome and sturdy.",
+    "description": "A safe wooden axe for Builder yard practice — wholesome and sturdy.",
     "slot": "weapon",
     "mesh": "axe",
     "color": "#8b5a2b",
@@ -1877,7 +1877,7 @@
   "bronze_yard_axe": {
     "id": "bronze_yard_axe",
     "name": "Bronze Yard Axe",
-    "description": "A blunt bronze practice axe for Builder yard work \u2014 sturdy and safe.",
+    "description": "A blunt bronze practice axe for Builder yard work — sturdy and safe.",
     "slot": "weapon",
     "mesh": "axe",
     "color": "#cd7f32",
@@ -1937,7 +1937,7 @@
   "lightbearer_blade": {
     "id": "lightbearer_blade",
     "name": "Lightbearer Blade",
-    "description": "A polished practice blade awarded near the Festival of Lumens \u2014 bright, not boastful.",
+    "description": "A polished practice blade awarded near the Festival of Lumens — bright, not boastful.",
     "slot": "weapon",
     "mesh": "sword",
     "color": "#c9a227",
@@ -1949,7 +1949,7 @@
   "brook_walking_stick": {
     "id": "brook_walking_stick",
     "name": "Brook Walking Stick",
-    "description": "A smooth stick from Lantern Glade brook path \u2014 good for careful steps.",
+    "description": "A smooth stick from Lantern Glade brook path — good for careful steps.",
     "slot": "weapon",
     "mesh": "staff",
     "color": "#7a5c3a",
@@ -1989,6 +1989,19 @@
     "max_stack": 3,
     "cooldown": 3.5,
     "combat_level_req": 3,
-    "color": "#a67c52"
+    "color": "#a67c52",
+    "unlock_quest_id": "w5-raid-review"
+  },
+  "honey_cake": {
+    "id": "honey_cake",
+    "name": "Honey Cake",
+    "description": "Sweet cake with village honey. Restores 28 HP. Stack of 2; longer cooldown. Unlock Week 12 Friday Raid or Combat Lv 5; refill at the fountain.",
+    "slot": "consumable",
+    "heal": 28,
+    "max_stack": 2,
+    "cooldown": 4.5,
+    "combat_level_req": 5,
+    "unlock_quest_id": "w12-raid-review",
+    "color": "#e8b84a"
   }
 }

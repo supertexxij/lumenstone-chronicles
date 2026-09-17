@@ -90,7 +90,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **1–5** halls (outdoors only) |
-| Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations) |
+| Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
 | Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |

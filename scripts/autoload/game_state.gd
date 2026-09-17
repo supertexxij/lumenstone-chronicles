@@ -370,8 +370,9 @@ func unlock_item(id: String) -> void:
 
 
 func check_combat_item_unlocks() -> void:
-	## Grant weapons/items gated by combat_level_req once the threshold is met
-	## (quest unlock_quest_id still required if set — both gates must pass).
+	## Grant items gated by combat_level_req once the threshold is met.
+	## Consumables: combat level alone is enough (OR with unlock_quest_id via quest mastery).
+	## Weapons/gear: if unlock_quest_id is also set, both gates must pass (AND).
 	for iid in ItemDB.items:
 		var it: Dictionary = ItemDB.items[iid]
 		var req: int = int(it.get("combat_level_req", 0))
@@ -380,7 +381,8 @@ func check_combat_item_unlocks() -> void:
 		if combat_level < req:
 			continue
 		var qid: String = str(it.get("unlock_quest_id", ""))
-		if qid != "" and qid not in completed_quests:
+		var is_food: bool = str(it.get("slot", "")) == "consumable"
+		if (not is_food) and qid != "" and qid not in completed_quests:
 			continue
 		unlock_item(str(iid))
 

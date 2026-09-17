@@ -71,6 +71,8 @@ func _finish():
 		world._apply_weather_visuals(false)
 	var gs_src = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
 	print("BEST_FOOD", "func use_best_consumable" in gs_src)
+	print("HONEY_CAKE", '"honey_cake"' in FileAccess.get_file_as_string("res://data/items.json"))
+	print("WASD_FORCED", "set_velocity_forced" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("FOUNTAIN_REST", "func rest_at_fountain" in gs_src)
 	print("WORLD_SMOKE_OK")
 	quit(0)

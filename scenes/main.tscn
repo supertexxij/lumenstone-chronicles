@@ -576,10 +576,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -320.0
-offset_right = 320.0
-offset_bottom = 320.0
+offset_left = -360.0
+offset_top = -340.0
+offset_right = 360.0
+offset_bottom = 340.0
 
 [node name="VBox" type="VBoxContainer" parent="UI/ParentPanel/Panel"]
 layout_mode = 2
@@ -605,18 +605,21 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="Summary" type="RichTextLabel" parent="UI/ParentPanel/Panel/VBox/Content"]
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 220)
 layout_mode = 2
+size_flags_vertical = 3
 bbcode_enabled = true
-fit_content = true
+fit_content = false
+scroll_active = true
 
 [node name="HelpTitle" type="Label" parent="UI/ParentPanel/Panel/VBox/Content"]
 layout_mode = 2
-text = "Needs Help"
+text = "Needs Help (lowest scores first)"
 
 [node name="HelpList" type="ItemList" parent="UI/ParentPanel/Panel/VBox/Content"]
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="PinChangeTitle" type="Label" parent="UI/ParentPanel/Panel/VBox/Content"]
 layout_mode = 2
