@@ -83,6 +83,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_badger(bob)
 		"cedar_stag":
 			_build_stag(bob)
+		"pine_fox":
+			_build_fox(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -237,3 +239,37 @@ static func _build_stag(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.06, 0.42), Vector3(0, -0.12, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.10, 0.06, 0.14)), Vector3(0, -0.36, 0.02), leg, "Hoof")
+
+static func _build_fox(bob: Node3D) -> void:
+	## Slender pine-wilds fox — pointed ears, bushy tail (distinct from badger/stag).
+	var body := _mi(_capsule(0.22, 0.78), Vector3(0, 0.52, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.18), Vector3(0, 0.58, 0.42), bob, "Head")
+	_mi(_sphere(0.07), Vector3(0, 0.52, 0.58), bob, "Snout")
+	# Pointed ears
+	var el := _mi(_cyl(0.01, 0.06, 0.18), Vector3(-0.08, 0.78, 0.38), bob, "EarL")
+	el.rotation_degrees = Vector3(12, 0, -18)
+	var er := _mi(_cyl(0.01, 0.06, 0.18), Vector3(0.08, 0.78, 0.38), bob, "EarR")
+	er.rotation_degrees = Vector3(12, 0, 18)
+	# Bushy tail (curled up)
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.58, -0.42)
+	tail.rotation_degrees = Vector3(-35, 0, 0)
+	bob.add_child(tail)
+	_mi(_capsule(0.10, 0.55), Vector3(0, 0.12, -0.08), tail, "TailMain")
+	_mi(_sphere(0.12), Vector3(0, 0.28, -0.28), tail, "TailTip")
+	# Four light legs
+	for info in [
+		["FL", Vector3(-0.12, 0.30, 0.22)],
+		["FR", Vector3(0.12, 0.30, 0.22)],
+		["BL", Vector3(-0.12, 0.30, -0.22)],
+		["BR", Vector3(0.12, 0.30, -0.22)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.05, 0.30), Vector3(0, -0.06, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.09, 0.05, 0.12)), Vector3(0, -0.26, 0.02), leg, "Paw")
+

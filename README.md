@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 31 overnight (v1.31.0-overnight)
+- Soft **plaza campfire glow** — warm hearth ring + ember motes east of the fountain (RuneScape-chunky, wholesome)
+- Clearer **NPC talk prompt** — nearby mentors show **Talk (F)** with a soft gold pulse
+- Combat **target reticle** — soft cream ring under the engaged foe (no cheesy combat labels; tick combat unchanged)
+- New wilds foe **Pine Fox** — slender pointed-ear fox with bushy tail, gentle “soothed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag)
+- Journal QoL: **★ on mastered quest rows** + clearer **Mastered this week: N / M ★** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 30 overnight (v1.30.0-overnight)
 - Soft **wind leaf particles** — warm maple flakes drift on a gentle breeze around the player outdoors (RuneScape-chunky, wholesome)
 - Clearer **minimap player arrow** — larger tip with soft gold outline so facing direction reads at a glance

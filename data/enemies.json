@@ -73,10 +73,23 @@
       "accent": "#d4c4a0",
       "max_hp": 50,
       "damage": 8,
-      "accuracy": 0.60,
+      "accuracy": 0.6,
       "combat_xp": 36,
       "respawn_sec": 28.0,
       "description": "A tall stag of the cedar grove \u2014 quiet it with a careful step!"
+    },
+    "pine_fox": {
+      "kind": "pine_fox",
+      "name": "Pine Fox",
+      "defeat_verb": "soothed",
+      "color": "#8a5a3a",
+      "accent": "#e8d4b0",
+      "max_hp": 56,
+      "damage": 9,
+      "accuracy": 0.58,
+      "combat_xp": 42,
+      "respawn_sec": 30.0,
+      "description": "A slender fox of the pine wilds \u2014 soothe it with a careful step!"
     }
   },
   "spawns": [
@@ -247,6 +260,36 @@
       "kind": "cedar_stag",
       "x": 46,
       "z": -28
+    },
+    {
+      "id": "e29",
+      "kind": "pine_fox",
+      "x": -44,
+      "z": -18
+    },
+    {
+      "id": "e30",
+      "kind": "pine_fox",
+      "x": -52,
+      "z": -6
+    },
+    {
+      "id": "e31",
+      "kind": "pine_fox",
+      "x": -46,
+      "z": 22
+    },
+    {
+      "id": "e32",
+      "kind": "pine_fox",
+      "x": 18,
+      "z": 46
+    },
+    {
+      "id": "e33",
+      "kind": "pine_fox",
+      "x": 50,
+      "z": -10
     }
   ],
   "base_combat": {

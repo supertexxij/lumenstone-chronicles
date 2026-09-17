@@ -17,6 +17,7 @@ var parts: Dictionary = {}
 var _idle_style: int = 0
 var _phase: float = 0.0
 var _wave_t: float = -1.0
+var _talk_near: bool = false  # Wave 31: clearer Talk (F) prompt
 
 func _ready() -> void:
 	add_to_group("npcs")
@@ -101,6 +102,27 @@ func _process(delta: float) -> void:
 			if r_leg2:
 				r_leg2.rotation.x = abs(sin(t * 2.2 + 1.2)) * 0.05
 			bob.position.y = sin(t * 2.0) * 0.02 + abs(sin(t * 1.1)) * 0.01
+
+	_update_talk_prompt()
+
+func _update_talk_prompt() -> void:
+	## Wave 31: when the player is nearby, show a clearer Talk (F) line (RuneScape-chunky, wholesome).
+	if label == null or HeadlessGuard.is_headless():
+		return
+	var player: Node = get_tree().get_first_node_in_group("player")
+	var near := false
+	if player != null and not bool(player.get("ui_blocking")):
+		near = global_position.distance_to(player.global_position) <= 3.6
+	_talk_near = near
+	if near:
+		label.text = "%s\nTalk (F)" % npc_name
+		var pulse: float = 0.82 + 0.18 * abs(sin(Time.get_ticks_msec() * 0.0035))
+		label.modulate = Color(1.0, 0.92, 0.55, pulse)
+		label.outline_modulate = Color(0.25, 0.18, 0.05, 0.9)
+	else:
+		label.text = npc_name
+		label.modulate = Color.WHITE
+		label.outline_modulate = Color(0, 0, 0, 1)
 
 func request_talk() -> void:
 	talk_requested.emit(self)

@@ -24,6 +24,7 @@ var _base_scale: Vector3 = Vector3.ONE
 var _aggro_pulse: float = 0.0
 var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
+var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
 
 @onready var mesh_root: Node3D = $MeshRoot
 var label: Label3D
@@ -66,6 +67,9 @@ func _ready() -> void:
 		"cedar_stag":
 			if label: label.position.y = 2.15
 			hp_bar.position.y = 1.9
+		"pine_fox":
+			if label: label.position.y = 1.5
+			hp_bar.position.y = 1.25
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
@@ -74,6 +78,7 @@ func _ready() -> void:
 			hp_bar.position.y = 1.5
 	_update_hp_bar()
 	_ensure_telegraph()
+	_ensure_target_reticle()
 	_ensure_nav_obstacle()
 	if GameState.has_signal("soft_combat_cleared") and not GameState.soft_combat_cleared.is_connected(clear_soft_aggro):
 		GameState.soft_combat_cleared.connect(clear_soft_aggro)
@@ -121,6 +126,7 @@ func _physics_process(delta: float) -> void:
 	_idle_anim(delta)
 	_update_flinch(delta)
 	_soft_aggro(delta)
+	_update_target_reticle(delta)
 
 	if GameState.combat_target == self:
 		tick_timer -= delta
@@ -145,6 +151,45 @@ func _fade_node(n: Node, a: float) -> void:
 			mat.albedo_color = c
 	for c in n.get_children():
 		_fade_node(c, a)
+
+
+func _ensure_target_reticle() -> void:
+	## Wave 31: soft cream combat-target ring under the engaged foe (no combat labels).
+	if _target_reticle != null:
+		return
+	_target_reticle = MeshInstance3D.new()
+	_target_reticle.name = "TargetReticle"
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.72
+	ring.outer_radius = 0.92
+	ring.rings = 10
+	ring.ring_segments = 20
+	_target_reticle.mesh = ring
+	HeadlessGuard.guard_mesh(_target_reticle)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.98, 0.94, 0.82, 0.55)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 0.9
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_target_reticle.material_override = mat
+	_target_reticle.position = Vector3(0, 0.06, 0)
+	_target_reticle.visible = false
+	add_child(_target_reticle)
+
+
+func _update_target_reticle(_delta: float) -> void:
+	_ensure_target_reticle()
+	var on := alive and GameState.combat_target == self
+	_target_reticle.visible = on
+	if not on:
+		return
+	# Soft steady cream breath — distinct from yellow soft-aggro telegraph
+	var pulse: float = 0.48 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.003))
+	var s: float = 0.96 + 0.06 * abs(sin(Time.get_ticks_msec() * 0.0025))
+	if _target_reticle.material_override is StandardMaterial3D:
+		var mat: StandardMaterial3D = _target_reticle.material_override
+		mat.albedo_color = Color(0.98, 0.94, 0.82, pulse)
+	_target_reticle.scale = Vector3(s, 1.0, s)
 
 func _ensure_telegraph() -> void:
 	## Wave 23: chunkier RuneScape-style soft-aggro ring — bright torus rim + soft fill disc.
@@ -303,6 +348,13 @@ func _idle_anim(delta: float) -> void:
 			var neck_n := creature_bob.get_node_or_null("Neck")
 			if neck_n:
 				neck_n.rotation.x = deg_to_rad(28) + sin(t * 0.5) * 0.08
+		"pine_fox":
+			creature_bob.position.y = abs(sin(t * 0.65)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.4) * 0.14
+			var tail_n := creature_bob.get_node_or_null("Tail")
+			if tail_n:
+				tail_n.rotation.y = sin(t * 0.9) * 0.25
+				tail_n.rotation.x = deg_to_rad(-35) + sin(t * 0.7) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

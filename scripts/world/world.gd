@@ -26,6 +26,7 @@ var _inside_hall: String = ""
 var _door_cooldown: float = 0.0
 var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
 var _village_lamp_lights: Array = []  # Wave 28: dusk OmniLights on village lamp posts
+var _plaza_campfire_light: OmniLight3D = null  # Wave 31: soft campfire glow near plaza
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
@@ -57,6 +58,7 @@ func _ready() -> void:
 	_build_wilds()
 	_build_fountain()
 	_build_village_props()
+	_build_plaza_campfire()
 	_spawn_npcs()
 	_spawn_enemies()
 	_spawn_player()
@@ -875,6 +877,61 @@ func _update_day_night(delta: float) -> void:
 		# Soft indoor: bias toward quiet day pad
 		AudioBus.set_day_night_audio(0.55)
 	_update_village_dusk_lamps(dayness)
+	_update_plaza_campfire(dayness)
+
+
+func _build_plaza_campfire() -> void:
+	## Wave 31: soft campfire glow near the village plaza (RuneScape-chunky, wholesome).
+	var root := Node3D.new()
+	root.name = "PlazaCampfire"
+	# East of fountain keep-clear, near benches — warm hearth feel
+	root.position = Vector3(6.8, 0, 9.2)
+	_mi(_cyl(0.65, 0.7, 0.12), Vector3(0, 0.08, 0), root, _mats["rock"], "Ring")
+	_mi(_box(Vector3(0.45, 0.12, 0.12)), Vector3(0.05, 0.18, 0.02), root, _mats["wood"], "LogA")
+	_mi(_box(Vector3(0.12, 0.12, 0.42)), Vector3(-0.05, 0.18, -0.02), root, _mats["wood"], "LogB")
+	# Soft flame orb (always-on warm glow)
+	_mi(_sphere(0.18, 0.32), Vector3(0, 0.42, 0), root, _mats["lantern_glow"], "Flame")
+	var light := OmniLight3D.new()
+	light.name = "CampfireGlow"
+	light.light_color = Color(1.0, 0.72, 0.38)
+	light.light_energy = 1.1
+	light.omni_range = 7.5
+	light.omni_attenuation = 1.15
+	light.shadow_enabled = false
+	light.position = Vector3(0, 0.55, 0)
+	root.add_child(light)
+	_plaza_campfire_light = light
+	# Soft ember motes
+	var embers := CPUParticles3D.new()
+	embers.name = "CampfireEmbers"
+	embers.emitting = true
+	embers.amount = 14
+	embers.lifetime = 1.8
+	embers.preprocess = 0.6
+	embers.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	embers.emission_sphere_radius = 0.22
+	embers.direction = Vector3(0, 1, 0)
+	embers.spread = 28.0
+	embers.initial_velocity_min = 0.25
+	embers.initial_velocity_max = 0.85
+	embers.gravity = Vector3(0, 0.15, 0)
+	embers.scale_amount_min = 0.08
+	embers.scale_amount_max = 0.18
+	embers.color = Color(1.0, 0.7, 0.3, 0.85)
+	embers.position = Vector3(0, 0.35, 0)
+	root.add_child(embers)
+	HeadlessGuard.guard_particles(embers)
+	_place_label3d(root, "Campfire", 28, Vector3(0, 1.6, 0), 5, Color(1, 0.92, 0.7, 0.7))
+	static_world.add_child(root)
+
+
+func _update_plaza_campfire(dayness: float) -> void:
+	## Soft hearth stays lit by day; warms up a bit at dusk.
+	if _plaza_campfire_light == null or not is_instance_valid(_plaza_campfire_light):
+		return
+	var dusk: float = clampf((0.62 - dayness) / 0.35, 0.0, 1.0)
+	var pulse: float = 0.9 + 0.12 * abs(sin(float(Time.get_ticks_msec()) * 0.0045))
+	_plaza_campfire_light.light_energy = (0.85 + dusk * 1.15) * pulse
 
 func _update_village_dusk_lamps(dayness: float) -> void:
 	## Wave 28: village lamp posts warm up as dusk falls (RuneScape-chunky, wholesome).

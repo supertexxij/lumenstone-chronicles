@@ -44,14 +44,18 @@ func _finish():
 	print("NPCS", root.get_tree().get_nodes_in_group("npcs").size())
 	var badgers := 0
 	var stags := 0
+	var foxes := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
 		if str(foe.get("kind")) == "cedar_stag":
 			stags += 1
+		if str(foe.get("kind")) == "pine_fox":
+			foxes += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
+	print("FOXES", foxes)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -170,5 +174,11 @@ func _finish():
 	print("MAPLE_COPSE_NODE", world.static_world.get_node_or_null("MapleCopse") != null if world else false)
 	print("WIND_LEAVES_SRC", "_setup_wind_leaves" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("PARENT_EXPORT_SRC", "get_parent_export_line" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("PINE_FOX_SRC", '"pine_fox"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("PLAZA_CAMPFIRE_NODE", world.static_world.get_node_or_null("PlazaCampfire") != null if world else false)
+	print("PLAZA_CAMPFIRE_SRC", "_build_plaza_campfire" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("NPC_TALK_PROMPT_SRC", "Talk (F)" in FileAccess.get_file_as_string("res://scripts/world/npc.gd"))
+	print("TARGET_RETICLE_SRC", "TargetReticle" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("JOURNAL_MASTER_SRC", "Mastered this week" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

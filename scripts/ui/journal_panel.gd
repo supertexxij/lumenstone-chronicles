@@ -38,7 +38,8 @@ func _on_filter(idx: int) -> void:
 func refresh() -> void:
 	var uw: int = GameState.unlocked_week
 	# Wave 27: show campaign name in journal header
-	week_lbl.text = "%s · Week %d unlocked (of 36)" % [_campaign_name(uw), uw]
+	var week_mastered := _count_week_mastered(uw)
+	week_lbl.text = "%s · Week %d unlocked · Mastered %d ★" % [_campaign_name(uw), uw, week_mastered]
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -57,9 +58,10 @@ func refresh() -> void:
 		var unlocked: bool = GameState.is_quest_unlocked(qid)
 		var title_s: String = str(q.get("title", qid))
 		var is_raid := _is_friday_raid(qid, title_s)
-		var mark := "✓" if done else ("·" if unlocked else "🔒")
+		# Wave 31: ★ on mastered quest rows; Friday Raid keeps gold ★ when open
+		var mark := "★" if done else ("·" if unlocked else "🔒")
 		if is_raid:
-			mark = "★✓" if done else ("★" if unlocked else "★🔒")
+			mark = "★" if done else ("★" if unlocked else "★🔒")
 		var guild: String = str(q.get("guild", ""))
 		var gname: String = str(GameState.GUILDS.get(guild, {}).get("short", guild))
 		var raid_tag := " · Friday Raid" if is_raid else ""
@@ -127,7 +129,10 @@ func _unlock_progress_text(uw: int) -> String:
 					raid_done = true
 	var soft_need: int = 4
 	var lines: PackedStringArray = []
-	lines.append("Week %d progress: %d mastered" % [next_w, mastered] + (" of ~%d" % total_week if total_week > 0 else ""))
+	# Wave 31: clearer mastered count for the current week
+	var of_week := (" / %d" % total_week) if total_week > 0 else ""
+	lines.append("Mastered this week: %d%s ★" % [mastered, of_week])
+	lines.append("Week %d · need ≥80%% mastery (or 4+ quests / Friday Raid)" % next_w)
 	if raid_id != "":
 		var rtitle: String = QuestDB.get_quest(raid_id).get("title", raid_id)
 		if raid_done:
@@ -141,6 +146,17 @@ func _unlock_progress_text(uw: int) -> String:
 		lines.insert(0, year_line)
 	return "\n".join(lines)
 
+
+
+func _count_week_mastered(week_n: int) -> int:
+	var n := 0
+	for q in _all_raw():
+		if int(q.get("week", 1)) != week_n:
+			continue
+		var qid: String = str(q.get("id", ""))
+		if qid in GameState.completed_quests:
+			n += 1
+	return n
 
 func _is_friday_raid(qid: String, title: String = "") -> bool:
 	## Wave 23: flag Friday Raid Review / Feast / Supreme for clearer journal marks.
