@@ -33,7 +33,11 @@ Headless smoke:
 
 ## Play the exported builds
 
-### Linux / Ubuntu
+Prefer **GitHub Releases** (binaries are large; `builds/` is gitignored):
+
+https://github.com/supertexxij/lumenstone-chronicles/releases
+
+### Linux / Ubuntu (local export)
 
 ```bash
 chmod +x /workspace/lumenstone-godot/builds/linux/LumenstoneChronicles.x86_64
@@ -42,9 +46,7 @@ chmod +x /workspace/lumenstone-godot/builds/linux/LumenstoneChronicles.x86_64
 
 The `.pck` is **embedded** in the binary (single file).
 
-### Windows
-
-Copy the entire folder to a Windows PC:
+### Windows (local export)
 
 ```
 builds/windows/LumenstoneChronicles.exe
@@ -82,8 +84,10 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Rotate camera | **Q** / **E**, or right-drag |
 | Talk to NPC | **Click** NPC, or walk near and press **F** |
 | Inventory / equip | **I** or HUD button |
+| Quest journal | **J** or HUD button |
 | Wardrobe | **C** or HUD button |
-| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave |
+| Mute audio | **M** or HUD button |
+| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · soft aggro in wilds |
 | Parent dashboard | **Parent** · PIN `1234` |
 
 Camera is elevated oblique (RuneScape-like). Soft defeat respawns at the village fountain; unlocks and gear are kept.
@@ -158,15 +162,18 @@ Camera is elevated oblique (RuneScape-like). Soft defeat respawns at the village
 
 ## What’s implemented (vertical slice)
 
-- Open village green + fountain, paths, trees, **5 guild halls**
-- NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete)
+- Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
+- NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
 - Character customize (skin / hair / cape / outfit) with **humanoid** player mesh
-- Inventory + equip slots (head, cape, accessory, weapon, belt)
+- Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory attach** on character when equipped
+- **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
-- RuneScape-style **tick combat**, HP bars, hitsplats, wholesome defeat verbs, soft respawn
+- RuneScape-style **tick combat** with clearer hitsplats, player weapon swing pose, enemy flinch + death dissolve, soft wild aggro, wholesome defeat verbs, soft respawn
 - Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem
+- **Procedural audio** (footstep, hit/miss, swing, UI click, quest complete, soft ambient drone) + **mute toggle (M)** — no copyrighted music
 - Parent dashboard (PIN **1234**) with progress, week unlock, skills-by-week, **Needs Help** list
 - Saves to `user://lumenstone_save_v1.json`
+
 
 ### Architecture
 
@@ -176,6 +183,7 @@ Camera is elevated oblique (RuneScape-like). Soft defeat respawns at the village
 | `ItemDB` | `data/items.json` |
 | `QuestDB` | `data/quests.json` (Weeks 1–36 / Campaigns I–IV) |
 | `EnemyDB` | `data/enemies.json` + spawns |
+| `AudioBus` | Procedural SFX + ambient; respects mute |
 
 World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/`.
 
@@ -190,13 +198,13 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 ## Limitations
 
 - Chunky low-poly **humanoid** characters (head, torso, arms, legs, feet) — RuneScape-adjacent, not photoreal
-- Equipped hat / cape / weapon / belt show on the player model; NPCs share the same humanoid base
+- Equipped hat / cape / weapon / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
-- Simple code-driven walk bob / arm swing (no skeletal AnimationPlayer clips yet)
+- Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
 - One region (village + wild edges); not a full world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
-- No audio / music yet
-- Combat is click-to-engage auto-attack only
+- Audio is short procedural SFX + soft drone (intentionally no copyrighted songs)
+- Combat is click-to-engage / soft-aggro auto-attack only
 - Learning challenges are in guild quest UI overlays, not mid-fight quizzes
 
 ## Project paths

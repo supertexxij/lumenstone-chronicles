@@ -4,3 +4,9 @@
 export_presets.cfg.bak
 *.tmp
 *~
+
+# Exported binaries — prefer GitHub Releases over git LFS/push pain
+builds/linux/*
+builds/windows/*
+!builds/linux/.gitkeep
+!builds/windows/.gitkeep
