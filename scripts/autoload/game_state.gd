@@ -56,6 +56,7 @@ var seen_wave_54_toast: bool = false  # Wave 54: once-per-save polish tip toast 
 var seen_wave_55_toast: bool = false  # Wave 55: once-per-save polish tip toast on load
 var seen_wave_56_toast: bool = false  # Wave 56: once-per-save polish tip toast on load
 var seen_wave_57_toast: bool = false  # Wave 57: once-per-save polish tip toast on load
+var seen_wave_58_toast: bool = false  # Wave 58: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
@@ -138,6 +139,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_55_toast = false
 	seen_wave_56_toast = false
 	seen_wave_57_toast = false
+	seen_wave_58_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
@@ -328,6 +330,7 @@ func save_game() -> void:
 		"seen_wave_55_toast": seen_wave_55_toast,
 		"seen_wave_56_toast": seen_wave_56_toast,
 		"seen_wave_57_toast": seen_wave_57_toast,
+		"seen_wave_58_toast": seen_wave_58_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
@@ -393,6 +396,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_55_toast = bool(data.get("seen_wave_55_toast", false))
 	seen_wave_56_toast = bool(data.get("seen_wave_56_toast", false))
 	seen_wave_57_toast = bool(data.get("seen_wave_57_toast", false))
+	seen_wave_58_toast = bool(data.get("seen_wave_58_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -717,6 +721,15 @@ func maybe_wave_57_toast() -> void:
 		return
 	seen_wave_57_toast = true
 	toast.emit("Wave 57 polish · reeds sway soft at Reed Pool · clearer Ready mint-gold flash · soft-defeat names Fountain · Open-only count in journal · Cherry Chinchilla in the wilds.")
+	save_game()
+
+
+func maybe_wave_58_toast() -> void:
+	## Wave 58: once-per-save toast (PIN stays 1234; mastery ≥80%).
+	if seen_wave_58_toast:
+		return
+	seen_wave_58_toast = true
+	toast.emit("Wave 58 polish · thistles sway soft at Thistle Rise · clearer soft-aggro mid toast · stronger wardrobe equip sparkle · Parent year % on child line · Plum Porcupine in the wilds.")
 	save_game()
 
 

@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 58 overnight (v1.58.0-overnight)
+- Soft **thistle sway at Thistle Rise** — spiky purple clumps lean gently in the wind (RuneScape-chunky, wholesome); reed sway registration fixed so Reed Pool also breathes
+- Clearer **soft-aggro mid-telegraph toast** — `Name · soft yellow mid · ~Ns — step back now` (no cheesy combat labels)
+- Stronger **wardrobe equip sparkle** — brighter cream flash + more rising gold motes on Look/Wardrobe confirm
+- New wilds foe **Plum Porcupine** — plump body, short snout, soft quill crest, stubby tail, gentle “nested” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla)
+- Parent QoL: **Year %** next to child name line + needs-help empty state with **Week N tip** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 57 overnight (v1.57.0-overnight)
 - Soft **reed sway near Reed Pool** — tall reeds lean gently in the wind (RuneScape-chunky, wholesome)
 - Clearer **food Ready flash color** — bright mint→gold bloom when pantry cooldown ends (no cheesy combat labels)

@@ -116,8 +116,11 @@ func _refresh() -> void:
 	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
 	# Wave 49: highlight needs-help count when >0 (warm amber; PIN stays 1234; mastery ≥80%)
 	var help_bit: String = ("Needs help: [color=#e8a030][b]%d[/b][/color]" % help_n) if help_n > 0 else ("Needs help: [b]%d[/b]" % help_n)
+	# Wave 58: show year % next to child name line (PIN stays 1234; mastery ≥80% unchanged)
+	var year_pct_chip: int = GameState.get_year_progress_percent() if GameState.has_method("get_year_progress_percent") else mastery_pct
+	var child_line: String = "%s · Year %d%%" % [GameState.child_name, year_pct_chip]
 	var lines: String = "[b]Parent Dashboard[/b] · %s\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
-		help_bit, GameState.child_name, GameState.active_slot + 1, last_sess,
+		help_bit, child_line, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
 		uw, camp, week_bar, next_gate,
@@ -141,7 +144,9 @@ func _refresh() -> void:
 			help_title.add_theme_color_override("font_color", Color(0.92, 0.64, 0.18))
 	if help.is_empty():
 		# Wave 35: warmer empty-state encouragement (PIN stays 1234; mastery ≥80%)
-		help_list.add_item("All clear — wonderful work together! Check back after the next lesson.")
+		# Wave 58: needs-help empty state with week tip
+		var tip_week: int = clampi(GameState.unlocked_week, 1, 36)
+		help_list.add_item("All clear — wonderful work together! Tip: Week %d is open — a short review keeps mastery humming." % tip_week)
 	else:
 		help.sort_custom(func(a, b): return float(a.get("percent", 0)) < float(b.get("percent", 0)))
 		for h in help:

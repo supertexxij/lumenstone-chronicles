@@ -428,6 +428,19 @@
       "combat_xp": 198,
       "respawn_sec": 82.0,
       "description": "A fluffy chinchilla of the cherry wilds \u2014 fluff it gently with a careful step!"
+    },
+    "plum_porcupine": {
+      "kind": "plum_porcupine",
+      "name": "Plum Porcupine",
+      "defeat_verb": "nested",
+      "color": "#8a4a6a",
+      "accent": "#e8d0d8",
+      "max_hp": 218,
+      "damage": 36,
+      "accuracy": 0.17,
+      "combat_xp": 204,
+      "respawn_sec": 84.0,
+      "description": "A gentle porcupine of the plum wilds \u2014 nestle it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -1408,6 +1421,36 @@
       "kind": "cherry_chinchilla",
       "x": -40,
       "z": -128
+    },
+    {
+      "id": "e164",
+      "kind": "plum_porcupine",
+      "x": -130,
+      "z": 8
+    },
+    {
+      "id": "e165",
+      "kind": "plum_porcupine",
+      "x": 120,
+      "z": -132
+    },
+    {
+      "id": "e166",
+      "kind": "plum_porcupine",
+      "x": -96,
+      "z": 132
+    },
+    {
+      "id": "e167",
+      "kind": "plum_porcupine",
+      "x": 132,
+      "z": 96
+    },
+    {
+      "id": "e168",
+      "kind": "plum_porcupine",
+      "x": -32,
+      "z": -132
     }
   ],
   "base_combat": {

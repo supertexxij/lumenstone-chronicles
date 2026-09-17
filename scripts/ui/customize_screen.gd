@@ -202,6 +202,7 @@ func _play_wardrobe_flourish() -> void:
 
 func _play_wardrobe_equip_sparkle() -> void:
 	## Wave 42: soft cream/gold wardrobe equip sparkle over the panel (RuneScape-chunky, wholesome).
+	## Wave 58: stronger wardrobe equip sparkle — more motes, brighter bloom, taller rise.
 	var panel: Control = get_node_or_null("Panel")
 	if panel == null:
 		return
@@ -210,28 +211,37 @@ func _play_wardrobe_equip_sparkle() -> void:
 	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_child(host)
+	# Soft cream flash plate behind motes
+	var flash := ColorRect.new()
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	flash.color = Color(1.0, 0.94, 0.78, 0.22)
+	host.add_child(flash)
+	var flash_tw := create_tween()
+	flash_tw.tween_property(flash, "modulate:a", 0.0, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	# Soft rising sparkle motes as ColorRects
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	var tw := create_tween()
 	tw.set_parallel(true)
-	for i in 14:
+	for i in 24:
 		var mote := ColorRect.new()
 		mote.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		mote.custom_minimum_size = Vector2(6, 6)
-		mote.size = Vector2(6, 6)
-		var warm := Color(1.0, 0.92, 0.65, 0.95) if i % 2 == 0 else Color(0.95, 0.85, 0.55, 0.85)
+		var sz := 8.0 if i % 3 != 0 else 11.0
+		mote.custom_minimum_size = Vector2(sz, sz)
+		mote.size = Vector2(sz, sz)
+		var warm := Color(1.0, 0.94, 0.7, 1.0) if i % 2 == 0 else Color(0.98, 0.88, 0.55, 0.95)
 		mote.color = warm
-		var cx := panel.size.x * 0.5 + rng.randf_range(-90.0, 90.0)
-		var cy := panel.size.y * 0.55 + rng.randf_range(-20.0, 40.0)
+		var cx := panel.size.x * 0.5 + rng.randf_range(-110.0, 110.0)
+		var cy := panel.size.y * 0.55 + rng.randf_range(-30.0, 50.0)
 		mote.position = Vector2(cx, cy)
 		host.add_child(mote)
-		var rise := Vector2(cx + rng.randf_range(-30.0, 30.0), cy - rng.randf_range(70.0, 130.0))
-		var dur := rng.randf_range(0.35, 0.55)
+		var rise := Vector2(cx + rng.randf_range(-40.0, 40.0), cy - rng.randf_range(90.0, 170.0))
+		var dur := rng.randf_range(0.4, 0.65)
 		tw.tween_property(mote, "position", rise, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		tw.tween_property(mote, "modulate:a", 0.0, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-		tw.tween_property(mote, "scale", Vector2(0.4, 0.4), dur)
-	get_tree().create_timer(0.7).timeout.connect(func():
+		tw.tween_property(mote, "scale", Vector2(0.35, 0.35), dur)
+	get_tree().create_timer(0.85).timeout.connect(func():
 		if is_instance_valid(host):
 			host.queue_free()
 	)

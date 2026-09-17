@@ -460,7 +460,16 @@ func _finish():
 	print("DEFEAT_FOUNTAIN_SRC", "rest safe at Fountain" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("JOURNAL_OPEN_COUNT_SRC", "Open only · %d" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("WAVE57_TOAST_SRC", "maybe_wave_57_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_157_SRC", 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_157_SRC", 'config/version="1.57.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+	print("PLUM_PORCUPINE_SRC", '"plum_porcupine"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("THISTLE_SWAY_SRC", "_update_thistle_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MID_TELEGRAPH_SRC", "Wave 58: clearer soft-aggro mid-telegraph toast" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("WARDROBE_SPARKLE_SRC", "Wave 58: stronger wardrobe equip sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	print("PARENT_YEAR_PCT_SRC", "Wave 58: show year %" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
+	print("WAVE58_TOAST_SRC", "maybe_wave_58_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_158_SRC", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("WORLD_SMOKE_OK")

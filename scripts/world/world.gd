@@ -34,6 +34,7 @@ var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Copse
 var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
+var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Rise
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
@@ -754,6 +755,7 @@ func _process(delta: float) -> void:
 	_update_landmark_approach()
 	_update_ambient_critters(delta)
 	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
+	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
 
 
 func _landmark_zones() -> Array:
@@ -2620,6 +2622,9 @@ func _build_reed_pool() -> void:
 			var offset := Vector3(rng.randf_range(-0.18, 0.18), h * 0.5, rng.randf_range(-0.18, 0.18))
 			_mi(_cyl(0.035, 0.045, h), offset, reed, _mats["leaf_willow"], "ReedStem")
 			_mi(_sphere(0.07, 0.12), offset + Vector3(0, h * 0.52, 0), reed, _mats["leaf_alt"], "ReedTuft")
+		reed.set_meta("sway_phase", ang + rng.randf() * 0.4)
+		reed.set_meta("sway_amp", rng.randf_range(0.05, 0.09))
+		_reed_sway_nodes.append(reed)
 		if i % 2 == 0:
 			_add_flowers(Vector3(-20.0 + cos(ang) * 4.8, 0, 48.0 + sin(ang) * 4.8), rng)
 	var sign := Node3D.new()
@@ -2645,6 +2650,21 @@ func _update_reed_sway(_delta: float) -> void:
 		var lean := sin(t * 1.15 + phase) * amp
 		reed.rotation.z = lean
 		reed.rotation.x = cos(t * 0.95 + phase * 0.7) * amp * 0.55
+
+
+func _update_thistle_sway(_delta: float) -> void:
+	## Wave 58: soft thistle sway at Thistle Rise — gentle wind lean (RuneScape-chunky, wholesome).
+	if _thistle_sway_nodes.is_empty():
+		return
+	var t := Time.get_ticks_msec() * 0.001
+	for thistle in _thistle_sway_nodes:
+		if thistle == null or not is_instance_valid(thistle):
+			continue
+		var phase := float(thistle.get_meta("sway_phase", 0.0))
+		var amp := float(thistle.get_meta("sway_amp", 0.05))
+		var lean := sin(t * 1.05 + phase) * amp
+		thistle.rotation.z = lean
+		thistle.rotation.x = cos(t * 0.88 + phase * 0.65) * amp * 0.5
 
 
 
@@ -3067,20 +3087,35 @@ func _build_thistle_rise() -> void:
 	_mi(_cyl(4.2, 4.2, 0.08), Vector3(48.0, 0.04, 42.0), root, _mats["grass_dark"], "ThistleClearing")
 	_mi(_cyl(2.4, 2.4, 0.06), Vector3(48.0, 0.08, 42.0), root, _mats["thistle"], "ThistleClearingInner")
 	# Ring of spiky thistle clumps (chunky stems + purple blooms — not soft heather mounds)
+	# Wave 58: each clump is a sway parent so soft thistle sway reads at Thistle Rise
 	for i in 10:
 		var ang := float(i) * TAU / 10.0 + 0.18
 		var hx := 48.0 + cos(ang) * 3.5
 		var hz := 42.0 + sin(ang) * 3.5
-		_mi(_cyl(0.08, 0.1, 0.55), Vector3(hx, 0.28, hz), root, _mats["thistle_leaf"], "ThistleStem%d" % i)
-		_mi(_sphere(0.22, 0.28), Vector3(hx, 0.62, hz), root, _mats["thistle_bloom"], "ThistleBloom%d" % i)
-		_mi(_sphere(0.12, 0.18), Vector3(hx + cos(ang) * 0.15, 0.72, hz + sin(ang) * 0.15), root, _mats["thistle"], "ThistleSpike%d" % i)
+		var clump := Node3D.new()
+		clump.name = "ThistleClump%d" % i
+		clump.position = Vector3(hx, 0, hz)
+		clump.set_meta("sway_phase", ang)
+		clump.set_meta("sway_amp", 0.05 + float(i % 3) * 0.012)
+		root.add_child(clump)
+		_thistle_sway_nodes.append(clump)
+		_mi(_cyl(0.08, 0.1, 0.55), Vector3(0, 0.28, 0), clump, _mats["thistle_leaf"], "ThistleStem")
+		_mi(_sphere(0.22, 0.28), Vector3(0, 0.62, 0), clump, _mats["thistle_bloom"], "ThistleBloom")
+		_mi(_sphere(0.12, 0.18), Vector3(cos(ang) * 0.15, 0.72, sin(ang) * 0.15), clump, _mats["thistle"], "ThistleSpike")
 	# Inner thistles + resting stone + benches + lanterns
 	for i in 5:
 		var ang := float(i) * TAU / 5.0
 		var ix := 48.0 + cos(ang) * 1.5
 		var iz := 42.0 + sin(ang) * 1.5
-		_mi(_cyl(0.07, 0.09, 0.45), Vector3(ix, 0.24, iz), root, _mats["thistle_leaf"], "ThistleInnerStem%d" % i)
-		_mi(_sphere(0.16, 0.2), Vector3(ix, 0.52, iz), root, _mats["thistle_bloom"], "ThistleInnerBloom%d" % i)
+		var iclump := Node3D.new()
+		iclump.name = "ThistleInner%d" % i
+		iclump.position = Vector3(ix, 0, iz)
+		iclump.set_meta("sway_phase", ang + 1.2)
+		iclump.set_meta("sway_amp", 0.04)
+		root.add_child(iclump)
+		_thistle_sway_nodes.append(iclump)
+		_mi(_cyl(0.07, 0.09, 0.45), Vector3(0, 0.24, 0), iclump, _mats["thistle_leaf"], "ThistleInnerStem")
+		_mi(_sphere(0.16, 0.2), Vector3(0, 0.52, 0), iclump, _mats["thistle_bloom"], "ThistleInnerBloom")
 	_mi(_cyl(0.55, 0.65, 0.45), Vector3(48.0, 0.28, 42.0), root, _mats["stone"], "ThistleStone")
 	_mi(_sphere(0.18, 0.2), Vector3(48.0, 0.58, 42.0), root, _mats["thistle_bloom"], "StoneThistle")
 	_add_bench(Vector3(50.5, 0, 40.2), 0.4)

@@ -122,6 +122,9 @@ func _ready() -> void:
 		"cherry_chinchilla":
 			if label: label.position.y = 1.45
 			hp_bar.position.y = 1.2
+		"plum_porcupine":
+			if label: label.position.y = 1.5
+			hp_bar.position.y = 1.25
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -390,7 +393,8 @@ func _soft_aggro(delta: float) -> void:
 			_countdown_nudge = true
 			var foe_mid: String = str(def.get("name", "Foe"))
 			var remain_mid: float = maxf(0.1, telegraph_sec - _aggro_pulse)
-			GameState.toast.emit("%s · still watching · ~%.1fs…" % [foe_mid, remain_mid])
+			# Wave 58: clearer soft-aggro mid-telegraph toast (no cheesy combat labels)
+			GameState.toast.emit("%s · soft yellow mid · ~%.1fs — step back now" % [foe_mid, remain_mid])
 		_was_warning = warning
 		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
@@ -739,6 +743,17 @@ func _idle_anim(delta: float) -> void:
 			if ctail:
 				ctail.rotation.y = sin(t * 0.95) * 0.2
 				ctail.rotation.x = deg_to_rad(-22) + sin(t * 0.7) * 0.07
+		"plum_porcupine":
+			# Soft nestle-bob — quills breathe, stubby tail sways (Wave 58)
+			creature_bob.position.y = abs(sin(t * 0.8)) * 0.028
+			creature_bob.rotation.y = sin(t * 0.38) * 0.09
+			var pq := creature_bob.get_node_or_null("Quills")
+			if pq:
+				pq.rotation.x = sin(t * 0.9) * 0.06
+				pq.rotation.z = cos(t * 0.75) * 0.04
+			var ptail := creature_bob.get_node_or_null("Tail")
+			if ptail:
+				ptail.rotation.y = sin(t * 0.85) * 0.15
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

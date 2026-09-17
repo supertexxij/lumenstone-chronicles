@@ -137,6 +137,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_lemming(bob)
 		"cherry_chinchilla":
 			_build_chinchilla(bob)
+		"plum_porcupine":
+			_build_porcupine(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1220,4 +1222,50 @@ static func _build_chinchilla(bob: Node3D) -> void:
 		_mi(_cyl(0.015, 0.017, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.036, 0.012, 0.04)), Vector3(0, -0.07, 0.01), leg, "Foot")
 
+static func _build_porcupine(bob: Node3D) -> void:
+	## Soft plum-wilds porcupine — plump body, short rounded snout, soft quill crest, stubby tail (distinct from Cherry Chinchilla / Hazel Hedgehog / Chestnut Toad / Magnolia Beaver).
+	# Plump rounded body
+	_mi(_sphere(0.20, 0.18), Vector3(0, 0.36, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.11, 0.09), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Round head
+	_mi(_sphere(0.12), Vector3(0, 0.48, 0.08), bob, "Head")
+	# Small rounded ears
+	_mi(_sphere(0.04, 0.018), Vector3(-0.09, 0.58, -0.01), bob, "EarL")
+	_mi(_sphere(0.04, 0.018), Vector3(0.09, 0.58, -0.01), bob, "EarR")
+	# Soft eyes
+	_mi(_sphere(0.024), Vector3(-0.04, 0.50, 0.16), bob, "EyeL")
+	_mi(_sphere(0.024), Vector3(0.04, 0.50, 0.16), bob, "EyeR")
+	_mi(_sphere(0.01), Vector3(-0.04, 0.505, 0.175), bob, "PupilL")
+	_mi(_sphere(0.01), Vector3(0.04, 0.505, 0.175), bob, "PupilR")
+	# Short blunt snout
+	_mi(_sphere(0.035, 0.028), Vector3(0, 0.44, 0.17), bob, "Snout")
+	# Soft quill crest (signature — chunky spines, not hedgehog nubs)
+	var quills := Node3D.new()
+	quills.name = "Quills"
+	quills.position = Vector3(0, 0.42, -0.02)
+	bob.add_child(quills)
+	for i in 7:
+		var ang := (float(i) / 6.0 - 0.5) * 0.9
+		var q := _mi(_cyl(0.018, 0.012, 0.22), Vector3(ang * 0.12, 0.08, -0.04 - abs(ang) * 0.04), quills, "Quill%d" % i)
+		q.rotation_degrees = Vector3(-35 - abs(ang) * 20.0, ang * 40.0, ang * 15.0)
+	# Soft rear fluff / stubby tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.30, -0.16)
+	bob.add_child(tail)
+	_mi(_sphere(0.06, 0.05), Vector3(0, 0.0, -0.04), tail, "TailPuff")
+	# Short soft legs
+	for info in [
+		["FL", Vector3(-0.08, 0.14, 0.07)],
+		["FR", Vector3(0.08, 0.14, 0.07)],
+		["BL", Vector3(-0.08, 0.14, -0.06)],
+		["BR", Vector3(0.08, 0.14, -0.06)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.016, 0.018, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.038, 0.012, 0.042)), Vector3(0, -0.07, 0.01), leg, "Foot")
 
