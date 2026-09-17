@@ -220,6 +220,19 @@
       "combat_xp": 102,
       "respawn_sec": 50.0,
       "description": "A plump duck of the alder wilds \u2014 cradle it gently with a careful step!"
+    },
+    "fir_frog": {
+      "kind": "fir_frog",
+      "name": "Fir Frog",
+      "defeat_verb": "cushioned",
+      "color": "#4a7a3a",
+      "accent": "#e8d4a0",
+      "max_hp": 122,
+      "damage": 20,
+      "accuracy": 0.36,
+      "combat_xp": 108,
+      "respawn_sec": 52.0,
+      "description": "A plump frog of the fir wilds \u2014 cushion it gently with a careful step!"
     }
   },
   "spawns": [
@@ -720,6 +733,36 @@
       "kind": "alder_duck",
       "x": -20,
       "z": 78
+    },
+    {
+      "id": "e84",
+      "kind": "fir_frog",
+      "x": -76,
+      "z": -28
+    },
+    {
+      "id": "e85",
+      "kind": "fir_frog",
+      "x": 76,
+      "z": -48
+    },
+    {
+      "id": "e86",
+      "kind": "fir_frog",
+      "x": -62,
+      "z": 68
+    },
+    {
+      "id": "e87",
+      "kind": "fir_frog",
+      "x": 58,
+      "z": 72
+    },
+    {
+      "id": "e88",
+      "kind": "fir_frog",
+      "x": 18,
+      "z": -80
     }
   ],
   "base_combat": {

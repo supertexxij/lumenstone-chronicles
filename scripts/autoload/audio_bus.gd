@@ -20,6 +20,8 @@ var _wind: AudioStreamPlayer
 var _wind_wanted: bool = false  # Wave 34: soft outdoor wind whoosh
 var _hall_reverb: AudioStreamPlayer
 var _hall_reverb_wanted: bool = false  # Wave 37: soft indoor hall reverb cue
+var _hall_chatter: AudioStreamPlayer
+var _hall_chatter_wanted: bool = false  # Wave 42: soft guild-hall ambient chatter
 var _leaf_rustle: AudioStreamPlayer
 var _leaf_rustle_wanted: bool = false  # Wave 37: leaf rustle near trees
 var _brook_murmur: AudioStreamPlayer
@@ -94,6 +96,12 @@ func _ready() -> void:
 	_hall_reverb.volume_db = -30.0
 	_hall_reverb.stream = _streams.get("hall_reverb")
 	add_child(_hall_reverb)
+	_hall_chatter = AudioStreamPlayer.new()
+	_hall_chatter.name = "HallChatter"
+	_hall_chatter.bus = "Master"
+	_hall_chatter.volume_db = -28.0
+	_hall_chatter.stream = _streams.get("hall_chatter")
+	add_child(_hall_chatter)
 	_leaf_rustle = AudioStreamPlayer.new()
 	_leaf_rustle.name = "LeafRustle"
 	_leaf_rustle.bus = "Master"
@@ -155,6 +163,8 @@ func _apply_mute() -> void:
 			_wind.stop()
 		if _hall_reverb and _hall_reverb.playing:
 			_hall_reverb.stop()
+		if _hall_chatter and _hall_chatter.playing:
+			_hall_chatter.stop()
 		if _leaf_rustle and _leaf_rustle.playing:
 			_leaf_rustle.stop()
 		if _brook_murmur and _brook_murmur.playing:
@@ -171,6 +181,7 @@ func _apply_mute() -> void:
 			_sync_campfire_audio()
 			_sync_wind_audio()
 			_sync_hall_reverb_audio()
+			_sync_hall_chatter_audio()
 			_sync_leaf_rustle_audio()
 			_sync_brook_murmur_audio()
 
@@ -196,6 +207,7 @@ func stop_ambient() -> void:
 	set_campfire_audio(false)
 	set_wind_audio(false)
 	set_hall_reverb(false)
+	set_hall_chatter(false)
 	set_leaf_rustle(false)
 	set_brook_murmur(false)
 
@@ -273,6 +285,7 @@ func _build_streams() -> void:
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
+	_streams["hall_chatter"] = _soft_hall_chatter(7.0, 0.055)  # Wave 42: soft guild-hall ambient chatter
 	_streams["leaf_rustle"] = _soft_leaf_rustle(5.5, 0.07)  # Wave 37: leaf rustle near trees
 	_streams["brook_murmur"] = _soft_brook_murmur(6.0, 0.07)  # Wave 38: soft brook murmur near water
 
@@ -309,6 +322,11 @@ func set_hall_reverb(on: bool) -> void:
 	_hall_reverb_wanted = on
 	_sync_hall_reverb_audio()
 
+
+func set_hall_chatter(on: bool) -> void:
+	## Wave 42: soft guild-hall ambient chatter when indoors (respects mute; RuneScape-chunky, wholesome).
+	_hall_chatter_wanted = on
+	_sync_hall_chatter_audio()
 
 func set_leaf_rustle(on: bool) -> void:
 	## Wave 37: soft leaf rustle when near trees outdoors (respects mute).
@@ -441,6 +459,20 @@ func _sync_hall_reverb_audio() -> void:
 				_hall_reverb.play()
 		elif _hall_reverb.playing:
 			_hall_reverb.stop()
+
+func _sync_hall_chatter_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _hall_chatter:
+		var should: bool = _hall_chatter_wanted and can
+		if should:
+			if _hall_chatter.stream == null:
+				_hall_chatter.stream = _streams.get("hall_chatter")
+			if not _hall_chatter.playing and _hall_chatter.stream:
+				_hall_chatter.play()
+		elif _hall_chatter.playing:
+			_hall_chatter.stop()
 
 func _sync_leaf_rustle_audio() -> void:
 	if not _ready_ok:
@@ -680,6 +712,34 @@ func _soft_hall_reverb(dur: float, amp: float) -> AudioStreamWAV:
 		var echo := sin(TAU * 220.0 * tt) * 0.05 * (0.5 + 0.5 * sin(TAU * 0.35 * tt))
 		var breathe := 0.85 + 0.15 * sin(TAU * 0.09 * tt)
 		samples[i] = (prev * 0.55 + warm + echo) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _soft_hall_chatter(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 42: soft guild-hall ambient chatter — warm murmur of quiet voices & paper rustle (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		prev = prev * 0.92 + noise * 0.08
+		# Soft formant-ish murmur (not intelligible words)
+		var mur1 := sin(TAU * 180.0 * tt + sin(TAU * 2.1 * tt) * 0.8) * 0.14
+		var mur2 := sin(TAU * 240.0 * tt + sin(TAU * 1.4 * tt) * 1.1) * 0.10
+		var mur3 := sin(TAU * 320.0 * tt) * 0.05 * (0.5 + 0.5 * sin(TAU * 0.37 * tt))
+		var paper: float = prev * 0.25 * (0.4 + 0.6 * absf(sin(TAU * 0.55 * tt)))
+		var breathe := 0.8 + 0.2 * sin(TAU * 0.11 * tt)
+		var burst := 1.0
+		if fmod(tt * 0.47, 1.0) < 0.08:
+			burst = 1.15  # soft chatter swell
+		samples[i] = (prev * 0.35 + mur1 + mur2 + mur3 + paper) * amp * breathe * burst
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

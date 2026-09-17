@@ -39,7 +39,9 @@ func refresh() -> void:
 	var uw: int = GameState.unlocked_week
 	# Wave 27: show campaign name in journal header
 	var week_mastered := _count_week_mastered(uw)
-	week_lbl.text = "%s · Week %d unlocked · Mastered %d ★" % [_campaign_name(uw), uw, week_mastered]
+	# Wave 42: campaign progress fraction in header (PIN 1234; mastery ≥80% unchanged)
+	var camp_frac := _campaign_progress_fraction(uw)
+	week_lbl.text = "%s · Week %d/36 · %s · Mastered %d ★" % [_campaign_name(uw), uw, camp_frac, week_mastered]
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -89,7 +91,10 @@ func refresh() -> void:
 			mark = "★" if done else ("★" if unlocked else "★🔒")
 		var guild: String = str(q.get("guild", ""))
 		var gname: String = str(GameState.GUILDS.get(guild, {}).get("short", guild))
-		var raid_tag := " · Friday Raid" if is_raid else ""
+		var raid_tag := ""
+		if is_raid:
+			# Wave 42: clearer next Friday Raid mark when open
+			raid_tag = " · ★ Friday Raid → NEXT" if (unlocked and not done) else (" · ★ Friday Raid" if done else " · ★ Friday Raid")
 		# Wave 36: show mastery % on attempted-not-mastered rows (PIN 1234; ≥80% unchanged)
 		var pct_tag := ""
 		if unlocked and not done and GameState.has_method("get_latest_attempt_percent"):
@@ -101,8 +106,8 @@ func refresh() -> void:
 		if not unlocked:
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.55, 0.55, 0.6))
 		elif is_raid and not done:
-			# Wave 23: gold highlight so Friday Raid Review stands out in the journal
-			list.set_item_custom_fg_color(list.item_count - 1, Color(0.92, 0.78, 0.28))
+			# Wave 23/42: brighter gold so next Friday Raid Review stands out more
+			list.set_item_custom_fg_color(list.item_count - 1, Color(1.0, 0.86, 0.22))
 		elif done:
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.45, 0.75, 0.45))
 		elif is_raid and done:
@@ -172,7 +177,8 @@ func _unlock_progress_text(uw: int) -> String:
 		if raid_done:
 			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
 		else:
-			lines.append("★ Next unlock: master Friday Raid “%s” (≥80%%), or master 4+ quests this week (%d/4)." % [rtitle, mastered])
+			# Wave 42: highlight next Friday Raid more in the progress header
+			lines.append("→ NEXT ★ Friday Raid: “%s” — master ≥80%% (or 4+ quests this week: %d/4)." % [rtitle, mastered])
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
 	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
@@ -255,4 +261,21 @@ func _campaign_name(week: int) -> String:
 	if week <= 27:
 		return "Campaign III — Builders of the Republic"
 	return "Campaign IV — Light for the Realm"
+
+func _campaign_progress_fraction(week: int) -> String:
+	## Wave 42: "Campaign N · a/b" so year progress reads at a glance (PIN 1234; mastery ≥80% unchanged).
+	var start := 1
+	var end := 9
+	var camp := 1
+	if week <= 9:
+		camp = 1; start = 1; end = 9
+	elif week <= 18:
+		camp = 2; start = 10; end = 18
+	elif week <= 27:
+		camp = 3; start = 19; end = 27
+	else:
+		camp = 4; start = 28; end = 36
+	var local := clampi(week - start + 1, 1, end - start + 1)
+	var span := end - start + 1
+	return "Campaign %d · %d/%d" % [camp, local, span]
 

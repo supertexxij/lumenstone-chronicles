@@ -105,6 +105,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_chipmunk(bob)
 		"alder_duck":
 			_build_duck(bob)
+		"fir_frog":
+			_build_frog(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -619,3 +621,41 @@ static func _build_duck(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.025, 0.03, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.08, 0.025, 0.1)), Vector3(0, -0.09, 0.03), leg, "Paddle")
+
+static func _build_frog(bob: Node3D) -> void:
+	## Soft fir-wilds frog — plump body, bulging eyes, short hop legs, tiny toe pads (distinct from duck/mole/chipmunk).
+	_mi(_sphere(0.22, 0.26), Vector3(0, 0.36, 0), bob, "Body")
+	_mi(_sphere(0.14), Vector3(0, 0.48, 0.16), bob, "Head")
+	# Bulging eyes (signature)
+	_mi(_sphere(0.055), Vector3(-0.08, 0.58, 0.18), bob, "EyeL")
+	_mi(_sphere(0.055), Vector3(0.08, 0.58, 0.18), bob, "EyeR")
+	_mi(_sphere(0.025), Vector3(-0.08, 0.60, 0.22), bob, "PupilL")
+	_mi(_sphere(0.025), Vector3(0.08, 0.60, 0.22), bob, "PupilR")
+	# Soft cream throat pouch
+	_mi(_sphere(0.08, 0.1), Vector3(0, 0.40, 0.24), bob, "Throat")
+	# Tiny smile ridge
+	_mi(_box(Vector3(0.1, 0.02, 0.03)), Vector3(0, 0.44, 0.30), bob, "Smile")
+	# Folded hop legs (hind) + short front toes
+	for info in [
+		["FL", Vector3(-0.10, 0.16, 0.10)],
+		["FR", Vector3(0.10, 0.16, 0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.03, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.07, 0.025, 0.08)), Vector3(0, -0.08, 0.02), leg, "Toe")
+	for info in [
+		["BL", Vector3(-0.12, 0.18, -0.08)],
+		["BR", Vector3(0.12, 0.18, -0.08)],
+	]:
+		var leg2 := Node3D.new()
+		leg2.name = "Leg" + str(info[0])
+		leg2.position = info[1]
+		bob.add_child(leg2)
+		_mi(_capsule(0.045, 0.14), Vector3(0, -0.02, 0), leg2, "Thigh")
+		_mi(_box(Vector3(0.1, 0.03, 0.12)), Vector3(0, -0.12, 0.04), leg2, "Pad")
+	# Soft stubby tail nub
+	_mi(_sphere(0.05), Vector3(0, 0.34, -0.20), bob, "Nub")
+

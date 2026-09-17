@@ -54,6 +54,7 @@ func _finish():
 	var moles := 0
 	var chipmunks := 0
 	var ducks := 0
+	var frogs := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -79,6 +80,8 @@ func _finish():
 			chipmunks += 1
 		if str(foe.get("kind")) == "alder_duck":
 			ducks += 1
+		if str(foe.get("kind")) == "fir_frog":
+			frogs += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -92,6 +95,7 @@ func _finish():
 	print("MOLES", moles)
 	print("CHIPMUNKS", chipmunks)
 	print("DUCKS", ducks)
+	print("FROGS", frogs)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -277,5 +281,13 @@ func _finish():
 	print("HP_COMBAT_LV_SRC", "HP %d / %d · Lv %d" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("FOOD_READY_FLASH_SRC", "_food_ready_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("VERSION_141_SRC", 'config/version="1.41.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("FIR_FROG_SRC", '"fir_frog"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("HALL_CHATTER_SRC", "set_hall_chatter" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("FOUNTAIN_GLOW_SRC", "FountainRestoreGlow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("WARDROBE_SPARKLE_SRC", "_play_wardrobe_equip_sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	print("JOURNAL_PROGRESS_SRC", "_campaign_progress_fraction" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("VERSION_142_SRC", 'config/version="1.42.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
 	print("WORLD_SMOKE_OK")
 	quit(0)

@@ -258,7 +258,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
-### Wave 41 overnight (v1.41.0-overnight)
+### Wave 42 overnight (v1.42.0-overnight)
+- Soft **guild-hall ambient chatter** — warm murmur of quiet voices & paper rustle indoors (with hall reverb; respects mute; RuneScape-chunky, wholesome)
+- Clearer **soft-defeat fountain glow** — warm cream OmniLight pulse with the restore sparkles/mist at the village fountain
+- Soft **wardrobe equip sparkle** — cream/gold motes when confirming Look/Wardrobe changes
+- New wilds foe **Fir Frog** — plump body, bulging eyes, hop legs, toe pads, gentle “cushioned” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck)
+- Journal QoL: header shows **Week N/36** + **Campaign N · a/b** progress fraction; clearer **★ Friday Raid → NEXT** highlight (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
+### Wave 41### Wave 41 overnight (v1.41.0-overnight)
 - Soft **rain puddle ripples** — gentle expanding rings on the ground while raining outdoors (with splash; RuneScape-chunky, wholesome)
 - Clearer **first-fight tip** — soft ticks (~0.7s) + walk away / click ground to leave
 - New wilds foe **Alder Duck** — plump body, flat bill, short wings, paddle feet, gentle “cradled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk)

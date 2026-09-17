@@ -902,6 +902,8 @@ func _update_day_night(delta: float) -> void:
 	# Wave 37: soft indoor hall reverb cue (on indoors)
 	if AudioBus.has_method("set_hall_reverb"):
 		AudioBus.set_hall_reverb(_inside_hall != "")
+	if AudioBus.has_method("set_hall_chatter"):
+		AudioBus.set_hall_chatter(_inside_hall != "")
 	_update_leaf_rustle()
 	_update_brook_murmur()
 	_update_village_dusk_lamps(dayness)
@@ -1376,6 +1378,8 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 		AudioBus.set_wind_audio(false)
 	if AudioBus.has_method("set_hall_reverb"):
 		AudioBus.set_hall_reverb(true)
+	if AudioBus.has_method("set_hall_chatter"):
+		AudioBus.set_hall_chatter(true)
 	if AudioBus.has_method("set_leaf_rustle"):
 		AudioBus.set_leaf_rustle(false)
 	if AudioBus.has_method("set_brook_murmur"):
@@ -1397,6 +1401,8 @@ func _exit_hall(body: Node) -> void:
 	_inside_hall = ""
 	if AudioBus.has_method("set_hall_reverb"):
 		AudioBus.set_hall_reverb(false)
+	if AudioBus.has_method("set_hall_chatter"):
+		AudioBus.set_hall_chatter(false)
 	_door_cooldown = 1.2
 	body.global_position = _outdoor_return
 	if "has_click_target" in body:
@@ -3061,11 +3067,24 @@ func _play_fountain_restore_fx() -> void:
 	mist.color = Color(0.85, 0.95, 1.0, 0.55)
 	HeadlessGuard.guard_particles(mist)
 	anchor.add_child(mist)
+	# Wave 42: clearer soft-defeat fountain glow — warm cream OmniLight pulse (RuneScape-chunky, wholesome)
+	var glow := OmniLight3D.new()
+	glow.name = "FountainRestoreGlow"
+	glow.position = Vector3(0, 1.4, 0)
+	glow.light_color = Color(1.0, 0.92, 0.7)
+	glow.light_energy = 2.4
+	glow.omni_range = 6.5
+	glow.shadow_enabled = false
+	anchor.add_child(glow)
+	var tw := create_tween()
+	tw.tween_property(glow, "light_energy", 0.15, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	get_tree().create_timer(2.0).timeout.connect(func():
 		if is_instance_valid(fx):
 			fx.queue_free()
 		if is_instance_valid(mist):
 			mist.queue_free()
+		if is_instance_valid(glow):
+			glow.queue_free()
 	)
 
 func _play_quest_victory_sparkle(_quest_id: String = "") -> void:

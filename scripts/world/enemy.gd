@@ -92,6 +92,9 @@ func _ready() -> void:
 		"alder_duck":
 			if label: label.position.y = 1.3
 			hp_bar.position.y = 1.05
+		"fir_frog":
+			if label: label.position.y = 1.25
+			hp_bar.position.y = 1.0
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -487,6 +490,25 @@ func _idle_anim(delta: float) -> void:
 			if dtail:
 				dtail.rotation.y = sin(t * 0.9) * 0.12
 				dtail.rotation.x = deg_to_rad(-25) + sin(t * 0.7) * 0.06
+		"fir_frog":
+			# Soft hop-settle — throat pouch puffs, eyes blink-bob, hind pads flex (Wave 42)
+			creature_bob.position.y = abs(sin(t * 0.95)) * 0.04
+			creature_bob.rotation.y = sin(t * 0.38) * 0.09
+			var throat := creature_bob.get_node_or_null("Throat")
+			if throat:
+				throat.scale = Vector3.ONE * (1.0 + sin(t * 1.3) * 0.08)
+			var el := creature_bob.get_node_or_null("EyeL")
+			var er := creature_bob.get_node_or_null("EyeR")
+			if el:
+				el.position.y = 0.58 + sin(t * 1.5) * 0.008
+			if er:
+				er.position.y = 0.58 + sin(t * 1.5 + 0.3) * 0.008
+			var bl := creature_bob.get_node_or_null("LegBL")
+			var br := creature_bob.get_node_or_null("LegBR")
+			if bl:
+				bl.rotation.x = sin(t * 0.95) * 0.12
+			if br:
+				br.rotation.x = -sin(t * 0.95) * 0.12
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

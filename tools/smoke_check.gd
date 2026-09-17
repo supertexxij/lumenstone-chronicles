@@ -318,5 +318,17 @@ func _initialize():
 	print("PIN_STILL_1234_W41", "const DEFAULT_PIN := \"1234\"" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or 'DEFAULT_PIN := "1234"' in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("MASTERY_80_W41", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("NO_DAY_CASH_W41", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+	print("VERSION_142", 'config/version="1.42.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("FIR_FROG", '"fir_frog"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_frog" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e88"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("HALL_CHATTER_W42", "set_hall_chatter" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "HallChatter" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "set_hall_chatter" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("FOUNTAIN_GLOW_W42", "FountainRestoreGlow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 42: clearer soft-defeat fountain glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("WARDROBE_SPARKLE_W42", "_play_wardrobe_equip_sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd") and "WardrobeEquipSparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
+	var jp42 = FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd")
+	print("JOURNAL_PROGRESS_W42", "_campaign_progress_fraction" in jp42 and "Week %d/36" in jp42 and "Friday Raid → NEXT" in jp42)
+	print("PIN_STILL_1234_W42", "const DEFAULT_PIN := \"1234\"" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or 'DEFAULT_PIN := "1234"' in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("MASTERY_80_W42", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("NO_DAY_CASH_W42", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

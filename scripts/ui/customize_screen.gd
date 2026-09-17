@@ -154,6 +154,8 @@ func _on_ok() -> void:
 		"cape_color": cape_opt.get_selected_metadata(),
 		"outfit": outfit_opt.get_selected_metadata(),
 	}
+	if wardrobe_mode:
+		_play_wardrobe_equip_sparkle()  # Wave 42: soft equip sparkle
 	confirmed.emit(name_edit.text.strip_edges(), app)
 
 
@@ -169,3 +171,40 @@ func _play_wardrobe_flourish() -> void:
 	tw.set_parallel(true)
 	tw.tween_property(panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.18)
+
+func _play_wardrobe_equip_sparkle() -> void:
+	## Wave 42: soft cream/gold wardrobe equip sparkle over the panel (RuneScape-chunky, wholesome).
+	var panel: Control = get_node_or_null("Panel")
+	if panel == null:
+		return
+	var host := Control.new()
+	host.name = "WardrobeEquipSparkle"
+	host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.add_child(host)
+	# Soft rising sparkle motes as ColorRects
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var tw := create_tween()
+	tw.set_parallel(true)
+	for i in 14:
+		var mote := ColorRect.new()
+		mote.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		mote.custom_minimum_size = Vector2(6, 6)
+		mote.size = Vector2(6, 6)
+		var warm := Color(1.0, 0.92, 0.65, 0.95) if i % 2 == 0 else Color(0.95, 0.85, 0.55, 0.85)
+		mote.color = warm
+		var cx := panel.size.x * 0.5 + rng.randf_range(-90.0, 90.0)
+		var cy := panel.size.y * 0.55 + rng.randf_range(-20.0, 40.0)
+		mote.position = Vector2(cx, cy)
+		host.add_child(mote)
+		var rise := Vector2(cx + rng.randf_range(-30.0, 30.0), cy - rng.randf_range(70.0, 130.0))
+		var dur := rng.randf_range(0.35, 0.55)
+		tw.tween_property(mote, "position", rise, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tw.tween_property(mote, "modulate:a", 0.0, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tw.tween_property(mote, "scale", Vector2(0.4, 0.4), dur)
+	get_tree().create_timer(0.7).timeout.connect(func():
+		if is_instance_valid(host):
+			host.queue_free()
+	)
+
