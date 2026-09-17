@@ -10,3 +10,6 @@ builds/linux/*
 builds/windows/*
 !builds/linux/.gitkeep
 !builds/windows/.gitkeep
+
+# Godot editor binary (downloaded by .cursor/install.sh; too large to commit)
+tools/godot/
