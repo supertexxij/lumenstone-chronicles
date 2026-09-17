@@ -101,6 +101,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_mouse(bob)
 		"spruce_mole":
 			_build_mole(bob)
+		"beech_chipmunk":
+			_build_chipmunk(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -543,3 +545,40 @@ static func _build_mole(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.035, 0.10), Vector3(0, -0.01, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.07, 0.025, 0.09)), Vector3(0, -0.08, 0.02), leg, "Paw")
+
+static func _build_chipmunk(bob: Node3D) -> void:
+	## Soft beech-wilds chipmunk — round body, cheek pouches, stripe line, short bushy tail (distinct from squirrel/mouse/mole).
+	_mi(_sphere(0.17, 0.24), Vector3(0, 0.40, 0), bob, "Body")
+	_mi(_sphere(0.13), Vector3(0, 0.50, 0.20), bob, "Head")
+	# Soft cheek pouches (signature vs squirrel)
+	_mi(_sphere(0.07), Vector3(-0.10, 0.46, 0.22), bob, "CheekL")
+	_mi(_sphere(0.07), Vector3(0.10, 0.46, 0.22), bob, "CheekR")
+	_mi(_sphere(0.04), Vector3(0, 0.46, 0.30), bob, "Snout")
+	# Small upright ears
+	_mi(_sphere(0.045), Vector3(-0.07, 0.62, 0.16), bob, "EarL")
+	_mi(_sphere(0.045), Vector3(0.07, 0.62, 0.16), bob, "EarR")
+	# Back stripe (accent-friendly dark line)
+	_mi(_box(Vector3(0.04, 0.02, 0.28)), Vector3(0, 0.52, -0.02), bob, "Stripe")
+	_mi(_box(Vector3(0.025, 0.015, 0.22)), Vector3(-0.06, 0.50, -0.02), bob, "StripeL")
+	_mi(_box(Vector3(0.025, 0.015, 0.22)), Vector3(0.06, 0.50, -0.02), bob, "StripeR")
+	# Short bushy upright tail (not squirrel-tall)
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.42, -0.18)
+	tail.rotation_degrees = Vector3(-35, 0, 0)
+	bob.add_child(tail)
+	_mi(_sphere(0.09, 0.14), Vector3(0, 0.08, -0.06), tail, "TailBush")
+	_mi(_sphere(0.05), Vector3(0, 0.16, -0.10), tail, "TailTip")
+	# Four small paws
+	for info in [
+		["FL", Vector3(-0.08, 0.16, 0.10)],
+		["FR", Vector3(0.08, 0.16, 0.10)],
+		["BL", Vector3(-0.08, 0.16, -0.10)],
+		["BR", Vector3(0.08, 0.16, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.03, 0.11), Vector3(0, -0.02, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.055, 0.03, 0.07)), Vector3(0, -0.09, 0.02), leg, "Paw")

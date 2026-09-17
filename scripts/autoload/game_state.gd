@@ -936,6 +936,11 @@ func _recalc_unlocked_week() -> void:
 		# Wave 23: include year progress % so the learning loop feels paced
 		var year_pct: int = int(round(float(unlocked_week) / 36.0 * 100.0))
 		toast.emit("Campaign Week %d unlocked! (~%d%% of the year). Visit the guild halls." % [unlocked_week, year_pct])
+		# Wave 40: soft milestone toast every 5 weeks unlocked (RuneScape-chunky, wholesome)
+		if unlocked_week % 5 == 0 and unlocked_week < 36:
+			toast.emit("✦ Milestone · Week %d unlocked — a soft fifth-mark (~%d%% of the year). Well done!" % [unlocked_week, year_pct])
+		elif unlocked_week == 36:
+			toast.emit("✦ Milestone · Full year unlocked — Week 36. What a faithful journey!")
 
 func is_quest_unlocked(quest_id: String) -> bool:
 	var q: Dictionary = QuestDB.get_quest(quest_id)

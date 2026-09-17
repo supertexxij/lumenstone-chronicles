@@ -86,6 +86,9 @@ func _ready() -> void:
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
+		"beech_chipmunk":
+			if label: label.position.y = 1.35
+			hp_bar.position.y = 1.1
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -449,6 +452,20 @@ func _idle_anim(delta: float) -> void:
 			var nose := creature_bob.get_node_or_null("Nose")
 			if nose:
 				nose.position.y = 0.28 + sin(t * 1.1) * 0.01
+		"beech_chipmunk":
+			# Soft forage-bob — cheeks puff, stripe body wiggles, short tail flicks (Wave 40)
+			creature_bob.position.y = abs(sin(t * 1.0)) * 0.035
+			creature_bob.rotation.y = sin(t * 0.55) * 0.14
+			var cl := creature_bob.get_node_or_null("CheekL")
+			var cr := creature_bob.get_node_or_null("CheekR")
+			if cl:
+				cl.scale = Vector3.ONE * (1.0 + sin(t * 1.4) * 0.06)
+			if cr:
+				cr.scale = Vector3.ONE * (1.0 + sin(t * 1.4 + 0.4) * 0.06)
+			var ctail := creature_bob.get_node_or_null("Tail")
+			if ctail:
+				ctail.rotation.y = sin(t * 1.3) * 0.22
+				ctail.rotation.x = deg_to_rad(-35) + sin(t * 0.9) * 0.1
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
@@ -540,6 +557,8 @@ func _defeat() -> void:
 	GameState.combat_xp += cxp
 	GameState.combat_level = GameState.combat_level_for_xp(GameState.combat_xp)
 	GameState.check_combat_item_unlocks()
+	# Wave 40: quiet soft XP float on foe (RuneScape-chunky, no cheesy combat labels)
+	HitsplatUtil.spawn_xp(self, cxp, 2.35)
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	if GameState.combat_level > prev_cl:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)

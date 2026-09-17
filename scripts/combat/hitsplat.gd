@@ -11,6 +11,10 @@ static func spawn(parent: Node, dmg: int, is_player_hit: bool, y: float = 2.15, 
 static func spawn_heal(parent: Node, amount: int, y: float = 2.15) -> void:
 	_spawn(parent, amount, "heal", y)
 
+static func spawn_xp(parent: Node, amount: int, y: float = 2.35) -> void:
+	## Wave 40: quiet soft cream XP float on foe defeat (wholesome, no cheesy combat labels).
+	_spawn(parent, amount, "xp", y)
+
 static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 	if parent == null or not is_instance_valid(parent):
 		return
@@ -39,6 +43,13 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 		font_sz = 52
 		text_col = Color(0.05, 0.2, 0.08)
 		outline_col = Color(0.85, 1.0, 0.9)
+	elif kind == "xp":
+		# Soft cream gold — quiet combat XP float (Wave 40)
+		dmat.albedo_color = Color(0.92, 0.84, 0.45, 0.82)
+		label_text = "+%d XP" % maxi(0, amount)
+		font_sz = 44
+		text_col = Color(0.12, 0.08, 0.02)
+		outline_col = Color(1.0, 0.98, 0.88)
 	elif amount <= 0:
 		dmat.albedo_color = Color(0.55, 0.55, 0.6, 0.75)
 	elif kind == "strong_foe":
@@ -84,9 +95,9 @@ static func _spawn(parent: Node, amount: int, kind: String, y: float) -> void:
 
 	# Wave 27: soft scale pop so HP floats read chunkier (RuneScape-feel, no cheesy labels)
 	root.scale = Vector3(0.72, 0.72, 0.72)
-	var lift := 1.25 if kind in ["strong_foe", "strong_hit"] else 1.1
-	var dur := 0.95 if kind in ["strong_foe", "strong_hit"] else 0.85
-	var peak := 1.18 if kind in ["strong_foe", "strong_hit"] else 1.08
+	var lift := 1.35 if kind == "xp" else (1.25 if kind in ["strong_foe", "strong_hit"] else 1.1)
+	var dur := 1.15 if kind == "xp" else (0.95 if kind in ["strong_foe", "strong_hit"] else 0.85)
+	var peak := 1.12 if kind == "xp" else (1.18 if kind in ["strong_foe", "strong_hit"] else 1.08)
 	var tw := parent.get_tree().create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(root, "scale", Vector3(peak, peak, peak), 0.12).set_ease(Tween.EASE_OUT)

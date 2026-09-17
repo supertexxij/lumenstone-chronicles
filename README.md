@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 40 overnight (v1.40.0-overnight)
+- Soft **milestone toast every 5 weeks unlocked** — gentle fifth-mark celebration (weeks 5/10/15/20/25/30 + full-year at 36)
+- Clearer **landmark approach toast** — ✦ New landmark / ✦ Near wording so wilds places read at a glance
+- Quiet **combat XP float** on foe defeat — soft cream **+N XP** rise (RuneScape-chunky, wholesome; no cheesy combat labels)
+- New wilds foe **Beech Chipmunk** — cheek pouches, back stripes, short bushy tail, gentle “nestled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole)
+- Parent QoL: clearer **PIN-change success toast** + campaign tabs show **mastered/total** for that campaign (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 39 overnight (v1.39.0-overnight)
 - Soft **firefly sparkles at dusk** outdoors — warm gold-green motes gather around the player from dusk into night (off indoors; RuneScape-chunky, wholesome)
 - Clearer **compass N marker** — chunkier gold **N** with soft outline + warm plate so north reads at a glance

@@ -86,7 +86,9 @@ func _change_pin() -> void:
 	if not GameState.set_parent_pin(a):
 		pin_status.text = "Use 4–8 digits only."
 		return
-	pin_status.text = "PIN updated. Remember it for next time."
+	# Wave 40: clearer pin-change success toast (PIN default remains 1234 until changed)
+	pin_status.text = "PIN changed successfully — use your new PIN next time you open Parent."
+	GameState.toast.emit("Parent PIN updated successfully. Keep it safe (default was 1234).")
 	new_pin_edit.text = ""
 	confirm_pin_edit.text = ""
 	AudioBus.play_ui()
@@ -194,12 +196,25 @@ func _refresh_campaign_tabs(uw: int) -> void:
 	if _campaign_tabs:
 		_campaign_tabs.current_tab = tab_idx
 		# Wave 30: highlight the campaign tab that holds the current week
+		# Wave 40: campaign tab shows mastered/total for that campaign
 		for i in range(_campaign_tabs.get_tab_count()):
-			var base: String = str(CAMPAIGN_RANGES[i]["title"]) if i < CAMPAIGN_RANGES.size() else _campaign_tabs.get_tab_title(i)
+			var camp_i: Dictionary = CAMPAIGN_RANGES[i] if i < CAMPAIGN_RANGES.size() else {}
+			var base: String = str(camp_i.get("title", "Campaign"))
+			var lo_i: int = int(camp_i.get("lo", 1))
+			var hi_i: int = int(camp_i.get("hi", 9))
+			var c_done := 0
+			var c_total := 0
+			for q in QuestDB.quests:
+				var qw: int = int(q.get("week", 1))
+				if qw >= lo_i and qw <= hi_i:
+					c_total += 1
+					if str(q.get("id", "")) in GameState.completed_quests:
+						c_done += 1
+			var titled: String = "%s · %d/%d" % [base, c_done, c_total]
 			if i == tab_idx:
-				_campaign_tabs.set_tab_title(i, "★ %s" % base.replace("★ ", ""))
+				_campaign_tabs.set_tab_title(i, "★ %s" % titled)
 			else:
-				_campaign_tabs.set_tab_title(i, base.replace("★ ", ""))
+				_campaign_tabs.set_tab_title(i, titled)
 	# Restore persisted expand state; default current week open on first visit
 	if _expanded_weeks.is_empty() and not GameState.parent_expanded_weeks.is_empty():
 		_expanded_weeks = GameState.parent_expanded_weeks.duplicate()

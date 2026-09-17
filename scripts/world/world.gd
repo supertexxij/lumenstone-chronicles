@@ -806,9 +806,20 @@ func _update_landmark_approach() -> void:
 				first = GameState.mark_landmark_discovered(best_id)
 			var msg := ""
 			if first:
-				msg = str(best_zone.get("first_toast", best_zone.get("return_toast", "")))
+				var raw_f := str(best_zone.get("first_toast", best_zone.get("return_toast", "")))
+				# Wave 40: clearer landmark approach toast
+				if raw_f.begins_with("First discovery:"):
+					msg = "✦ New landmark ·" + raw_f.substr("First discovery:".length())
+				else:
+					msg = "✦ New landmark · " + raw_f
 			else:
-				msg = str(best_zone.get("return_toast", best_zone.get("first_toast", "")))
+				var raw_r := str(best_zone.get("return_toast", best_zone.get("first_toast", "")))
+				var stripped := raw_r
+				if stripped.begins_with("Back at the "):
+					stripped = stripped.substr("Back at the ".length())
+				elif stripped.begins_with("Back at "):
+					stripped = stripped.substr("Back at ".length())
+				msg = "✦ Near · " + stripped
 			if _landmark_toast_cd <= 0.0 and msg != "":
 				GameState.toast.emit(msg)
 				_landmark_toast_cd = 2.5

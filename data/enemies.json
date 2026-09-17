@@ -194,6 +194,19 @@
       "combat_xp": 90,
       "respawn_sec": 46.0,
       "description": "A soft burrowing mole of the spruce wilds \u2014 tuck it gently with a careful step!"
+    },
+    "beech_chipmunk": {
+      "kind": "beech_chipmunk",
+      "name": "Beech Chipmunk",
+      "defeat_verb": "nestled",
+      "color": "#a67c52",
+      "accent": "#2a1a10",
+      "max_hp": 110,
+      "damage": 18,
+      "accuracy": 0.4,
+      "combat_xp": 96,
+      "respawn_sec": 48.0,
+      "description": "A striped chipmunk of the beech wilds \u2014 nestle it gently with a careful step!"
     }
   },
   "spawns": [
@@ -634,6 +647,36 @@
       "kind": "spruce_mole",
       "x": -8,
       "z": -70
+    },
+    {
+      "id": "e74",
+      "kind": "beech_chipmunk",
+      "x": -76,
+      "z": -14
+    },
+    {
+      "id": "e75",
+      "kind": "beech_chipmunk",
+      "x": 36,
+      "z": -80
+    },
+    {
+      "id": "e76",
+      "kind": "beech_chipmunk",
+      "x": -34,
+      "z": 76
+    },
+    {
+      "id": "e77",
+      "kind": "beech_chipmunk",
+      "x": 78,
+      "z": 8
+    },
+    {
+      "id": "e78",
+      "kind": "beech_chipmunk",
+      "x": 4,
+      "z": -76
     }
   ],
   "base_combat": {
