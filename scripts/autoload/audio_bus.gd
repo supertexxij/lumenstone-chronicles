@@ -5,6 +5,7 @@ signal mute_changed(muted: bool)
 
 var _players: Dictionary = {}  # kind -> AudioStreamPlayer
 var _ambient: AudioStreamPlayer
+var _music: AudioStreamPlayer
 var _streams: Dictionary = {}
 var _foot_cooldown: float = 0.0
 var _ready_ok: bool = false
@@ -21,9 +22,15 @@ func _ready() -> void:
 	_ambient = AudioStreamPlayer.new()
 	_ambient.name = "Ambient"
 	_ambient.bus = "Master"
-	_ambient.volume_db = -22.0
+	_ambient.volume_db = -24.0
 	_ambient.stream = _streams.get("ambient")
 	add_child(_ambient)
+	_music = AudioStreamPlayer.new()
+	_music.name = "Music"
+	_music.bus = "Master"
+	_music.volume_db = -18.0
+	_music.stream = _streams.get("music")
+	add_child(_music)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -55,20 +62,30 @@ func _apply_mute() -> void:
 	var muted: bool = GameState.muted
 	AudioServer.set_bus_mute(0, muted)
 	if muted:
-		if _ambient.playing:
+		if _ambient and _ambient.playing:
 			_ambient.stop()
+		if _music and _music.playing:
+			_music.stop()
 	else:
-		if GameState.in_world and not _ambient.playing and _ambient.stream:
-			_ambient.play()
+		if GameState.in_world:
+			if _ambient and not _ambient.playing and _ambient.stream:
+				_ambient.play()
+			if _music and not _music.playing and _music.stream:
+				_music.play()
 
 func start_ambient() -> void:
 	_apply_mute()
-	if not GameState.muted and _ambient and _ambient.stream and not _ambient.playing:
-		_ambient.play()
+	if not GameState.muted:
+		if _ambient and _ambient.stream and not _ambient.playing:
+			_ambient.play()
+		if _music and _music.stream and not _music.playing:
+			_music.play()
 
 func stop_ambient() -> void:
 	if _ambient and _ambient.playing:
 		_ambient.stop()
+	if _music and _music.playing:
+		_music.stop()
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -109,7 +126,8 @@ func _build_streams() -> void:
 	_streams["foot"] = _noise_thump(0.04, 0.18)
 	_streams["swing"] = _whoosh(0.12, 0.22)
 	_streams["quest"] = _arpeggio([523.25, 659.25, 783.99], 0.12, 0.28)
-	_streams["ambient"] = _soft_drone(8.0, 0.08)
+	_streams["ambient"] = _soft_drone(8.0, 0.07)
+	_streams["music"] = _village_tune(12.0, 0.11)
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -191,6 +209,35 @@ func _soft_drone(dur: float, amp: float) -> AudioStreamWAV:
 		var c := sin(TAU * 220.0 * t) * 0.18
 		var breathe := 0.65 + 0.35 * sin(TAU * 0.15 * t)
 		samples[i] = (a + b + c) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _village_tune(dur: float, amp: float) -> AudioStreamWAV:
+	## Short original loop — soft major-pentatonic plucks + pad. Not based on any copyrighted melody.
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	# C major pentatonic-ish (Hz): C4 D4 E4 G4 A4 C5
+	var scale := [261.63, 293.66, 329.63, 392.00, 440.00, 523.25]
+	var pattern := [0, 2, 4, 2, 3, 1, 0, 4, 3, 2, 4, 5, 4, 2, 0, 1]
+	var note_len := dur / float(pattern.size())
+	for i in n:
+		var t := float(i) / float(rate)
+		var idx := mini(pattern.size() - 1, int(t / note_len))
+		var local_t := t - float(idx) * note_len
+		var freq: float = float(scale[pattern[idx]])
+		var env := exp(-local_t * 3.2) * (1.0 - local_t / note_len * 0.15)
+		var pluck := sin(TAU * freq * local_t) * 0.55
+		pluck += sin(TAU * freq * 2.0 * local_t) * 0.12 * env
+		# Soft bed
+		var bed := sin(TAU * 130.81 * t) * 0.12 + sin(TAU * 196.00 * t) * 0.08
+		var breathe := 0.75 + 0.25 * sin(TAU * 0.12 * t)
+		samples[i] = (pluck * env + bed) * amp * breathe
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

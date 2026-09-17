@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://main001"]
+[gd_scene load_steps=11 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/ui/npc_panel.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/ui/parent_panel.gd" id="8"]
 [ext_resource type="Script" path="res://scripts/ui/journal_panel.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="10"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -253,6 +254,83 @@ offset_bottom = -60.0
 theme_override_font_sizes/font_size = 12
 text = "Controls"
 horizontal_alignment = 1
+
+[node name="Compass" type="Control" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -36.0
+offset_top = 56.0
+offset_right = 36.0
+offset_bottom = 128.0
+
+[node name="Ring" type="ColorRect" parent="UI/HUD/Compass"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.12, 0.16, 0.55)
+
+[node name="N" type="Label" parent="UI/HUD/Compass"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -10.0
+offset_top = 2.0
+offset_right = 10.0
+offset_bottom = 22.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(1, 0.9, 0.35, 1)
+text = "N"
+horizontal_alignment = 1
+pivot_offset = Vector2(10, 34)
+
+[node name="Needle" type="Label" parent="UI/HUD/Compass"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -12.0
+offset_top = -28.0
+offset_right = 12.0
+offset_bottom = 28.0
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.95, 0.85, 0.35, 1)
+text = "▲"
+horizontal_alignment = 1
+vertical_alignment = 1
+pivot_offset = Vector2(12, 28)
+
+[node name="Minimap" type="Control" parent="UI/HUD"]
+layout_mode = 1
+script = ExtResource("10")
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -168.0
+offset_top = -220.0
+offset_right = -16.0
+offset_bottom = -68.0
+mouse_filter = 2
+
+[node name="DayLbl" type="Label" parent="UI/HUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -168.0
+offset_top = 56.0
+offset_right = -16.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 14
+text = "Day"
+horizontal_alignment = 2
 
 [node name="InventoryPanel" type="Control" parent="UI"]
 visible = false

@@ -141,6 +141,7 @@ func _enter_world() -> void:
 	world_host.add_child(world_scene)
 	world_scene.npc_talk.connect(_open_npc)
 	hud.visible = true
+	hud.set_world(world_scene)
 	hud.refresh()
 	if not GameState.state_changed.is_connected(hud.refresh):
 		GameState.state_changed.connect(hud.refresh)

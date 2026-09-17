@@ -19,6 +19,8 @@ var _flinch_t: float = 0.0
 var _dissolve_t: float = -1.0
 var _base_scale: Vector3 = Vector3.ONE
 var _aggro_pulse: float = 0.0
+var _telegraph: MeshInstance3D = null
+var _was_warning: bool = false
 
 @onready var mesh_root: Node3D = $MeshRoot
 @onready var label: Label3D = $Label3D
@@ -54,6 +56,7 @@ func _ready() -> void:
 			label.position.y = 1.8
 			hp_bar.position.y = 1.5
 	_update_hp_bar()
+	_ensure_telegraph()
 
 func is_alive() -> bool:
 	return alive
@@ -105,26 +108,77 @@ func _fade_node(n: Node, a: float) -> void:
 	for c in n.get_children():
 		_fade_node(c, a)
 
+func _ensure_telegraph() -> void:
+	if _telegraph != null:
+		return
+	_telegraph = MeshInstance3D.new()
+	_telegraph.name = "AggroTelegraph"
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 1.15
+	cyl.bottom_radius = 1.15
+	cyl.height = 0.04
+	_telegraph.mesh = cyl
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.95, 0.82, 0.15, 0.55)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.roughness = 0.9
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_telegraph.material_override = mat
+	_telegraph.position = Vector3(0, 0.05, 0)
+	_telegraph.visible = false
+	add_child(_telegraph)
+
+func _set_warning(on: bool) -> void:
+	_ensure_telegraph()
+	if _telegraph:
+		_telegraph.visible = on
+	if on:
+		label.modulate = Color(1.0, 0.92, 0.35)
+		if _telegraph and _telegraph.material_override is StandardMaterial3D:
+			var mat: StandardMaterial3D = _telegraph.material_override
+			var pulse: float = 0.4 + 0.35 * abs(sin(Time.get_ticks_msec() * 0.01))
+			mat.albedo_color = Color(0.98, 0.85, 0.12, pulse)
+			var s: float = 0.85 + 0.25 * abs(sin(Time.get_ticks_msec() * 0.008))
+			_telegraph.scale = Vector3(s, 1.0, s)
+	else:
+		label.modulate = Color.WHITE
+		if _telegraph:
+			_telegraph.scale = Vector3.ONE
+
 func _soft_aggro(delta: float) -> void:
-	## If player wanders into engage range while free, softly pull into combat.
+	## If player wanders into engage range while free, yellow warning then soft pull.
 	if GameState.combat_target != null:
+		_set_warning(false)
+		_aggro_pulse = 0.0
 		return
 	var player: Node = get_tree().get_first_node_in_group("player")
 	if player == null:
+		_set_warning(false)
 		return
 	if player.get("ui_blocking"):
+		_set_warning(false)
 		return
 	var engage: float = float(EnemyDB.base_combat.get("engage_range", 4.5))
+	var warn_range: float = engage + 1.1
 	var dist: float = global_position.distance_to(player.global_position)
-	if dist <= engage:
+	if dist <= warn_range:
 		_aggro_pulse += delta
-		# Brief telegraph before engage so it feels fair
-		if _aggro_pulse > 0.35:
+		var warning := _aggro_pulse > 0.05 and _aggro_pulse < 0.7
+		_set_warning(warning or (dist <= engage and _aggro_pulse < 0.7))
+		if not _was_warning and warning:
+			GameState.toast.emit("%s is watching…" % def.get("name", "Foe"))
+		_was_warning = warning
+		# Yellow telegraph (~0.7s) before engage so it feels fair
+		if dist <= engage and _aggro_pulse > 0.7:
+			_set_warning(false)
+			_was_warning = false
 			GameState.set_combat_target(self)
 			GameState.toast.emit("%s noticed you!" % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
 	else:
 		_aggro_pulse = move_toward(_aggro_pulse, 0.0, delta * 2.0)
+		_set_warning(false)
+		_was_warning = false
 
 func _idle_anim(delta: float) -> void:
 	if creature_bob == null or _flinch_t > 0.0:
