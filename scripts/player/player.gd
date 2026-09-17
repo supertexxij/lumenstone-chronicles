@@ -6,6 +6,9 @@ signal clicked_ground(pos: Vector3)
 
 const SPEED := 6.5
 const ACCEL := 18.0
+const CAM_BASE := Vector3(0, 14, 12)
+const CAM_ZOOM_MIN := 0.55
+const CAM_ZOOM_MAX := 1.55
 
 @onready var mesh_root: Node3D = $MeshRoot
 @onready var camera_pivot: Node3D = $CameraPivot
@@ -15,11 +18,13 @@ var parts: Dictionary = {}
 var target_pos: Vector3 = Vector3.ZERO
 var has_click_target: bool = false
 var cam_yaw: float = 0.0
+var cam_zoom: float = 1.0
 var ui_blocking: bool = false
 var _walk_phase: float = 0.0
 var _attack_t: float = 0.0
 var _attacking: bool = false
 var _last_foot_phase: float = 0.0
+var _weapon_mesh_style: String = ""
 
 func _ready() -> void:
 	add_to_group("player")
@@ -28,6 +33,7 @@ func _ready() -> void:
 	GameState.soft_defeated.connect(soft_respawn)
 	GameState.combat_target_changed.connect(_on_combat_target)
 	_apply_appearance()
+	_apply_camera_zoom()
 	global_position = Vector3(GameState.position_xz.x, 0, GameState.position_xz.y)
 	target_pos = global_position
 
@@ -69,10 +75,17 @@ func _apply_appearance() -> void:
 		weapon_root.visible = wid != null
 		if wid != null:
 			var witem: Dictionary = ItemDB.get_item(str(wid))
-			var wcol := Color(witem.get("color", "#a67c52"))
-			HumanoidBuilder.set_color(parts.get("blade"), wcol)
-			HumanoidBuilder.set_color(parts.get("hilt"), wcol.darkened(0.25))
-			HumanoidBuilder.set_color(parts.get("pommel"), wcol.lightened(0.15))
+			var style: String = str(witem.get("mesh", "sword"))
+			if style != _weapon_mesh_style or parts.get("blade") == null:
+				HumanoidBuilder.style_weapon(parts, witem)
+				_weapon_mesh_style = style
+			else:
+				var wcol := Color(witem.get("color", "#a67c52"))
+				HumanoidBuilder.set_color(parts.get("blade"), wcol)
+				HumanoidBuilder.set_color(parts.get("hilt"), wcol.darkened(0.25))
+				HumanoidBuilder.set_color(parts.get("pommel"), wcol.lightened(0.15))
+		else:
+			_weapon_mesh_style = ""
 
 	var hat_root: Node3D = parts.get("hat")
 	var hid = GameState.equipped.get("head")
@@ -104,21 +117,41 @@ func _apply_appearance() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if ui_blocking:
 		return
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_handle_click()
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			_handle_click()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_adjust_zoom(-0.08)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_adjust_zoom(0.08)
 	if event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
 		cam_yaw -= event.relative.x * 0.005
+	if event.is_action_pressed("zoom_in"):
+		_adjust_zoom(-0.12)
+	if event.is_action_pressed("zoom_out"):
+		_adjust_zoom(0.12)
+
+func _adjust_zoom(delta_z: float) -> void:
+	cam_zoom = clampf(cam_zoom + delta_z, CAM_ZOOM_MIN, CAM_ZOOM_MAX)
+	_apply_camera_zoom()
+
+func _apply_camera_zoom() -> void:
+	if camera == null:
+		return
+	camera.position = CAM_BASE * cam_zoom
 
 func _handle_click() -> void:
 	var mouse := get_viewport().get_mouse_position()
 	var from: Vector3 = camera.project_ray_origin(mouse)
 	var dir: Vector3 = camera.project_ray_normal(mouse)
 	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, from + dir * 200.0)
-	query.collide_with_areas = true
-	query.collide_with_bodies = true
-	# Prefer enemies/NPCs: two-pass — first entities, then ground
-	var hit: Dictionary = space.intersect_ray(query)
+	# Pass 1 — entities only (NPC layer 3 / bit 4, enemy layer 4 / bit 8).
+	# Dense props & halls no longer steal clicks from foes / mentors / ground.
+	var q_ent: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(from, from + dir * 220.0)
+	q_ent.collision_mask = 4 | 8
+	q_ent.collide_with_areas = true
+	q_ent.collide_with_bodies = true
+	var hit: Dictionary = space.intersect_ray(q_ent)
 	if not hit.is_empty():
 		var collider = hit.collider
 		if collider and collider.is_in_group("enemies"):
@@ -129,7 +162,6 @@ func _handle_click() -> void:
 				_set_move_target(collider.global_position)
 				return
 		if collider and collider.is_in_group("npcs"):
-			# Walk toward then talk if far; talk immediately if near
 			var dist: float = global_position.distance_to(collider.global_position)
 			if dist <= 4.0:
 				collider.request_talk()
@@ -137,9 +169,7 @@ func _handle_click() -> void:
 				_set_move_target(collider.global_position)
 				set_meta("pending_npc", collider)
 			return
-		_set_move_target(hit.position)
-		return
-	# Ground plane fallback (missed collider)
+	# Pass 2 — ground plane move (ignore static prop bodies)
 	if abs(dir.y) > 0.01:
 		var t := -from.y / dir.y
 		if t > 0:
@@ -219,9 +249,11 @@ func _physics_process(delta: float) -> void:
 
 	velocity.y = 0
 	move_and_slide()
-	var b: float = 44.0
-	global_position.x = clampf(global_position.x, -b, b)
-	global_position.z = clampf(global_position.z, -b, b)
+	# Village clamp — skip when teleported into guild-hall interiors (x >= 100)
+	if global_position.x < 90.0:
+		var b: float = 44.0
+		global_position.x = clampf(global_position.x, -b, b)
+		global_position.z = clampf(global_position.z, -b, b)
 	global_position.y = 0
 	GameState.position_xz = Vector2(global_position.x, global_position.z)
 
@@ -307,10 +339,11 @@ func _animate_attack(delta: float) -> void:
 	if t >= 0.48:
 		_attacking = false
 		_attack_t = 0.0
-		# Rest weapon at hip
+		# Rest weapon — re-apply mesh style pose
 		if weapon and weapon.visible:
-			weapon.position = Vector3(0.42, 0.85, 0.05)
-			weapon.rotation_degrees = Vector3(0, 0, -18)
+			var wid = GameState.equipped.get("weapon")
+			if wid != null:
+				HumanoidBuilder.style_weapon(parts, ItemDB.get_item(str(wid)))
 
 func set_ui_blocking(v: bool) -> void:
 	ui_blocking = v

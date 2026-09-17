@@ -15,7 +15,8 @@
     "color": "#a67c52",
     "unlock_quest_id": "w1-math-facts",
     "damage": 5,
-    "accuracy": 0.8
+    "accuracy": 0.8,
+    "mesh": "sword"
   },
   "brass_lantern": {
     "id": "brass_lantern",
@@ -52,7 +53,7 @@
   "builders_belt": {
     "id": "builders_belt",
     "name": "Builder's Belt",
-    "description": "A sturdy belt with a golden buckle — place value ready!",
+    "description": "A sturdy belt with a golden buckle \u2014 place value ready!",
     "slot": "belt",
     "color": "#d4a017",
     "unlock_quest_id": "w1-math-place-value"
@@ -60,7 +61,7 @@
   "scripture_bookmark": {
     "id": "scripture_bookmark",
     "name": "Scripture Bookmark",
-    "description": "Marks Genesis 1:1 — In the beginning, God created…",
+    "description": "Marks Genesis 1:1 \u2014 In the beginning, God created\u2026",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w1-bible-genesis"
@@ -84,7 +85,7 @@
   "default_cape": {
     "id": "default_cape",
     "name": "Travel Cape",
-    "description": "Your colorful travel cape — dye it any hall color.",
+    "description": "Your colorful travel cape \u2014 dye it any hall color.",
     "slot": "cape",
     "color": "#c1121f",
     "starter": true
@@ -476,7 +477,7 @@
   "campaign_i_badge": {
     "id": "campaign_i_badge",
     "name": "Campaign I Badge",
-    "description": "The Kindling the Lamps campaign badge — foundations complete.",
+    "description": "The Kindling the Lamps campaign badge \u2014 foundations complete.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w9-raid-feast"
@@ -540,7 +541,7 @@
   "joshua_band": {
     "id": "joshua_band",
     "name": "Joshua Band",
-    "description": "A band for courage — the Lord is with you.",
+    "description": "A band for courage \u2014 the Lord is with you.",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w11-bible-courage"
@@ -636,7 +637,7 @@
   "psalm_travel_band": {
     "id": "psalm_travel_band",
     "name": "Travel Psalm Band",
-    "description": "Band for trust on long roads — help from the Lord.",
+    "description": "Band for trust on long roads \u2014 help from the Lord.",
     "slot": "accessory",
     "color": "#c9b037",
     "unlock_quest_id": "w13-bible-trust"
@@ -916,7 +917,7 @@
   "campaign_ii_badge": {
     "id": "campaign_ii_badge",
     "name": "Campaign II Badge",
-    "description": "The Scrolls of the Free campaign badge — fluency and freedom.",
+    "description": "The Scrolls of the Free campaign badge \u2014 fluency and freedom.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w18-raid-feast"
@@ -1100,7 +1101,7 @@
   "star_season_chart": {
     "id": "star_season_chart",
     "name": "Star Season Chart",
-    "description": "A chart of seasons and star patterns — no fortune-telling.",
+    "description": "A chart of seasons and star patterns \u2014 no fortune-telling.",
     "slot": "accessory",
     "color": "#14213d",
     "unlock_quest_id": "w22-science-stars"
@@ -1348,7 +1349,7 @@
   "republic_timeline_ribbon": {
     "id": "republic_timeline_ribbon",
     "name": "Republic Timeline Ribbon",
-    "description": "A ribbon for Republic→statehood→growth review.",
+    "description": "A ribbon for Republic\u2192statehood\u2192growth review.",
     "slot": "accessory",
     "color": "#9b2226",
     "unlock_quest_id": "w27-history-review"
@@ -1356,7 +1357,7 @@
   "campaign_iii_badge": {
     "id": "campaign_iii_badge",
     "name": "Campaign III Badge",
-    "description": "The Builders of the Republic campaign badge — measurement, geometry, and stewardship.",
+    "description": "The Builders of the Republic campaign badge \u2014 measurement, geometry, and stewardship.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w27-raid-feast"
@@ -1380,7 +1381,7 @@
   "fluency_millstone": {
     "id": "fluency_millstone",
     "name": "Fluency Millstone",
-    "description": "A small millstone token for ×0–12 clinic mastery.",
+    "description": "A small millstone token for \u00d70\u201312 clinic mastery.",
     "slot": "belt",
     "color": "#d4a017",
     "unlock_quest_id": "w28-math-fluency"
@@ -1796,7 +1797,7 @@
   "campaign_iv_badge": {
     "id": "campaign_iv_badge",
     "name": "Campaign IV Badge",
-    "description": "The Light for the Realm campaign badge — mastery, projects, and celebration.",
+    "description": "The Light for the Realm campaign badge \u2014 mastery, projects, and celebration.",
     "slot": "accessory",
     "color": "#c9a227",
     "unlock_quest_id": "w36-raid-feast"
@@ -1812,9 +1813,53 @@
   "year_champion_certificate": {
     "id": "year_champion_certificate",
     "name": "Year Champion Certificate",
-    "description": "A certificate token for year completion — archive with the portfolio.",
+    "description": "A certificate token for year completion \u2014 archive with the portfolio.",
     "slot": "accessory",
     "color": "#f0e6d2",
     "unlock_quest_id": "w36-raid-feast"
+  },
+  "oak_training_axe": {
+    "id": "oak_training_axe",
+    "name": "Oak Training Axe",
+    "description": "A safe wooden axe for Builder yard practice \u2014 wholesome and sturdy.",
+    "slot": "weapon",
+    "mesh": "axe",
+    "color": "#8b5a2b",
+    "unlock_quest_id": "w2-raid-review",
+    "damage": 6,
+    "accuracy": 0.78
+  },
+  "shepherd_staff": {
+    "id": "shepherd_staff",
+    "name": "Shepherd Staff",
+    "description": "A tall walking staff for quiet paths and Creation walks.",
+    "slot": "weapon",
+    "mesh": "staff",
+    "color": "#6b4f2a",
+    "unlock_quest_id": "w3-bible-reverence",
+    "damage": 4,
+    "accuracy": 0.85
+  },
+  "yew_practice_bow": {
+    "id": "yew_practice_bow",
+    "name": "Yew Practice Bow",
+    "description": "A cosmetic practice bow for the village green (still uses soft tick combat).",
+    "slot": "weapon",
+    "mesh": "bow",
+    "color": "#5c4033",
+    "unlock_quest_id": "w5-history-spanish",
+    "damage": 5,
+    "accuracy": 0.82
+  },
+  "flint_training_dagger": {
+    "id": "flint_training_dagger",
+    "name": "Flint Training Dagger",
+    "description": "A short blunt training dagger for careful handwork practice.",
+    "slot": "weapon",
+    "mesh": "dagger",
+    "color": "#7a7a70",
+    "unlock_quest_id": "w4-math-multiplication",
+    "damage": 4,
+    "accuracy": 0.88
   }
 }

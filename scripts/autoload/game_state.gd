@@ -243,6 +243,11 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 			unlock_item(unlock)
 		for bonus in quest.get("bonus_items", []):
 			unlock_item(str(bonus))
+		# Also grant any ItemDB entries keyed to this quest (mesh-variant weapons, etc.)
+		for iid in ItemDB.items:
+			var it: Dictionary = ItemDB.items[iid]
+			if str(it.get("unlock_quest_id", "")) == quest_id:
+				unlock_item(str(iid))
 		toast.emit("Quest mastered: %s" % quest.get("title", quest_id))
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()

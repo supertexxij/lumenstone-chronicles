@@ -272,3 +272,74 @@ static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
 	if strap:
 		strap.visible = "lantern" in iid or "purse" in iid or "pouch" in name
 
+
+
+## Rebuild weapon child meshes to match item mesh style (sword/axe/staff/bow/dagger).
+static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
+	var weapon: Node3D = parts.get("weapon")
+	if weapon == null:
+		return
+	# Clear prior mesh children
+	for c in weapon.get_children():
+		weapon.remove_child(c)
+		c.free()
+	var mesh_style: String = str(item.get("mesh", "sword")).to_lower()
+	var iid: String = str(item.get("id", "")).to_lower()
+	var name: String = str(item.get("name", "")).to_lower()
+	if "axe" in mesh_style or "axe" in iid or "axe" in name:
+		mesh_style = "axe"
+	elif "staff" in mesh_style or "staff" in iid or "staff" in name:
+		mesh_style = "staff"
+	elif "bow" in mesh_style or "bow" in iid or "bow" in name:
+		mesh_style = "bow"
+	elif "dagger" in mesh_style or "dagger" in iid or "knife" in name:
+		mesh_style = "dagger"
+	else:
+		mesh_style = "sword"
+
+	var blade: MeshInstance3D
+	var hilt: MeshInstance3D
+	var pommel: MeshInstance3D
+	match mesh_style:
+		"axe":
+			# Haft + axe head
+			blade = _mi(_box(Vector3(0.10, 0.78, 0.10)), Vector3(0, 0.12, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.42, 0.22, 0.12)), Vector3(0.18, 0.42, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.07), Vector3(0, -0.30, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.42, 0.85, 0.05)
+			weapon.rotation_degrees = Vector3(0, 0, -22)
+		"staff":
+			blade = _mi(_cyl(0.05, 0.06, 1.35), Vector3(0, 0.35, 0), weapon, "Blade")
+			hilt = _mi(_sphere(0.09), Vector3(0, 1.0, 0), weapon, "Hilt")
+			pommel = _mi(_cyl(0.07, 0.07, 0.08), Vector3(0, -0.28, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.38, 0.55, -0.05)
+			weapon.rotation_degrees = Vector3(8, 0, -8)
+		"bow":
+			# Simple recurve silhouette (cosmetic)
+			blade = _mi(_box(Vector3(0.06, 0.95, 0.08)), Vector3(0, 0.2, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.05, 0.55, 0.05)), Vector3(0.18, 0.2, 0), weapon, "Hilt")
+			pommel = _mi(_box(Vector3(0.04, 0.04, 0.35)), Vector3(0.09, 0.55, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.36, 0.95, -0.08)
+			weapon.rotation_degrees = Vector3(0, 15, -5)
+		"dagger":
+			blade = _mi(_box(Vector3(0.07, 0.38, 0.07)), Vector3(0, 0.05, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.16, 0.06, 0.07)), Vector3(0, -0.14, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.05), Vector3(0, -0.22, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.40, 0.88, 0.08)
+			weapon.rotation_degrees = Vector3(0, 0, -25)
+		_:
+			blade = _mi(_box(Vector3(0.08, 0.72, 0.08)), Vector3(0, 0.15, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.18, 0.08, 0.08)), Vector3(0, -0.22, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.06), Vector3(0, -0.32, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.42, 0.85, 0.05)
+			weapon.rotation_degrees = Vector3(0, 0, -18)
+
+	parts["blade"] = blade
+	parts["hilt"] = hilt
+	parts["pommel"] = pommel
+	parts["weapon_mesh"] = mesh_style
+
+	var col := Color(item.get("color", "#a67c52"))
+	set_color(blade, col)
+	set_color(hilt, col.darkened(0.25))
+	set_color(pommel, col.lightened(0.15))
