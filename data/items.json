@@ -1861,5 +1861,101 @@
     "unlock_quest_id": "w4-math-multiplication",
     "damage": 4,
     "accuracy": 0.88
+  },
+  "cedar_practice_sword": {
+    "id": "cedar_practice_sword",
+    "name": "Cedar Practice Sword",
+    "description": "A longer cedar training sword for apprentices who finished Campaign I foundations.",
+    "slot": "weapon",
+    "mesh": "sword",
+    "color": "#b08968",
+    "unlock_quest_id": "w9-raid-feast",
+    "combat_level_req": 3,
+    "damage": 7,
+    "accuracy": 0.82
+  },
+  "bronze_yard_axe": {
+    "id": "bronze_yard_axe",
+    "name": "Bronze Yard Axe",
+    "description": "A blunt bronze practice axe for Builder yard work \u2014 sturdy and safe.",
+    "slot": "weapon",
+    "mesh": "axe",
+    "color": "#cd7f32",
+    "unlock_quest_id": "w12-raid-review",
+    "combat_level_req": 4,
+    "damage": 8,
+    "accuracy": 0.8
+  },
+  "cedar_shepherd_crook": {
+    "id": "cedar_shepherd_crook",
+    "name": "Cedar Shepherd Crook",
+    "description": "A curved cedar crook for Creation walks and quiet guidance.",
+    "slot": "weapon",
+    "mesh": "staff",
+    "color": "#8b6914",
+    "unlock_quest_id": "w18-raid-feast",
+    "combat_level_req": 5,
+    "damage": 6,
+    "accuracy": 0.88
+  },
+  "oak_longbow": {
+    "id": "oak_longbow",
+    "name": "Oak Longbow",
+    "description": "A taller oak practice bow for the green (still soft tick combat).",
+    "slot": "weapon",
+    "mesh": "bow",
+    "color": "#5c4033",
+    "unlock_quest_id": "w21-raid-review",
+    "combat_level_req": 5,
+    "damage": 7,
+    "accuracy": 0.84
+  },
+  "iron_training_blade": {
+    "id": "iron_training_blade",
+    "name": "Iron Training Blade",
+    "description": "A blunt iron training blade for mid-year stewards of careful practice.",
+    "slot": "weapon",
+    "mesh": "sword",
+    "color": "#8a8a9a",
+    "unlock_quest_id": "w27-raid-feast",
+    "combat_level_req": 6,
+    "damage": 9,
+    "accuracy": 0.83
+  },
+  "stewards_mallet": {
+    "id": "stewards_mallet",
+    "name": "Steward's Mallet",
+    "description": "A wooden mallet for gentle yardwork and soft training swings.",
+    "slot": "weapon",
+    "mesh": "mallet",
+    "color": "#6b4f2a",
+    "unlock_quest_id": "w32-raid-review",
+    "combat_level_req": 7,
+    "damage": 8,
+    "accuracy": 0.86
+  },
+  "lightbearer_blade": {
+    "id": "lightbearer_blade",
+    "name": "Lightbearer Blade",
+    "description": "A polished practice blade awarded near the Festival of Lumens \u2014 bright, not boastful.",
+    "slot": "weapon",
+    "mesh": "sword",
+    "color": "#c9a227",
+    "unlock_quest_id": "w35-raid-supreme",
+    "combat_level_req": 8,
+    "damage": 11,
+    "accuracy": 0.85
+  },
+  "brook_walking_stick": {
+    "id": "brook_walking_stick",
+    "name": "Brook Walking Stick",
+    "description": "A smooth stick from Lantern Glade brook path \u2014 good for careful steps.",
+    "slot": "weapon",
+    "mesh": "staff",
+    "color": "#7a5c3a",
+    "unlock_quest_id": "w10-raid-review",
+    "combat_level_req": 2,
+    "damage": 5,
+    "accuracy": 0.86
   }
 }

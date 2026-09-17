@@ -114,17 +114,18 @@ func _ensure_telegraph() -> void:
 	_telegraph = MeshInstance3D.new()
 	_telegraph.name = "AggroTelegraph"
 	var cyl := CylinderMesh.new()
-	cyl.top_radius = 1.15
-	cyl.bottom_radius = 1.15
-	cyl.height = 0.04
+	cyl.top_radius = 1.35
+	cyl.bottom_radius = 1.35
+	cyl.height = 0.03
 	_telegraph.mesh = cyl
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.95, 0.82, 0.15, 0.55)
+	# Softer, more translucent ring — readable but less urgent
+	mat.albedo_color = Color(0.98, 0.92, 0.35, 0.28)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.roughness = 0.9
+	mat.roughness = 0.95
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_telegraph.material_override = mat
-	_telegraph.position = Vector3(0, 0.05, 0)
+	_telegraph.position = Vector3(0, 0.04, 0)
 	_telegraph.visible = false
 	add_child(_telegraph)
 
@@ -133,12 +134,13 @@ func _set_warning(on: bool) -> void:
 	if _telegraph:
 		_telegraph.visible = on
 	if on:
-		label.modulate = Color(1.0, 0.92, 0.35)
+		# Gentle warm tint — not alarm-red
+		label.modulate = Color(1.0, 0.96, 0.72)
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
-			var pulse: float = 0.4 + 0.35 * abs(sin(Time.get_ticks_msec() * 0.01))
-			mat.albedo_color = Color(0.98, 0.85, 0.12, pulse)
-			var s: float = 0.85 + 0.25 * abs(sin(Time.get_ticks_msec() * 0.008))
+			var pulse: float = 0.18 + 0.16 * abs(sin(Time.get_ticks_msec() * 0.004))
+			mat.albedo_color = Color(0.98, 0.92, 0.4, pulse)
+			var s: float = 0.92 + 0.12 * abs(sin(Time.get_ticks_msec() * 0.0035))
 			_telegraph.scale = Vector3(s, 1.0, s)
 	else:
 		label.modulate = Color.WHITE
@@ -146,7 +148,7 @@ func _set_warning(on: bool) -> void:
 			_telegraph.scale = Vector3.ONE
 
 func _soft_aggro(delta: float) -> void:
-	## If player wanders into engage range while free, yellow warning then soft pull.
+	## Soft RuneScape-like pull: long yellow telegraph, easy escape, muted toast spam.
 	if GameState.combat_target != null:
 		_set_warning(false)
 		_aggro_pulse = 0.0
@@ -158,25 +160,31 @@ func _soft_aggro(delta: float) -> void:
 	if player.get("ui_blocking"):
 		_set_warning(false)
 		return
-	var engage: float = float(EnemyDB.base_combat.get("engage_range", 4.5))
-	var warn_range: float = engage + 1.1
+	# Skip soft-aggro while player is inside guild halls
+	if player.global_position.x >= 90.0:
+		_set_warning(false)
+		_aggro_pulse = 0.0
+		return
+	var engage: float = float(EnemyDB.base_combat.get("engage_range", 3.8))
+	var warn_range: float = engage + 1.6
+	var telegraph_sec: float = 1.15  # longer fair warning
 	var dist: float = global_position.distance_to(player.global_position)
 	if dist <= warn_range:
 		_aggro_pulse += delta
-		var warning := _aggro_pulse > 0.05 and _aggro_pulse < 0.7
-		_set_warning(warning or (dist <= engage and _aggro_pulse < 0.7))
+		var warning := _aggro_pulse > 0.08 and _aggro_pulse < telegraph_sec
+		_set_warning(warning or (dist <= engage and _aggro_pulse < telegraph_sec))
 		if not _was_warning and warning:
-			GameState.toast.emit("%s is watching…" % def.get("name", "Foe"))
+			GameState.toast.emit("%s notices you nearby…" % def.get("name", "Foe"))
 		_was_warning = warning
-		# Yellow telegraph (~0.7s) before engage so it feels fair
-		if dist <= engage and _aggro_pulse > 0.7:
+		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
 			_was_warning = false
 			GameState.set_combat_target(self)
-			GameState.toast.emit("%s noticed you!" % def.get("name", "Foe"))
+			GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
 	else:
-		_aggro_pulse = move_toward(_aggro_pulse, 0.0, delta * 2.0)
+		# Faster decay so stepping back clears warning quickly
+		_aggro_pulse = move_toward(_aggro_pulse, 0.0, delta * 2.8)
 		_set_warning(false)
 		_was_warning = false
 
@@ -273,6 +281,7 @@ func _defeat() -> void:
 	var cxp: int = int(def.get("combat_xp", 5))
 	GameState.combat_xp += cxp
 	GameState.combat_level = GameState.combat_level_for_xp(GameState.combat_xp)
+	GameState.check_combat_item_unlocks()
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	GameState.save_game()
 	GameState.state_changed.emit()

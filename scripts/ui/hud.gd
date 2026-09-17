@@ -5,6 +5,7 @@ signal wardrobe_pressed
 signal parent_pressed
 signal journal_pressed
 signal mute_pressed
+signal weather_pressed
 
 @onready var name_lbl: Label = $TopBar/NameLbl
 @onready var xp_lbl: Label = $TopBar/XpLbl
@@ -15,6 +16,7 @@ signal mute_pressed
 @onready var look_btn: Button = $BottomBar/LookBtn
 @onready var journal_btn: Button = $BottomBar/JournalBtn
 @onready var mute_btn: Button = $BottomBar/MuteBtn
+@onready var weather_btn: Button = $BottomBar/WeatherBtn
 @onready var parent_btn: Button = $BottomBar/ParentBtn
 @onready var hint_lbl: Label = $Hint
 @onready var compass: Control = $Compass
@@ -31,8 +33,10 @@ func _ready() -> void:
 	look_btn.pressed.connect(func(): AudioBus.play_ui(); wardrobe_pressed.emit())
 	journal_btn.pressed.connect(func(): AudioBus.play_ui(); journal_pressed.emit())
 	mute_btn.pressed.connect(func(): mute_pressed.emit())
+	if weather_btn:
+		weather_btn.pressed.connect(func(): AudioBus.play_ui(); weather_pressed.emit())
 	parent_btn.pressed.connect(func(): AudioBus.play_ui(); parent_pressed.emit())
-	hint_lbl.text = "Click ground · WASD · Scroll/=/- zoom · Click NPC/enemy · Q/E camera · I inv · J journal · C wardrobe · M mute · F talk · Enter glowing doors"
+	hint_lbl.text = "Click ground · WASD · Scroll/=/- zoom · Click NPC/enemy · Q/E camera · I inv · J journal · C wardrobe · M mute · R weather · F talk · Enter glowing doors · N to Lantern Glade"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
@@ -98,5 +102,8 @@ func _update_day_label() -> void:
 		tod = "Day"
 	else:
 		tod = "Dusk"
-	day_lbl.text = tod
+	var weather: String = str(_map_data.get("weather", "Clear"))
+	day_lbl.text = "%s · %s" % [tod, weather]
+	if weather_btn:
+		weather_btn.text = "Weather (R): %s" % weather
 

@@ -17,8 +17,10 @@ func _initialize():
 	print("PARTS", parts.has("accessory"), parts.has("weapon"), parts.has("l_arm"))
 	HumanoidBuilder.style_accessory(parts, {"id":"brass_lantern","name":"Brass Lantern","color":"#f4a261"})
 	print("ACCESSORY_OK")
-	for mesh in ["sword", "axe", "staff", "bow", "dagger"]:
+	for mesh in ["sword", "axe", "staff", "bow", "dagger", "mallet"]:
 		HumanoidBuilder.style_weapon(parts, {"id":"t_"+mesh,"name":mesh,"mesh":mesh,"color":"#a67c52"})
 		print("WEAPON_", mesh.to_upper(), parts.get("weapon_mesh"), parts.get("blade")!=null)
+	var wg = load("res://scripts/world/world.gd")
+	print("WORLD_SCRIPT", wg != null)
 	print("CHECK_OK")
 	quit(0)

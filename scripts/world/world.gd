@@ -23,8 +23,16 @@ var _env: Environment
 var _interior_root: Node3D
 var _outdoor_return: Vector3 = Vector3(0, 0, 10)
 var _inside_hall: String = ""
+var _door_cooldown: float = 0.0
+var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
+var _weather_timer: float = 90.0
+var _weather_auto: bool = true
+var _rain: CPUParticles3D
+var _fog_boost: float = 0.0
+var _weather_label_cache: String = "Clear"
 
 signal npc_talk(npc: Node)
+signal weather_changed(mode: int, label: String)
 
 func _ready() -> void:
 	var f: FileAccess = FileAccess.open("res://data/world.json", FileAccess.READ)
@@ -43,7 +51,9 @@ func _ready() -> void:
 	_spawn_enemies()
 	_spawn_player()
 	_build_interiors()
+	_build_lantern_glade()
 	_setup_day_night()
+	_setup_weather()
 	GameState.in_world = true
 	AudioBus.start_ambient()
 
@@ -113,7 +123,7 @@ func _sphere(r: float, h: float = -1.0) -> SphereMesh:
 func _build_ground() -> void:
 	var ground := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
-	plane.size = Vector2(96, 96)
+	plane.size = Vector2(120, 120)
 	ground.mesh = plane
 	ground.material_override = _mats["grass"]
 	ground.position.y = -0.01
@@ -430,7 +440,10 @@ func _spawn_player() -> void:
 
 
 func _process(delta: float) -> void:
+	if _door_cooldown > 0.0:
+		_door_cooldown -= delta
 	_update_day_night(delta)
+	_update_weather(delta)
 
 func _setup_day_night() -> void:
 	_sun = get_node_or_null("Sun") as DirectionalLight3D
@@ -470,7 +483,11 @@ func _update_day_night(delta: float) -> void:
 		_env.ambient_light_color = Color(0.85, 0.88, 0.95).lerp(Color(0.45, 0.55, 0.75), 1.0 - dayness)
 		_env.ambient_light_energy = lerpf(0.35, 0.6, dayness)
 		_env.fog_light_color = sky.lightened(0.1)
-		_env.fog_density = lerpf(0.0022, 0.0012, dayness)
+		var base_fog := lerpf(0.0022, 0.0012, dayness)
+		if _inside_hall != "":
+			_env.fog_density = 0.0004
+		else:
+			_env.fog_density = base_fog + _fog_boost
 
 func _build_interiors() -> void:
 	## Simple enterable guild-hall volumes: walk into the door, teleport to a cozy interior.
@@ -520,45 +537,81 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	room.position = Vector3(float(index) * 28.0, 0, 0)
 	room.set_meta("hall_id", str(b.get("id", "")))
 	room.set_meta("hall_label", str(b.get("label", "Hall")))
+	room.set_meta("guild", str(b.get("guild", "")))
 	_interior_root.add_child(room)
 	var col := Color(b.get("color", "#888888"))
 	var wall := _mat(col.lightened(0.15))
 	var floor_m: Material = _mats["stone"]
-	# Floor / walls / ceiling
-	_mi(_box(Vector3(10, 0.2, 10)), Vector3(0, 0.1, 0), room, floor_m, "Floor")
-	_mi(_box(Vector3(10, 3.5, 0.3)), Vector3(0, 1.8, -5), room, wall, "WallN")
-	_mi(_box(Vector3(10, 3.5, 0.3)), Vector3(0, 1.8, 5), room, wall, "WallS")
-	_mi(_box(Vector3(0.3, 3.5, 10)), Vector3(-5, 1.8, 0), room, wall, "WallW")
-	_mi(_box(Vector3(0.3, 3.5, 10)), Vector3(5, 1.8, 0), room, wall, "WallE")
-	_mi(_box(Vector3(10.2, 0.25, 10.2)), Vector3(0, 3.6, 0), room, _mats["roof"], "Ceiling")
-	# Simple furniture
-	_mi(_box(Vector3(2.2, 0.7, 1.0)), Vector3(0, 0.45, -2.5), room, _mats["wood"], "Table")
-	_mi(_box(Vector3(1.4, 0.45, 0.45)), Vector3(-2.2, 0.55, 1.5), room, _mats["bench"], "Bench")
-	_mi(_box(Vector3(1.4, 0.45, 0.45)), Vector3(2.2, 0.55, 1.5), room, _mats["bench"], "Bench2")
-	_add_lantern(room, Vector3(-2.5, 2.4, -2.0))
-	_add_lantern(room, Vector3(2.5, 2.4, -2.0))
-	var banner := _mi(_box(Vector3(2.5, 1.0, 0.08)), Vector3(0, 2.4, -4.7), room, _mat(col.darkened(0.2)), "Banner")
+	var rug := _mat(col.darkened(0.15))
+	# Floor / walls / ceiling with collision shells
+	_mi(_box(Vector3(12, 0.2, 12)), Vector3(0, 0.1, 0), room, floor_m, "Floor")
+	_add_wall_col(room, Vector3(12, 3.6, 0.35), Vector3(0, 1.85, -6))
+	_add_wall_col(room, Vector3(12, 3.6, 0.35), Vector3(0, 1.85, 6))
+	_add_wall_col(room, Vector3(0.35, 3.6, 12), Vector3(-6, 1.85, 0))
+	_add_wall_col(room, Vector3(0.35, 3.6, 12), Vector3(6, 1.85, 0))
+	_mi(_box(Vector3(12, 3.5, 0.3)), Vector3(0, 1.8, -6), room, wall, "WallN")
+	_mi(_box(Vector3(12, 3.5, 0.3)), Vector3(0, 1.8, 6), room, wall, "WallS")
+	_mi(_box(Vector3(0.3, 3.5, 12)), Vector3(-6, 1.8, 0), room, wall, "WallW")
+	_mi(_box(Vector3(0.3, 3.5, 12)), Vector3(6, 1.8, 0), room, wall, "WallE")
+	_mi(_box(Vector3(12.2, 0.25, 12.2)), Vector3(0, 3.7, 0), room, _mats["roof"], "Ceiling")
+	# Rug
+	_mi(_box(Vector3(4.5, 0.04, 3.2)), Vector3(0, 0.22, 0.5), room, rug, "Rug")
+	# Quest desk (center-north) — interactable
+	_add_quest_desk(room, Vector3(0, 0, -3.2), col, str(b.get("guild", "")), str(b.get("label", "Hall")))
+	# Side study tables + chairs
+	_add_study_table(room, Vector3(-3.4, 0, -1.0), 0.2)
+	_add_study_table(room, Vector3(3.4, 0, -1.0), -0.2)
+	_add_chair(room, Vector3(-3.4, 0, 0.3), PI)
+	_add_chair(room, Vector3(3.4, 0, 0.3), PI)
+	# Bookshelves / scroll racks
+	_add_bookshelf(room, Vector3(-5.2, 0, -3.5), col)
+	_add_bookshelf(room, Vector3(5.2, 0, -3.5), col)
+	_add_bookshelf(room, Vector3(-5.2, 0, 2.0), col)
+	# Benches along walls
+	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(-2.5, 0.55, 4.2), room, _mats["bench"], "BenchL")
+	_mi(_box(Vector3(2.2, 0.45, 0.5)), Vector3(2.5, 0.55, 4.2), room, _mats["bench"], "BenchR")
+	# Barrel + crate + notice board
+	var bar := Node3D.new()
+	bar.position = Vector3(-4.5, 0, 3.5)
+	room.add_child(bar)
+	_mi(_cyl(0.32, 0.35, 0.8), Vector3(0, 0.4, 0), bar, _mats["barrel"], "Barrel")
+	_mi(_box(Vector3(0.65, 0.5, 0.65)), Vector3(4.4, 0.28, 3.4), room, _mats["wood_light"], "Crate")
+	_mi(_box(Vector3(1.6, 1.1, 0.08)), Vector3(0, 1.6, 5.5), room, _mat(col.darkened(0.35)), "NoticeBoard")
+	var notice := Label3D.new()
+	notice.text = "Notices"
+	notice.font_size = 28
+	notice.position = Vector3(0, 2.3, 5.5)
+	notice.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	room.add_child(notice)
+	# Warm indoor lanterns
+	_add_lantern(room, Vector3(-3.5, 2.6, -4.0))
+	_add_lantern(room, Vector3(3.5, 2.6, -4.0))
+	_add_lantern(room, Vector3(-3.5, 2.6, 3.5))
+	_add_lantern(room, Vector3(3.5, 2.6, 3.5))
+	_mi(_box(Vector3(2.8, 1.1, 0.08)), Vector3(0, 2.5, -5.7), room, _mat(col.darkened(0.2)), "Banner")
 	var lbl := Label3D.new()
 	lbl.text = "%s Hall" % b.get("label", "Guild")
 	lbl.font_size = 56
-	lbl.position = Vector3(0, 3.0, 0)
+	lbl.position = Vector3(0, 3.15, 0)
 	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	room.add_child(lbl)
+	# Indoor attendant NPC (same quests as outdoor mentor)
+	_spawn_indoor_attendant(room, b)
 	# Exit volume near south wall
 	var exit_area := Area3D.new()
 	exit_area.name = "Exit"
 	exit_area.monitoring = true
 	exit_area.collision_layer = 0
 	exit_area.collision_mask = 2
-	exit_area.position = Vector3(0, 1.0, 4.2)
+	exit_area.position = Vector3(0, 1.0, 5.0)
 	var ecol := CollisionShape3D.new()
 	var ebox := BoxShape3D.new()
-	ebox.size = Vector3(2.0, 2.2, 1.2)
+	ebox.size = Vector3(2.2, 2.2, 1.3)
 	ecol.shape = ebox
 	exit_area.add_child(ecol)
 	var emat := _mat(Color(0.6, 0.85, 0.95, 0.4), 0.5)
 	emat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_mi(_box(Vector3(1.4, 2.0, 0.12)), Vector3(0, 0.1, 0), exit_area, emat, "ExitGlow")
+	_mi(_box(Vector3(1.5, 2.0, 0.12)), Vector3(0, 0.1, 0), exit_area, emat, "ExitGlow")
 	var elbl := Label3D.new()
 	elbl.text = "Exit to green"
 	elbl.font_size = 32
@@ -571,18 +624,136 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	)
 	room.add_child(exit_area)
 
-func _enter_hall(hall_id: String, label: String, body: Node) -> void:
-	if _inside_hall != "":
+func _add_wall_col(room: Node3D, size: Vector3, pos: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	col.shape = shape
+	body.add_child(col)
+	room.add_child(body)
+
+func _add_quest_desk(room: Node3D, pos: Vector3, guild_col: Color, guild: String, label: String) -> void:
+	var root := Node3D.new()
+	root.position = pos
+	room.add_child(root)
+	_mi(_box(Vector3(2.8, 0.85, 1.2)), Vector3(0, 0.55, 0), root, _mats["wood"], "Desk")
+	_mi(_box(Vector3(2.9, 0.08, 1.3)), Vector3(0, 1.0, 0), root, _mats["wood_light"], "DeskTop")
+	_mi(_box(Vector3(0.45, 0.12, 0.55)), Vector3(-0.7, 1.1, 0.1), root, _mat(guild_col), "Book")
+	_mi(_box(Vector3(0.35, 0.08, 0.45)), Vector3(0.6, 1.08, -0.15), root, _mats["iron"], "Inkwell")
+	# Interactable volume — opens outdoor mentor for this guild
+	var area := Area3D.new()
+	area.name = "QuestDesk"
+	area.monitoring = true
+	area.collision_layer = 0
+	area.collision_mask = 2
+	area.position = Vector3(0, 1.0, 1.1)
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(2.4, 2.0, 1.6)
+	col.shape = box
+	area.add_child(col)
+	var tip := Label3D.new()
+	tip.text = "Quest Desk (F)"
+	tip.font_size = 30
+	tip.position = Vector3(0, 1.5, 0)
+	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	area.add_child(tip)
+	var glow := _mat(Color(guild_col.r, guild_col.g, guild_col.b, 0.25), 0.5)
+	glow.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_mi(_box(Vector3(2.0, 0.05, 1.2)), Vector3(0, -0.7, 0), area, glow, "DeskGlow")
+	area.set_meta("guild", guild)
+	area.add_to_group("quest_desks")
+	area.body_entered.connect(func(body: Node):
+		if body.is_in_group("player") and guild != "":
+			body.set_meta("nearby_guild_desk", guild)
+			GameState.toast.emit("Quest desk — press F to speak with the hall mentor.")
+	)
+	area.body_exited.connect(func(body: Node):
+		if body.is_in_group("player") and body.has_meta("nearby_guild_desk"):
+			if str(body.get_meta("nearby_guild_desk")) == guild:
+				body.remove_meta("nearby_guild_desk")
+	)
+	root.add_child(area)
+
+func _add_study_table(room: Node3D, pos: Vector3, yaw: float) -> void:
+	var root := Node3D.new()
+	root.position = pos
+	root.rotation.y = yaw
+	room.add_child(root)
+	_mi(_box(Vector3(1.6, 0.7, 0.9)), Vector3(0, 0.45, 0), root, _mats["wood"], "Table")
+	_mi(_cyl(0.06, 0.06, 0.7), Vector3(-0.6, 0.35, -0.3), root, _mats["wood_light"], "Leg1")
+	_mi(_cyl(0.06, 0.06, 0.7), Vector3(0.6, 0.35, -0.3), root, _mats["wood_light"], "Leg2")
+	_mi(_cyl(0.06, 0.06, 0.7), Vector3(-0.6, 0.35, 0.3), root, _mats["wood_light"], "Leg3")
+	_mi(_cyl(0.06, 0.06, 0.7), Vector3(0.6, 0.35, 0.3), root, _mats["wood_light"], "Leg4")
+
+func _add_chair(room: Node3D, pos: Vector3, yaw: float) -> void:
+	var root := Node3D.new()
+	root.position = pos
+	root.rotation.y = yaw
+	room.add_child(root)
+	_mi(_box(Vector3(0.55, 0.12, 0.5)), Vector3(0, 0.45, 0), root, _mats["bench"], "Seat")
+	_mi(_box(Vector3(0.55, 0.55, 0.08)), Vector3(0, 0.75, -0.22), root, _mats["bench"], "Back")
+	_mi(_box(Vector3(0.08, 0.45, 0.08)), Vector3(-0.2, 0.22, 0.15), root, _mats["wood"], "Leg")
+	_mi(_box(Vector3(0.08, 0.45, 0.08)), Vector3(0.2, 0.22, 0.15), root, _mats["wood"], "Leg2")
+
+func _add_bookshelf(room: Node3D, pos: Vector3, guild_col: Color) -> void:
+	var root := Node3D.new()
+	root.position = pos
+	room.add_child(root)
+	_mi(_box(Vector3(1.4, 2.2, 0.4)), Vector3(0, 1.15, 0), root, _mats["wood"], "Shelf")
+	for i in 4:
+		var y := 0.45 + float(i) * 0.45
+		_mi(_box(Vector3(1.2, 0.08, 0.35)), Vector3(0, y, 0), root, _mats["wood_light"], "Plank")
+		_mi(_box(Vector3(0.18, 0.32, 0.12)), Vector3(-0.35 + (i % 3) * 0.3, y + 0.2, 0.05), root, _mat(guild_col.lightened(0.1 * (i % 3))), "Book")
+
+func _spawn_indoor_attendant(room: Node3D, b: Dictionary) -> void:
+	## Quiet indoor attendant sharing the outdoor mentor's quest list.
+	var guild: String = str(b.get("guild", ""))
+	var outdoor: Dictionary = {}
+	for n in world_data.get("npcs", []):
+		if str(n.get("guild", "")) == guild:
+			outdoor = n
+			break
+	if outdoor.is_empty():
 		return
-	_outdoor_return = body.global_position + Vector3(0, 0, 2.2)
+	var npc: Node = NpcScene.instantiate()
+	npc.npc_id = str(outdoor.get("id", "")) + "-indoor"
+	npc.npc_name = str(outdoor.get("name", "Mentor"))
+	npc.title = "%s (Hall)" % outdoor.get("title", "Guild")
+	npc.guild = guild
+	npc.quest_ids = PackedStringArray(outdoor.get("quest_ids", []))
+	npc.accent = _hex_color(str(outdoor.get("color", b.get("color", "#888"))))
+	npc.position = Vector3(2.2, 0, -3.8)
+	npc.talk_requested.connect(func(p): npc_talk.emit(p))
+	room.add_child(npc)
+
+func _open_guild_npc(guild: String) -> void:
+	for n in get_tree().get_nodes_in_group("npcs"):
+		if str(n.get("guild")) == guild and not str(n.get("npc_id")).ends_with("-indoor"):
+			npc_talk.emit(n)
+			return
+	# Fallback: indoor attendant
+	for n in get_tree().get_nodes_in_group("npcs"):
+		if str(n.get("guild")) == guild:
+			npc_talk.emit(n)
+			return
+
+func _enter_hall(hall_id: String, label: String, body: Node) -> void:
+	if _inside_hall != "" or _door_cooldown > 0.0:
+		return
+	# Push return point clearly outside the door volume (south of front face)
+	var door_z: float = body.global_position.z
+	_outdoor_return = Vector3(body.global_position.x, 0, door_z + 2.8)
 	_inside_hall = hall_id
-	# Find matching interior
+	_door_cooldown = 0.8
 	for room in _interior_root.get_children():
 		if str(room.get_meta("hall_id", "")) == hall_id:
-			body.global_position = room.global_position + Vector3(0, 0, 2.5)
-			if body.has_method("_set_move_target"):
+			body.global_position = room.global_position + Vector3(0, 0, 2.8)
+			if "has_click_target" in body:
 				body.has_click_target = false
-			GameState.toast.emit("Entered %s Hall — walk the blue glow to leave." % label)
+			GameState.toast.emit("Entered %s Hall — desk for quests, blue glow to leave." % label)
 			GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
 			return
 
@@ -590,19 +761,154 @@ func _exit_hall(body: Node) -> void:
 	if _inside_hall == "":
 		return
 	_inside_hall = ""
+	_door_cooldown = 1.2
 	body.global_position = _outdoor_return
 	if "has_click_target" in body:
 		body.has_click_target = false
 	GameState.toast.emit("Back on the village green.")
 	GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
 
+func _build_lantern_glade() -> void:
+	## Small northern wilds spur — brook path + landmark; keeps village map intact.
+	var root := Node3D.new()
+	root.name = "LanternGlade"
+	static_world.add_child(root)
+	# Dirt path north from Worship / Creation corridor
+	for i in 8:
+		var z := -18.0 - float(i) * 3.6
+		_mi(_box(Vector3(2.2, 0.04, 3.8)), Vector3(0.5, 0.025, z), root, _mats["dirt"], "Path")
+	# Stepping stones across a tiny brook
+	_mi(_cyl(2.8, 2.8, 0.08), Vector3(0.5, 0.02, -42), root, _mats["water"], "Brook")
+	_mi(_cyl(1.6, 1.6, 0.06), Vector3(3.2, 0.02, -44), root, _mats["water"], "BrookPool")
+	for i in 5:
+		_mi(_sphere(0.35, 0.22), Vector3(-0.6 + float(i) * 0.7, 0.12, -42.0 + (i % 2) * 0.3), root, _mats["rock"], "Step")
+	# Signpost
+	var sign := Node3D.new()
+	sign.position = Vector3(2.5, 0, -30)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 2.0), Vector3(0, 1.0, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.4, 0.7, 0.1)), Vector3(0, 1.8, 0), sign, _mats["wood_light"], "Board")
+	var sl := Label3D.new()
+	sl.text = "Lantern Glade"
+	sl.font_size = 42
+	sl.position = Vector3(0, 2.5, 0)
+	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.add_child(sl)
+	# Extra trees / bushes framing the path
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 91
+	for i in 10:
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(side * rng.randf_range(4.0, 9.0), 0, -22.0 - float(i) * 2.8)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 1 if i > 6 else 0)
+	# Small lantern ring at glade end
+	for i in 5:
+		var ang := i * TAU / 5.0
+		_add_lantern_post(Vector3(0.5 + cos(ang) * 4.5, 0, -48.0 + sin(ang) * 4.5))
+	var glade_lbl := Label3D.new()
+	glade_lbl.text = "Lantern Glade"
+	glade_lbl.font_size = 56
+	glade_lbl.position = Vector3(0.5, 3.2, -48)
+	glade_lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(glade_lbl)
+
+func _setup_weather() -> void:
+	_rain = CPUParticles3D.new()
+	_rain.name = "Rain"
+	_rain.emitting = false
+	_rain.amount = 280
+	_rain.lifetime = 1.1
+	_rain.preprocess = 0.4
+	_rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_rain.emission_box_extents = Vector3(28, 0.2, 28)
+	_rain.direction = Vector3(0.08, -1, 0.02)
+	_rain.spread = 4.0
+	_rain.initial_velocity_min = 8.0
+	_rain.initial_velocity_max = 12.0
+	_rain.gravity = Vector3(0, -2, 0)
+	var rm := BoxMesh.new()
+	rm.size = Vector3(0.03, 0.22, 0.03)
+	_rain.mesh = rm
+	var rmat := StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.65, 0.75, 0.9, 0.45)
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_rain.material_override = rmat
+	_rain.position = Vector3(0, 14, 6)
+	add_child(_rain)
+	_apply_weather_visuals()
+
+func _update_weather(delta: float) -> void:
+	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
+	if player and _rain:
+		if _inside_hall == "":
+			_rain.global_position = Vector3(player.global_position.x, 14, player.global_position.z)
+			_rain.visible = true
+		else:
+			_rain.emitting = false
+			_rain.visible = false
+	if _weather_auto:
+		_weather_timer -= delta
+		if _weather_timer <= 0.0:
+			cycle_weather(true)
+			_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+
+func cycle_weather(announce: bool = true) -> void:
+	_weather_mode = (_weather_mode + 1) % 3
+	_apply_weather_visuals(announce)
+
+func set_weather(mode: int, announce: bool = false) -> void:
+	_weather_mode = clampi(mode, 0, 2)
+	_weather_auto = true
+	_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+	_apply_weather_visuals(announce)
+
+func toggle_weather_auto() -> void:
+	## Manual bump through clear → fog → rain; keeps auto-cycle on.
+	cycle_weather(true)
+	_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+
+func get_weather_label() -> String:
+	return _weather_label_cache
+
+func _apply_weather_visuals(announce: bool = false) -> void:
+	match _weather_mode:
+		1:
+			_weather_label_cache = "Fog"
+			_fog_boost = 0.0045
+			if _rain:
+				_rain.emitting = false
+		2:
+			_weather_label_cache = "Rain"
+			_fog_boost = 0.0025
+			if _rain and _inside_hall == "":
+				_rain.emitting = true
+		_:
+			_weather_label_cache = "Clear"
+			_fog_boost = 0.0
+			if _rain:
+				_rain.emitting = false
+	weather_changed.emit(_weather_mode, _weather_label_cache)
+	if announce:
+		GameState.toast.emit("Weather: %s" % _weather_label_cache)
+
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
 	var halls: Array = []
 	for b in world_data.get("buildings", []):
 		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888"))})
+	# Landmark for second wilds spur
+	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
+		# Hide indoor duplicates on minimap (keep outdoor mentors)
+		if str(n.get("npc_id")).ends_with("-indoor"):
+			continue
 		npcs.append({"x": n.global_position.x, "z": n.global_position.z})
 	var foes: Array = []
 	for e in get_tree().get_nodes_in_group("enemies"):
@@ -615,4 +921,12 @@ func get_minimap_markers() -> Dictionary:
 		px = player.global_position.x
 		pz = player.global_position.z
 		yaw = float(player.get("cam_yaw"))
-	return {"player": {"x": px, "z": pz, "yaw": yaw}, "halls": halls, "npcs": npcs, "foes": foes, "inside": _inside_hall, "day": _day_phase}
+	return {
+		"player": {"x": px, "z": pz, "yaw": yaw},
+		"halls": halls,
+		"npcs": npcs,
+		"foes": foes,
+		"inside": _inside_hall,
+		"day": _day_phase,
+		"weather": _weather_label_cache,
+	}

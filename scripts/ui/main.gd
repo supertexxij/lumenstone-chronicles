@@ -37,6 +37,7 @@ func _ready() -> void:
 	)
 	hud.journal_pressed.connect(_open_journal)
 	hud.mute_pressed.connect(func(): AudioBus.toggle_mute())
+	hud.weather_pressed.connect(_cycle_weather)
 	hud.parent_pressed.connect(func():
 		parent_panel.open()
 		parent_panel.visible = true
@@ -74,6 +75,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_open_journal()
 	if event.is_action_pressed("mute_toggle"):
 		AudioBus.toggle_mute()
+	if event.is_action_pressed("weather_cycle"):
+		_cycle_weather()
 	if event.is_action_pressed("interact"):
 		_try_nearby_npc()
 
@@ -82,11 +85,18 @@ func _open_journal() -> void:
 	journal_panel.visible = true
 	_set_player_ui_block(true)
 
+func _cycle_weather() -> void:
+	if world_scene and world_scene.has_method("toggle_weather_auto"):
+		world_scene.toggle_weather_auto()
+
 func _try_nearby_npc() -> void:
 	if not world_scene:
 		return
 	var player = world_scene.player
 	if not player:
+		return
+	if player.has_meta("nearby_guild_desk") and world_scene.has_method("_open_guild_npc"):
+		world_scene._open_guild_npc(str(player.get_meta("nearby_guild_desk")))
 		return
 	var best = null
 	var best_d := 4.0

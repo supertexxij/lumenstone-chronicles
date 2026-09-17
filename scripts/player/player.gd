@@ -249,11 +249,10 @@ func _physics_process(delta: float) -> void:
 
 	velocity.y = 0
 	move_and_slide()
-	# Village clamp — skip when teleported into guild-hall interiors (x >= 100)
+	# Village + Lantern Glade clamp — skip when teleported into guild-hall interiors (x >= 100)
 	if global_position.x < 90.0:
-		var b: float = 44.0
-		global_position.x = clampf(global_position.x, -b, b)
-		global_position.z = clampf(global_position.z, -b, b)
+		global_position.x = clampf(global_position.x, -48.0, 48.0)
+		global_position.z = clampf(global_position.z, -56.0, 48.0)
 	global_position.y = 0
 	GameState.position_xz = Vector2(global_position.x, global_position.z)
 

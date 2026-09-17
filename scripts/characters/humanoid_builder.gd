@@ -274,7 +274,7 @@ static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
 
 
 
-## Rebuild weapon child meshes to match item mesh style (sword/axe/staff/bow/dagger).
+## Rebuild weapon child meshes to match item mesh style (sword/axe/staff/bow/dagger/mallet).
 static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 	var weapon: Node3D = parts.get("weapon")
 	if weapon == null:
@@ -294,6 +294,8 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 		mesh_style = "bow"
 	elif "dagger" in mesh_style or "dagger" in iid or "knife" in name:
 		mesh_style = "dagger"
+	elif "mallet" in mesh_style or "mallet" in iid or "hammer" in name:
+		mesh_style = "mallet"
 	else:
 		mesh_style = "sword"
 
@@ -327,6 +329,12 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 			pommel = _mi(_sphere(0.05), Vector3(0, -0.22, 0), weapon, "Pommel")
 			weapon.position = Vector3(0.40, 0.88, 0.08)
 			weapon.rotation_degrees = Vector3(0, 0, -25)
+		"mallet":
+			blade = _mi(_box(Vector3(0.12, 0.55, 0.12)), Vector3(0, 0.1, 0), weapon, "Blade")
+			hilt = _mi(_box(Vector3(0.28, 0.22, 0.22)), Vector3(0, 0.42, 0), weapon, "Hilt")
+			pommel = _mi(_sphere(0.07), Vector3(0, -0.22, 0), weapon, "Pommel")
+			weapon.position = Vector3(0.42, 0.82, 0.06)
+			weapon.rotation_degrees = Vector3(0, 0, -20)
 		_:
 			blade = _mi(_box(Vector3(0.08, 0.72, 0.08)), Vector3(0, 0.15, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.18, 0.08, 0.08)), Vector3(0, -0.22, 0), weapon, "Hilt")

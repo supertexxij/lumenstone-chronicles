@@ -11,9 +11,11 @@ func _draw() -> void:
 	var sz: Vector2 = get_size()
 	var center := sz * 0.5
 	var radius: float = minf(sz.x, sz.y) * 0.48
-	draw_circle(center, radius, Color(0.12, 0.18, 0.14, 0.72))
+	var indoors: bool = str(map_data.get("inside", "")) != ""
+	var bg := Color(0.14, 0.14, 0.2, 0.78) if indoors else Color(0.12, 0.18, 0.14, 0.72)
+	draw_circle(center, radius, bg)
 	draw_arc(center, radius, 0, TAU, 48, Color(0.75, 0.85, 0.65, 0.9), 2.0, true)
-	var world_r := 48.0
+	var world_r := 56.0
 	var scale: float = (radius * 0.92) / world_r
 	var px: float = float(map_data.get("player", {}).get("x", 0))
 	var pz: float = float(map_data.get("player", {}).get("z", 0))

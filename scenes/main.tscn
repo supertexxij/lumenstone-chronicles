@@ -236,6 +236,10 @@ text = "Journal (J)"
 layout_mode = 2
 text = "Mute (M)"
 
+[node name="WeatherBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Weather (R)"
+
 [node name="ParentBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
 text = "Parent"

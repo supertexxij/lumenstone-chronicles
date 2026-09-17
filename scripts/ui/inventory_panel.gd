@@ -44,7 +44,13 @@ func _update_loadout() -> void:
 func _on_select(idx: int) -> void:
 	selected_id = str(list.get_item_metadata(idx))
 	var item := ItemDB.get_item(selected_id)
-	detail.text = "%s\n%s\nSlot: %s" % [item.get("name",""), item.get("description",""), item.get("slot","")]
+	var extra := ""
+	var req: int = int(item.get("combat_level_req", 0))
+	if req > 0:
+		extra = "\nCombat Lv req: %d" % req
+	if item.get("slot", "") == "weapon":
+		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
+	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name",""), item.get("description",""), item.get("slot",""), extra]
 
 func _on_equip() -> void:
 	if selected_id != "":

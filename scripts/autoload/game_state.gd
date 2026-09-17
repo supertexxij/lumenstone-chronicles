@@ -145,6 +145,7 @@ func load_game() -> bool:
 	unlocked_week = int(data.get("unlocked_week", 1))
 	_recalc_unlocked_week()
 	_apply_starters()
+	check_combat_item_unlocks()
 	hp = max_hp
 	state_changed.emit()
 	hp_changed.emit(hp, max_hp)
@@ -172,9 +173,29 @@ func unlock_item(id: String) -> void:
 	toast.emit("Unlocked: %s" % ItemDB.get_item(id).get("name", id))
 	state_changed.emit()
 
+
+func check_combat_item_unlocks() -> void:
+	## Grant weapons/items gated by combat_level_req once the threshold is met
+	## (quest unlock_quest_id still required if set — both gates must pass).
+	for iid in ItemDB.items:
+		var it: Dictionary = ItemDB.items[iid]
+		var req: int = int(it.get("combat_level_req", 0))
+		if req <= 0:
+			continue
+		if combat_level < req:
+			continue
+		var qid: String = str(it.get("unlock_quest_id", ""))
+		if qid != "" and qid not in completed_quests:
+			continue
+		unlock_item(str(iid))
+
 func equip_item(id: String) -> void:
 	var item: Dictionary = ItemDB.get_item(id)
 	if item.is_empty() or id not in unlocked_items:
+		return
+	var req: int = int(item.get("combat_level_req", 0))
+	if req > 0 and combat_level < req:
+		toast.emit("Need Combat Lv %d to equip %s." % [req, item.get("name", id)])
 		return
 	var slot: String = item.get("slot", "")
 	if slot == "":

@@ -23,5 +23,12 @@ func _go():
 	print("NPCS", root.get_tree().get_nodes_in_group("npcs").size())
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("STATIC", world.static_world.get_child_count())
+	print("INTERIORS", world.get_node_or_null("Interiors") != null)
+	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null)
+	print("WEATHER", world.has_method("get_weather_label"), world.get_weather_label() if world.has_method("get_weather_label") else "?")
+	print("MARKERS", world.has_method("get_minimap_markers"))
+	if world.has_method("toggle_weather_auto"):
+		world.toggle_weather_auto()
+		print("WEATHER2", world.get_weather_label())
 	print("WORLD_SMOKE_OK")
 	quit(0)

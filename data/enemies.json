@@ -125,6 +125,30 @@
       "kind": "dust_golem",
       "x": 36,
       "z": 6
+    },
+    {
+      "id": "e13",
+      "kind": "dim_wisp",
+      "x": 8,
+      "z": -48
+    },
+    {
+      "id": "e14",
+      "kind": "shadow_moth",
+      "x": -6,
+      "z": -50
+    },
+    {
+      "id": "e15",
+      "kind": "briar_boar",
+      "x": 14,
+      "z": -52
+    },
+    {
+      "id": "e16",
+      "kind": "dim_wisp",
+      "x": -18,
+      "z": -46
     }
   ],
   "base_combat": {
@@ -132,8 +156,8 @@
     "accuracy": 0.7,
     "max_hp": 40,
     "tick_sec": 0.7,
-    "engage_range": 4.2,
-    "escape_range": 9.5,
+    "engage_range": 3.8,
+    "escape_range": 10.0,
     "attack_range": 3.0
   }
 }

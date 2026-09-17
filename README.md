@@ -177,7 +177,11 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Minimap + compass** + day/dusk/night label for village/wilds orientation
 - **Subtle day–night tint** (readable nights; steady indoor lighting in halls)
 - **Enterable guild halls** — door volumes teleport to simple interior rooms with exit glow
-- Soft-aggro **yellow telegraph** ring + “is watching…” toast before pull
+- Soft-aggro **softer yellow telegraph** (~1.15s, translucent ring) + gentle “notices you…” toast before pull
+- **Denser guild-hall interiors** — quest desks (F), bookshelves, study tables/chairs, rugs, notice boards, indoor attendants
+- **Weather cycle** (clear → fog → rain particles) — HUD/R toggle, mute-friendly (no weather SFX), readable fog
+- **Later-tier weapons** (cedar/bronze/iron/Lightbearer, crook, longbow, Steward’s Mallet) gated by mid/late quests + combat level
+- **Lantern Glade** northern brook path spur + landmark + a few extra wild spawns (small map expansion)
 - **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
 - Parent dashboard (PIN **1234**) with progress, week unlock, skills-by-week, **Needs Help** list
 - Saves to `user://lumenstone_save_v1.json`
@@ -206,10 +210,10 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 ## Limitations
 
 - Chunky low-poly **humanoid** characters (head, torso, arms, legs, feet) — RuneScape-adjacent, not photoreal
-- Equipped hat / cape / weapon (sword/axe/staff/bow/dagger meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
+- Equipped hat / cape / weapon (sword/axe/staff/bow/dagger/mallet meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- One region (village + wild edges); not a full world map yet
+- Village green + **Lantern Glade** northern spur; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
 - Audio is short procedural SFX + soft drone + original village loop (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only
