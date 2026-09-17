@@ -490,10 +490,11 @@
   "kindling_cloak": {
     "id": "kindling_cloak",
     "name": "Kindling Cloak",
-    "description": "A feast cloak awarded with the Campaign I badge.",
+    "description": "A feast cloak awarded with the Campaign I badge. Soft defense +1.",
     "slot": "cape",
     "color": "#6a4c93",
-    "unlock_quest_id": "w9-raid-feast"
+    "unlock_quest_id": "w9-raid-feast",
+    "defense": 1
   },
   "service_band": {
     "id": "service_band",
@@ -538,10 +539,11 @@
   "well_cloak": {
     "id": "well_cloak",
     "name": "Well Cloak",
-    "description": "Cloak earned at the Equal-Share Well raid review.",
+    "description": "Cloak earned at the Equal-Share Well raid review. Soft defense +1.",
     "slot": "cape",
     "color": "#1d7a9c",
-    "unlock_quest_id": "w10-raid-review"
+    "unlock_quest_id": "w10-raid-review",
+    "defense": 1
   },
   "joshua_band": {
     "id": "joshua_band",
@@ -586,10 +588,11 @@
   "courage_cloak": {
     "id": "courage_cloak",
     "name": "Courage Cloak",
-    "description": "Cloak from the Week 11 raid review.",
+    "description": "Cloak from the Week 11 raid review. Soft defense +1.",
     "slot": "cape",
     "color": "#6a4c93",
-    "unlock_quest_id": "w11-raid-review"
+    "unlock_quest_id": "w11-raid-review",
+    "defense": 1
   },
   "order_seal": {
     "id": "order_seal",
@@ -634,10 +637,11 @@
   "citadel_cloak": {
     "id": "citadel_cloak",
     "name": "Citadel Cloak",
-    "description": "Cloak from the Constitution Citadel raid.",
+    "description": "Cloak from the Constitution Citadel raid. Soft defense +1.",
     "slot": "cape",
     "color": "#1d3557",
-    "unlock_quest_id": "w12-raid-review"
+    "unlock_quest_id": "w12-raid-review",
+    "defense": 1
   },
   "psalm_travel_band": {
     "id": "psalm_travel_band",
@@ -682,10 +686,11 @@
   "westward_cloak": {
     "id": "westward_cloak",
     "name": "Westward Cloak",
-    "description": "Cloak from the Westward Lanterns raid.",
+    "description": "Cloak from the Westward Lanterns raid. Soft defense +1.",
     "slot": "cape",
     "color": "#bc6c25",
-    "unlock_quest_id": "w13-raid-review"
+    "unlock_quest_id": "w13-raid-review",
+    "defense": 1
   },
   "commission_bookmark": {
     "id": "commission_bookmark",
@@ -730,10 +735,11 @@
   "spain_texas_cloak": {
     "id": "spain_texas_cloak",
     "name": "Spain Texas Cloak",
-    "description": "Cloak from the Texas Under Spain raid.",
+    "description": "Cloak from the Texas Under Spain raid. Soft defense +1.",
     "slot": "cape",
     "color": "#ae2012",
-    "unlock_quest_id": "w14-raid-review"
+    "unlock_quest_id": "w14-raid-review",
+    "defense": 1
   },
   "purpose_seal": {
     "id": "purpose_seal",
@@ -778,10 +784,11 @@
   "mexican_texas_cloak": {
     "id": "mexican_texas_cloak",
     "name": "Mexican Texas Cloak",
-    "description": "Cloak from the Mexican Texas Roads raid.",
+    "description": "Cloak from the Mexican Texas Roads raid. Soft defense +1.",
     "slot": "cape",
     "color": "#006d77",
-    "unlock_quest_id": "w15-raid-review"
+    "unlock_quest_id": "w15-raid-review",
+    "defense": 1
   },
   "sacrifice_medallion": {
     "id": "sacrifice_medallion",
@@ -826,10 +833,11 @@
   "alamo_cloak": {
     "id": "alamo_cloak",
     "name": "Alamo Cloak",
-    "description": "Cloak from the Remember the Alamo raid.",
+    "description": "Cloak from the Remember the Alamo raid. Soft defense +1.",
     "slot": "cape",
     "color": "#6d597a",
-    "unlock_quest_id": "w16-raid-review"
+    "unlock_quest_id": "w16-raid-review",
+    "defense": 1
   },
   "humility_band": {
     "id": "humility_band",
@@ -874,10 +882,11 @@
   "sunrise_cloak": {
     "id": "sunrise_cloak",
     "name": "Sunrise Cloak",
-    "description": "Cloak from the San Jacinto Sunrise raid.",
+    "description": "Cloak from the San Jacinto Sunrise raid. Soft defense +1.",
     "slot": "cape",
     "color": "#e09f3e",
-    "unlock_quest_id": "w17-raid-review"
+    "unlock_quest_id": "w17-raid-review",
+    "defense": 1
   },
   "justice_mercy_cup": {
     "id": "justice_mercy_cup",
@@ -930,10 +939,11 @@
   "scrolls_cloak": {
     "id": "scrolls_cloak",
     "name": "Scrolls Cloak",
-    "description": "A feast cloak awarded with the Campaign II badge.",
+    "description": "A feast cloak awarded with the Campaign II badge. Soft defense +1.",
     "slot": "cape",
     "color": "#264653",
-    "unlock_quest_id": "w18-raid-feast"
+    "unlock_quest_id": "w18-raid-feast",
+    "defense": 1
   },
   "orderliness_band": {
     "id": "orderliness_band",
@@ -978,10 +988,11 @@
   "yardstick_cloak": {
     "id": "yardstick_cloak",
     "name": "Yardstick Cloak",
-    "description": "Cloak earned at the Yardstick of the Realm raid review.",
+    "description": "Cloak earned at the Yardstick of the Realm raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#8b6914",
-    "unlock_quest_id": "w19-raid-review"
+    "unlock_quest_id": "w19-raid-review",
+    "defense": 2
   },
   "excellence_seal": {
     "id": "excellence_seal",
@@ -1026,10 +1037,11 @@
   "scales_cloak": {
     "id": "scales_cloak",
     "name": "Scales Cloak",
-    "description": "Cloak earned at the Scales & Measures raid review.",
+    "description": "Cloak earned at the Scales & Measures raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#6c757d",
-    "unlock_quest_id": "w20-raid-review"
+    "unlock_quest_id": "w20-raid-review",
+    "defense": 2
   },
   "psalm8_band": {
     "id": "psalm8_band",
@@ -1074,10 +1086,11 @@
   "garden_cloak": {
     "id": "garden_cloak",
     "name": "Garden Cloak",
-    "description": "Cloak earned at the Geometry Gardens raid review.",
+    "description": "Cloak earned at the Geometry Gardens raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#2d6a4f",
-    "unlock_quest_id": "w21-raid-review"
+    "unlock_quest_id": "w21-raid-review",
+    "defense": 2
   },
   "cheer_lantern": {
     "id": "cheer_lantern",
@@ -1122,10 +1135,11 @@
   "starmap_cloak": {
     "id": "starmap_cloak",
     "name": "Star Map Cloak",
-    "description": "Cloak earned at the Star Maps & State Maps raid review.",
+    "description": "Cloak earned at the Star Maps & State Maps raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#14213d",
-    "unlock_quest_id": "w22-raid-review"
+    "unlock_quest_id": "w22-raid-review",
+    "defense": 2
   },
   "micah_token": {
     "id": "micah_token",
@@ -1170,10 +1184,11 @@
   "mountain_cloak": {
     "id": "mountain_cloak",
     "name": "Mountain Cloak",
-    "description": "Cloak earned at the Multi-Step Mountain raid review.",
+    "description": "Cloak earned at the Multi-Step Mountain raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#bc6c25",
-    "unlock_quest_id": "w23-raid-review"
+    "unlock_quest_id": "w23-raid-review",
+    "defense": 2
   },
   "order_band": {
     "id": "order_band",
@@ -1218,10 +1233,11 @@
   "forge_cloak": {
     "id": "forge_cloak",
     "name": "Forge Cloak",
-    "description": "Cloak earned at the Fraction Forge raid review.",
+    "description": "Cloak earned at the Fraction Forge raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#e76f51",
-    "unlock_quest_id": "w24-raid-review"
+    "unlock_quest_id": "w24-raid-review",
+    "defense": 2
   },
   "honor_medallion": {
     "id": "honor_medallion",
@@ -1266,10 +1282,11 @@
   "citizen_cloak": {
     "id": "citizen_cloak",
     "name": "Citizen Cloak",
-    "description": "Cloak earned at the Citizen Scribes raid review.",
+    "description": "Cloak earned at the Citizen Scribes raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#264653",
-    "unlock_quest_id": "w25-raid-review"
+    "unlock_quest_id": "w25-raid-review",
+    "defense": 2
   },
   "perseverance_band": {
     "id": "perseverance_band",
@@ -1314,10 +1331,11 @@
   "trail_cloak": {
     "id": "trail_cloak",
     "name": "Trail Cloak",
-    "description": "Cloak earned at the Trail of Stories raid review.",
+    "description": "Cloak earned at the Trail of Stories raid review. Soft defense +2.",
     "slot": "cape",
     "color": "#7f5539",
-    "unlock_quest_id": "w26-raid-review"
+    "unlock_quest_id": "w26-raid-review",
+    "defense": 2
   },
   "stewardship_cup": {
     "id": "stewardship_cup",
@@ -1370,10 +1388,11 @@
   "builders_cloak": {
     "id": "builders_cloak",
     "name": "Builders Cloak",
-    "description": "A feast cloak awarded with the Campaign III badge.",
+    "description": "A feast cloak awarded with the Campaign III badge. Soft defense +2.",
     "slot": "cape",
     "color": "#8b6914",
-    "unlock_quest_id": "w27-raid-feast"
+    "unlock_quest_id": "w27-raid-feast",
+    "defense": 2
   },
   "self_control_band": {
     "id": "self_control_band",
@@ -1418,10 +1437,11 @@
   "mills_cloak": {
     "id": "mills_cloak",
     "name": "Mills Cloak",
-    "description": "Cloak earned at the Mastery Mills review.",
+    "description": "Cloak earned at the Mastery Mills review. Soft defense +2.",
     "slot": "cape",
     "color": "#d4a017",
-    "unlock_quest_id": "w28-raid-review"
+    "unlock_quest_id": "w28-raid-review",
+    "defense": 2
   },
   "patience_pin": {
     "id": "patience_pin",
@@ -1466,10 +1486,11 @@
   "solvers_cloak": {
     "id": "solvers_cloak",
     "name": "Solvers Cloak",
-    "description": "Cloak earned at the Problem-Solvers Path review.",
+    "description": "Cloak earned at the Problem-Solvers Path review. Soft defense +2.",
     "slot": "cape",
     "color": "#b08968",
-    "unlock_quest_id": "w29-raid-review"
+    "unlock_quest_id": "w29-raid-review",
+    "defense": 2
   },
   "joy_ribbon": {
     "id": "joy_ribbon",
@@ -1514,10 +1535,11 @@
   "publishers_cloak": {
     "id": "publishers_cloak",
     "name": "Publishers Cloak",
-    "description": "Cloak earned at the Publishers of the Hall review.",
+    "description": "Cloak earned at the Publishers of the Hall review. Soft defense +2.",
     "slot": "cape",
     "color": "#3a6ea5",
-    "unlock_quest_id": "w30-raid-review"
+    "unlock_quest_id": "w30-raid-review",
+    "defense": 2
   },
   "thanks_seal": {
     "id": "thanks_seal",
@@ -1562,10 +1584,11 @@
   "jubilee_cloak": {
     "id": "jubilee_cloak",
     "name": "Jubilee Cloak",
-    "description": "Cloak earned at the Geometry Jubilee review.",
+    "description": "Cloak earned at the Geometry Jubilee review. Soft defense +2.",
     "slot": "cape",
     "color": "#2d6a4f",
-    "unlock_quest_id": "w31-raid-review"
+    "unlock_quest_id": "w31-raid-review",
+    "defense": 2
   },
   "goodness_lamp": {
     "id": "goodness_lamp",
@@ -1610,18 +1633,20 @@
   "fair_cloak": {
     "id": "fair_cloak",
     "name": "Fair Cloak",
-    "description": "Cloak earned at the Steward Science Fair review.",
+    "description": "Cloak earned at the Steward Science Fair review. Soft defense +2.",
     "slot": "cape",
     "color": "#2d6a4f",
-    "unlock_quest_id": "w32-raid-review"
+    "unlock_quest_id": "w32-raid-review",
+    "defense": 2
   },
   "kindness_crownlet": {
     "id": "kindness_crownlet",
     "name": "Kindness Crownlet",
-    "description": "A small crownlet for Romans 12:10 and honor.",
+    "description": "A small crownlet for Romans 12:10 and honor. Soft defense +2.",
     "slot": "head",
     "color": "#c9b037",
-    "unlock_quest_id": "w33-bible-kindness"
+    "unlock_quest_id": "w33-bible-kindness",
+    "defense": 2
   },
   "change_purse": {
     "id": "change_purse",
@@ -1650,18 +1675,20 @@
   "citizenship_crown": {
     "id": "citizenship_crown",
     "name": "Citizenship Crown",
-    "description": "A crown token for rights, duties, flag, and pledge.",
+    "description": "A crown token for rights, duties, flag, and pledge. Soft defense +2.",
     "slot": "head",
     "color": "#9b2226",
-    "unlock_quest_id": "w33-history-citizenship"
+    "unlock_quest_id": "w33-history-citizenship",
+    "defense": 2
   },
   "citizenship_cloak": {
     "id": "citizenship_cloak",
     "name": "Citizenship Cloak",
-    "description": "Cloak earned at the Citizenship Crown review.",
+    "description": "Cloak earned at the Citizenship Crown review. Soft defense +2.",
     "slot": "cape",
     "color": "#9b2226",
-    "unlock_quest_id": "w33-raid-review"
+    "unlock_quest_id": "w33-raid-review",
+    "defense": 2
   },
   "perseverance_path_band": {
     "id": "perseverance_path_band",
@@ -1706,10 +1733,11 @@
   "remediation_cloak": {
     "id": "remediation_cloak",
     "name": "Remediation Cloak",
-    "description": "Cloak earned at the Remediation Roads review.",
+    "description": "Cloak earned at the Remediation Roads review. Soft defense +2.",
     "slot": "cape",
     "color": "#7f5539",
-    "unlock_quest_id": "w34-raid-review"
+    "unlock_quest_id": "w34-raid-review",
+    "defense": 2
   },
   "faithfulness_seal": {
     "id": "faithfulness_seal",
@@ -1754,10 +1782,11 @@
   "supreme_cloak": {
     "id": "supreme_cloak",
     "name": "Supreme Cloak",
-    "description": "Cloak earned at Raid Review Supreme.",
+    "description": "Cloak earned at Raid Review Supreme. Soft defense +2.",
     "slot": "cape",
     "color": "#c9a227",
-    "unlock_quest_id": "w35-raid-supreme"
+    "unlock_quest_id": "w35-raid-supreme",
+    "defense": 2
   },
   "love_lumen_pendant": {
     "id": "love_lumen_pendant",
@@ -1810,10 +1839,11 @@
   "year_champion_cloak": {
     "id": "year_champion_cloak",
     "name": "Year Champion Cloak",
-    "description": "A feast cloak for completing the 36-week year arc.",
+    "description": "A feast cloak for completing the 36-week year arc. Soft defense +3.",
     "slot": "cape",
     "color": "#c9b037",
-    "unlock_quest_id": "w36-raid-feast"
+    "unlock_quest_id": "w36-raid-feast",
+    "defense": 3
   },
   "year_champion_certificate": {
     "id": "year_champion_certificate",

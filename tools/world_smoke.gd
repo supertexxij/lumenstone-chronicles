@@ -99,5 +99,8 @@ func _finish():
 	print("AMBIENT_LIFE", world.static_world.get_node_or_null("AmbientLife") != null if world else false)
 	print("HIT_PAUSE", "_play_hit_pause" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
 	print("HURT_VIGNETTE", "_update_hurt_vignette" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("VILLAGE_AMBIENT", "0.0, 0, 8.0" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("ARMOR_ICONS", "_make_slot_icon" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("HUD_DEF", "· Def" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

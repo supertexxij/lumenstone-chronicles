@@ -477,10 +477,15 @@ func get_defense_breakdown() -> Dictionary:
 		var d: int = int(it.get("defense", 0))
 		by_slot[slot] = d
 		gear += d
-	var total: int = clampi(level_def + gear, 0, 4)
+	# Soft cap 5 so mid/late cloaks (+2) and crowns can show progression without
+	# making hits vanish (enemy damage still floors at 1).
+	var raw: int = level_def + gear
+	var total: int = clampi(raw, 0, 5)
 	return {
 		"level": level_def,
 		"gear": gear,
+		"raw": raw,
+		"cap": 5,
 		"total": total,
 		"by_slot": by_slot,
 	}

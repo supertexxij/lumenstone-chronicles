@@ -1602,6 +1602,10 @@ func _build_ambient_life() -> void:
 	if HeadlessGuard.is_headless():
 		return
 	var sites := [
+		# Village green / fountain plaza — birds over the green, bugs by flowers
+		{"pos": Vector3(0.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly"},
+		{"pos": Vector3(4.5, 0, 11.5), "birds": false, "bugs": true, "critter": "sparrow"},
+		# Wilds landmarks
 		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly"},
 		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow"},
 		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly"},

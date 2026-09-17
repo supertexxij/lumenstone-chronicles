@@ -239,6 +239,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
 
+### Wave 17 overnight (v1.17.0-overnight)
+- Mid/late **cloaks & hats** gain plain Soft defense (+1 early/mid, +2 late, +3 Year Champion); crowns +2
+- Clearer inventory **armor-slot icons** (head helm / cape drape / food / gear) + "Head armor" / "Cape armor" labels
+- **Ambient life on the village green** — birds, bugs, butterfly & sparrow near the fountain (same system as landmarks)
+- Feel polish: HUD combat line shows **Def N** when soft armor is active
+- Bug fix: low-HP **rose vignette** edge strips now have real thickness (v1.16 zero-height preset bug); soft defense soft-max note when capped (cap 5)
+- Re-export Linux + Windows
+
 ### Wave 16 overnight (v1.16.0-overnight)
 - Inventory **armor / defense UX**: Def +N on gear rows, Head/Cape labeled as armor slots, soft-armor breakdown (level + gear = total)
 - **Ambient life** at landmarks — bird flocks, soft bug sparkles, idle butterfly/sparrow/dragonfly critters (wholesome, headless-safe)

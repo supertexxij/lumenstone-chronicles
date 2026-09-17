@@ -14,14 +14,20 @@ var selected_id: String = ""
 var _cd_label_was: float = -1.0
 
 const SLOT_LABELS := {
-	"head": "Head (armor)",
-	"cape": "Cape (armor)",
+	"head": "Head armor",
+	"cape": "Cape armor",
 	"accessory": "Accessory",
 	"weapon": "Weapon",
 	"belt": "Belt",
 }
 
+var _icon_head: Texture2D
+var _icon_cape: Texture2D
+var _icon_gear: Texture2D
+var _icon_food: Texture2D
+
 func _ready() -> void:
+	_ensure_slot_icons()
 	if use_btn == null:
 		use_btn = Button.new()
 		use_btn.name = "UseBtn"
@@ -79,7 +85,9 @@ func refresh() -> void:
 		if def_n > 0:
 			def_mark = " · Def +%d" % def_n
 		list.add_item("%s%s%s%s" % [item.get("name", id), def_mark, equipped_mark, stack_mark])
-		list.set_item_metadata(list.item_count - 1, id)
+		var idx: int = list.item_count - 1
+		list.set_item_metadata(idx, id)
+		list.set_item_icon(idx, _icon_for_item(item))
 	_update_loadout()
 	detail.text = "Select gear to see armor & defense, or food to Use."
 
@@ -111,7 +119,13 @@ func _update_loadout() -> void:
 		parts.append("— Soft armor —")
 		parts.append("From combat level: +%d" % int(bd.get("level", 0)))
 		parts.append("From worn gear: +%d" % int(bd.get("gear", 0)))
-		parts.append("Total defense: %d (soft hits hurt less)" % int(bd.get("total", 0)))
+		var total_d: int = int(bd.get("total", 0))
+		var raw_d: int = int(bd.get("raw", total_d))
+		var cap_d: int = int(bd.get("cap", 5))
+		if raw_d > total_d:
+			parts.append("Total defense: %d (soft max %d — hits still tick)" % [total_d, cap_d])
+		else:
+			parts.append("Total defense: %d (soft hits hurt less)" % total_d)
 	elif GameState.has_method("get_defense"):
 		parts.append("Defense: %d" % GameState.get_defense())
 	loadout.text = "\n".join(parts)
@@ -184,3 +198,71 @@ func _on_use() -> void:
 				list.select(i)
 				_on_select(i)
 				break
+
+func _ensure_slot_icons() -> void:
+	## Tiny plain armor-slot icons so Head/Cape read clearly in the bag.
+	if _icon_head != null:
+		return
+	_icon_head = _make_slot_icon(Color(0.72, 0.78, 0.88), "head")
+	_icon_cape = _make_slot_icon(Color(0.78, 0.45, 0.42), "cape")
+	_icon_gear = _make_slot_icon(Color(0.70, 0.62, 0.48), "gear")
+	_icon_food = _make_slot_icon(Color(0.55, 0.72, 0.48), "food")
+
+
+func _icon_for_item(item: Dictionary) -> Texture2D:
+	_ensure_slot_icons()
+	var slot: String = str(item.get("slot", ""))
+	match slot:
+		"head":
+			return _icon_head
+		"cape":
+			return _icon_cape
+		"consumable":
+			return _icon_food
+		_:
+			return _icon_gear
+
+
+func _make_slot_icon(base: Color, kind: String) -> Texture2D:
+	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	# Soft plate background
+	for y in range(1, 15):
+		for x in range(1, 15):
+			img.set_pixel(x, y, Color(base.r * 0.35, base.g * 0.35, base.b * 0.35, 0.85))
+	match kind:
+		"head":
+			# Round helm dome
+			for y in range(3, 10):
+				for x in range(4, 12):
+					var dx := float(x) - 7.5
+					var dy := float(y) - 6.0
+					if dx * dx + dy * dy <= 16.0:
+						img.set_pixel(x, y, base)
+			for x in range(5, 11):
+				img.set_pixel(x, 10, base.darkened(0.15))
+				img.set_pixel(x, 11, base.darkened(0.25))
+		"cape":
+			# Draped cape trapezoid
+			for y in range(3, 14):
+				var half := 2 + int((y - 3) * 0.35)
+				for x in range(8 - half, 8 + half):
+					if x >= 1 and x <= 14:
+						img.set_pixel(x, y, base if y < 12 else base.darkened(0.2))
+			for x in range(6, 10):
+				img.set_pixel(x, 2, base.lightened(0.15))
+		"food":
+			for y in range(5, 12):
+				for x in range(4, 12):
+					img.set_pixel(x, y, base)
+			for x in range(5, 11):
+				img.set_pixel(x, 4, base.lightened(0.2))
+		_:
+			# Simple gear square / buckle
+			for y in range(4, 12):
+				for x in range(4, 12):
+					img.set_pixel(x, y, base)
+			for y in range(6, 10):
+				for x in range(6, 10):
+					img.set_pixel(x, y, base.darkened(0.35))
+	return ImageTexture.create_from_image(img)

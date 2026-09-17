@@ -71,7 +71,13 @@ func _refresh_mute_label() -> void:
 func refresh() -> void:
 	name_lbl.text = GameState.child_name
 	xp_lbl.text = "XP %d · Lv %d · Wk %d" % [GameState.xp, GameState.level, GameState.unlocked_week]
-	combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
+	var def_n: int = 0
+	if GameState.has_method("get_defense"):
+		def_n = int(GameState.get_defense())
+	if def_n > 0:
+		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d" % [GameState.combat_level, GameState.combat_xp, def_n]
+	else:
+		combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
 	var parts: PackedStringArray = []
 	for g in ["math","la","science","history","bible"]:
 		parts.append("%s:%d" % [GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)])
@@ -199,11 +205,12 @@ func _ensure_hurt_vignette() -> void:
 	add_child(_hurt_vignette)
 	move_child(_hurt_vignette, 0)
 	_vignette_edges.clear()
+	# Explicit offsets — PRESET_*_WIDE alone can leave zero-thickness strips (v1.16 bugfix).
 	var specs := [
-		{"name": "Top", "preset": Control.PRESET_TOP_WIDE, "min": Vector2(0, 56)},
-		{"name": "Bottom", "preset": Control.PRESET_BOTTOM_WIDE, "min": Vector2(0, 56)},
-		{"name": "Left", "preset": Control.PRESET_LEFT_WIDE, "min": Vector2(48, 0)},
-		{"name": "Right", "preset": Control.PRESET_RIGHT_WIDE, "min": Vector2(48, 0)},
+		{"name": "Top", "preset": Control.PRESET_TOP_WIDE, "bottom": 56.0, "left": 0.0, "right": 0.0, "top": 0.0},
+		{"name": "Bottom", "preset": Control.PRESET_BOTTOM_WIDE, "top": -56.0, "left": 0.0, "right": 0.0, "bottom": 0.0},
+		{"name": "Left", "preset": Control.PRESET_LEFT_WIDE, "right": 48.0, "top": 0.0, "bottom": 0.0, "left": 0.0},
+		{"name": "Right", "preset": Control.PRESET_RIGHT_WIDE, "left": -48.0, "top": 0.0, "bottom": 0.0, "right": 0.0},
 	]
 	for s in specs:
 		var r := ColorRect.new()
@@ -211,7 +218,10 @@ func _ensure_hurt_vignette() -> void:
 		r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		r.color = Color(0.72, 0.28, 0.32, 0.0)
 		r.set_anchors_and_offsets_preset(int(s["preset"]))
-		r.custom_minimum_size = s["min"]
+		r.offset_left = float(s["left"])
+		r.offset_top = float(s["top"])
+		r.offset_right = float(s["right"])
+		r.offset_bottom = float(s["bottom"])
 		_hurt_vignette.add_child(r)
 		_vignette_edges.append(r)
 
