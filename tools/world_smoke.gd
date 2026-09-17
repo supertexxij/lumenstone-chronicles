@@ -53,6 +53,7 @@ func _finish():
 	var mice := 0
 	var moles := 0
 	var chipmunks := 0
+	var ducks := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -76,6 +77,8 @@ func _finish():
 			moles += 1
 		if str(foe.get("kind")) == "beech_chipmunk":
 			chipmunks += 1
+		if str(foe.get("kind")) == "alder_duck":
+			ducks += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -88,6 +91,7 @@ func _finish():
 	print("MICE", mice)
 	print("MOLES", moles)
 	print("CHIPMUNKS", chipmunks)
+	print("DUCKS", ducks)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -266,5 +270,12 @@ func _finish():
 	print("PARENT_PIN_SRC", "PIN changed successfully" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("CAMPAIGN_COUNTS_SRC", "Wave 40: campaign tab shows mastered/total" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("VERSION_140_SRC", 'config/version="1.40.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("ALDER_DUCK_SRC", '"alder_duck"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("PUDDLE_RIPPLES_SRC", "_setup_rain_puddle_ripples" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("FIRST_FIGHT_TIP_SRC", "First fight: soft ticks" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("HP_COMBAT_LV_SRC", "HP %d / %d · Lv %d" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("FOOD_READY_FLASH_SRC", "_food_ready_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("VERSION_141_SRC", 'config/version="1.41.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

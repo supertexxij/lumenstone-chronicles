@@ -14,6 +14,8 @@ signal saves_pressed
 @onready var combat_lbl: Label = $TopBar/CombatLbl
 @onready var hp_bar: ProgressBar = $TopBar/HpBar
 var food_lbl: Label
+var _food_was_waiting: bool = false  # Wave 41: Ready flash after cooldown
+var _food_ready_flash_t: float = 0.0
 @onready var lumen_lbl: Label = $TopBar/LumenLbl
 @onready var inv_btn: Button = $BottomBar/InvBtn
 @onready var look_btn: Button = $BottomBar/LookBtn
@@ -127,7 +129,8 @@ func set_hp(cur: int, mx: int) -> void:
 	var hp_txt: Label = hp_bar.get_node("HpText")
 	_ensure_clear_hp_text(hp_txt)
 	# Wave 35: clearer combat HP number — bold "HP N / M" on the bar
-	hp_txt.text = "HP %d / %d" % [cur, mx]
+	# Wave 41: combat level shown near HP
+	hp_txt.text = "HP %d / %d · Lv %d" % [cur, mx, GameState.combat_level]
 	_update_hurt_vignette(cur, mx)
 
 func _ensure_clear_hp_text(hp_txt: Label) -> void:
@@ -141,6 +144,8 @@ func _ensure_clear_hp_text(hp_txt: Label) -> void:
 	hp_txt.set_meta("wave35_hp_styled", true)
 
 func _process(delta: float) -> void:
+	if _food_ready_flash_t > 0.0:
+		_food_ready_flash_t = maxf(0.0, _food_ready_flash_t - delta)
 	if _def_flash_t > 0.0:
 		_def_flash_t -= delta
 		if _def_flash_t <= 0.0 and _def_flash_active:
@@ -244,12 +249,21 @@ func _refresh_food_lbl() -> void:
 			bname = "Stew"
 		next_txt = "%s +%d" % [bname, int(best.get("heal", 0))]
 	# Wave 34: clearer food cooldown — Wait vs Ready (no cryptic CD)
+	# Wave 41: soft Ready flash when cooldown ends
 	if cd > 0.05:
+		_food_was_waiting = true
 		food_lbl.text = "Pantry %s · Wait %.1fs · next V:%s" % [stack_txt, cd, next_txt]
 		food_lbl.modulate = Color(1.0, 0.88, 0.55, 1.0)
 	else:
+		if _food_was_waiting:
+			_food_was_waiting = false
+			_food_ready_flash_t = 0.55
 		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
-		food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
+		if _food_ready_flash_t > 0.0:
+			var u := clampf(_food_ready_flash_t / 0.55, 0.0, 1.0)
+			food_lbl.modulate = Color(0.75, 1.0, 0.75, 1.0).lerp(Color(1.0, 1.0, 0.75, 1.0), sin(u * PI))
+		else:
+			food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
 
 
 func _ensure_hurt_vignette() -> void:

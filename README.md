@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 41 overnight (v1.41.0-overnight)
+- Soft **rain puddle ripples** — gentle expanding rings on the ground while raining outdoors (with splash; RuneScape-chunky, wholesome)
+- Clearer **first-fight tip** — soft ticks (~0.7s) + walk away / click ground to leave
+- New wilds foe **Alder Duck** — plump body, flat bill, short wings, paddle feet, gentle “cradled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk)
+- HUD QoL: **combat level near HP** (`HP N / M · Lv N`) + soft **Ready flash** when food cooldown ends (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 40 overnight (v1.40.0-overnight)
 - Soft **milestone toast every 5 weeks unlocked** — gentle fifth-mark celebration (weeks 5/10/15/20/25/30 + full-year at 36)
 - Clearer **landmark approach toast** — ✦ New landmark / ✦ Near wording so wilds places read at a glance

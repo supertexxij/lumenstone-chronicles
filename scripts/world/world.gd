@@ -32,6 +32,7 @@ var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
+var _puddle_ripples: CPUParticles3D  # Wave 41: soft rain puddle ripples on ground
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
 var _water_positions: Array = []  # Wave 38: brook murmur proximity
@@ -1518,6 +1519,7 @@ func _setup_weather() -> void:
 	HeadlessGuard.guard_particles(_clouds)
 	_apply_weather_visuals()
 	_setup_rain_splash()
+	_setup_rain_puddle_ripples()
 	_setup_fog_mist()
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
@@ -1551,6 +1553,46 @@ func _setup_rain_splash() -> void:
 	_rain_splash.position = Vector3(0, 0.05, 0)
 	add_child(_rain_splash)
 	HeadlessGuard.guard_particles(_rain_splash)
+
+func _setup_rain_puddle_ripples() -> void:
+	## Wave 41: soft expanding puddle ripples while raining (RuneScape-chunky, wholesome).
+	_puddle_ripples = CPUParticles3D.new()
+	_puddle_ripples.name = "RainPuddleRipples"
+	_puddle_ripples.emitting = false
+	_puddle_ripples.amount = 14
+	_puddle_ripples.lifetime = 1.35
+	_puddle_ripples.preprocess = 0.4
+	_puddle_ripples.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_puddle_ripples.emission_box_extents = Vector3(7.5, 0.02, 7.5)
+	_puddle_ripples.direction = Vector3(0, 1, 0)
+	_puddle_ripples.spread = 5.0
+	_puddle_ripples.initial_velocity_min = 0.0
+	_puddle_ripples.initial_velocity_max = 0.02
+	_puddle_ripples.gravity = Vector3(0, 0, 0)
+	_puddle_ripples.scale_amount_min = 0.35
+	_puddle_ripples.scale_amount_max = 1.65
+	var ring := TorusMesh.new()
+	ring.inner_radius = 0.12
+	ring.outer_radius = 0.18
+	ring.rings = 8
+	ring.ring_segments = 16
+	_puddle_ripples.mesh = ring
+	var rmat := StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.72, 0.82, 0.92, 0.42)
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_puddle_ripples.material_override = rmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.75, 0.85, 0.95, 0.0),
+		Color(0.78, 0.88, 0.96, 0.5),
+		Color(0.7, 0.8, 0.9, 0.0),
+	])
+	_puddle_ripples.color_ramp = ramp
+	_puddle_ripples.position = Vector3(0, 0.04, 0)
+	add_child(_puddle_ripples)
+	HeadlessGuard.guard_particles(_puddle_ripples)
+
 
 func _setup_fog_mist() -> void:
 	## Wave 29: denser low ground-mist cue while foggy (player-visible fog density).
@@ -1591,12 +1633,18 @@ func _update_weather(delta: float) -> void:
 			if _rain_splash:
 				_rain_splash.global_position = Vector3(player.global_position.x, 0.05, player.global_position.z)
 				_rain_splash.visible = true
+			if _puddle_ripples:
+				_puddle_ripples.global_position = Vector3(player.global_position.x, 0.04, player.global_position.z)
+				_puddle_ripples.visible = true
 		else:
 			_rain.emitting = false
 			_rain.visible = false
 			if _rain_splash:
 				_rain_splash.emitting = false
 				_rain_splash.visible = false
+			if _puddle_ripples:
+				_puddle_ripples.emitting = false
+				_puddle_ripples.visible = false
 	if player and _clouds:
 		if _inside_hall == "":
 			_clouds.global_position = Vector3(player.global_position.x, 22, player.global_position.z)
@@ -1662,6 +1710,8 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				_rain.emitting = false
 				if _rain_splash:
 					_rain_splash.emitting = false
+				if _puddle_ripples:
+					_puddle_ripples.emitting = false
 			if _fog_mist:
 				_fog_mist.emitting = (_inside_hall == "")
 				_fog_mist.amount = 48
@@ -1674,11 +1724,15 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				_rain.emitting = true
 				if _rain_splash:
 					_rain_splash.emitting = true
+				if _puddle_ripples:
+					_puddle_ripples.emitting = true
 				rain_on = true
 			elif _rain:
 				_rain.emitting = false
 				if _rain_splash:
 					_rain_splash.emitting = false
+				if _puddle_ripples:
+					_puddle_ripples.emitting = false
 				drip_on = true  # raining outdoors while player is indoors
 		_:
 			_weather_label_cache = "Clear"
@@ -1689,6 +1743,8 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				_rain.emitting = false
 				if _rain_splash:
 					_rain_splash.emitting = false
+				if _puddle_ripples:
+					_puddle_ripples.emitting = false
 	# Wave 26: weather cloud density (clear sparse · fog dense · rain medium)
 	if _clouds:
 		match _weather_mode:

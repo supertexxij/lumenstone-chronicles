@@ -89,6 +89,9 @@ func _ready() -> void:
 		"beech_chipmunk":
 			if label: label.position.y = 1.35
 			hp_bar.position.y = 1.1
+		"alder_duck":
+			if label: label.position.y = 1.3
+			hp_bar.position.y = 1.05
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -331,7 +334,8 @@ func _soft_aggro(delta: float) -> void:
 			GameState.set_combat_target(self)
 			var first_fight := GameState.mark_combat_tutorial(true)
 			if first_fight:
-				GameState.toast.emit("First fight tip: attacks tick softly. Walk away or click ground to leave. %s approaches." % def.get("name", "Foe"))
+				# Wave 41: clearer first-fight tip — soft ticks + how to leave (RuneScape-chunky, wholesome)
+				GameState.toast.emit("First fight: soft ticks (~0.7s). Walk away or click the ground to leave. %s approaches." % def.get("name", "Foe"))
 			else:
 				GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
@@ -466,6 +470,23 @@ func _idle_anim(delta: float) -> void:
 			if ctail:
 				ctail.rotation.y = sin(t * 1.3) * 0.22
 				ctail.rotation.x = deg_to_rad(-35) + sin(t * 0.9) * 0.1
+		"alder_duck":
+			# Soft paddle-waddle — bill dips, wings tuck, tail flicks (Wave 41)
+			creature_bob.position.y = abs(sin(t * 0.85)) * 0.025
+			creature_bob.rotation.y = sin(t * 0.4) * 0.1
+			var bill := creature_bob.get_node_or_null("Bill")
+			if bill:
+				bill.rotation.x = deg_to_rad(8) + sin(t * 1.0) * 0.06
+			var dlw := creature_bob.get_node_or_null("LWing")
+			var drw := creature_bob.get_node_or_null("RWing")
+			if dlw:
+				dlw.rotation.z = deg_to_rad(18) + sin(t * 1.2) * 0.05
+			if drw:
+				drw.rotation.z = deg_to_rad(-18) - sin(t * 1.2) * 0.05
+			var dtail := creature_bob.get_node_or_null("Tail")
+			if dtail:
+				dtail.rotation.y = sin(t * 0.9) * 0.12
+				dtail.rotation.x = deg_to_rad(-25) + sin(t * 0.7) * 0.06
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

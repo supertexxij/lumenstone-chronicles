@@ -207,6 +207,19 @@
       "combat_xp": 96,
       "respawn_sec": 48.0,
       "description": "A striped chipmunk of the beech wilds \u2014 nestle it gently with a careful step!"
+    },
+    "alder_duck": {
+      "kind": "alder_duck",
+      "name": "Alder Duck",
+      "defeat_verb": "cradled",
+      "color": "#5a7a4a",
+      "accent": "#e8c878",
+      "max_hp": 116,
+      "damage": 19,
+      "accuracy": 0.38,
+      "combat_xp": 102,
+      "respawn_sec": 50.0,
+      "description": "A plump duck of the alder wilds \u2014 cradle it gently with a careful step!"
     }
   },
   "spawns": [
@@ -677,6 +690,36 @@
       "kind": "beech_chipmunk",
       "x": 4,
       "z": -76
+    },
+    {
+      "id": "e79",
+      "kind": "alder_duck",
+      "x": -70,
+      "z": 40
+    },
+    {
+      "id": "e80",
+      "kind": "alder_duck",
+      "x": 62,
+      "z": -70
+    },
+    {
+      "id": "e81",
+      "kind": "alder_duck",
+      "x": -50,
+      "z": -72
+    },
+    {
+      "id": "e82",
+      "kind": "alder_duck",
+      "x": 72,
+      "z": 42
+    },
+    {
+      "id": "e83",
+      "kind": "alder_duck",
+      "x": -20,
+      "z": 78
     }
   ],
   "base_combat": {

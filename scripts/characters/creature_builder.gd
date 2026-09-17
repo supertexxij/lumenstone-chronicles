@@ -103,6 +103,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_mole(bob)
 		"beech_chipmunk":
 			_build_chipmunk(bob)
+		"alder_duck":
+			_build_duck(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -582,3 +584,38 @@ static func _build_chipmunk(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.03, 0.11), Vector3(0, -0.02, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.055, 0.03, 0.07)), Vector3(0, -0.09, 0.02), leg, "Paw")
+
+
+static func _build_duck(bob: Node3D) -> void:
+	## Soft alder-wilds duck — plump body, flat bill, short wings, stubby paddle feet (distinct from wren/otter/chipmunk).
+	_mi(_sphere(0.22, 0.28), Vector3(0, 0.38, 0), bob, "Body")
+	_mi(_sphere(0.12), Vector3(0, 0.52, 0.22), bob, "Head")
+	# Flat bill (signature)
+	var bill := _mi(_box(Vector3(0.08, 0.035, 0.16)), Vector3(0, 0.48, 0.36), bob, "Bill")
+	bill.rotation_degrees = Vector3(8, 0, 0)
+	# Soft cheek
+	_mi(_sphere(0.05), Vector3(-0.08, 0.50, 0.22), bob, "CheekL")
+	_mi(_sphere(0.05), Vector3(0.08, 0.50, 0.22), bob, "CheekR")
+	# Compact folded wings
+	var lw := _mi(_box(Vector3(0.06, 0.04, 0.18)), Vector3(-0.18, 0.40, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(0, 0, 18)
+	var rw := _mi(_box(Vector3(0.06, 0.04, 0.18)), Vector3(0.18, 0.40, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(0, 0, -18)
+	# Short stubby tail feathers
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.40, -0.22)
+	tail.rotation_degrees = Vector3(-25, 0, 0)
+	bob.add_child(tail)
+	_mi(_box(Vector3(0.12, 0.03, 0.1)), Vector3(0, 0.02, -0.04), tail, "TailFan")
+	# Two stubby paddle feet
+	for info in [
+		["L", Vector3(-0.08, 0.14, 0.06)],
+		["R", Vector3(0.08, 0.14, 0.06)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.025, 0.03, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.08, 0.025, 0.1)), Vector3(0, -0.09, 0.03), leg, "Paddle")
