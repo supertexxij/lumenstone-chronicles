@@ -199,15 +199,16 @@ func _set_warning(on: bool) -> void:
 		# Gentle warm tint — not alarm-red
 		if label:
 			label.modulate = Color(1.0, 0.96, 0.72)
-		var pulse: float = 0.2 + 0.18 * abs(sin(Time.get_ticks_msec() * 0.004))
-		var s: float = 0.94 + 0.1 * abs(sin(Time.get_ticks_msec() * 0.0035))
+		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
+		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
+		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
 		if _telegraph and _telegraph.material_override is StandardMaterial3D:
 			var mat: StandardMaterial3D = _telegraph.material_override
-			mat.albedo_color = Color(0.98, 0.9, 0.3, pulse * 0.7)
+			mat.albedo_color = Color(0.99, 0.92, 0.32, pulse * 0.78)
 			_telegraph.scale = Vector3(s, 1.0, s)
 		if rim and rim.material_override is StandardMaterial3D:
 			var rmat: StandardMaterial3D = rim.material_override
-			rmat.albedo_color = Color(1.0, 0.95, 0.4, 0.42 + pulse * 0.35)
+			rmat.albedo_color = Color(1.0, 0.96, 0.42, 0.48 + pulse * 0.4)
 			rim.scale = Vector3(s, 1.0, s)
 	else:
 		if label:

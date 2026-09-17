@@ -145,6 +145,14 @@ func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
 				pos + Vector2(-3.0, -1.0),
 			])
 			draw_colored_polygon(fpts2, col)
+		"heather":
+			# Soft purple heath tuft mark (Wave 28)
+			draw_circle(pos + Vector2(0, 1.2), 4.2, outline)
+			draw_circle(pos + Vector2(0, 1.2), 3.2, col)
+			draw_circle(pos + Vector2(-2.2, -1.5), 2.4, outline)
+			draw_circle(pos + Vector2(-2.2, -1.5), 1.7, col)
+			draw_circle(pos + Vector2(2.4, -1.2), 2.2, outline)
+			draw_circle(pos + Vector2(2.4, -1.2), 1.5, col)
 		"hall":
 			draw_rect(Rect2(pos + Vector2(-3.2, -3.2), Vector2(6.4, 6.4)), outline)
 			draw_rect(Rect2(pos + Vector2(-2.4, -2.4), Vector2(4.8, 4.8)), col)

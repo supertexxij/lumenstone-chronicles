@@ -69,7 +69,9 @@ func refresh_slots() -> void:
 		else:
 			var name_s: String = str(summary.get("child_name", "Apprentice"))
 			var lab: String = str(summary.get("slot_label", "")).strip_edges()
-			var lab_s: String = (" “%s”" % lab) if lab != "" else ""
+			var lab_s: String = ""
+			if lab != "":
+				lab_s = " (%s)" % lab
 			info.text = "Slot %d — %s%s · Lv %d · Wk %d · Combat %d" % [
 				i + 1, name_s, lab_s, int(summary.get("level", 1)),
 				int(summary.get("unlocked_week", 1)), int(summary.get("combat_level", 1))
@@ -100,7 +102,7 @@ func _ensure_rename_row() -> void:
 	var box := VBoxContainer.new()
 	box.name = "RenameRows"
 	var hint := Label.new()
-	hint.text = "Name each save slot (optional). Parent PIN is unchanged."
+	hint.text = "Type a nickname per slot (optional), then Set. Helps tell saves apart. Parent PIN stays 1234 unless changed."
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(hint)
 	for i in GameState.SLOT_COUNT:

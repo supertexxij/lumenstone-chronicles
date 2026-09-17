@@ -25,6 +25,8 @@ var _outdoor_return: Vector3 = Vector3(0, 0, 10)
 var _inside_hall: String = ""
 var _door_cooldown: float = 0.0
 var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
+var _village_lamp_lights: Array = []  # Wave 28: dusk OmniLights on village lamp posts
+var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -70,6 +72,7 @@ func _ready() -> void:
 	_build_amber_knoll()
 	_build_birch_rest()
 	_build_fern_dell()
+	_build_heather_heath()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -409,6 +412,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 	# Fern Dell plaza keep-clear
 	if abs(pos.x - 22.0) < 5.0 and abs(pos.z - 48.0) < 5.0:
 		return true
+	# West-southwest path to Heather Heath (Wave 28)
+	if _near_segment_xz(pos, Vector3(-14, 0, 20), Vector3(-48, 0, 42), 3.4):
+		return true
+	# Heather Heath plaza keep-clear
+	if abs(pos.x + 48.0) < 5.0 and abs(pos.z - 42.0) < 5.0:
+		return true
 	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
@@ -537,7 +546,10 @@ func _build_village_props() -> void:
 		Vector3(6, 0, 0), Vector3(-6, 0, 0)
 	]
 	for p in lantern_spots:
-		_add_lantern_post(p)
+		_add_lantern_post(p, true)
+	# Wave 28: a few extra village lamp posts for dusk glow (chunky, wholesome)
+	for p in [Vector3(10.5, 0, 12.0), Vector3(-10.5, 0, 12.0), Vector3(3.5, 0, 16.5), Vector3(-3.5, 0, 16.5), Vector3(0.0, 0, 2.5)]:
+		_add_lantern_post(p, true)
 	# Flower patches
 	for i in 10:
 		var ang := i * TAU / 10.0
@@ -578,11 +590,23 @@ func _add_barrel(pos: Vector3, yaw: float) -> void:
 	_mi(_cyl(0.36, 0.36, 0.06), Vector3(0, 0.28, 0), root, _mats["iron"], "Band2")
 	static_world.add_child(root)
 
-func _add_lantern_post(pos: Vector3) -> void:
+func _add_lantern_post(pos: Vector3, village_dusk: bool = false) -> void:
 	var root := Node3D.new()
 	root.position = pos
 	_mi(_cyl(0.08, 0.1, 2.2), Vector3(0, 1.1, 0), root, _mats["wood"], "Post")
 	_add_lantern(root, Vector3(0.25, 2.0, 0))
+	# Wave 28: village lamp posts glow softly at dusk (RuneScape-chunky, wholesome)
+	if village_dusk:
+		var light := OmniLight3D.new()
+		light.name = "DuskLamp"
+		light.light_color = Color(1.0, 0.82, 0.48)
+		light.light_energy = 0.0
+		light.omni_range = 6.5
+		light.omni_attenuation = 1.35
+		light.shadow_enabled = false
+		light.position = Vector3(0.25, 2.0, 0)
+		root.add_child(light)
+		_village_lamp_lights.append(light)
 	static_world.add_child(root)
 
 func _add_lantern(parent: Node, pos: Vector3, with_light: bool = false) -> void:
@@ -698,6 +722,9 @@ func _landmark_zones() -> Array:
 		{"id": "fern", "pos": Vector3(22, 0, 48), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Fern Dell — soft green fronds fill a quiet south hollow.",
 			"return_toast": "Back at Fern Dell — the fronds still rustle kindly underfoot."},
+		{"id": "heather", "pos": Vector3(-48, 0, 42), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Heather Heath — purple heather rolls across a quiet west rise.",
+			"return_toast": "Back at Heather Heath — the heather still nods gently in the breeze."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -816,6 +843,20 @@ func _update_day_night(delta: float) -> void:
 	elif AudioBus.has_method("set_day_night_audio") and _inside_hall != "":
 		# Soft indoor: bias toward quiet day pad
 		AudioBus.set_day_night_audio(0.55)
+	_update_village_dusk_lamps(dayness)
+
+func _update_village_dusk_lamps(dayness: float) -> void:
+	## Wave 28: village lamp posts warm up as dusk falls (RuneScape-chunky, wholesome).
+	if _village_lamp_lights.is_empty():
+		return
+	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
+	var pulse: float = 0.92 + 0.08 * abs(sin(float(Time.get_ticks_msec()) * 0.0022))
+	var energy: float = dusk * 1.55 * pulse
+	for light in _village_lamp_lights:
+		if light == null or not is_instance_valid(light):
+			continue
+		light.light_energy = energy
+		light.visible = energy > 0.04
 
 func _build_interiors() -> void:
 	## Simple enterable guild-hall volumes: walk into the door, teleport to a cozy interior.
@@ -1255,6 +1296,37 @@ func _setup_weather() -> void:
 	add_child(_clouds)
 	HeadlessGuard.guard_particles(_clouds)
 	_apply_weather_visuals()
+	_setup_rain_splash()
+
+func _setup_rain_splash() -> void:
+	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
+	_rain_splash = CPUParticles3D.new()
+	_rain_splash.name = "RainSplash"
+	_rain_splash.emitting = false
+	_rain_splash.amount = 36
+	_rain_splash.lifetime = 0.45
+	_rain_splash.preprocess = 0.2
+	_rain_splash.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_rain_splash.emission_box_extents = Vector3(10, 0.05, 10)
+	_rain_splash.direction = Vector3(0, 1, 0)
+	_rain_splash.spread = 40.0
+	_rain_splash.initial_velocity_min = 0.4
+	_rain_splash.initial_velocity_max = 1.2
+	_rain_splash.gravity = Vector3(0, -3.0, 0)
+	_rain_splash.scale_amount_min = 0.08
+	_rain_splash.scale_amount_max = 0.18
+	var sm := SphereMesh.new()
+	sm.radius = 0.06
+	sm.height = 0.08
+	_rain_splash.mesh = sm
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color = Color(0.75, 0.82, 0.92, 0.55)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_rain_splash.material_override = smat
+	_rain_splash.position = Vector3(0, 0.05, 0)
+	add_child(_rain_splash)
+	HeadlessGuard.guard_particles(_rain_splash)
 
 func _update_weather(delta: float) -> void:
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
@@ -1262,9 +1334,15 @@ func _update_weather(delta: float) -> void:
 		if _inside_hall == "":
 			_rain.global_position = Vector3(player.global_position.x, 14, player.global_position.z)
 			_rain.visible = true
+			if _rain_splash:
+				_rain_splash.global_position = Vector3(player.global_position.x, 0.05, player.global_position.z)
+				_rain_splash.visible = true
 		else:
 			_rain.emitting = false
 			_rain.visible = false
+			if _rain_splash:
+				_rain_splash.emitting = false
+				_rain_splash.visible = false
 	if player and _clouds:
 		if _inside_hall == "":
 			_clouds.global_position = Vector3(player.global_position.x, 22, player.global_position.z)
@@ -1304,20 +1382,28 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 			_fog_boost = 0.0045
 			if _rain:
 				_rain.emitting = false
+				if _rain_splash:
+					_rain_splash.emitting = false
 		2:
 			_weather_label_cache = "Rain"
 			_fog_boost = 0.0025
 			if _rain and _inside_hall == "":
 				_rain.emitting = true
+				if _rain_splash:
+					_rain_splash.emitting = true
 				rain_on = true
 			elif _rain:
 				_rain.emitting = false
+				if _rain_splash:
+					_rain_splash.emitting = false
 				drip_on = true  # raining outdoors while player is indoors
 		_:
 			_weather_label_cache = "Clear"
 			_fog_boost = 0.0
 			if _rain:
 				_rain.emitting = false
+				if _rain_splash:
+					_rain_splash.emitting = false
 	# Wave 26: weather cloud density (clear sparse · fog dense · rain medium)
 	if _clouds:
 		match _weather_mode:
@@ -1652,6 +1738,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
 	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
 	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
+	halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -2293,6 +2380,66 @@ func _build_fern_dell() -> void:
 	_place_label3d(root, "Fern Dell", 52, Vector3(22.0, 3.5, 48.0))
 
 
+
+func _build_heather_heath() -> void:
+	## West-southwest wilds landmark — purple heather rise (soft travel 8).
+	## Distinct from Reed Pool (reeds/water), Mill Bridge (creek), and Birch Rest (pale trunks).
+	var root := Node3D.new()
+	root.name = "HeatherHeath"
+	static_world.add_child(root)
+	# Dirt spur WSW from the green
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -8.0 + tt * (-40.0)
+		var z := 16.0 + tt * 26.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "HeatherPath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -10.0 + tt * (-34.0)
+		var z := 18.0 + tt * 22.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "HeatherTrim")
+	# Soft heath clearing
+	_mi(_cyl(4.2, 4.2, 0.08), Vector3(-48.0, 0.04, 42.0), root, _mats["grass_dark"], "HeatherClearing")
+	_mi(_cyl(2.4, 2.4, 0.06), Vector3(-48.0, 0.08, 42.0), root, _mats["heather"], "HeatherClearingInner")
+	# Ring of heather tufts (chunky purple mounds)
+	for i in 10:
+		var ang := float(i) * TAU / 10.0 + 0.12
+		var hx := -48.0 + cos(ang) * 3.5
+		var hz := 42.0 + sin(ang) * 3.5
+		_mi(_sphere(0.32, 0.38), Vector3(hx, 0.16, hz), root, _mats["heather"], "HeatherTuft%d" % i)
+		_mi(_sphere(0.18, 0.22), Vector3(hx + cos(ang) * 0.2, 0.28, hz + sin(ang) * 0.2), root, _mats["heather"], "HeatherTip%d" % i)
+	# Inner tufts + resting stone + benches + lanterns
+	for i in 5:
+		var ang := float(i) * TAU / 5.0
+		_mi(_sphere(0.22, 0.26), Vector3(-48.0 + cos(ang) * 1.5, 0.14, 42.0 + sin(ang) * 1.5), root, _mats["heather"], "HeatherInner%d" % i)
+	_mi(_cyl(0.55, 0.65, 0.45), Vector3(-48.0, 0.28, 42.0), root, _mats["stone"], "HeatherStone")
+	_mi(_sphere(0.2, 0.22), Vector3(-48.0, 0.58, 42.0), root, _mats["heather"], "StoneHeather")
+	_add_bench(Vector3(-45.5, 0, 40.2), -0.4)
+	_add_bench(Vector3(-50.5, 0, 44.0), 0.5)
+	_add_crate(Vector3(-45.0, 0, 44.5))
+	_add_lantern_post(Vector3(-44.0, 0, 38.5))
+	_add_lantern_post(Vector3(-52.0, 0, 45.5))
+	_add_lantern_post(Vector3(-28.0, 0, 28.0))
+	_add_lantern_post(Vector3(-18.0, 0, 22.0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1028
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -10.0 + tt * (-34.0)
+		var cz := 18.0 + tt * 22.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(4.5, 7.2), 0, cz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	_add_chunky_sign(root, Vector3(-45.5, 0, 42.0), "Heather Heath", 0.35)
+	_place_label3d(root, "Purple heather, quiet rise", 28, Vector3(-48.0, 4.1, 42.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Heather Heath", 52, Vector3(-48.0, 3.5, 42.0))
+
+
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
@@ -2414,6 +2561,18 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(48.0, 0, -22.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(45.0, 0, -19.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(51.0, 0, -24.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		# Birch Rest (Wave 26)
+		{"pos": Vector3(-42.0, 0, -20.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-39.0, 0, -17.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-45.0, 0, -22.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		# Fern Dell (Wave 27)
+		{"pos": Vector3(22.0, 0, 48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(19.0, 0, 45.5), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(25.0, 0, 50.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		# Heather Heath (Wave 28)
+		{"pos": Vector3(-48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},

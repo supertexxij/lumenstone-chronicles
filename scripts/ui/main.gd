@@ -154,6 +154,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(-42, 0, -20), "Birch Rest")
 			KEY_7:
 				_goto_landmark(Vector3(22, 0, 48), "Fern Dell")
+			KEY_8:
+				_goto_landmark(Vector3(-48, 0, 42), "Heather Heath")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -181,6 +183,7 @@ func _travel_destinations() -> Array:
 		{"label": "Amber Knoll", "pos": Vector3(48, 0, -22), "key": "Z"},
 		{"label": "Birch Rest", "pos": Vector3(-42, 0, -20), "key": "6"},
 		{"label": "Fern Dell", "pos": Vector3(22, 0, 48), "key": "7"},
+		{"label": "Heather Heath", "pos": Vector3(-48, 0, 42), "key": "8"},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
@@ -463,7 +466,7 @@ func _setup_save_panel() -> void:
 	var rename_hint := Label.new()
 	rename_hint.name = "RenameHint"
 	rename_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rename_hint.text = "Name any slot below (selected list row, or per-slot boxes). Parent PIN stays."
+	rename_hint.text = "Type a nickname for a save slot, then Set. Helps tell siblings apart. Parent PIN stays 1234 unless you changed it."
 	vbox.add_child(rename_hint)
 	var rename_row := HBoxContainer.new()
 	rename_row.name = "RenameSelectedRow"
@@ -537,7 +540,9 @@ func _refresh_save_panel() -> void:
 			list.add_item("Slot %d — empty%s" % [i + 1, mark])
 		else:
 			var lab: String = str(sum.get("slot_label", "")).strip_edges()
-			var lab_s: String = (" “%s”" % lab) if lab != "" else ""
+			var lab_s: String = ""
+			if lab != "":
+				lab_s = " (%s)" % lab
 			list.add_item("Slot %d — %s%s · Lv %d · Wk %d%s" % [
 				i + 1, str(sum.get("child_name", "Apprentice")), lab_s,
 				int(sum.get("level", 1)), int(sum.get("unlocked_week", 1)), mark
@@ -609,7 +614,11 @@ func _save_switch_selected() -> void:
 	_save_panel.visible = false
 	_set_player_ui_block(false)
 	_enter_world()
-	_on_toast("Switched to slot %d." % (idx + 1))
+	var lab := str(GameState.slot_label).strip_edges()
+	if lab != "":
+		_on_toast("Switched to slot %d (%s)." % [idx + 1, lab])
+	else:
+		_on_toast("Switched to slot %d." % (idx + 1))
 	AudioBus.play_ui()
 
 func _save_clear_selected() -> void:
