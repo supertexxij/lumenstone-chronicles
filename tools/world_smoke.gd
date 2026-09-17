@@ -50,6 +50,7 @@ func _finish():
 	var raccoons := 0
 	var hedgehogs := 0
 	var wrens := 0
+	var mice := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -67,6 +68,8 @@ func _finish():
 			hedgehogs += 1
 		if str(foe.get("kind")) == "willow_wren":
 			wrens += 1
+		if str(foe.get("kind")) == "maple_mouse":
+			mice += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -76,6 +79,7 @@ func _finish():
 	print("RACCOONS", raccoons)
 	print("HEDGEHOGS", hedgehogs)
 	print("WRENS", wrens)
+	print("MICE", mice)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -232,5 +236,12 @@ func _finish():
 	print("AGGRO_COUNTDOWN_SRC", "_countdown_nudge" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
 	print("INV_SLOT_TAGS_SRC", "SLOT_TAGS" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
 	print("VERSION_137_SRC", 'config/version="1.37.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("MAPLE_MOUSE_SRC", '"maple_mouse"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("BROOK_MURMUR_SRC", "_update_brook_murmur" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("QUEST_CHIME_SRC", "_quest_chime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("MUTE_CLEAR_SRC", "Muted · M" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("SAVE_CHIP_SRC", "_ensure_save_chip" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("VERSION_138_SRC", 'config/version="1.38.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

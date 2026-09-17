@@ -33,6 +33,8 @@ var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
+var _water_positions: Array = []  # Wave 38: brook murmur proximity
+var _brook_check_t: float = 0.0
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -518,6 +520,7 @@ func _build_fountain() -> void:
 	_fountain_root = root
 	_mi(_cyl(2.35, 2.55, 0.4), Vector3(0, 0.2, 0), root, _mats["stone"], "Base")
 	_mi(_cyl(1.65, 1.65, 0.15), Vector3(0, 0.35, 0), root, _mats["water"], "Water")
+	_water_positions.append(root.position)  # Wave 38: brook murmur near fountain
 	_mi(_cyl(0.28, 0.38, 1.6), Vector3(0, 1.0, 0), root, _mats["stone"], "Pillar")
 	_mi(_cyl(0.9, 0.95, 0.2), Vector3(0, 1.75, 0), root, _mats["stone_dark"], "Bowl")
 	_mi(_cyl(0.55, 0.55, 0.08), Vector3(0, 1.82, 0), root, _mats["water"], "UpperWater")
@@ -887,6 +890,7 @@ func _update_day_night(delta: float) -> void:
 	if AudioBus.has_method("set_hall_reverb"):
 		AudioBus.set_hall_reverb(_inside_hall != "")
 	_update_leaf_rustle()
+	_update_brook_murmur()
 	_update_village_dusk_lamps(dayness)
 	_update_plaza_campfire(dayness)
 
@@ -995,6 +999,28 @@ func _update_leaf_rustle() -> void:
 			near = true
 			break
 	AudioBus.set_leaf_rustle(near)
+
+func _update_brook_murmur() -> void:
+	## Wave 38: soft brook murmur when outdoors and near water landmarks (throttled; respects mute via AudioBus).
+	if not AudioBus.has_method("set_brook_murmur"):
+		return
+	if _inside_hall != "" or player == null:
+		AudioBus.set_brook_murmur(false)
+		return
+	var now: float = float(Time.get_ticks_msec()) * 0.001
+	if now - _brook_check_t < 0.33:
+		return
+	_brook_check_t = now
+	var near := false
+	var pp: Vector3 = player.global_position
+	for wp in _water_positions:
+		var dx: float = pp.x - wp.x
+		var dz: float = pp.z - wp.z
+		if dx * dx + dz * dz < 100.0:  # 10^2 — soft hear-distance by water
+			near = true
+			break
+	AudioBus.set_brook_murmur(near)
+
 
 func _update_plaza_campfire(dayness: float) -> void:
 	## Soft hearth stays lit by day; warms up a bit at dusk. Wave 33: near-hearth crackle.
@@ -1339,6 +1365,8 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 		AudioBus.set_hall_reverb(true)
 	if AudioBus.has_method("set_leaf_rustle"):
 		AudioBus.set_leaf_rustle(false)
+	if AudioBus.has_method("set_brook_murmur"):
+		AudioBus.set_brook_murmur(false)
 	_door_cooldown = 0.8
 	for room in _interior_root.get_children():
 		if str(room.get_meta("hall_id", "")) == hall_id:
@@ -1379,6 +1407,7 @@ func _build_lantern_glade() -> void:
 		_mi(_box(Vector3(3.6, 0.02, 0.32)), Vector3(0.5, 0.03, z), root, _mats["dirt_trim"], "GladeTrim")
 	# Stepping stones across a tiny brook + foam highlights
 	_mi(_cyl(2.8, 2.8, 0.08), Vector3(0.5, 0.02, -42), root, _mats["water"], "Brook")
+	_water_positions.append(Vector3(0.5, 0, -42))  # Wave 38: brook murmur
 	_mi(_cyl(1.6, 1.6, 0.06), Vector3(3.6, 0.02, -44.5), root, _mats["water"], "BrookPool")
 	_mi(_cyl(0.5, 0.55, 0.04), Vector3(-0.8, 0.05, -41.5), root, _mat(Color("#a8d4ea"), 0.15), "GladeFoam1")
 	_mi(_cyl(0.35, 0.4, 0.03), Vector3(1.6, 0.05, -42.4), root, _mat(Color("#b8dff0"), 0.15), "GladeFoam2")
@@ -1749,6 +1778,7 @@ func _build_pine_ridge() -> void:
 		_mi(_box(Vector3(0.32, 0.02, 3.4)), Vector3(x, 0.03, -48.0), root, _mats["dirt_trim"], "RidgeTrim")
 	# Creek ford (shallow crossing) with foam + stepping stones
 	_mi(_cyl(3.2, 3.2, 0.07), Vector3(-18, 0.015, -48), root, _mats["water"], "Creek")
+	_water_positions.append(Vector3(-18, 0, -48))  # Wave 38: brook murmur
 	_mi(_cyl(1.4, 1.4, 0.05), Vector3(-20.5, 0.015, -50.5), root, _mats["water"], "CreekBend")
 	_mi(_cyl(0.45, 0.5, 0.04), Vector3(-17.2, 0.04, -47.4), root, _mat(Color("#a8d4ea"), 0.15), "RidgeFoam1")
 	_mi(_cyl(0.35, 0.4, 0.03), Vector3(-19.0, 0.04, -48.8), root, _mat(Color("#b8dff0"), 0.15), "RidgeFoam2")
@@ -2026,6 +2056,7 @@ func _build_mill_bridge() -> void:
 		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "MillTrim")
 	# Creek under the bridge + foam highlights
 	_mi(_cyl(3.4, 3.4, 0.08), Vector3(-36.0, 0.015, 30.0), root, _mats["water"], "MillCreek")
+	_water_positions.append(Vector3(-36.0, 0, 30.0))  # Wave 38: brook murmur
 	_mi(_cyl(1.5, 1.5, 0.05), Vector3(-39.0, 0.015, 32.5), root, _mats["water"], "MillCreekBend")
 	_mi(_cyl(0.55, 0.6, 0.04), Vector3(-37.2, 0.04, 29.4), root, _mat(Color("#a8d4ea"), 0.15), "Foam1")
 	_mi(_cyl(0.4, 0.45, 0.03), Vector3(-35.0, 0.04, 30.6), root, _mat(Color("#b8dff0"), 0.15), "Foam2")
@@ -2179,6 +2210,7 @@ func _build_willow_bend() -> void:
 	# Soft grass ring + quiet brook crescent
 	_mi(_cyl(4.0, 4.0, 0.05), Vector3(-38.0, 0.02, -34.0), root, _mats["grass_dark"], "WillowBed")
 	_mi(_cyl(2.6, 2.6, 0.06), Vector3(-41.5, 0.015, -36.5), root, _mats["water"], "BrookBend")
+	_water_positions.append(Vector3(-41.5, 0, -36.5))  # Wave 38: brook murmur
 	_mi(_cyl(1.2, 1.2, 0.04), Vector3(-43.0, 0.015, -34.2), root, _mats["water"], "BrookFoam")
 	_add_lantern_post(Vector3(-34.8, 0, -31.5))
 	_add_lantern_post(Vector3(-41.0, 0, -37.2))
@@ -2235,6 +2267,7 @@ func _build_reed_pool() -> void:
 	# Soft bank + quiet pool
 	_mi(_cyl(4.0, 4.0, 0.05), Vector3(-20.0, 0.02, 48.0), root, _mats["grass_dark"], "ReedBed")
 	_mi(_cyl(2.8, 2.8, 0.06), Vector3(-20.0, 0.015, 48.0), root, _mats["water"], "QuietPool")
+	_water_positions.append(Vector3(-20.0, 0, 48.0))  # Wave 38: brook murmur
 	_mi(_cyl(1.1, 1.1, 0.04), Vector3(-22.2, 0.015, 49.6), root, _mats["water"], "PoolFoam")
 	_add_lantern_post(Vector3(-16.8, 0, 45.2))
 	_add_lantern_post(Vector3(-23.5, 0, 50.8))

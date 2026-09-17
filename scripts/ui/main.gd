@@ -391,6 +391,12 @@ func _enter_world() -> void:
 	AudioBus.start_ambient()
 	if GameState.has_method("maybe_daily_checkpoint_reminder"):
 		GameState.maybe_daily_checkpoint_reminder()
+	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
+	var lab := str(GameState.slot_label).strip_edges()
+	if lab != "":
+		_on_toast("Autosaved · %s" % lab)
+	else:
+		_on_toast("Autosaved · Slot %d" % (int(GameState.active_slot) + 1))
 
 func _open_npc(npc: Node) -> void:
 	npc_panel.open(npc)
@@ -439,7 +445,11 @@ func _play_hit_pause() -> void:
 func _on_toast(msg: String) -> void:
 	toast_label.text = msg
 	toast_label.visible = true
-	toast_timer = 5.0 if msg.length() > 60 else 3.5
+	# Wave 38: autosave toasts stay brief and quiet; longer tips keep a readable beat
+	if msg.begins_with("Autosaved"):
+		toast_timer = 1.8
+	else:
+		toast_timer = 5.0 if msg.length() > 60 else 3.5
 
 func _setup_confirm_dialog() -> void:
 	_confirm_dialog = ConfirmationDialog.new()

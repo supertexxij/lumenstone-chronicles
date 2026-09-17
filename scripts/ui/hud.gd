@@ -35,6 +35,10 @@ var _map_data: Dictionary = {}
 var _hurt_vignette: Control = null
 var _year_chip: Label = null
 var _year_chip_panel: PanelContainer = null  # Wave 32: clearer chip plate
+var _save_chip: Label = null
+var _save_chip_panel: PanelContainer = null  # Wave 38: slot nickname chip
+var _mute_style_on: StyleBoxFlat = null
+var _mute_style_off: StyleBoxFlat = null
 var _vignette_edges: Array = []
 var _landmark_tick: ColorRect = null
 var _def_flash_t: float = 0.0
@@ -59,6 +63,7 @@ func _ready() -> void:
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
 	_ensure_food_lbl()
 	_ensure_year_chip()
+	_ensure_save_chip()
 	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
@@ -75,7 +80,23 @@ func _on_mute(_m: bool) -> void:
 	_refresh_mute_label()
 
 func _refresh_mute_label() -> void:
-	mute_btn.text = "Unmute (M)" if GameState.muted else "Mute (M)"
+	## Wave 38: clearer mute indicator — warm plate + bold Muted label when silent.
+	_ensure_mute_styles()
+	if GameState.muted:
+		mute_btn.text = "Muted · M"
+		mute_btn.add_theme_stylebox_override("normal", _mute_style_on)
+		mute_btn.add_theme_stylebox_override("hover", _mute_style_on)
+		mute_btn.add_theme_stylebox_override("pressed", _mute_style_on)
+		mute_btn.add_theme_color_override("font_color", Color(1.0, 0.94, 0.78, 1.0))
+		mute_btn.tooltip_text = "Sound is muted — press M to hear the village again"
+	else:
+		mute_btn.text = "Mute (M)"
+		if _mute_style_off:
+			mute_btn.add_theme_stylebox_override("normal", _mute_style_off)
+			mute_btn.add_theme_stylebox_override("hover", _mute_style_off)
+			mute_btn.add_theme_stylebox_override("pressed", _mute_style_off)
+		mute_btn.remove_theme_color_override("font_color")
+		mute_btn.tooltip_text = "Mute sound (M)"
 
 func refresh() -> void:
 	name_lbl.text = GameState.child_name
@@ -97,6 +118,7 @@ func refresh() -> void:
 	_refresh_food_lbl()
 	_refresh_mute_label()
 	_refresh_year_chip()
+	_refresh_save_chip()
 
 func set_hp(cur: int, mx: int) -> void:
 	hp_bar.max_value = mx
@@ -336,6 +358,83 @@ func _refresh_year_chip() -> void:
 	# Wave 32: clearer wording so the chip reads at a glance
 	_year_chip.text = "Year · %d%%" % pct
 	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
+
+
+
+func _ensure_mute_styles() -> void:
+	## Warm amber plate when muted so the mute state reads at a glance (Wave 38).
+	if _mute_style_on != null:
+		return
+	_mute_style_on = StyleBoxFlat.new()
+	_mute_style_on.bg_color = Color(0.42, 0.28, 0.12, 0.92)
+	_mute_style_on.border_color = Color(0.95, 0.78, 0.42, 0.95)
+	_mute_style_on.set_border_width_all(2)
+	_mute_style_on.set_corner_radius_all(6)
+	_mute_style_on.content_margin_left = 8
+	_mute_style_on.content_margin_right = 8
+	_mute_style_on.content_margin_top = 3
+	_mute_style_on.content_margin_bottom = 3
+	_mute_style_off = StyleBoxFlat.new()
+	_mute_style_off.bg_color = Color(0.16, 0.18, 0.16, 0.75)
+	_mute_style_off.border_color = Color(0.55, 0.62, 0.50, 0.7)
+	_mute_style_off.set_border_width_all(1)
+	_mute_style_off.set_corner_radius_all(6)
+	_mute_style_off.content_margin_left = 8
+	_mute_style_off.content_margin_right = 8
+	_mute_style_off.content_margin_top = 3
+	_mute_style_off.content_margin_bottom = 3
+
+
+func _ensure_save_chip() -> void:
+	## Wave 38: show save-slot nickname on a soft HUD chip (PIN stays 1234; mastery ≥80%).
+	if _save_chip != null and is_instance_valid(_save_chip):
+		return
+	if has_node("SaveChipPanel"):
+		_save_chip_panel = $SaveChipPanel
+		_save_chip = _save_chip_panel.get_node_or_null("SaveChip")
+		if _save_chip != null:
+			return
+	_save_chip_panel = PanelContainer.new()
+	_save_chip_panel.name = "SaveChipPanel"
+	_save_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_save_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_save_chip_panel.offset_left = -196.0
+	_save_chip_panel.offset_top = 112.0
+	_save_chip_panel.offset_right = -12.0
+	_save_chip_panel.offset_bottom = 144.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.14, 0.16, 0.18, 0.72)
+	style.border_color = Color(0.70, 0.82, 0.90, 0.75)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
+	_save_chip_panel.add_theme_stylebox_override("panel", style)
+	_save_chip = Label.new()
+	_save_chip.name = "SaveChip"
+	_save_chip.add_theme_font_size_override("font_size", 14)
+	_save_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_save_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_save_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_save_chip.modulate = Color(0.88, 0.94, 0.98, 1.0)
+	_save_chip_panel.add_child(_save_chip)
+	add_child(_save_chip_panel)
+
+
+func _refresh_save_chip() -> void:
+	_ensure_save_chip()
+	if _save_chip == null:
+		return
+	var lab := str(GameState.slot_label).strip_edges()
+	var slot_n: int = int(GameState.active_slot) + 1
+	if lab != "":
+		_save_chip.text = "Save · %s" % lab
+		_save_chip.tooltip_text = "Slot %d nickname — rename from Saves" % slot_n
+	else:
+		_save_chip.text = "Save · Slot %d" % slot_n
+		_save_chip.tooltip_text = "Slot %d — add a nickname in Saves" % slot_n
 
 
 func _on_hurt_def_flash(_amount: int) -> void:

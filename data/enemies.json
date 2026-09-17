@@ -168,6 +168,19 @@
       "combat_xp": 78,
       "respawn_sec": 42.0,
       "description": "A tiny wren of the willow wilds \u2014 coax it gently with a careful step!"
+    },
+    "maple_mouse": {
+      "kind": "maple_mouse",
+      "name": "Maple Mouse",
+      "defeat_verb": "settled",
+      "color": "#a67c52",
+      "accent": "#f0e0c8",
+      "max_hp": 98,
+      "damage": 16,
+      "accuracy": 0.44,
+      "combat_xp": 84,
+      "respawn_sec": 44.0,
+      "description": "A tiny mouse of the maple wilds \u2014 settle it gently with a careful step!"
     }
   },
   "spawns": [
@@ -548,6 +561,36 @@
       "kind": "willow_wren",
       "x": 6,
       "z": -78
+    },
+    {
+      "id": "e64",
+      "kind": "maple_mouse",
+      "x": -66,
+      "z": -28
+    },
+    {
+      "id": "e65",
+      "kind": "maple_mouse",
+      "x": 58,
+      "z": -68
+    },
+    {
+      "id": "e66",
+      "kind": "maple_mouse",
+      "x": -54,
+      "z": 66
+    },
+    {
+      "id": "e67",
+      "kind": "maple_mouse",
+      "x": 68,
+      "z": 30
+    },
+    {
+      "id": "e68",
+      "kind": "maple_mouse",
+      "x": 10,
+      "z": -82
     }
   ],
   "base_combat": {

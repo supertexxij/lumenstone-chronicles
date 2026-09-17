@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 38 overnight (v1.38.0-overnight)
+- Soft **brook murmur near water landmarks** (fountain, glade brook, creek ford, mill creek, willow bend, reed pool) — respects mute; RuneScape-chunky, wholesome
+- Clearer **mute indicator** — warm amber plate + **Muted · M** when silent; clearer **quest-complete chime** (soft rising sparkle)
+- New wilds foe **Maple Mouse** — round body, big ears, long thin tail, gentle “settled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren)
+- Save QoL: quieter **Autosaved** toast (shows slot nickname) + **Save · nickname** HUD chip (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 37 overnight (v1.37.0-overnight)
 - Soft **indoor hall reverb** cue when inside guild halls + soft **leaf rustle near trees** outdoors (respect mute; RuneScape-chunky, wholesome)
 - Clearer **soft-aggro countdown toast** — names the foe with ~seconds remaining, plus a mid-telegraph nudge (no cheesy combat labels)

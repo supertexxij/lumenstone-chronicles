@@ -97,6 +97,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_hedgehog(bob)
 		"willow_wren":
 			_build_wren(bob)
+		"maple_mouse":
+			_build_mouse(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -474,3 +476,39 @@ static func _build_wren(bob: Node3D) -> void:
 	# Tiny stick legs
 	_mi(_cyl(0.015, 0.015, 0.18), Vector3(-0.04, 0.55, 0.02), bob, "LegL")
 	_mi(_cyl(0.015, 0.015, 0.18), Vector3(0.04, 0.55, 0.02), bob, "LegR")
+
+static func _build_mouse(bob: Node3D) -> void:
+	## Soft maple-wilds mouse — round body, big round ears, long thin tail (distinct from hare/squirrel/wren).
+	_mi(_sphere(0.16, 0.22), Vector3(0, 0.38, 0), bob, "Body")
+	_mi(_sphere(0.12), Vector3(0, 0.48, 0.18), bob, "Head")
+	_mi(_sphere(0.045), Vector3(0, 0.44, 0.28), bob, "Snout")
+	# Big round ears (accent-friendly)
+	_mi(_sphere(0.07), Vector3(-0.10, 0.60, 0.14), bob, "EarL")
+	_mi(_sphere(0.07), Vector3(0.10, 0.60, 0.14), bob, "EarR")
+	_mi(_sphere(0.035), Vector3(-0.10, 0.60, 0.14), bob, "EarInnerL")
+	_mi(_sphere(0.035), Vector3(0.10, 0.60, 0.14), bob, "EarInnerR")
+	# Soft whisker dots
+	_mi(_sphere(0.02), Vector3(-0.06, 0.44, 0.30), bob, "WhiskerL")
+	_mi(_sphere(0.02), Vector3(0.06, 0.44, 0.30), bob, "WhiskerR")
+	# Long thin curling tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.36, -0.18)
+	tail.rotation_degrees = Vector3(-20, 0, 0)
+	bob.add_child(tail)
+	_mi(_cyl(0.018, 0.012, 0.42), Vector3(0, 0.02, -0.18), tail, "TailMain")
+	_mi(_sphere(0.03), Vector3(0, 0.04, -0.40), tail, "TailTip")
+	# Four tiny paws
+	for info in [
+		["FL", Vector3(-0.08, 0.16, 0.10)],
+		["FR", Vector3(0.08, 0.16, 0.10)],
+		["BL", Vector3(-0.08, 0.16, -0.10)],
+		["BR", Vector3(0.08, 0.16, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.03, 0.12), Vector3(0, -0.02, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.055, 0.03, 0.07)), Vector3(0, -0.10, 0.02), leg, "Paw")
+

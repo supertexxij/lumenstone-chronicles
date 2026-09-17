@@ -425,6 +425,20 @@ func _idle_anim(delta: float) -> void:
 				wlw.rotation.z = deg_to_rad(28) + wflap
 			if wrw:
 				wrw.rotation.z = deg_to_rad(-28) - wflap
+		"maple_mouse":
+			# Soft sniff-bob — big ears twitch, thin tail sways (Wave 38)
+			creature_bob.position.y = abs(sin(t * 0.9)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.48) * 0.12
+			var mel := creature_bob.get_node_or_null("EarL")
+			var mer := creature_bob.get_node_or_null("EarR")
+			if mel:
+				mel.rotation.z = deg_to_rad(-8) + sin(t * 1.2) * 0.1
+			if mer:
+				mer.rotation.z = deg_to_rad(8) - sin(t * 1.2) * 0.1
+			var mtail := creature_bob.get_node_or_null("Tail")
+			if mtail:
+				mtail.rotation.y = sin(t * 1.0) * 0.28
+				mtail.rotation.x = deg_to_rad(-20) + sin(t * 0.7) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

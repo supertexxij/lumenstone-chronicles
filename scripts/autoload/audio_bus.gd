@@ -22,6 +22,8 @@ var _hall_reverb: AudioStreamPlayer
 var _hall_reverb_wanted: bool = false  # Wave 37: soft indoor hall reverb cue
 var _leaf_rustle: AudioStreamPlayer
 var _leaf_rustle_wanted: bool = false  # Wave 37: leaf rustle near trees
+var _brook_murmur: AudioStreamPlayer
+var _brook_murmur_wanted: bool = false  # Wave 38: soft brook murmur near water
 var _talk_duck: bool = false  # Wave 32: soft music duck while talking
 var _music_base_db: float = -18.0
 var _ambient_base_db: float = -24.0
@@ -98,6 +100,12 @@ func _ready() -> void:
 	_leaf_rustle.volume_db = -31.0
 	_leaf_rustle.stream = _streams.get("leaf_rustle")
 	add_child(_leaf_rustle)
+	_brook_murmur = AudioStreamPlayer.new()
+	_brook_murmur.name = "BrookMurmur"
+	_brook_murmur.bus = "Master"
+	_brook_murmur.volume_db = -30.0
+	_brook_murmur.stream = _streams.get("brook_murmur")
+	add_child(_brook_murmur)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -149,6 +157,8 @@ func _apply_mute() -> void:
 			_hall_reverb.stop()
 		if _leaf_rustle and _leaf_rustle.playing:
 			_leaf_rustle.stop()
+		if _brook_murmur and _brook_murmur.playing:
+			_brook_murmur.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -162,6 +172,7 @@ func _apply_mute() -> void:
 			_sync_wind_audio()
 			_sync_hall_reverb_audio()
 			_sync_leaf_rustle_audio()
+			_sync_brook_murmur_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -186,6 +197,7 @@ func stop_ambient() -> void:
 	set_wind_audio(false)
 	set_hall_reverb(false)
 	set_leaf_rustle(false)
+	set_brook_murmur(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -212,7 +224,8 @@ func _play_swing_varied(vol_db: float) -> void:
 	p.play()
 
 func play_quest_complete() -> void:
-	_play("quest", -4.0)
+	# Wave 38: clearer wholesome quest-complete chime (soft rising sparkle, no combat cheese)
+	_play("quest", -3.0)
 
 func play_footstep() -> void:
 	if _foot_cooldown > 0.0:
@@ -250,7 +263,7 @@ func _build_streams() -> void:
 	_streams["miss"] = _tone_blip(220.0, 0.05, 0.15)
 	_streams["foot"] = _noise_thump(0.04, 0.18)
 	_streams["swing"] = _whoosh(0.16, 0.28)  # Wave 36: clearer chunky swing whoosh
-	_streams["quest"] = _arpeggio([523.25, 659.25, 783.99], 0.12, 0.28)
+	_streams["quest"] = _quest_chime()  # Wave 38: clearer quest-complete chime
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
 	_streams["rain"] = _soft_rain(6.0, 0.065)  # Wave 33: softer rain mix
@@ -261,6 +274,7 @@ func _build_streams() -> void:
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
 	_streams["leaf_rustle"] = _soft_leaf_rustle(5.5, 0.07)  # Wave 37: leaf rustle near trees
+	_streams["brook_murmur"] = _soft_brook_murmur(6.0, 0.07)  # Wave 38: soft brook murmur near water
 
 
 func set_rain_audio(on: bool) -> void:
@@ -300,6 +314,12 @@ func set_leaf_rustle(on: bool) -> void:
 	## Wave 37: soft leaf rustle when near trees outdoors (respects mute).
 	_leaf_rustle_wanted = on
 	_sync_leaf_rustle_audio()
+
+
+func set_brook_murmur(on: bool) -> void:
+	## Wave 38: soft brook murmur when near water landmarks outdoors (respects mute).
+	_brook_murmur_wanted = on
+	_sync_brook_murmur_audio()
 
 
 func set_day_night_audio(dayness: float) -> void:
@@ -435,6 +455,20 @@ func _sync_leaf_rustle_audio() -> void:
 				_leaf_rustle.play()
 		elif _leaf_rustle.playing:
 			_leaf_rustle.stop()
+
+func _sync_brook_murmur_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _brook_murmur:
+		var should: bool = _brook_murmur_wanted and can
+		if should:
+			if _brook_murmur.stream == null:
+				_brook_murmur.stream = _streams.get("brook_murmur")
+			if not _brook_murmur.playing and _brook_murmur.stream:
+				_brook_murmur.play()
+		elif _brook_murmur.playing:
+			_brook_murmur.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -675,6 +709,53 @@ func _soft_leaf_rustle(dur: float, amp: float) -> AudioStreamWAV:
 	stream.loop_begin = 0
 	stream.loop_end = n
 	return stream
+
+func _soft_brook_murmur(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 38: soft brook murmur near water — gentle low gurgle hush (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		prev = prev * 0.92 + noise * 0.08
+		var gurgle := sin(TAU * 90.0 * tt) * 0.14 + sin(TAU * 140.0 * tt + 0.7) * 0.09
+		var bubble := sin(TAU * 220.0 * tt) * 0.04 * (0.5 + 0.5 * sin(TAU * 0.28 * tt))
+		var flow := 0.8 + 0.2 * sin(TAU * 0.11 * tt)
+		samples[i] = (prev * 0.5 + gurgle + bubble) * amp * flow
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _quest_chime() -> AudioStreamWAV:
+	## Wave 38: clearer quest-complete chime — soft rising four-note sparkle (wholesome, no combat cheese).
+	var rate := 22050
+	var freqs := [523.25, 659.25, 783.99, 1046.5]
+	var note_dur := 0.11
+	var total := note_dur * float(freqs.size()) + 0.18
+	var n := int(total * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		for fi in freqs.size():
+			var start := float(fi) * note_dur
+			var u := tsec - start
+			if u >= 0.0 and u < note_dur + 0.08:
+				var env := exp(-u * 7.5)
+				s += sin(TAU * float(freqs[fi]) * u) * env * 0.32
+				# Soft octave sparkle on the last two notes
+				if fi >= 2:
+					s += sin(TAU * float(freqs[fi]) * 2.0 * u) * env * 0.08
+		samples[i] = clampf(s, -1.0, 1.0)
+	return _make_wav(samples, rate)
+
 
 func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
 	## Sparse roof drips for indoor rain — quiet, non-startling, loopable.
