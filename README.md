@@ -89,9 +89,9 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Wardrobe | **C** or HUD button |
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
-| Soft travel | **N** Lantern Glade path · **B** Pine Ridge ford (outdoors only) |
+| Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **1–5** halls (outdoors only) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
-| Parent dashboard | **Parent** · PIN `1234` |
+| Parent dashboard | **Parent** · PIN default `1234` (changeable in panel) |
 
 Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compass (top) aid village/wilds orientation. Soft defeat respawns at the village fountain; unlocks and gear are kept.
 
@@ -190,8 +190,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Quest-desk highlight** pulse when standing nearby (F still talks to mentor)
 - **Quiet rain audio loop** during rain weather when unmuted (respects **M**)
 - **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
-- Parent dashboard (PIN **1234**) with progress, week unlock, skills-by-week, **Needs Help** list
-- Saves to `user://lumenstone_save_v1.json`
+- Parent dashboard (PIN default **1234**, changeable) with progress, week unlock, skills-by-week, **Needs Help** list
+- **3 save slots** on title screen (legacy `lumenstone_save_v1.json` migrates into Slot 1)
+- Soft **Travel (T)** menu + landmark keys (Fountain / Glade / Ridge / Prayer Garden / halls)
+- Clearer wilds corridors (wider dirt paths, thinner tree collision, corridor keep-outs)
+- **Prayer Garden** eastern landmark with soft travel (**G**)
+- **Indoor rain drip** SFX when raining + indoors + unmuted
+- Saves to `user://lumenstone_save_slot_N.json` (+ legacy mirror for Slot 1)
 
 
 ### Architecture
@@ -220,9 +225,9 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 - Equipped hat / cape / weapon (sword/axe/staff/bow/dagger/mallet meshes) / belt / **accessory** show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
-- Village green + **Lantern Glade** + **Pine Ridge** spurs; not a full multi-biome world map yet
+- Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished
-- Audio is short procedural SFX + soft drone + original village loop + quiet rain loop (intentionally no copyrighted songs)
+- Audio is short procedural SFX + soft drone + original village loop + quiet rain / indoor drip loops (intentionally no copyrighted songs)
 - Combat is click-to-engage / soft-aggro auto-attack only
 - Learning challenges are in guild quest UI overlays, not mid-fight quizzes
 

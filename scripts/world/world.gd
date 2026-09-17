@@ -53,6 +53,7 @@ func _ready() -> void:
 	_build_interiors()
 	_build_lantern_glade()
 	_build_pine_ridge()
+	_build_prayer_garden()
 	_setup_day_night()
 	_setup_weather()
 	GameState.in_world = true
@@ -240,21 +241,45 @@ func _build_wilds() -> void:
 	## Extra edge variety: rocks, bushes, alternate trees — capped for performance
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 42
-	for i in 18:
+	var placed := 0
+	var attempts := 0
+	while placed < 22 and attempts < 80:
+		attempts += 1
 		var ang := rng.randf() * TAU
-		var rad := rng.randf_range(30.0, 42.0)
+		var rad := rng.randf_range(30.0, 44.0)
 		var p := Vector3(cos(ang) * rad, 0, sin(ang) * rad)
-		match i % 4:
+		if _in_travel_corridor(p):
+			continue
+		match placed % 4:
 			0:
-				_add_tree(p, 1 if i % 8 == 0 else 0)
+				_add_tree(p, 1 if placed % 8 == 0 else 0)
 			1:
 				_add_rock_cluster(p, rng)
 			2:
 				_add_bush(p, rng)
 			_:
 				_add_bush(p + Vector3(rng.randf_range(-1.5, 1.5), 0, rng.randf_range(-1.5, 1.5)), rng)
+		placed += 1
+
+func _in_travel_corridor(pos: Vector3) -> bool:
+	## Keep soft-travel routes walkable: north glade spur, west ridge spur, east garden spur.
+	# North path to Lantern Glade (around x=0.5)
+	if abs(pos.x - 0.5) < 3.2 and pos.z < -16.0 and pos.z > -52.0:
+		return true
+	# West path Glade → Pine Ridge (around z=-48)
+	if abs(pos.z + 48.0) < 3.0 and pos.x < -2.0 and pos.x > -30.0:
+		return true
+	# East path to Prayer Garden
+	if abs(pos.z - 18.0) < 3.0 and pos.x > 12.0 and pos.x < 36.0:
+		return true
+	# Village plaza keep-clear near fountain soft-travel
+	if abs(pos.x) < 4.0 and abs(pos.z - 12.0) < 3.0:
+		return true
+	return false
 
 func _add_tree(pos: Vector3, style: int = 0) -> void:
+	if _in_travel_corridor(pos):
+		return
 	var body := StaticBody3D.new()
 	body.position = pos
 	var trunk_h := 1.4 if style == 0 else 1.8
@@ -265,7 +290,7 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
-	shape.radius = 0.55
+	shape.radius = 0.32
 	shape.height = 2.0
 	col.shape = shape
 	col.position.y = 1.0
@@ -273,6 +298,8 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 	static_world.add_child(body)
 
 func _add_rock_cluster(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	if _in_travel_corridor(pos):
+		return
 	var root := Node3D.new()
 	root.position = pos
 	for i in rng.randi_range(2, 4):
@@ -288,6 +315,8 @@ func _add_rock_cluster(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	static_world.add_child(root)
 
 func _add_bush(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	if _in_travel_corridor(pos):
+		return
 	var root := Node3D.new()
 	root.position = pos
 	_mi(_sphere(rng.randf_range(0.45, 0.7), rng.randf_range(0.7, 1.1)), Vector3(0, 0.35, 0), root, _mats["bush"], "Bush")
@@ -796,22 +825,26 @@ func _exit_hall(body: Node) -> void:
 	_apply_weather_visuals(false)
 
 func _build_lantern_glade() -> void:
-	## Small northern wilds spur — brook path + landmark; keeps village map intact.
+	## Northern wilds spur — wider continuous dirt path + brook; corridor kept clear.
 	var root := Node3D.new()
 	root.name = "LanternGlade"
 	static_world.add_child(root)
-	# Dirt path north from Worship / Creation corridor
-	for i in 8:
-		var z := -18.0 - float(i) * 3.6
-		_mi(_box(Vector3(2.2, 0.04, 3.8)), Vector3(0.5, 0.025, z), root, _mats["dirt"], "Path")
-	# Stepping stones across a tiny brook
+	# Continuous dirt ribbon north from village (overlap for no gaps)
+	for i in 12:
+		var z := -14.0 - float(i) * 3.0
+		_mi(_box(Vector3(3.0, 0.04, 3.4)), Vector3(0.5, 0.025, z), root, _mats["dirt"], "Path")
+	# Soft edge trim
+	for i in 6:
+		var z := -16.0 - float(i) * 5.5
+		_mi(_box(Vector3(3.6, 0.02, 0.35)), Vector3(0.5, 0.03, z), root, _mats["dirt_trim"], "Trim")
+	# Stepping stones across a tiny brook (centered on path)
 	_mi(_cyl(2.8, 2.8, 0.08), Vector3(0.5, 0.02, -42), root, _mats["water"], "Brook")
-	_mi(_cyl(1.6, 1.6, 0.06), Vector3(3.2, 0.02, -44), root, _mats["water"], "BrookPool")
-	for i in 5:
-		_mi(_sphere(0.35, 0.22), Vector3(-0.6 + float(i) * 0.7, 0.12, -42.0 + (i % 2) * 0.3), root, _mats["rock"], "Step")
-	# Signpost
+	_mi(_cyl(1.6, 1.6, 0.06), Vector3(3.6, 0.02, -44.5), root, _mats["water"], "BrookPool")
+	for i in 6:
+		_mi(_sphere(0.32, 0.2), Vector3(-0.4 + float(i) * 0.55, 0.12, -42.0), root, _mats["rock"], "Step")
+	# Signpost off the walk line
 	var sign := Node3D.new()
-	sign.position = Vector3(2.5, 0, -30)
+	sign.position = Vector3(3.4, 0, -30)
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 2.0), Vector3(0, 1.0, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.4, 0.7, 0.1)), Vector3(0, 1.8, 0), sign, _mats["wood_light"], "Board")
@@ -821,22 +854,22 @@ func _build_lantern_glade() -> void:
 	sl.position = Vector3(0, 2.5, 0)
 	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sign.add_child(sl)
-	# Extra trees / bushes framing the path
+	# Framing props kept outside corridor (side >= 4.5)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 91
-	for i in 10:
+	for i in 12:
 		var side := 1.0 if i % 2 == 0 else -1.0
-		var p := Vector3(side * rng.randf_range(4.0, 9.0), 0, -22.0 - float(i) * 2.8)
+		var p := Vector3(0.5 + side * rng.randf_range(5.0, 10.0), 0, -20.0 - float(i) * 2.6)
 		if i % 3 == 0:
 			_add_rock_cluster(p, rng)
 		elif i % 3 == 1:
 			_add_bush(p, rng)
 		else:
 			_add_tree(p, 1 if i > 6 else 0)
-	# Small lantern ring at glade end
+	# Lantern ring at glade end (outside path center)
 	for i in 5:
 		var ang := i * TAU / 5.0
-		_add_lantern_post(Vector3(0.5 + cos(ang) * 4.5, 0, -48.0 + sin(ang) * 4.5))
+		_add_lantern_post(Vector3(0.5 + cos(ang) * 5.0, 0, -48.0 + sin(ang) * 5.0))
 	var glade_lbl := Label3D.new()
 	glade_lbl.text = "Lantern Glade"
 	glade_lbl.font_size = 56
@@ -905,6 +938,7 @@ func get_weather_label() -> String:
 
 func _apply_weather_visuals(announce: bool = false) -> void:
 	var rain_on := false
+	var drip_on := false
 	match _weather_mode:
 		1:
 			_weather_label_cache = "Fog"
@@ -919,11 +953,14 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				rain_on = true
 			elif _rain:
 				_rain.emitting = false
+				drip_on = true  # raining outdoors while player is indoors
 		_:
 			_weather_label_cache = "Clear"
 			_fog_boost = 0.0
 			if _rain:
 				_rain.emitting = false
+	if AudioBus.has_method("set_indoor_drip"):
+		AudioBus.set_indoor_drip(drip_on)
 	if AudioBus.has_method("set_rain_audio"):
 		AudioBus.set_rain_audio(rain_on)
 	weather_changed.emit(_weather_mode, _weather_label_cache)
@@ -1001,21 +1038,21 @@ func _add_guild_theme_props(room: Node3D, guild: String, col: Color) -> void:
 			pass
 
 func _build_pine_ridge() -> void:
-	## Small western spur beyond Lantern Glade — pine stand + creek ford. Scope kept small.
+	## Western spur beyond Lantern Glade — continuous ford path + pine stand.
 	var root := Node3D.new()
 	root.name = "PineRidge"
 	static_world.add_child(root)
-	# Path west from glade brook toward ridge
-	for i in 6:
-		var x := -4.0 - float(i) * 3.4
-		_mi(_box(Vector3(3.6, 0.04, 2.0)), Vector3(x, 0.025, -48.0), root, _mats["dirt"], "RidgePath")
-	# Creek ford (shallow crossing)
+	# Continuous path west from glade brook toward ridge
+	for i in 9:
+		var x := -2.0 - float(i) * 2.8
+		_mi(_box(Vector3(3.2, 0.04, 2.6)), Vector3(x, 0.025, -48.0), root, _mats["dirt"], "RidgePath")
+	# Creek ford (shallow crossing) with centered stepping stones
 	_mi(_cyl(3.2, 3.2, 0.07), Vector3(-18, 0.015, -48), root, _mats["water"], "Creek")
 	_mi(_cyl(1.4, 1.4, 0.05), Vector3(-20.5, 0.015, -50.5), root, _mats["water"], "CreekBend")
-	for i in 4:
-		_mi(_sphere(0.32, 0.2), Vector3(-16.5 - float(i) * 0.85, 0.12, -48.0 + (i % 2) * 0.35), root, _mats["rock"], "FordStone")
+	for i in 5:
+		_mi(_sphere(0.3, 0.18), Vector3(-16.2 - float(i) * 0.75, 0.12, -48.0), root, _mats["rock"], "FordStone")
 	var sign := Node3D.new()
-	sign.position = Vector3(-12, 0, -45.5)
+	sign.position = Vector3(-12, 0, -45.2)
 	root.add_child(sign)
 	_mi(_cyl(0.08, 0.1, 1.9), Vector3(0, 0.95, 0), sign, _mats["wood"], "Post")
 	_mi(_box(Vector3(1.5, 0.65, 0.1)), Vector3(0, 1.7, 0), sign, _mats["wood_light"], "Board")
@@ -1025,17 +1062,18 @@ func _build_pine_ridge() -> void:
 	sl.position = Vector3(0, 2.4, 0)
 	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sign.add_child(sl)
-	# Pine trees (cone foliage)
+	# Pines kept off the ford corridor
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 113
-	for i in 12:
+	for i in 14:
 		var ang := rng.randf() * TAU
-		var rad := rng.randf_range(3.5, 9.0)
-		var p := Vector3(-24.0 + cos(ang) * rad, 0, -52.0 + sin(ang) * rad * 0.7)
+		var rad := rng.randf_range(4.0, 10.0)
+		var p := Vector3(-24.0 + cos(ang) * rad, 0, -54.0 + sin(ang) * rad * 0.75)
+		if _in_travel_corridor(p):
+			continue
 		_add_pine(p, rng)
-	# A few ridge rocks
 	for i in 4:
-		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.2, 0, -56.0 - (i % 2)), rng)
+		_add_rock_cluster(Vector3(-26.0 + float(i) * 2.2, 0, -58.0 - (i % 2)), rng)
 	var ridge_lbl := Label3D.new()
 	ridge_lbl.text = "Pine Ridge"
 	ridge_lbl.font_size = 52
@@ -1044,6 +1082,8 @@ func _build_pine_ridge() -> void:
 	root.add_child(ridge_lbl)
 
 func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
+	if _in_travel_corridor(pos):
+		return
 	var body := StaticBody3D.new()
 	body.position = pos
 	var trunk_h := rng.randf_range(1.6, 2.2)
@@ -1059,12 +1099,58 @@ func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
 		_mi(cone, Vector3(0, y, 0), body, pine, "Pine%d" % j)
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
-	shape.radius = 0.45
+	shape.radius = 0.28
 	shape.height = 2.2
 	col.shape = shape
 	col.position.y = 1.1
 	body.add_child(col)
 	static_world.add_child(body)
+
+
+func _build_prayer_garden() -> void:
+	## Quiet eastern landmark — soft travel (G). Simple benches + stone marker.
+	var root := Node3D.new()
+	root.name = "PrayerGarden"
+	static_world.add_child(root)
+	# Path east from plaza
+	for i in 7:
+		var x := 14.0 + float(i) * 2.6
+		_mi(_box(Vector3(2.8, 0.04, 2.4)), Vector3(x, 0.025, 18.0), root, _mats["dirt"], "GardenPath")
+	# Garden circle
+	_mi(_cyl(5.5, 5.5, 0.04), Vector3(30, 0.02, 18), root, _mats["grass_light"], "Lawn")
+	_mi(_cyl(1.2, 1.3, 0.35), Vector3(30, 0.2, 18), root, _mats["stone"], "MarkerBase")
+	_mi(_box(Vector3(0.28, 1.8, 0.18)), Vector3(30, 1.2, 18), root, _mats["stone_dark"], "Marker")
+	_mi(_box(Vector3(0.9, 0.22, 0.16)), Vector3(30, 1.55, 18), root, _mats["stone"], "MarkerArm")
+	# Quiet benches
+	_add_bench(Vector3(27.5, 0, 20.5), 0.8)
+	_add_bench(Vector3(32.5, 0, 20.5), -0.8)
+	_add_bench(Vector3(30, 0, 14.8), 0.0)
+	# Flower ring
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 131
+	for i in 8:
+		var ang := i * TAU / 8.0
+		_add_flowers(Vector3(30.0 + cos(ang) * 3.8, 0, 18.0 + sin(ang) * 3.8), rng)
+	_add_lantern_post(Vector3(26.5, 0, 15.5))
+	_add_lantern_post(Vector3(33.5, 0, 15.5))
+	var sign := Node3D.new()
+	sign.position = Vector3(26.2, 0, 18.0)
+	root.add_child(sign)
+	_mi(_cyl(0.08, 0.1, 1.8), Vector3(0, 0.9, 0), sign, _mats["wood"], "Post")
+	_mi(_box(Vector3(1.5, 0.6, 0.1)), Vector3(0, 1.6, 0), sign, _mats["wood_light"], "Board")
+	var sl := Label3D.new()
+	sl.text = "Prayer Garden"
+	sl.font_size = 40
+	sl.position = Vector3(0, 2.3, 0)
+	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.add_child(sl)
+	var lbl := Label3D.new()
+	lbl.text = "Prayer Garden"
+	lbl.font_size = 52
+	lbl.position = Vector3(30, 3.2, 18)
+	lbl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(lbl)
+
 
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
@@ -1074,6 +1160,8 @@ func get_minimap_markers() -> Dictionary:
 	# Landmarks for wilds spurs
 	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8"})
 	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32"})
+	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037"})
+	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
 		# Hide indoor duplicates on minimap (keep outdoor mentors)

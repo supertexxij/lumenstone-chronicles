@@ -42,10 +42,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
-offset_top = -180.0
-offset_right = 220.0
-offset_bottom = 180.0
+offset_left = -300.0
+offset_top = -240.0
+offset_right = 300.0
+offset_bottom = 260.0
 
 [node name="VBox" type="VBoxContainer" parent="UI/TitleScreen/Panel"]
 layout_mode = 2
@@ -63,18 +63,21 @@ text = "Christian · Creationist · Grade 3"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ContinueBtn" type="Button" parent="UI/TitleScreen/Panel/VBox"]
+[node name="Slots" type="VBoxContainer" parent="UI/TitleScreen/Panel/VBox"]
 layout_mode = 2
-text = "Continue"
+theme_override_constants/separation = 8
 
-[node name="NewBtn" type="Button" parent="UI/TitleScreen/Panel/VBox"]
+[node name="StatusLbl" type="Label" parent="UI/TitleScreen/Panel/VBox"]
 layout_mode = 2
-text = "New Game"
+theme_override_font_sizes/font_size = 12
+text = "Pick a save slot"
+horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="Blurb" type="Label" parent="UI/TitleScreen/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Open village · five guilds · Weeks 1–36 · journal · soft combat"
+text = "Open village · five guilds · Weeks 1–36 · 3 save slots · soft travel"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -239,6 +242,10 @@ text = "Mute (M)"
 [node name="WeatherBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
 text = "Weather (R)"
+
+[node name="TravelBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Travel (T)"
 
 [node name="ParentBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
@@ -560,10 +567,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -260.0
-offset_right = 300.0
-offset_bottom = 260.0
+offset_left = -320.0
+offset_top = -320.0
+offset_right = 320.0
+offset_bottom = 320.0
 
 [node name="VBox" type="VBoxContainer" parent="UI/ParentPanel/Panel"]
 layout_mode = 2
@@ -599,8 +606,31 @@ layout_mode = 2
 text = "Needs Help"
 
 [node name="HelpList" type="ItemList" parent="UI/ParentPanel/Panel/VBox/Content"]
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
+
+[node name="PinChangeTitle" type="Label" parent="UI/ParentPanel/Panel/VBox/Content"]
+layout_mode = 2
+text = "Change Parent PIN"
+
+[node name="NewPinEdit" type="LineEdit" parent="UI/ParentPanel/Panel/VBox/Content"]
+layout_mode = 2
+placeholder_text = "New PIN (4–8 digits)"
+secret = true
+
+[node name="ConfirmPinEdit" type="LineEdit" parent="UI/ParentPanel/Panel/VBox/Content"]
+layout_mode = 2
+placeholder_text = "Confirm new PIN"
+secret = true
+
+[node name="ChangePinBtn" type="Button" parent="UI/ParentPanel/Panel/VBox/Content"]
+layout_mode = 2
+text = "Save New PIN"
+
+[node name="PinStatus" type="Label" parent="UI/ParentPanel/Panel/VBox/Content"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Default PIN is 1234 until changed."
 
 [node name="CloseBtn" type="Button" parent="UI/ParentPanel/Panel/VBox"]
 layout_mode = 2
@@ -679,6 +709,63 @@ scroll_active = true
 text = "Select a quest"
 
 [node name="CloseBtn" type="Button" parent="UI/JournalPanel/Panel/VBox"]
+layout_mode = 2
+text = "Close"
+
+
+[node name="TravelPanel" type="Control" parent="UI"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Dim" type="ColorRect" parent="UI/TravelPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.45)
+
+[node name="Panel" type="PanelContainer" parent="UI/TravelPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -260.0
+offset_right = 220.0
+offset_bottom = 260.0
+
+[node name="VBox" type="VBoxContainer" parent="UI/TravelPanel/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="UI/TravelPanel/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Soft Travel"
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="UI/TravelPanel/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Outdoors only. Keys: H Fountain · N Glade · B Ridge · G Prayer Garden · 1–5 Halls"
+autowrap_mode = 2
+horizontal_alignment = 1
+
+[node name="DestList" type="ItemList" parent="UI/TravelPanel/Panel/VBox"]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GoBtn" type="Button" parent="UI/TravelPanel/Panel/VBox"]
+layout_mode = 2
+text = "Travel"
+
+[node name="CloseBtn" type="Button" parent="UI/TravelPanel/Panel/VBox"]
 layout_mode = 2
 text = "Close"
 

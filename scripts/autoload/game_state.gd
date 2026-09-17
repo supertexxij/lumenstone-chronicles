@@ -9,8 +9,11 @@ signal ui_open_requested(panel: String)
 signal combat_target_changed(enemy: Node)
 signal soft_defeated
 
-const SAVE_PATH := "user://lumenstone_save_v1.json"
-const PARENT_PIN := "1234"
+const LEGACY_SAVE_PATH := "user://lumenstone_save_v1.json"
+const SAVE_SLOT_FMT := "user://lumenstone_save_slot_%d.json"
+const PARENT_SETTINGS_PATH := "user://lumenstone_parent.json"
+const SLOT_COUNT := 3
+const DEFAULT_PIN := "1234"
 const MASTERY_PCT := 0.8
 
 const GUILDS := {
@@ -46,6 +49,9 @@ var checkpoint_date: String = ""
 var created_at: int = 0
 var last_played: int = 0
 var unlocked_week: int = 1
+var active_slot: int = 0
+var parent_pin: String = DEFAULT_PIN
+var slot_label: String = ""
 
 var hp: int = 40
 var max_hp: int = 40
@@ -53,6 +59,8 @@ var in_world: bool = false
 var combat_target: Node = null
 
 func _ready() -> void:
+	_load_parent_settings()
+	_migrate_legacy_save()
 	await get_tree().process_frame
 	if unlocked_items.is_empty():
 		_apply_starters()
@@ -64,9 +72,12 @@ func _apply_starters() -> void:
 	if equipped.get("cape") == null:
 		equipped["cape"] = "default_cape"
 
-func new_game(p_name: String, appearance_in: Dictionary) -> void:
+func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void:
+	if slot >= 0:
+		active_slot = clampi(slot, 0, SLOT_COUNT - 1)
 	child_name = p_name if p_name.strip_edges() != "" else "Apprentice"
 	appearance = appearance_in.duplicate()
+	slot_label = ""
 	xp = 0
 	level = 1
 	lumens = {"math":0,"la":0,"science":0,"history":0,"bible":0}
@@ -89,8 +100,103 @@ func new_game(p_name: String, appearance_in: Dictionary) -> void:
 	save_game()
 	state_changed.emit()
 
-func has_save() -> bool:
-	return FileAccess.file_exists(SAVE_PATH)
+func slot_path(slot: int) -> String:
+	return SAVE_SLOT_FMT % clampi(slot, 0, SLOT_COUNT - 1)
+
+func has_save(slot: int = -1) -> bool:
+	var s: int = active_slot if slot < 0 else slot
+	if FileAccess.file_exists(slot_path(s)):
+		return true
+	# Backward compat: legacy single save counts as slot 0
+	if s == 0 and FileAccess.file_exists(LEGACY_SAVE_PATH):
+		return true
+	return false
+
+func any_save_exists() -> bool:
+	for i in SLOT_COUNT:
+		if has_save(i):
+			return true
+	return false
+
+func _migrate_legacy_save() -> void:
+	## Copy old single-file save into slot 0 once, keep legacy file for older builds.
+	if FileAccess.file_exists(slot_path(0)):
+		return
+	if not FileAccess.file_exists(LEGACY_SAVE_PATH):
+		return
+	var src := FileAccess.open(LEGACY_SAVE_PATH, FileAccess.READ)
+	if not src:
+		return
+	var raw: String = src.get_as_text()
+	src.close()
+	var dst := FileAccess.open(slot_path(0), FileAccess.WRITE)
+	if dst:
+		dst.store_string(raw)
+		dst.close()
+
+func _load_parent_settings() -> void:
+	parent_pin = DEFAULT_PIN
+	if not FileAccess.file_exists(PARENT_SETTINGS_PATH):
+		return
+	var f := FileAccess.open(PARENT_SETTINGS_PATH, FileAccess.READ)
+	if not f:
+		return
+	var data = JSON.parse_string(f.get_as_text())
+	f.close()
+	if typeof(data) == TYPE_DICTIONARY:
+		var pin := str(data.get("parent_pin", DEFAULT_PIN)).strip_edges()
+		if pin.length() >= 4:
+			parent_pin = pin
+
+func _save_parent_settings() -> void:
+	var f := FileAccess.open(PARENT_SETTINGS_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify({"parent_pin": parent_pin}))
+		f.close()
+
+func set_parent_pin(new_pin: String) -> bool:
+	var pin := new_pin.strip_edges()
+	if pin.length() < 4 or pin.length() > 8:
+		return false
+	for ch in pin:
+		if ch < "0" or ch > "9":
+			return false
+	parent_pin = pin
+	_save_parent_settings()
+	return true
+
+func slot_summary(slot: int) -> Dictionary:
+	## Lightweight peek for title UI without mutating active state.
+	if not has_save(slot):
+		return {"empty": true, "slot": slot}
+	var path := slot_path(slot)
+	if not FileAccess.file_exists(path) and slot == 0 and FileAccess.file_exists(LEGACY_SAVE_PATH):
+		path = LEGACY_SAVE_PATH
+	var f := FileAccess.open(path, FileAccess.READ)
+	if not f:
+		return {"empty": true, "slot": slot}
+	var data = JSON.parse_string(f.get_as_text())
+	f.close()
+	if typeof(data) != TYPE_DICTIONARY:
+		return {"empty": true, "slot": slot}
+	return {
+		"empty": false,
+		"slot": slot,
+		"child_name": str(data.get("child_name", "Apprentice")),
+		"level": int(data.get("level", 1)),
+		"xp": int(data.get("xp", 0)),
+		"unlocked_week": int(data.get("unlocked_week", 1)),
+		"combat_level": int(data.get("combat_level", 1)),
+		"last_played": int(data.get("last_played", 0)),
+		"slot_label": str(data.get("slot_label", "")),
+	}
+
+func clear_slot(slot: int) -> void:
+	var path := slot_path(slot)
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	if slot == 0 and FileAccess.file_exists(LEGACY_SAVE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(LEGACY_SAVE_PATH))
 
 func save_game() -> void:
 	last_played = int(Time.get_unix_time_from_system())
@@ -116,16 +222,30 @@ func save_game() -> void:
 		"created_at": created_at,
 		"last_played": last_played,
 		"unlocked_week": unlocked_week,
+		"slot_label": slot_label,
+		"save_version": 2,
 	}
-	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var path := slot_path(active_slot)
+	var f: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if f:
 		f.store_string(JSON.stringify(data))
 		f.close()
+	# Keep legacy path mirrored for older builds when using slot 0
+	if active_slot == 0:
+		var leg := FileAccess.open(LEGACY_SAVE_PATH, FileAccess.WRITE)
+		if leg:
+			leg.store_string(JSON.stringify(data))
+			leg.close()
 
-func load_game() -> bool:
-	if not has_save():
+func load_game(slot: int = -1) -> bool:
+	if slot >= 0:
+		active_slot = clampi(slot, 0, SLOT_COUNT - 1)
+	if not has_save(active_slot):
 		return false
-	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	var path := slot_path(active_slot)
+	if not FileAccess.file_exists(path) and active_slot == 0 and FileAccess.file_exists(LEGACY_SAVE_PATH):
+		path = LEGACY_SAVE_PATH
+	var f: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if not f:
 		return false
 	var data = JSON.parse_string(f.get_as_text())
@@ -151,6 +271,7 @@ func load_game() -> bool:
 	checkpoint_date = data.get("checkpoint_date", "")
 	created_at = int(data.get("created_at", 0))
 	unlocked_week = int(data.get("unlocked_week", 1))
+	slot_label = str(data.get("slot_label", ""))
 	_recalc_unlocked_week()
 	_apply_starters()
 	check_combat_item_unlocks()
@@ -319,7 +440,7 @@ func needs_help_quests() -> Array:
 	return help
 
 func verify_pin(pin: String) -> bool:
-	return pin == PARENT_PIN
+	return pin.strip_edges() == parent_pin
 
 
 func _recalc_unlocked_week() -> void:

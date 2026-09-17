@@ -8,18 +8,30 @@ signal closed
 @onready var content: VBoxContainer = $Panel/VBox/Content
 @onready var summary: RichTextLabel = $Panel/VBox/Content/Summary
 @onready var help_list: ItemList = $Panel/VBox/Content/HelpList
+@onready var new_pin_edit: LineEdit = $Panel/VBox/Content/NewPinEdit
+@onready var confirm_pin_edit: LineEdit = $Panel/VBox/Content/ConfirmPinEdit
+@onready var change_pin_btn: Button = $Panel/VBox/Content/ChangePinBtn
+@onready var pin_status: Label = $Panel/VBox/Content/PinStatus
 
 func _ready() -> void:
 	content.visible = false
 	unlock_btn.pressed.connect(_try_pin)
 	pin_edit.text_submitted.connect(func(_t): _try_pin())
 	close_btn.pressed.connect(func(): closed.emit())
+	if change_pin_btn:
+		change_pin_btn.pressed.connect(_change_pin)
 
 func open() -> void:
 	pin_edit.text = ""
 	content.visible = false
 	pin_edit.visible = true
 	unlock_btn.visible = true
+	if new_pin_edit:
+		new_pin_edit.text = ""
+	if confirm_pin_edit:
+		confirm_pin_edit.text = ""
+	if pin_status:
+		pin_status.text = "Default PIN is 1234 until you change it."
 	pin_edit.grab_focus()
 
 func _try_pin() -> void:
@@ -32,9 +44,24 @@ func _try_pin() -> void:
 	unlock_btn.visible = false
 	_refresh()
 
+func _change_pin() -> void:
+	var a: String = new_pin_edit.text.strip_edges() if new_pin_edit else ""
+	var b: String = confirm_pin_edit.text.strip_edges() if confirm_pin_edit else ""
+	if a != b:
+		pin_status.text = "PINs do not match."
+		return
+	if not GameState.set_parent_pin(a):
+		pin_status.text = "Use 4–8 digits only."
+		return
+	pin_status.text = "PIN updated. Remember it for next time."
+	new_pin_edit.text = ""
+	confirm_pin_edit.text = ""
+	AudioBus.play_ui()
+
 func _refresh() -> void:
-	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nXP: %d · Level: %d · Combat Lv: %d\nCampaign week unlocked: %d / 36\nQuests mastered: %d / %d\n\n[b]Lumens[/b]\n" % [
-		GameState.child_name, GameState.xp, GameState.level, GameState.combat_level,
+	var lines: String = "[b]Parent Dashboard[/b]\nChild: %s\nSave slot: %d\nXP: %d · Level: %d · Combat Lv: %d\nCampaign week unlocked: %d / 36\nQuests mastered: %d / %d\n\n[b]Lumens[/b]\n" % [
+		GameState.child_name, GameState.active_slot + 1,
+		GameState.xp, GameState.level, GameState.combat_level,
 		GameState.unlocked_week,
 		GameState.completed_quests.size(), QuestDB.quests.size()
 	]

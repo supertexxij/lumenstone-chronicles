@@ -7,7 +7,9 @@ var _players: Dictionary = {}  # kind -> AudioStreamPlayer
 var _ambient: AudioStreamPlayer
 var _music: AudioStreamPlayer
 var _rain: AudioStreamPlayer
+var _drip: AudioStreamPlayer
 var _rain_wanted: bool = false
+var _indoor_drip_wanted: bool = false
 var _streams: Dictionary = {}
 var _foot_cooldown: float = 0.0
 var _ready_ok: bool = false
@@ -39,6 +41,12 @@ func _ready() -> void:
 	_rain.volume_db = -28.0
 	_rain.stream = _streams.get("rain")
 	add_child(_rain)
+	_drip = AudioStreamPlayer.new()
+	_drip.name = "IndoorDrip"
+	_drip.bus = "Master"
+	_drip.volume_db = -22.0
+	_drip.stream = _streams.get("drip")
+	add_child(_drip)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -76,6 +84,8 @@ func _apply_mute() -> void:
 			_music.stop()
 		if _rain and _rain.playing:
 			_rain.stop()
+		if _drip and _drip.playing:
+			_drip.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -98,6 +108,7 @@ func stop_ambient() -> void:
 	if _music and _music.playing:
 		_music.stop()
 	set_rain_audio(false)
+	set_indoor_drip(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -141,25 +152,47 @@ func _build_streams() -> void:
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
 	_streams["rain"] = _soft_rain(6.0, 0.09)
+	_streams["drip"] = _indoor_drip(5.0, 0.14)
 
 
 func set_rain_audio(on: bool) -> void:
 	## Quiet rain loop while weather is rain outdoors; always respects mute.
 	_rain_wanted = on
+	if on:
+		_indoor_drip_wanted = false
+	_sync_rain_audio()
+
+func set_indoor_drip(on: bool) -> void:
+	## Soft roof-drip loop when raining + indoors + unmuted.
+	_indoor_drip_wanted = on
+	if on:
+		_rain_wanted = false
 	_sync_rain_audio()
 
 func _sync_rain_audio() -> void:
-	if not _ready_ok or _rain == null:
+	if not _ready_ok:
 		return
-	var should: bool = _rain_wanted and not GameState.muted and GameState.in_world
-	if should:
-		if _rain.stream == null:
-			_rain.stream = _streams.get("rain")
-		if not _rain.playing and _rain.stream:
-			_rain.play()
-	else:
-		if _rain.playing:
+	var can: bool = not GameState.muted and GameState.in_world
+	# Outdoor rain
+	if _rain:
+		var should_rain: bool = _rain_wanted and can and not _indoor_drip_wanted
+		if should_rain:
+			if _rain.stream == null:
+				_rain.stream = _streams.get("rain")
+			if not _rain.playing and _rain.stream:
+				_rain.play()
+		elif _rain.playing:
 			_rain.stop()
+	# Indoor drips
+	if _drip:
+		var should_drip: bool = _indoor_drip_wanted and can
+		if should_drip:
+			if _drip.stream == null:
+				_drip.stream = _streams.get("drip")
+			if not _drip.playing and _drip.stream:
+				_drip.play()
+		elif _drip.playing:
+			_drip.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -294,6 +327,30 @@ func _soft_rain(dur: float, amp: float) -> AudioStreamWAV:
 		if int(t * 11.0) % 17 == 0:
 			drip = sin(TAU * 900.0 * fmod(t, 0.09)) * exp(-fmod(t, 0.09) * 40.0) * 0.08
 		samples[i] = (prev * 0.7 + drip) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
+	## Sparse roof drips for indoor rain — quiet, non-startling, loopable.
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var drip_times := [0.4, 1.1, 1.85, 2.6, 3.35, 4.2]
+	for i in n:
+		var t := float(i) / float(rate)
+		var s := 0.0
+		for dt in drip_times:
+			var u := t - float(dt)
+			if u >= 0.0 and u < 0.12:
+				s += sin(TAU * 780.0 * u) * exp(-u * 36.0) * 0.55
+				s += sin(TAU * 420.0 * u) * exp(-u * 22.0) * 0.25
+		var hush := (randf() * 2.0 - 1.0) * 0.02
+		samples[i] = (s + hush) * amp
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

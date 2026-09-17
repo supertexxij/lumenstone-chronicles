@@ -10,7 +10,10 @@ func _initialize():
 	var hb = load("res://scripts/characters/humanoid_builder.gd")
 	var mm = load("res://scripts/ui/minimap.gd")
 	var np = load("res://scripts/ui/npc_panel.gd")
-	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null, mm!=null, np!=null)
+	var ts = load("res://scripts/ui/title_screen.gd")
+	var pp = load("res://scripts/ui/parent_panel.gd")
+	var gs = load("res://scripts/autoload/game_state.gd")
+	print("LOADED", w!=null, p!=null, e!=null, a!=null, j!=null, h!=null, hb!=null, mm!=null, np!=null, ts!=null, pp!=null, gs!=null)
 	var root = Node3D.new()
 	root.name = "T"
 	get_root().add_child(root)
@@ -21,7 +24,6 @@ func _initialize():
 	for mesh in ["sword", "axe", "staff", "bow", "dagger", "mallet"]:
 		HumanoidBuilder.style_weapon(parts, {"id":"t_"+mesh,"name":mesh,"mesh":mesh,"color":"#a67c52"})
 		print("WEAPON_", mesh.to_upper(), parts.get("weapon_mesh"), parts.get("blade")!=null)
-	var wg = load("res://scripts/world/world.gd")
-	print("WORLD_SCRIPT", wg != null)
+	print("WORLD_SCRIPT", w != null)
 	print("CHECK_OK")
 	quit(0)

@@ -6,6 +6,7 @@ signal parent_pressed
 signal journal_pressed
 signal mute_pressed
 signal weather_pressed
+signal travel_pressed
 
 @onready var name_lbl: Label = $TopBar/NameLbl
 @onready var xp_lbl: Label = $TopBar/XpLbl
@@ -17,6 +18,7 @@ signal weather_pressed
 @onready var journal_btn: Button = $BottomBar/JournalBtn
 @onready var mute_btn: Button = $BottomBar/MuteBtn
 @onready var weather_btn: Button = $BottomBar/WeatherBtn
+@onready var travel_btn: Button = $BottomBar/TravelBtn
 @onready var parent_btn: Button = $BottomBar/ParentBtn
 @onready var hint_lbl: Label = $Hint
 @onready var compass: Control = $Compass
@@ -35,8 +37,10 @@ func _ready() -> void:
 	mute_btn.pressed.connect(func(): mute_pressed.emit())
 	if weather_btn:
 		weather_btn.pressed.connect(func(): AudioBus.play_ui(); weather_pressed.emit())
+	if travel_btn:
+		travel_btn.pressed.connect(func(): AudioBus.play_ui(); travel_pressed.emit())
 	parent_btn.pressed.connect(func(): AudioBus.play_ui(); parent_pressed.emit())
-	hint_lbl.text = "Click ground · WASD · Scroll/=/- zoom · Click NPC/enemy · Q/E camera · I inv · J journal · C wardrobe · M mute · R weather · F talk · Enter glowing doors · N Glade · B Pine Ridge"
+	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
