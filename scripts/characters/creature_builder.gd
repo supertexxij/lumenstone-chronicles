@@ -145,6 +145,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_finch(bob)
 		"grape_gecko":
 			_build_gecko(bob)
+		"apricot_armadillo":
+			_build_armadillo(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1392,4 +1394,46 @@ static func _build_gecko(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.055, 0.02, 0.28), Vector3(0, 0.24, -0.28), bob, "Tail")
 	tail.rotation_degrees = Vector3(70, 0, 0)
 	_mi(_sphere(0.035), Vector3(0, 0.18, -0.48), bob, "TailTip")
+
+static func _build_armadillo(bob: Node3D) -> void:
+	## Soft apricot-wilds armadillo — plump low body, banded shell plates, short snout, stubby legs, tiny rounded ears (distinct from Moss Badger / Pecan Possum / Walnut Weasel / Lemon Lemming / Cherry Chinchilla).
+	# Plump oval body
+	var body := _mi(_sphere(0.18, 0.26), Vector3(0, 0.28, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.10, 0.14), Vector3(0, 0.20, 0.05), bob, "Belly")
+	# Banded shell plates (signature armor crest)
+	var shell := Node3D.new()
+	shell.name = "Shell"
+	shell.position = Vector3(0, 0.38, -0.02)
+	bob.add_child(shell)
+	_mi(_box(Vector3(0.34, 0.06, 0.22)), Vector3(0, 0.0, 0.06), shell, "Plate1")
+	_mi(_box(Vector3(0.36, 0.055, 0.20)), Vector3(0, 0.05, -0.02), shell, "Plate2")
+	_mi(_box(Vector3(0.32, 0.05, 0.18)), Vector3(0, 0.09, -0.10), shell, "Plate3")
+	# Soft apricot cheek tones on shell edges
+	_mi(_sphere(0.06, 0.05), Vector3(-0.16, 0.02, 0.0), shell, "ShellEdgeL")
+	_mi(_sphere(0.06, 0.05), Vector3(0.16, 0.02, 0.0), shell, "ShellEdgeR")
+	# Round head + tiny ears + short soft snout
+	_mi(_sphere(0.11), Vector3(0, 0.34, 0.30), bob, "Head")
+	_mi(_sphere(0.04, 0.05), Vector3(-0.07, 0.42, 0.28), bob, "EarL")
+	_mi(_sphere(0.04, 0.05), Vector3(0.07, 0.42, 0.28), bob, "EarR")
+	_mi(_box(Vector3(0.055, 0.04, 0.08)), Vector3(0, 0.30, 0.42), bob, "Snout")
+	_mi(_sphere(0.025), Vector3(-0.04, 0.36, 0.38), bob, "EyeL")
+	_mi(_sphere(0.025), Vector3(0.04, 0.36, 0.38), bob, "EyeR")
+	# Stubby legs
+	for info in [
+		["FL", Vector3(-0.10, 0.14, 0.14)],
+		["FR", Vector3(0.10, 0.14, 0.14)],
+		["BL", Vector3(-0.10, 0.14, -0.14)],
+		["BR", Vector3(0.10, 0.14, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.025, 0.03, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.06, 0.02, 0.07)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Soft tapered tail
+	var tail := _mi(_cyl(0.04, 0.018, 0.26), Vector3(0, 0.24, -0.30), bob, "Tail")
+	tail.rotation_degrees = Vector3(55, 0, 0)
+	_mi(_sphere(0.028), Vector3(0, 0.16, -0.48), bob, "TailTip")
 

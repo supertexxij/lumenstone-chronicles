@@ -30,15 +30,19 @@ func _ready() -> void:
 
 func _ensure_open_only_toggle() -> void:
 	## Wave 52: Open-only filter toggle in journal FilterRow (PIN 1234; mastery ≥80% unchanged).
+	## Wave 62: remembers Open-only preference in save (PIN 1234; mastery ≥80% unchanged).
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):
 		return
 	var row: HBoxContainer = get_node_or_null("Panel/VBox/FilterRow")
 	if row == null:
 		return
+	# Restore saved preference before wiring the button
+	if "journal_open_only" in GameState:
+		_open_only = bool(GameState.journal_open_only)
 	_open_only_btn = CheckButton.new()
 	_open_only_btn.name = "OpenOnlyBtn"
 	_open_only_btn.text = "Open only"
-	_open_only_btn.tooltip_text = "Show only unlocked quests that are still open (not mastered ★)."
+	_open_only_btn.tooltip_text = "Show only unlocked quests that are still open (not mastered ★). Remembers your choice."
 	_open_only_btn.button_pressed = _open_only
 	_open_only_btn.toggled.connect(_on_open_only_toggled)
 	row.add_child(_open_only_btn)
@@ -46,11 +50,22 @@ func _ensure_open_only_toggle() -> void:
 func _on_open_only_toggled(on: bool) -> void:
 	AudioBus.play_ui()
 	_open_only = on
+	# Wave 62: persist Open-only preference in save (PIN 1234; mastery ≥80% unchanged).
+	if "journal_open_only" in GameState:
+		GameState.journal_open_only = on
+		if GameState.has_method("save_game"):
+			GameState.save_game()
 	refresh()
 
 func open() -> void:
 	_filter = "current"
 	filter_opt.select(0)
+	# Wave 62: restore Open-only preference from save
+	if "journal_open_only" in GameState:
+		_open_only = bool(GameState.journal_open_only)
+	_ensure_open_only_toggle()
+	if _open_only_btn != null and is_instance_valid(_open_only_btn):
+		_open_only_btn.set_pressed_no_signal(_open_only)
 	refresh()
 	_play_journal_open_flourish()  # Wave 51: clearer journal open flourish
 

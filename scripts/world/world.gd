@@ -36,6 +36,7 @@ var _maple_leaves: CPUParticles3D  # Wave 56: denser soft leaf fall at Maple Cop
 var _reed_sway_nodes: Array = []  # Wave 57: soft reed sway near Reed Pool
 var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Rise
 var _willow_sway_nodes: Array = []  # Wave 61: soft willow weep sway at Willow Bend
+var _fern_sway_nodes: Array = []  # Wave 62: soft fern sway at Fern Dell
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
@@ -765,6 +766,7 @@ func _process(delta: float) -> void:
 	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
 	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
 	_update_willow_sway(delta)  # Wave 61: soft willow weep sway at Willow Bend
+	_update_fern_sway(delta)  # Wave 62: soft fern sway at Fern Dell
 
 
 func _landmark_zones() -> Array:
@@ -2722,6 +2724,21 @@ func _update_willow_sway(_delta: float) -> void:
 		canopy.rotation.x = cos(t * 0.58 + phase * 0.7) * amp * 0.55
 
 
+func _update_fern_sway(_delta: float) -> void:
+	## Wave 62: soft fern sway at Fern Dell — gentle frond lean (RuneScape-chunky, wholesome).
+	if _fern_sway_nodes.is_empty():
+		return
+	var t := Time.get_ticks_msec() * 0.001
+	for frond in _fern_sway_nodes:
+		if frond == null or not is_instance_valid(frond):
+			continue
+		var phase := float(frond.get_meta("sway_phase", 0.0))
+		var amp := float(frond.get_meta("sway_amp", 0.045))
+		var lean := sin(t * 1.08 + phase) * amp
+		frond.rotation.z = lean
+		frond.rotation.x = cos(t * 0.92 + phase * 0.65) * amp * 0.55
+
+
 
 func _add_chunky_sign(parent: Node, pos: Vector3, title: String, yaw: float = 0.0) -> Node3D:
 	## Wave 23 feel: chunkier RuneScape-style landmark sign — thick post, framed board, clear label.
@@ -3041,21 +3058,36 @@ func _build_fern_dell() -> void:
 	_mi(_cyl(4.4, 4.4, 0.08), Vector3(22.0, 0.04, 48.0), root, _mats["grass_dark"], "FernClearing")
 	_mi(_cyl(2.6, 2.6, 0.06), Vector3(22.0, 0.08, 48.0), root, _mats["fern_light"], "FernClearingInner")
 	# Ring of fern fronds (chunky leaf fans)
+	# Wave 62: each frond is a sway parent so soft fern sway reads at Fern Dell
 	for i in 9:
 		var ang := float(i) * TAU / 9.0 + 0.15
 		var fx := 22.0 + cos(ang) * 3.4
 		var fz := 48.0 + sin(ang) * 3.4
 		var fh := 0.55 + float(i % 3) * 0.12
+		var frond := Node3D.new()
+		frond.name = "FernFrond%d" % i
+		frond.position = Vector3(fx, 0, fz)
+		frond.set_meta("sway_phase", ang)
+		frond.set_meta("sway_amp", 0.045 + float(i % 3) * 0.01)
+		root.add_child(frond)
+		_fern_sway_nodes.append(frond)
 		# Stem
-		_mi(_cyl(0.04, 0.05, fh), Vector3(fx, fh * 0.5, fz), root, _mats["fern_dark"], "FernStem%d" % i)
+		_mi(_cyl(0.04, 0.05, fh), Vector3(0, fh * 0.5, 0), frond, _mats["fern_dark"], "FernStem")
 		# Frond lobes
-		var lobe := _mi(_box(Vector3(0.55, 0.06, 0.28)), Vector3(fx, fh + 0.08, fz), root, _mats["fern"], "FernLobe%d" % i)
+		var lobe := _mi(_box(Vector3(0.55, 0.06, 0.28)), Vector3(0, fh + 0.08, 0), frond, _mats["fern"], "FernLobe")
 		lobe.rotation_degrees = Vector3(12.0, rad_to_deg(ang), 18.0 if i % 2 == 0 else -18.0)
-		_mi(_sphere(0.22, 0.18), Vector3(fx + cos(ang) * 0.15, fh + 0.2, fz + sin(ang) * 0.15), root, _mats["fern_light"], "FernTip%d" % i)
-	# Inner tufts
+		_mi(_sphere(0.22, 0.18), Vector3(cos(ang) * 0.15, fh + 0.2, sin(ang) * 0.15), frond, _mats["fern_light"], "FernTip")
+	# Inner tufts (Wave 62: soft sway parents too)
 	for i in 6:
 		var ang := float(i) * TAU / 6.0
-		_mi(_sphere(0.2, 0.24), Vector3(22.0 + cos(ang) * 1.6, 0.14, 48.0 + sin(ang) * 1.6), root, _mats["fern"], "FernTuft%d" % i)
+		var tuft := Node3D.new()
+		tuft.name = "FernTuft%d" % i
+		tuft.position = Vector3(22.0 + cos(ang) * 1.6, 0, 48.0 + sin(ang) * 1.6)
+		tuft.set_meta("sway_phase", ang + 0.8)
+		tuft.set_meta("sway_amp", 0.035)
+		root.add_child(tuft)
+		_fern_sway_nodes.append(tuft)
+		_mi(_sphere(0.2, 0.24), Vector3(0, 0.14, 0), tuft, _mats["fern"], "FernTuftBall")
 	# Resting log + lanterns + crate
 	_mi(_cyl(0.22, 0.22, 1.6), Vector3(20.2, 0.22, 46.4), root, _mats["wood"], "FernLog")
 	_add_crate(Vector3(24.0, 0, 49.5))

@@ -128,6 +128,9 @@ func _ready() -> void:
 		"grape_gecko":
 			if label: label.position.y = 1.2
 			hp_bar.position.y = 0.95
+		"apricot_armadillo":
+			if label: label.position.y = 1.25
+			hp_bar.position.y = 1.0
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -774,6 +777,24 @@ func _idle_anim(delta: float) -> void:
 			var ghead := creature_bob.get_node_or_null("Head")
 			if ghead:
 				ghead.rotation.y = sin(t * 0.75) * 0.07
+		"apricot_armadillo":
+			# Soft shell-bob — banded plates breathe, stubby tail sway, tiny ears twitch (Wave 62)
+			creature_bob.position.y = 0.01 + abs(sin(t * 1.05)) * 0.02
+			creature_bob.rotation.y = sin(t * 0.36) * 0.08
+			var ash := creature_bob.get_node_or_null("Shell")
+			if ash:
+				ash.rotation.x = sin(t * 0.85) * 0.04
+				ash.position.y = 0.38 + abs(sin(t * 1.2)) * 0.012
+			var atail := creature_bob.get_node_or_null("Tail")
+			if atail:
+				atail.rotation.y = sin(t * 0.95) * 0.14
+				atail.rotation.x = deg_to_rad(55) + sin(t * 0.7) * 0.04
+			var aear_l := creature_bob.get_node_or_null("EarL")
+			var aear_r := creature_bob.get_node_or_null("EarR")
+			if aear_l:
+				aear_l.rotation.z = sin(t * 1.4) * 0.08
+			if aear_r:
+				aear_r.rotation.z = -sin(t * 1.4 + 0.2) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

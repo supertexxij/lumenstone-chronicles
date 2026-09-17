@@ -469,7 +469,7 @@ func _finish():
 	print("WARDROBE_SPARKLE_SRC", "Wave 58: stronger wardrobe equip sparkle" in FileAccess.get_file_as_string("res://scripts/ui/customize_screen.gd"))
 	print("PARENT_YEAR_PCT_SRC", "Wave 58: show year %" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("WAVE58_TOAST_SRC", "maybe_wave_58_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_158_SRC", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_158_SRC", 'config/version="1.58.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 
@@ -479,7 +479,7 @@ func _finish():
 	print("XP_STACK_SRC", "_xp_stack_i" in FileAccess.get_file_as_string("res://scripts/combat/hitsplat.gd"))
 	print("FAV_PACES_SRC", "_refresh_fav_paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("WAVE59_TOAST_SRC", "maybe_wave_59_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_159_SRC", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_159_SRC", 'config/version="1.59.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 
@@ -489,7 +489,7 @@ func _finish():
 	print("PLAZA_FLICKER_SRC", "plaza dusk lantern flicker sync" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("JOURNAL_TOTAL_STARS_SRC", "★ Total mastered:" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("WAVE60_TOAST_SRC", "maybe_wave_60_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_160_SRC", 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_160_SRC", 'config/version="1.60.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 
@@ -498,8 +498,17 @@ func _finish():
 	print("FOOD_EMPTY_H_SRC", "press H for Fountain to refill" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("UNEQUIP_ALL_SRC", "unequip_all_slots" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("WAVE61_TOAST_SRC", "maybe_wave_61_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_161_SRC", 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_161_SRC", 'config/version="1.61.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
+
+
+	print("APRICOT_ARMADILLO_SRC", '"apricot_armadillo"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FERN_SWAY_SRC", "_update_fern_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TRAVEL_FADE_NAME_SRC", "SoftTravelFadeLabel" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("PULLBACK_DENSE_SRC", "Wave 62: denser combat pull-back sparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("JOURNAL_OPEN_ONLY_SAVE_SRC", "journal_open_only" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("WAVE62_TOAST_SRC", "maybe_wave_62_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_162_SRC", 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

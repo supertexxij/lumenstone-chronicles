@@ -98,6 +98,7 @@ func _leave_combat_soft() -> void:
 
 func _play_pullback_sparkle() -> void:
 	## Soft cream motes when leaving aggro — RuneScape-chunky, wholesome.
+	## Wave 62: denser combat pull-back sparkle (no cheesy combat labels).
 	if HeadlessGuard.is_headless():
 		return
 	var fx := CPUParticles3D.new()
@@ -105,19 +106,19 @@ func _play_pullback_sparkle() -> void:
 	fx.position = Vector3(0, 1.1, 0)
 	fx.emitting = true
 	fx.one_shot = true
-	fx.explosiveness = 0.88
-	fx.amount = 16
-	fx.lifetime = 0.7
+	fx.explosiveness = 0.92
+	fx.amount = 32  # Wave 62: denser pull-back sparkle
+	fx.lifetime = 0.78
 	fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	fx.emission_sphere_radius = 0.35
+	fx.emission_sphere_radius = 0.48
 	fx.direction = Vector3(0, 1, 0)
-	fx.spread = 48.0
-	fx.initial_velocity_min = 0.6
-	fx.initial_velocity_max = 1.6
-	fx.gravity = Vector3(0, -0.4, 0)
-	fx.scale_amount_min = 0.06
-	fx.scale_amount_max = 0.16
-	fx.color = Color(1.0, 0.94, 0.72, 0.9)
+	fx.spread = 58.0
+	fx.initial_velocity_min = 0.7
+	fx.initial_velocity_max = 2.0
+	fx.gravity = Vector3(0, -0.35, 0)
+	fx.scale_amount_min = 0.07
+	fx.scale_amount_max = 0.18
+	fx.color = Color(1.0, 0.94, 0.72, 0.92)
 	var ramp := Gradient.new()
 	ramp.colors = PackedColorArray([
 		Color(1.0, 0.98, 0.82, 0.95),
@@ -127,7 +128,7 @@ func _play_pullback_sparkle() -> void:
 	fx.color_ramp = ramp
 	HeadlessGuard.guard_particles(fx)
 	add_child(fx)
-	get_tree().create_timer(1.0).timeout.connect(func():
+	get_tree().create_timer(1.15).timeout.connect(func():
 		if is_instance_valid(fx):
 			fx.queue_free()
 	)

@@ -27,6 +27,7 @@ var _reset_confirm_armed: bool = false
 var _hit_pausing: bool = false
 var _travel_fading: bool = false
 var _travel_fade: ColorRect = null
+var _travel_fade_label: Label = null  # Wave 62: landmark name during soft-travel fade
 
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
@@ -438,7 +439,10 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 
 func _ensure_travel_fade() -> void:
 	## Wave 43: clearer soft-travel fade overlay (cream hush, wholesome).
+	## Wave 62: landmark name label centered during the hush fade.
 	if _travel_fade != null and is_instance_valid(_travel_fade):
+		if _travel_fade_label == null or not is_instance_valid(_travel_fade_label):
+			_ensure_travel_fade_label()
 		return
 	_travel_fade = ColorRect.new()
 	_travel_fade.name = "SoftTravelFade"
@@ -452,24 +456,64 @@ func _ensure_travel_fade() -> void:
 		ui.add_child(_travel_fade)
 	else:
 		add_child(_travel_fade)
+	_ensure_travel_fade_label()
+
+
+func _ensure_travel_fade_label() -> void:
+	## Wave 62: clearer soft-travel fade with landmark name (RuneScape-chunky, wholesome).
+	if _travel_fade == null or not is_instance_valid(_travel_fade):
+		return
+	if _travel_fade_label != null and is_instance_valid(_travel_fade_label):
+		return
+	_travel_fade_label = Label.new()
+	_travel_fade_label.name = "SoftTravelFadeLabel"
+	_travel_fade_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_travel_fade_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_travel_fade_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_travel_fade_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_travel_fade_label.offset_left = -220
+	_travel_fade_label.offset_right = 220
+	_travel_fade_label.offset_top = -28
+	_travel_fade_label.offset_bottom = 28
+	_travel_fade_label.add_theme_font_size_override("font_size", 28)
+	_travel_fade_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 0.0))
+	_travel_fade_label.add_theme_color_override("font_outline_color", Color(0.18, 0.14, 0.10, 0.0))
+	_travel_fade_label.add_theme_constant_override("outline_size", 4)
+	_travel_fade_label.text = ""
+	_travel_fade_label.modulate = Color(1, 1, 1, 0)
+	_travel_fade.add_child(_travel_fade_label)
 
 
 func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
 	## Wave 43: soft cream fade out → teleport → fade in (RuneScape-chunky, wholesome).
+	## Wave 62: landmark name reads clearly during the hush fade.
 	_travel_fading = true
 	_ensure_travel_fade()
 	if _travel_fade:
 		_travel_fade.visible = true
 		_travel_fade.color = Color(0.14, 0.12, 0.09, 0.0)
+		if _travel_fade_label:
+			_travel_fade_label.text = label
+			_travel_fade_label.modulate = Color(1, 1, 1, 0)
+			_travel_fade_label.add_theme_color_override("font_color", Color(1.0, 0.96, 0.82, 1.0))
+			_travel_fade_label.add_theme_color_override("font_outline_color", Color(0.18, 0.14, 0.10, 0.85))
 		var tw := create_tween()
-		tw.tween_property(_travel_fade, "color:a", 0.62, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tw.set_parallel(true)
+		tw.tween_property(_travel_fade, "color:a", 0.68, 0.26).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		if _travel_fade_label:
+			tw.tween_property(_travel_fade_label, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		await tw.finished
 	_apply_soft_travel_arrival(pos, label)
 	if _travel_fade:
 		var tw2 := create_tween()
-		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.32).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tw2.set_parallel(true)
+		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		if _travel_fade_label:
+			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await tw2.finished
 		_travel_fade.visible = false
+		if _travel_fade_label:
+			_travel_fade_label.text = ""
 	_travel_fading = false
 
 
@@ -675,6 +719,9 @@ func _enter_world() -> void:
 	# Wave 61: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_61_toast"):
 		GameState.maybe_wave_61_toast()
+	# Wave 62: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_62_toast"):
+		GameState.maybe_wave_62_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":
