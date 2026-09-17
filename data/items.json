@@ -1,0 +1,1820 @@
+{
+  "starter_tunic": {
+    "id": "starter_tunic",
+    "name": "Apprentice's Tunic",
+    "description": "Simple cream tunic for every new apprentice.",
+    "slot": "cape",
+    "color": "#f4e4bc",
+    "starter": true
+  },
+  "wooden_practice_sword": {
+    "id": "wooden_practice_sword",
+    "name": "Wooden Practice Sword",
+    "description": "A safe training blade for Builder apprentices.",
+    "slot": "weapon",
+    "color": "#a67c52",
+    "unlock_quest_id": "w1-math-facts",
+    "damage": 5,
+    "accuracy": 0.8
+  },
+  "brass_lantern": {
+    "id": "brass_lantern",
+    "name": "Brass Lantern",
+    "description": "A sturdy brass lantern for evening paths.",
+    "slot": "accessory",
+    "color": "#f4a261",
+    "unlock_quest_id": "w1-science-creation"
+  },
+  "scribe_satchel": {
+    "id": "scribe_satchel",
+    "name": "Scribe's Satchel",
+    "description": "Holds scrolls, quills, and carefully spelled words.",
+    "slot": "belt",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w1-la-sentences"
+  },
+  "texas_star_pin": {
+    "id": "texas_star_pin",
+    "name": "Texas Star Pin",
+    "description": "A proud star for map-keepers of the southern United States.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w1-history-maps"
+  },
+  "stewards_cloak": {
+    "id": "stewards_cloak",
+    "name": "Steward Cloak",
+    "description": "A sturdy cloak awarded after the week review raid.",
+    "slot": "cape",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w1-raid-review"
+  },
+  "builders_belt": {
+    "id": "builders_belt",
+    "name": "Builder's Belt",
+    "description": "A sturdy belt with a golden buckle — place value ready!",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w1-math-place-value"
+  },
+  "scripture_bookmark": {
+    "id": "scripture_bookmark",
+    "name": "Scripture Bookmark",
+    "description": "Marks Genesis 1:1 — In the beginning, God created…",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w1-bible-genesis"
+  },
+  "prayer_beads": {
+    "id": "prayer_beads",
+    "name": "Prayer Beads",
+    "description": "Simple beads to remember thankfulness and wonder.",
+    "slot": "accessory",
+    "color": "#8b5a2b",
+    "unlock_quest_id": "w1-bible-genesis"
+  },
+  "explorers_hat": {
+    "id": "explorers_hat",
+    "name": "Explorer's Hat",
+    "description": "A wide-brim hat for apprentices who check their sums.",
+    "slot": "head",
+    "color": "#5c4033",
+    "unlock_quest_id": "w1-math-add-sub"
+  },
+  "default_cape": {
+    "id": "default_cape",
+    "name": "Travel Cape",
+    "description": "Your colorful travel cape — dye it any hall color.",
+    "slot": "cape",
+    "color": "#c1121f",
+    "starter": true
+  },
+  "ten_stone_pouch": {
+    "id": "ten_stone_pouch",
+    "name": "Ten-Stone Pouch",
+    "description": "A pouch of counting stones for place-value practice.",
+    "slot": "belt",
+    "color": "#8b7355",
+    "unlock_quest_id": "w2-math-place-money"
+  },
+  "coin_purse": {
+    "id": "coin_purse",
+    "name": "Coin Purse",
+    "description": "A small purse for pennies, nickels, dimes, and quarters.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w2-math-place-money"
+  },
+  "scribe_notebook": {
+    "id": "scribe_notebook",
+    "name": "Scribe Notebook",
+    "description": "Lined pages for nouns, topic sentences, and spelling blends.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w2-la-nouns"
+  },
+  "leaf_press": {
+    "id": "leaf_press",
+    "name": "Leaf Press",
+    "description": "A wooden press for preserving observed leaves.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w2-science-plants"
+  },
+  "map_scroll": {
+    "id": "map_scroll",
+    "name": "Map Scroll",
+    "description": "A rolled map for studying peoples and places of North America.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w2-history-indigenous"
+  },
+  "gratitude_medallion": {
+    "id": "gratitude_medallion",
+    "name": "Gratitude Medallion",
+    "description": "A simple medallion reminding apprentices to give thanks.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w2-bible-gratitude"
+  },
+  "river_stone_cloak": {
+    "id": "river_stone_cloak",
+    "name": "River Stone Cloak",
+    "description": "A sturdy cloak awarded after the Stones of Ten review.",
+    "slot": "cape",
+    "color": "#5c6b73",
+    "unlock_quest_id": "w2-raid-review"
+  },
+  "bridge_compass": {
+    "id": "bridge_compass",
+    "name": "Bridge Compass",
+    "description": "Helps apprentices estimate direction and check careful work.",
+    "slot": "accessory",
+    "color": "#d4a017",
+    "unlock_quest_id": "w3-math-subtract-time"
+  },
+  "quill_of_verbs": {
+    "id": "quill_of_verbs",
+    "name": "Action Quill",
+    "description": "A quill for writing strong verbs and complete paragraphs.",
+    "slot": "accessory",
+    "color": "#1d7a9c",
+    "unlock_quest_id": "w3-la-verbs"
+  },
+  "star_chart": {
+    "id": "star_chart",
+    "name": "Star Chart",
+    "description": "A chart of sun, moon, and stars as created lights.",
+    "slot": "accessory",
+    "color": "#1a1a40",
+    "unlock_quest_id": "w3-science-lights"
+  },
+  "texas_tribe_badge": {
+    "id": "texas_tribe_badge",
+    "name": "Texas Lands Badge",
+    "description": "A badge for apprentices who studied Indigenous Texas nations.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w3-history-texas-indigenous"
+  },
+  "reverence_band": {
+    "id": "reverence_band",
+    "name": "Reverence Band",
+    "description": "A wrist band for remembering holy respect toward God.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w3-bible-reverence"
+  },
+  "moonlight_cloak": {
+    "id": "moonlight_cloak",
+    "name": "Moonlight Cloak",
+    "description": "A soft cloak awarded after the Bridges Across review.",
+    "slot": "cape",
+    "color": "#4a5568",
+    "unlock_quest_id": "w3-raid-review"
+  },
+  "multiplication_tablet": {
+    "id": "multiplication_tablet",
+    "name": "Multiplication Tablet",
+    "description": "A practice tablet for equal groups and arrays.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w4-math-multiplication"
+  },
+  "adjective_ribbon": {
+    "id": "adjective_ribbon",
+    "name": "Describer Ribbon",
+    "description": "A ribbon for apprentices who paint with careful adjectives.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w4-la-adjectives"
+  },
+  "seabird_feather": {
+    "id": "seabird_feather",
+    "name": "Seabird Feather",
+    "description": "A kept feather token from Day 5 nature study.",
+    "slot": "accessory",
+    "color": "#87b8d4",
+    "unlock_quest_id": "w4-science-sea-birds"
+  },
+  "explorer_compass": {
+    "id": "explorer_compass",
+    "name": "Explorer Compass",
+    "description": "A brass compass for map work on explorers and shores.",
+    "slot": "accessory",
+    "color": "#b87333",
+    "unlock_quest_id": "w4-history-explorers"
+  },
+  "courage_brooch": {
+    "id": "courage_brooch",
+    "name": "Courage Brooch",
+    "description": "A brooch reminding apprentices to do right when tasks are hard.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w4-bible-courage"
+  },
+  "gate_key_pendant": {
+    "id": "gate_key_pendant",
+    "name": "Gate Key Pendant",
+    "description": "A pendant awarded after the Multiplication Gate review.",
+    "slot": "accessory",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w4-raid-review"
+  },
+  "image_seal": {
+    "id": "image_seal",
+    "name": "Image Seal",
+    "description": "A small seal reminding apprentices that people are made in God's image.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w5-bible-dignity"
+  },
+  "times_table_slate": {
+    "id": "times_table_slate",
+    "name": "Times-Table Slate",
+    "description": "A practice slate for the 3s and 4s facts.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w5-math-facts-34"
+  },
+  "letter_seal_ring": {
+    "id": "letter_seal_ring",
+    "name": "Letter Seal Ring",
+    "description": "A ring for sealing carefully written friendly letters.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w5-la-caps-letter"
+  },
+  "field_journal": {
+    "id": "field_journal",
+    "name": "Field Journal",
+    "description": "A journal for noting land animals and Day 6 creation study.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w5-science-day6"
+  },
+  "mission_bell": {
+    "id": "mission_bell",
+    "name": "Mission Bell",
+    "description": "A small bell token for map study of Spanish missions.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w5-history-spanish"
+  },
+  "hall_table_badge": {
+    "id": "hall_table_badge",
+    "name": "Hall Table Badge",
+    "description": "A badge awarded after the Hall of Times-Tables review.",
+    "slot": "accessory",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w5-raid-review"
+  },
+  "rest_hourglass": {
+    "id": "rest_hourglass",
+    "name": "Rest Hourglass",
+    "description": "A small hourglass reminding apprentices to rest and trust.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w6-bible-rest"
+  },
+  "storehouse_key": {
+    "id": "storehouse_key",
+    "name": "Storehouse Key",
+    "description": "A key for the Steward's Storehouse counting practice.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w6-math-facts-67"
+  },
+  "howto_scroll": {
+    "id": "howto_scroll",
+    "name": "How-To Scroll",
+    "description": "A scroll for ordered how-to writing and informational notes.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w6-la-howto"
+  },
+  "walking_staff": {
+    "id": "walking_staff",
+    "name": "Walking Staff",
+    "description": "A simple staff for nature-walk reflection on Day 7.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w6-science-day7"
+  },
+  "colony_map_pin": {
+    "id": "colony_map_pin",
+    "name": "Colony Map Pin",
+    "description": "A pin marking the Thirteen Colonies on the apprentice map.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w6-history-colonies"
+  },
+  "storehouse_cloak": {
+    "id": "storehouse_cloak",
+    "name": "Storehouse Cloak",
+    "description": "A cloak awarded after the Steward's Storehouse review.",
+    "slot": "cape",
+    "color": "#5c6b73",
+    "unlock_quest_id": "w6-raid-review"
+  },
+  "ant_token": {
+    "id": "ant_token",
+    "name": "Ant Token",
+    "description": "A tiny token reminding apprentices to work with diligence.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w7-bible-diligence"
+  },
+  "perimeter_ribbon": {
+    "id": "perimeter_ribbon",
+    "name": "Perimeter Ribbon",
+    "description": "A measuring ribbon for practicing distance around shapes.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w7-math-facts-89"
+  },
+  "story_bookmark": {
+    "id": "story_bookmark",
+    "name": "Story Bookmark",
+    "description": "A bookmark for keeping beginning, middle, and end in order.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w7-la-story"
+  },
+  "habitat_lens": {
+    "id": "habitat_lens",
+    "name": "Habitat Lens",
+    "description": "A hand lens for observing forest, pond, and desert study specimens.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w7-science-habitats"
+  },
+  "hearth_charm": {
+    "id": "hearth_charm",
+    "name": "Hearth Charm",
+    "description": "A charm shaped like a small hearth for colonial life study.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w7-history-colonial"
+  },
+  "fact_keeper_badge": {
+    "id": "fact_keeper_badge",
+    "name": "Fact Keeper Badge",
+    "description": "A badge awarded after the Fact Keepers review.",
+    "slot": "accessory",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w7-raid-review"
+  },
+  "truth_lantern": {
+    "id": "truth_lantern",
+    "name": "Truth Lantern",
+    "description": "A small lantern for walking in truthful speech.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w8-bible-truth"
+  },
+  "division_abacus": {
+    "id": "division_abacus",
+    "name": "Division Abacus",
+    "description": "A small abacus for equal-share division practice.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w8-math-facts-1112"
+  },
+  "poetry_ribbon": {
+    "id": "poetry_ribbon",
+    "name": "Poetry Ribbon",
+    "description": "A ribbon bookmark for poetry memory and synonym study.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w8-la-synonyms"
+  },
+  "weather_vane": {
+    "id": "weather_vane",
+    "name": "Weather Vane",
+    "description": "A small vane token for sky-watch weather recording.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w8-science-weather"
+  },
+  "liberty_quill": {
+    "id": "liberty_quill",
+    "name": "Liberty Quill",
+    "description": "A quill for notes on representation and the road to revolution.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w8-history-revolution"
+  },
+  "language_lantern_badge": {
+    "id": "language_lantern_badge",
+    "name": "Language Lantern Badge",
+    "description": "A badge awarded after the Lanterns of Language review.",
+    "slot": "accessory",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w8-raid-review"
+  },
+  "virtue_feast_cup": {
+    "id": "virtue_feast_cup",
+    "name": "Virtue Feast Cup",
+    "description": "A simple cup for the Campaign I virtue feast remembrance.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w9-bible-feast"
+  },
+  "foundation_stone": {
+    "id": "foundation_stone",
+    "name": "Foundation Stone",
+    "description": "A polished stone marking Campaign I math foundations.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w9-math-cumulative"
+  },
+  "portfolio_folder": {
+    "id": "portfolio_folder",
+    "name": "Portfolio Folder",
+    "description": "A folder for the Campaign I language arts portfolio check.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w9-la-portfolio"
+  },
+  "creation_poster_kit": {
+    "id": "creation_poster_kit",
+    "name": "Creation Poster Kit",
+    "description": "Markers and paper tokens for a Creation Week review poster.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w9-science-creation-review"
+  },
+  "timeline_ribbon": {
+    "id": "timeline_ribbon",
+    "name": "Timeline Ribbon",
+    "description": "A ribbon for ordering the Campaign I history timeline strip.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w9-history-timeline"
+  },
+  "campaign_i_badge": {
+    "id": "campaign_i_badge",
+    "name": "Campaign I Badge",
+    "description": "The Kindling the Lamps campaign badge — foundations complete.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w9-raid-feast"
+  },
+  "kindling_cloak": {
+    "id": "kindling_cloak",
+    "name": "Kindling Cloak",
+    "description": "A feast cloak awarded with the Campaign I badge.",
+    "slot": "cape",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w9-raid-feast"
+  },
+  "service_band": {
+    "id": "service_band",
+    "name": "Service Band",
+    "description": "A band reminding you that liberty serves in love.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w10-bible-liberty"
+  },
+  "equal_share_pail": {
+    "id": "equal_share_pail",
+    "name": "Equal-Share Pail",
+    "description": "A pail for fair-share division practice.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w10-math-division"
+  },
+  "main_idea_bookmark": {
+    "id": "main_idea_bookmark",
+    "name": "Main Idea Bookmark",
+    "description": "Marks the big point in informational reading.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w10-la-main-idea"
+  },
+  "rock_sample_pouch": {
+    "id": "rock_sample_pouch",
+    "name": "Rock Sample Pouch",
+    "description": "Pouch for local rock samples and hardness notes.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w10-science-rocks"
+  },
+  "declaration_scroll": {
+    "id": "declaration_scroll",
+    "name": "Declaration Scroll",
+    "description": "Practice scroll of liberty and Creator-given rights.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w10-history-declaration"
+  },
+  "well_cloak": {
+    "id": "well_cloak",
+    "name": "Well Cloak",
+    "description": "Cloak earned at the Equal-Share Well raid review.",
+    "slot": "cape",
+    "color": "#1d7a9c",
+    "unlock_quest_id": "w10-raid-review"
+  },
+  "joshua_band": {
+    "id": "joshua_band",
+    "name": "Joshua Band",
+    "description": "A band for courage — the Lord is with you.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w11-bible-courage"
+  },
+  "algorithm_slate": {
+    "id": "algorithm_slate",
+    "name": "Algorithm Slate",
+    "description": "Slate for multi-digit multiplication steps.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w11-math-multidigit"
+  },
+  "dialogue_quill": {
+    "id": "dialogue_quill",
+    "name": "Dialogue Quill",
+    "description": "Quill for stories with spoken words in quotes.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w11-la-narrative"
+  },
+  "bean_planter": {
+    "id": "bean_planter",
+    "name": "Bean Planter",
+    "description": "Small planter cup for a sprouting bean.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w11-science-soil"
+  },
+  "continental_pin": {
+    "id": "continental_pin",
+    "name": "Continental Pin",
+    "description": "Pin honoring Revolutionary courage.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w11-history-revolution"
+  },
+  "courage_cloak": {
+    "id": "courage_cloak",
+    "name": "Courage Cloak",
+    "description": "Cloak from the Week 11 raid review.",
+    "slot": "cape",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w11-raid-review"
+  },
+  "order_seal": {
+    "id": "order_seal",
+    "name": "Order Seal",
+    "description": "Seal for respectful order under rightful authority.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w12-bible-order"
+  },
+  "area_tile_set": {
+    "id": "area_tile_set",
+    "name": "Area Tile Set",
+    "description": "Square tiles for counting rectangle area.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w12-math-area"
+  },
+  "revise_ribbon": {
+    "id": "revise_ribbon",
+    "name": "Revise Ribbon",
+    "description": "Ribbon reminding scribes to improve paragraphs.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w12-la-pronouns"
+  },
+  "water_cycle_chart": {
+    "id": "water_cycle_chart",
+    "name": "Water Cycle Chart",
+    "description": "Chart of evaporation, condensation, precipitation.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w12-science-watercycle"
+  },
+  "constitution_bookmark": {
+    "id": "constitution_bookmark",
+    "name": "Constitution Bookmark",
+    "description": "Marks study of national rules and rights.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w12-history-constitution"
+  },
+  "citadel_cloak": {
+    "id": "citadel_cloak",
+    "name": "Citadel Cloak",
+    "description": "Cloak from the Constitution Citadel raid.",
+    "slot": "cape",
+    "color": "#1d3557",
+    "unlock_quest_id": "w12-raid-review"
+  },
+  "psalm_travel_band": {
+    "id": "psalm_travel_band",
+    "name": "Travel Psalm Band",
+    "description": "Band for trust on long roads — help from the Lord.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w13-bible-trust"
+  },
+  "remainder_abacus": {
+    "id": "remainder_abacus",
+    "name": "Remainder Abacus",
+    "description": "Abacus for division with leftovers explained.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w13-math-remainders"
+  },
+  "report_notebook": {
+    "id": "report_notebook",
+    "name": "Report Notebook",
+    "description": "Notebook for notes turned into report sentences.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w13-la-informational"
+  },
+  "food_chain_cards": {
+    "id": "food_chain_cards",
+    "name": "Food Chain Cards",
+    "description": "Cards showing simple provision links in habitats.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w13-science-foodchains"
+  },
+  "trail_lantern": {
+    "id": "trail_lantern",
+    "name": "Trail Lantern",
+    "description": "Lantern for westward journey studies.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w13-history-westward"
+  },
+  "westward_cloak": {
+    "id": "westward_cloak",
+    "name": "Westward Cloak",
+    "description": "Cloak from the Westward Lanterns raid.",
+    "slot": "cape",
+    "color": "#bc6c25",
+    "unlock_quest_id": "w13-raid-review"
+  },
+  "commission_bookmark": {
+    "id": "commission_bookmark",
+    "name": "Commission Bookmark",
+    "description": "Bookmark for Matthew 28 faithfulness.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w14-bible-faithfulness"
+  },
+  "fraction_folds": {
+    "id": "fraction_folds",
+    "name": "Fraction Folds",
+    "description": "Paper folds for halves, thirds, and fourths.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w14-math-fractions"
+  },
+  "fluency_metronome": {
+    "id": "fluency_metronome",
+    "name": "Fluency Metronome",
+    "description": "Quiet timer aid for smooth reading practice.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w14-la-fluency"
+  },
+  "classification_cards": {
+    "id": "classification_cards",
+    "name": "Classification Cards",
+    "description": "Cards for mammal, bird, fish, reptile, amphibian.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w14-science-classify"
+  },
+  "mission_map_pin": {
+    "id": "mission_map_pin",
+    "name": "Mission Map Pin",
+    "description": "Pin for Spanish Texas mission regions.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w14-history-spanish-texas"
+  },
+  "spain_texas_cloak": {
+    "id": "spain_texas_cloak",
+    "name": "Spain Texas Cloak",
+    "description": "Cloak from the Texas Under Spain raid.",
+    "slot": "cape",
+    "color": "#ae2012",
+    "unlock_quest_id": "w14-raid-review"
+  },
+  "purpose_seal": {
+    "id": "purpose_seal",
+    "name": "Purpose Seal",
+    "description": "Seal to commit work to the Lord.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w15-bible-purpose"
+  },
+  "number_line_ruler": {
+    "id": "number_line_ruler",
+    "name": "Number Line Ruler",
+    "description": "Ruler marked for fraction comparisons.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w15-math-fraction-line"
+  },
+  "opinion_scroll": {
+    "id": "opinion_scroll",
+    "name": "Opinion Scroll",
+    "description": "Scroll for short opinion paragraphs with reasons.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w15-la-opinion"
+  },
+  "anatomy_chart": {
+    "id": "anatomy_chart",
+    "name": "Anatomy Chart",
+    "description": "Respectful chart of bones, muscles, and senses.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w15-science-body"
+  },
+  "empresario_compass": {
+    "id": "empresario_compass",
+    "name": "Empresario Compass",
+    "description": "Compass for Mexican Texas settlement roads.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w15-history-mexican-texas"
+  },
+  "mexican_texas_cloak": {
+    "id": "mexican_texas_cloak",
+    "name": "Mexican Texas Cloak",
+    "description": "Cloak from the Mexican Texas Roads raid.",
+    "slot": "cape",
+    "color": "#006d77",
+    "unlock_quest_id": "w15-raid-review"
+  },
+  "sacrifice_medallion": {
+    "id": "sacrifice_medallion",
+    "name": "Sacrifice Medallion",
+    "description": "Medallion for sacrificial love (John 15:13).",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w16-bible-sacrifice"
+  },
+  "equivalent_tiles": {
+    "id": "equivalent_tiles",
+    "name": "Equivalent Tiles",
+    "description": "Tiles showing 1/2 = 2/4 and kin.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w16-math-equivalent"
+  },
+  "timeline_ink": {
+    "id": "timeline_ink",
+    "name": "Timeline Ink",
+    "description": "Ink for sequence words and ordered events.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w16-la-timeline"
+  },
+  "bird_field_card": {
+    "id": "bird_field_card",
+    "name": "Bird Field Card",
+    "description": "Field card for beak and feather notes.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w16-science-birds"
+  },
+  "alamo_star_pin": {
+    "id": "alamo_star_pin",
+    "name": "Alamo Star Pin",
+    "description": "Star pin remembering Alamo courage.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w16-history-alamo"
+  },
+  "alamo_cloak": {
+    "id": "alamo_cloak",
+    "name": "Alamo Cloak",
+    "description": "Cloak from the Remember the Alamo raid.",
+    "slot": "cape",
+    "color": "#6d597a",
+    "unlock_quest_id": "w16-raid-review"
+  },
+  "humility_band": {
+    "id": "humility_band",
+    "name": "Humility Band",
+    "description": "Band for humble thanks under the Lord.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w17-bible-humility"
+  },
+  "time_money_ledger": {
+    "id": "time_money_ledger",
+    "name": "Time-Money Ledger",
+    "description": "Ledger for elapsed time and money stories.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w17-math-mixed"
+  },
+  "poetry_copybook": {
+    "id": "poetry_copybook",
+    "name": "Poetry Copybook",
+    "description": "Copybook for poems and similes.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w17-la-poetry"
+  },
+  "life_cycle_wheel": {
+    "id": "life_cycle_wheel",
+    "name": "Life Cycle Wheel",
+    "description": "Wheel chart for insect metamorphosis.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w17-science-insects"
+  },
+  "san_jacinto_pin": {
+    "id": "san_jacinto_pin",
+    "name": "San Jacinto Pin",
+    "description": "Pin for San Jacinto and the Republic dawn.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w17-history-san-jacinto"
+  },
+  "sunrise_cloak": {
+    "id": "sunrise_cloak",
+    "name": "Sunrise Cloak",
+    "description": "Cloak from the San Jacinto Sunrise raid.",
+    "slot": "cape",
+    "color": "#e09f3e",
+    "unlock_quest_id": "w17-raid-review"
+  },
+  "justice_mercy_cup": {
+    "id": "justice_mercy_cup",
+    "name": "Justice Mercy Cup",
+    "description": "Feast cup for justice and mercy conversation.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w18-bible-justice"
+  },
+  "fluency_stone": {
+    "id": "fluency_stone",
+    "name": "Fluency Stone",
+    "description": "Foundation stone for Campaign II math fluency.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w18-math-cumulative"
+  },
+  "midyear_portfolio": {
+    "id": "midyear_portfolio",
+    "name": "Mid-Year Portfolio",
+    "description": "Folder for Campaign II writing samples.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w18-la-portfolio"
+  },
+  "steward_journal_badge": {
+    "id": "steward_journal_badge",
+    "name": "Steward Journal Badge",
+    "description": "Badge for science log and oral review.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w18-science-review"
+  },
+  "dual_timeline_ribbon": {
+    "id": "dual_timeline_ribbon",
+    "name": "Dual Timeline Ribbon",
+    "description": "Ribbon merging US freedom and Texas republic timelines.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w18-history-timelines"
+  },
+  "campaign_ii_badge": {
+    "id": "campaign_ii_badge",
+    "name": "Campaign II Badge",
+    "description": "The Scrolls of the Free campaign badge — fluency and freedom.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w18-raid-feast"
+  },
+  "scrolls_cloak": {
+    "id": "scrolls_cloak",
+    "name": "Scrolls Cloak",
+    "description": "A feast cloak awarded with the Campaign II badge.",
+    "slot": "cape",
+    "color": "#264653",
+    "unlock_quest_id": "w18-raid-feast"
+  },
+  "orderliness_band": {
+    "id": "orderliness_band",
+    "name": "Orderliness Band",
+    "description": "A simple band recalling Genesis lights and orderly habits.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w19-bible-orderliness"
+  },
+  "realm_yardstick": {
+    "id": "realm_yardstick",
+    "name": "Realm Yardstick",
+    "description": "A marked stick for inches, feet, and yards.",
+    "slot": "belt",
+    "color": "#8b6914",
+    "unlock_quest_id": "w19-math-length"
+  },
+  "research_notecards": {
+    "id": "research_notecards",
+    "name": "Research Notecards",
+    "description": "Blank cards for short research notes and sources.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w19-la-research"
+  },
+  "solar_order_chart": {
+    "id": "solar_order_chart",
+    "name": "Solar Order Chart",
+    "description": "A simple chart of sun, Earth, and moon as created lights.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w19-science-solar"
+  },
+  "houston_pin": {
+    "id": "houston_pin",
+    "name": "Houston Pin",
+    "description": "A pin recalling Republic leaders and service.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w19-history-republic"
+  },
+  "yardstick_cloak": {
+    "id": "yardstick_cloak",
+    "name": "Yardstick Cloak",
+    "description": "Cloak earned at the Yardstick of the Realm raid review.",
+    "slot": "cape",
+    "color": "#8b6914",
+    "unlock_quest_id": "w19-raid-review"
+  },
+  "excellence_seal": {
+    "id": "excellence_seal",
+    "name": "Excellence Seal",
+    "description": "A seal reminding apprentices to work heartily.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w20-bible-excellence"
+  },
+  "balance_scale": {
+    "id": "balance_scale",
+    "name": "Balance Scale",
+    "description": "A scale for ounces, pounds, and careful weighing.",
+    "slot": "belt",
+    "color": "#6c757d",
+    "unlock_quest_id": "w20-math-weight-capacity"
+  },
+  "essay_scaffold": {
+    "id": "essay_scaffold",
+    "name": "Essay Scaffold",
+    "description": "A three-box outline for intro, body, and conclusion.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w20-la-essay"
+  },
+  "moon_phase_wheel": {
+    "id": "moon_phase_wheel",
+    "name": "Moon Phase Wheel",
+    "description": "A wheel chart for tracking moon shapes over nights.",
+    "slot": "accessory",
+    "color": "#adb5bd",
+    "unlock_quest_id": "w20-science-moon"
+  },
+  "statehood_star": {
+    "id": "statehood_star",
+    "name": "Statehood Star",
+    "description": "A lone-star token for Texas joining the Union in 1845.",
+    "slot": "accessory",
+    "color": "#bf1e2e",
+    "unlock_quest_id": "w20-history-statehood"
+  },
+  "scales_cloak": {
+    "id": "scales_cloak",
+    "name": "Scales Cloak",
+    "description": "Cloak earned at the Scales & Measures raid review.",
+    "slot": "cape",
+    "color": "#6c757d",
+    "unlock_quest_id": "w20-raid-review"
+  },
+  "psalm8_band": {
+    "id": "psalm8_band",
+    "name": "Psalm 8 Band",
+    "description": "A band for humility under the night heavens.",
+    "slot": "accessory",
+    "color": "#6a4c93",
+    "unlock_quest_id": "w21-bible-humility-psalm8"
+  },
+  "geometry_set": {
+    "id": "geometry_set",
+    "name": "Geometry Set",
+    "description": "Shapes and a corner square for angles and perimeter.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w21-math-geometry"
+  },
+  "adverb_ribbon": {
+    "id": "adverb_ribbon",
+    "name": "Adverb Ribbon",
+    "description": "A ribbon for how/when/where words and dialogue practice.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w21-la-adverbs"
+  },
+  "planet_cards": {
+    "id": "planet_cards",
+    "name": "Planet Cards",
+    "description": "Simple cards naming planets and wonder facts.",
+    "slot": "accessory",
+    "color": "#1d3557",
+    "unlock_quest_id": "w21-science-planets"
+  },
+  "eagle_pin": {
+    "id": "eagle_pin",
+    "name": "Eagle Pin",
+    "description": "A pin for US symbols and respectful patriotism.",
+    "slot": "accessory",
+    "color": "#1d3557",
+    "unlock_quest_id": "w21-history-symbols"
+  },
+  "garden_cloak": {
+    "id": "garden_cloak",
+    "name": "Garden Cloak",
+    "description": "Cloak earned at the Geometry Gardens raid review.",
+    "slot": "cape",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w21-raid-review"
+  },
+  "cheer_lantern": {
+    "id": "cheer_lantern",
+    "name": "Cheer Lantern",
+    "description": "A small lantern for shining without grumbling.",
+    "slot": "accessory",
+    "color": "#f4a261",
+    "unlock_quest_id": "w22-bible-cheerfulness"
+  },
+  "area_grid": {
+    "id": "area_grid",
+    "name": "Area Grid",
+    "description": "A square-unit grid for area practice.",
+    "slot": "belt",
+    "color": "#e9c46a",
+    "unlock_quest_id": "w22-math-area"
+  },
+  "glossary_bookmark": {
+    "id": "glossary_bookmark",
+    "name": "Glossary Bookmark",
+    "description": "A bookmark for glossary, index, and map-key practice.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w22-la-maps-glossary"
+  },
+  "star_season_chart": {
+    "id": "star_season_chart",
+    "name": "Star Season Chart",
+    "description": "A chart of seasons and star patterns — no fortune-telling.",
+    "slot": "accessory",
+    "color": "#14213d",
+    "unlock_quest_id": "w22-science-stars"
+  },
+  "bluebonnet_pin": {
+    "id": "bluebonnet_pin",
+    "name": "Bluebonnet Pin",
+    "description": "A pin for Texas symbols and geography.",
+    "slot": "accessory",
+    "color": "#4c6ef5",
+    "unlock_quest_id": "w22-history-texas-geo"
+  },
+  "starmap_cloak": {
+    "id": "starmap_cloak",
+    "name": "Star Map Cloak",
+    "description": "Cloak earned at the Star Maps & State Maps raid review.",
+    "slot": "cape",
+    "color": "#14213d",
+    "unlock_quest_id": "w22-raid-review"
+  },
+  "micah_token": {
+    "id": "micah_token",
+    "name": "Micah Token",
+    "description": "A token for justice, kindness, and humility.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w23-bible-micah"
+  },
+  "multistep_slate": {
+    "id": "multistep_slate",
+    "name": "Multi-Step Slate",
+    "description": "A slate for planning multi-step word problems.",
+    "slot": "belt",
+    "color": "#bc6c25",
+    "unlock_quest_id": "w23-math-multistep"
+  },
+  "revise_checklist": {
+    "id": "revise_checklist",
+    "name": "Revise Checklist",
+    "description": "A checklist for conflict, resolution, revise, and edit.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w23-la-narrative"
+  },
+  "windsock_kit": {
+    "id": "windsock_kit",
+    "name": "Windsock Kit",
+    "description": "Simple kit ideas for windsock and rain gauge.",
+    "slot": "accessory",
+    "color": "#4ea8de",
+    "unlock_quest_id": "w23-science-weather-tools"
+  },
+  "union_ribbon": {
+    "id": "union_ribbon",
+    "name": "Union Ribbon",
+    "description": "A sober ribbon for union, hardship, and justice remembered carefully.",
+    "slot": "accessory",
+    "color": "#1d3557",
+    "unlock_quest_id": "w23-history-civil-war"
+  },
+  "mountain_cloak": {
+    "id": "mountain_cloak",
+    "name": "Mountain Cloak",
+    "description": "Cloak earned at the Multi-Step Mountain raid review.",
+    "slot": "cape",
+    "color": "#bc6c25",
+    "unlock_quest_id": "w23-raid-review"
+  },
+  "order_band": {
+    "id": "order_band",
+    "name": "Order Band",
+    "description": "A band for doing things decently and in order.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w24-bible-order"
+  },
+  "fraction_forge_tiles": {
+    "id": "fraction_forge_tiles",
+    "name": "Fraction Forge Tiles",
+    "description": "Tiles for parts of a set and like-denominator sums.",
+    "slot": "belt",
+    "color": "#e76f51",
+    "unlock_quest_id": "w24-math-fractions"
+  },
+  "dictation_slate": {
+    "id": "dictation_slate",
+    "name": "Dictation Slate",
+    "description": "A slate for spelling dictation and vocabulary checks.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w24-la-spelling"
+  },
+  "plant_part_cards": {
+    "id": "plant_part_cards",
+    "name": "Plant Part Cards",
+    "description": "Cards for roots, stems, leaves, and flowers.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w24-science-plants"
+  },
+  "inventor_compass": {
+    "id": "inventor_compass",
+    "name": "Inventor Compass",
+    "description": "A compass token for curiosity, rebuilding, and useful work.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w24-history-rebuilders"
+  },
+  "forge_cloak": {
+    "id": "forge_cloak",
+    "name": "Forge Cloak",
+    "description": "Cloak earned at the Fraction Forge raid review.",
+    "slot": "cape",
+    "color": "#e76f51",
+    "unlock_quest_id": "w24-raid-review"
+  },
+  "honor_medallion": {
+    "id": "honor_medallion",
+    "name": "Honor Medallion",
+    "description": "A medallion for honoring people and fearing God.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w25-bible-honor"
+  },
+  "graph_tablet": {
+    "id": "graph_tablet",
+    "name": "Graph Tablet",
+    "description": "A tablet for bar graphs and pictographs.",
+    "slot": "belt",
+    "color": "#264653",
+    "unlock_quest_id": "w25-math-graphs"
+  },
+  "opinion_scroll_case": {
+    "id": "opinion_scroll_case",
+    "name": "Opinion Scroll Case",
+    "description": "A case for opinion drafts and oral-share notes.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w25-la-opinion-oral"
+  },
+  "steward_seed_pouch": {
+    "id": "steward_seed_pouch",
+    "name": "Steward Seed Pouch",
+    "description": "A pouch for planting and creation-care habits.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w25-science-stewardship"
+  },
+  "citizen_pin": {
+    "id": "citizen_pin",
+    "name": "Citizen Pin",
+    "description": "A pin for community helpers and citizenship learning.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w25-history-citizenship"
+  },
+  "citizen_cloak": {
+    "id": "citizen_cloak",
+    "name": "Citizen Cloak",
+    "description": "Cloak earned at the Citizen Scribes raid review.",
+    "slot": "cape",
+    "color": "#264653",
+    "unlock_quest_id": "w25-raid-review"
+  },
+  "perseverance_band": {
+    "id": "perseverance_band",
+    "name": "Perseverance Band",
+    "description": "A band for running the race with endurance.",
+    "slot": "accessory",
+    "color": "#7f5539",
+    "unlock_quest_id": "w26-bible-perseverance"
+  },
+  "trail_abacus": {
+    "id": "trail_abacus",
+    "name": "Trail Abacus",
+    "description": "An abacus for mixed measurement and geometry review.",
+    "slot": "belt",
+    "color": "#7f5539",
+    "unlock_quest_id": "w26-math-mixed"
+  },
+  "book_project_folio": {
+    "id": "book_project_folio",
+    "name": "Book Project Folio",
+    "description": "A folio for chapter-book projects and virtue ties.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w26-la-book-project"
+  },
+  "habitat_map_texas": {
+    "id": "habitat_map_texas",
+    "name": "Texas Habitat Map",
+    "description": "A simple map of major Texas habitat regions.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w26-science-texas-habitats"
+  },
+  "character_ribbon": {
+    "id": "character_ribbon",
+    "name": "Character Ribbon",
+    "description": "A ribbon for biographies of good character.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w26-history-famous"
+  },
+  "trail_cloak": {
+    "id": "trail_cloak",
+    "name": "Trail Cloak",
+    "description": "Cloak earned at the Trail of Stories raid review.",
+    "slot": "cape",
+    "color": "#7f5539",
+    "unlock_quest_id": "w26-raid-review"
+  },
+  "stewardship_cup": {
+    "id": "stewardship_cup",
+    "name": "Stewardship Cup",
+    "description": "A feast cup for Campaign III stewardship memory.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w27-bible-stewardship"
+  },
+  "builders_stone": {
+    "id": "builders_stone",
+    "name": "Builders Stone",
+    "description": "A stone for Campaign III math fluency.",
+    "slot": "accessory",
+    "color": "#d4a017",
+    "unlock_quest_id": "w27-math-cumulative"
+  },
+  "campaign_iii_portfolio": {
+    "id": "campaign_iii_portfolio",
+    "name": "Campaign III Portfolio",
+    "description": "A portfolio folder for the three-paragraph feast piece.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w27-la-portfolio"
+  },
+  "space_steward_poster": {
+    "id": "space_steward_poster",
+    "name": "Space Steward Poster Kit",
+    "description": "Kit token for space-order and stewardship posters.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w27-science-poster"
+  },
+  "republic_timeline_ribbon": {
+    "id": "republic_timeline_ribbon",
+    "name": "Republic Timeline Ribbon",
+    "description": "A ribbon for Republic→statehood→growth review.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w27-history-review"
+  },
+  "campaign_iii_badge": {
+    "id": "campaign_iii_badge",
+    "name": "Campaign III Badge",
+    "description": "The Builders of the Republic campaign badge — measurement, geometry, and stewardship.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w27-raid-feast"
+  },
+  "builders_cloak": {
+    "id": "builders_cloak",
+    "name": "Builders Cloak",
+    "description": "A feast cloak awarded with the Campaign III badge.",
+    "slot": "cape",
+    "color": "#8b6914",
+    "unlock_quest_id": "w27-raid-feast"
+  },
+  "self_control_band": {
+    "id": "self_control_band",
+    "name": "Self-Control Band",
+    "description": "A plain band for Galatians fruit and careful habits.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w28-bible-fruit-start"
+  },
+  "fluency_millstone": {
+    "id": "fluency_millstone",
+    "name": "Fluency Millstone",
+    "description": "A small millstone token for ×0–12 clinic mastery.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w28-math-fluency"
+  },
+  "grammar_quill": {
+    "id": "grammar_quill",
+    "name": "Grammar Quill",
+    "description": "A quill for sentence and punctuation bootcamp.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w28-la-grammar"
+  },
+  "project_choice_token": {
+    "id": "project_choice_token",
+    "name": "Project Choice Token",
+    "description": "A token marking your chosen nature project topic.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w28-science-project-choice"
+  },
+  "us_scene_scroll": {
+    "id": "us_scene_scroll",
+    "name": "US Scene Scroll",
+    "description": "A scroll for five captioned US history scenes.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w28-history-us-retell"
+  },
+  "mills_cloak": {
+    "id": "mills_cloak",
+    "name": "Mills Cloak",
+    "description": "Cloak earned at the Mastery Mills review.",
+    "slot": "cape",
+    "color": "#d4a017",
+    "unlock_quest_id": "w28-raid-review"
+  },
+  "patience_pin": {
+    "id": "patience_pin",
+    "name": "Patience Pin",
+    "description": "A pin for patient problem-solving and fruit memory.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w29-bible-patience"
+  },
+  "solver_abacus": {
+    "id": "solver_abacus",
+    "name": "Solver Abacus",
+    "description": "An abacus for multi-step story problem practice.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w29-math-multistep"
+  },
+  "process_folio": {
+    "id": "process_folio",
+    "name": "Process Folio",
+    "description": "A folio marking plan-draft-revise-edit-publish.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w29-la-process"
+  },
+  "experiment_plan_scroll": {
+    "id": "experiment_plan_scroll",
+    "name": "Experiment Plan Scroll",
+    "description": "A scroll for research notes and experiment steps.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w29-science-plan"
+  },
+  "texas_scene_scroll": {
+    "id": "texas_scene_scroll",
+    "name": "Texas Scene Scroll",
+    "description": "A scroll for five captioned Texas history scenes.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w29-history-tx-retell"
+  },
+  "solvers_cloak": {
+    "id": "solvers_cloak",
+    "name": "Solvers Cloak",
+    "description": "Cloak earned at the Problem-Solvers Path review.",
+    "slot": "cape",
+    "color": "#b08968",
+    "unlock_quest_id": "w29-raid-review"
+  },
+  "joy_ribbon": {
+    "id": "joy_ribbon",
+    "name": "Joy Ribbon",
+    "description": "A ribbon for rejoicing and giving thanks.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w30-bible-joy"
+  },
+  "station_ruler": {
+    "id": "station_ruler",
+    "name": "Station Ruler",
+    "description": "A ruler for fraction and measurement review stations.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w30-math-frac-measure"
+  },
+  "published_booklet": {
+    "id": "published_booklet",
+    "name": "Published Booklet",
+    "description": "A finished booklet token for the hall publishers.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w30-la-publish"
+  },
+  "results_journal": {
+    "id": "results_journal",
+    "name": "Results Journal",
+    "description": "A journal for experiment observations and data.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w30-science-experiment"
+  },
+  "dual_timeline_card": {
+    "id": "dual_timeline_card",
+    "name": "Dual Timeline Card",
+    "description": "A card comparing US and Texas timelines.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w30-history-timelines"
+  },
+  "publishers_cloak": {
+    "id": "publishers_cloak",
+    "name": "Publishers Cloak",
+    "description": "Cloak earned at the Publishers of the Hall review.",
+    "slot": "cape",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w30-raid-review"
+  },
+  "thanks_seal": {
+    "id": "thanks_seal",
+    "name": "Thanks Seal",
+    "description": "A seal for Psalm 100 and thankful habits.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w31-bible-thanks"
+  },
+  "jubilee_compass": {
+    "id": "jubilee_compass",
+    "name": "Jubilee Compass",
+    "description": "A compass for shape and measure jubilee games.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w31-math-geometry"
+  },
+  "poetry_cafe_card": {
+    "id": "poetry_cafe_card",
+    "name": "Poetry Cafe Card",
+    "description": "A card for writing and sharing short poems.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w31-la-poetry"
+  },
+  "display_board_kit": {
+    "id": "display_board_kit",
+    "name": "Display Board Kit",
+    "description": "Kit token for finishing a science project display.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w31-science-display"
+  },
+  "map_mastery_pin": {
+    "id": "map_mastery_pin",
+    "name": "Map Mastery Pin",
+    "description": "A pin for US regions and Texas map practice.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w31-history-maps"
+  },
+  "jubilee_cloak": {
+    "id": "jubilee_cloak",
+    "name": "Jubilee Cloak",
+    "description": "Cloak earned at the Geometry Jubilee review.",
+    "slot": "cape",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w31-raid-review"
+  },
+  "goodness_lamp": {
+    "id": "goodness_lamp",
+    "name": "Goodness Lamp",
+    "description": "A small lamp for Matthew 5:16 and good works.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w32-bible-goodness"
+  },
+  "data_graph_slate": {
+    "id": "data_graph_slate",
+    "name": "Data Graph Slate",
+    "description": "A slate for graphing science project data.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w32-math-graphs"
+  },
+  "thankyou_set": {
+    "id": "thankyou_set",
+    "name": "Thank-You Set",
+    "description": "Cards for presentation practice and thank-you notes.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w32-la-present"
+  },
+  "science_fair_ribbon": {
+    "id": "science_fair_ribbon",
+    "name": "Science Fair Ribbon",
+    "description": "A ribbon for presenting a creation-honoring project.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w32-science-present"
+  },
+  "museum_night_badge": {
+    "id": "museum_night_badge",
+    "name": "Museum Night Badge",
+    "description": "A badge for teaching three history facts aloud.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w32-history-museum"
+  },
+  "fair_cloak": {
+    "id": "fair_cloak",
+    "name": "Fair Cloak",
+    "description": "Cloak earned at the Steward Science Fair review.",
+    "slot": "cape",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w32-raid-review"
+  },
+  "kindness_crownlet": {
+    "id": "kindness_crownlet",
+    "name": "Kindness Crownlet",
+    "description": "A small crownlet for Romans 12:10 and honor.",
+    "slot": "head",
+    "color": "#c9b037",
+    "unlock_quest_id": "w33-bible-kindness"
+  },
+  "change_purse": {
+    "id": "change_purse",
+    "name": "Change Purse",
+    "description": "A purse token for money and elapsed-time mastery.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w33-math-money-time"
+  },
+  "passage_bookmark": {
+    "id": "passage_bookmark",
+    "name": "Passage Bookmark",
+    "description": "A bookmark for long-passage comprehension celebration.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w33-la-passage"
+  },
+  "scavenger_satchel": {
+    "id": "scavenger_satchel",
+    "name": "Scavenger Satchel",
+    "description": "A satchel for nature-journal scavenger hunts.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w33-science-scavenger"
+  },
+  "citizenship_crown": {
+    "id": "citizenship_crown",
+    "name": "Citizenship Crown",
+    "description": "A crown token for rights, duties, flag, and pledge.",
+    "slot": "head",
+    "color": "#9b2226",
+    "unlock_quest_id": "w33-history-citizenship"
+  },
+  "citizenship_cloak": {
+    "id": "citizenship_cloak",
+    "name": "Citizenship Cloak",
+    "description": "Cloak earned at the Citizenship Crown review.",
+    "slot": "cape",
+    "color": "#9b2226",
+    "unlock_quest_id": "w33-raid-review"
+  },
+  "perseverance_path_band": {
+    "id": "perseverance_path_band",
+    "name": "Perseverance Path Band",
+    "description": "A band for memory review and clinic perseverance.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w34-bible-perseverance"
+  },
+  "clinic_chalk": {
+    "id": "clinic_chalk",
+    "name": "Clinic Chalk",
+    "description": "Chalk for personalized math weak-skill clinics.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w34-math-clinic"
+  },
+  "language_clinic_slate": {
+    "id": "language_clinic_slate",
+    "name": "Language Clinic Slate",
+    "description": "A slate for grammar, spelling, and fluency clinics.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w34-la-clinic"
+  },
+  "catchup_walk_token": {
+    "id": "catchup_walk_token",
+    "name": "Catch-Up Walk Token",
+    "description": "A token for catch-up labs and nature walks.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w34-science-catchup"
+  },
+  "symbols_quiz_card": {
+    "id": "symbols_quiz_card",
+    "name": "Symbols Quiz Card",
+    "description": "A card for Texas symbols and timeline gap review.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w34-history-catchup"
+  },
+  "remediation_cloak": {
+    "id": "remediation_cloak",
+    "name": "Remediation Cloak",
+    "description": "Cloak earned at the Remediation Roads review.",
+    "slot": "cape",
+    "color": "#7f5539",
+    "unlock_quest_id": "w34-raid-review"
+  },
+  "faithfulness_seal": {
+    "id": "faithfulness_seal",
+    "name": "Faithfulness Seal",
+    "description": "A seal for full fruit recite and year faithfulness.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w35-bible-fruit-full"
+  },
+  "year_math_seal": {
+    "id": "year_math_seal",
+    "name": "Year Math Seal",
+    "description": "A seal for the year math assessment.",
+    "slot": "accessory",
+    "color": "#d4a017",
+    "unlock_quest_id": "w35-math-year"
+  },
+  "year_la_seal": {
+    "id": "year_la_seal",
+    "name": "Year LA Seal",
+    "description": "A seal for the year language arts assessment.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w35-la-year"
+  },
+  "science_conference_pin": {
+    "id": "science_conference_pin",
+    "name": "Science Conference Pin",
+    "description": "A pin for the year oral science conference.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w35-science-conference"
+  },
+  "history_conference_pin": {
+    "id": "history_conference_pin",
+    "name": "History Conference Pin",
+    "description": "A pin for the year US/Texas history conference.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w35-history-conference"
+  },
+  "supreme_cloak": {
+    "id": "supreme_cloak",
+    "name": "Supreme Cloak",
+    "description": "Cloak earned at Raid Review Supreme.",
+    "slot": "cape",
+    "color": "#c9a227",
+    "unlock_quest_id": "w35-raid-supreme"
+  },
+  "love_lumen_pendant": {
+    "id": "love_lumen_pendant",
+    "name": "Love Lumen Pendant",
+    "description": "A pendant for festival thanksgiving and love.",
+    "slot": "accessory",
+    "color": "#c9b037",
+    "unlock_quest_id": "w36-bible-love"
+  },
+  "feast_game_die": {
+    "id": "feast_game_die",
+    "name": "Feast Game Die",
+    "description": "A game die for the math celebration feast.",
+    "slot": "belt",
+    "color": "#d4a017",
+    "unlock_quest_id": "w36-math-feast"
+  },
+  "author_party_badge": {
+    "id": "author_party_badge",
+    "name": "Author Party Badge",
+    "description": "A badge for sharing favorite writing at festival.",
+    "slot": "accessory",
+    "color": "#3a6ea5",
+    "unlock_quest_id": "w36-la-author"
+  },
+  "praise_hike_token": {
+    "id": "praise_hike_token",
+    "name": "Praise Hike Token",
+    "description": "A token for the creation praise hike or picnic.",
+    "slot": "accessory",
+    "color": "#2d6a4f",
+    "unlock_quest_id": "w36-science-hike"
+  },
+  "history_gamenight_cup": {
+    "id": "history_gamenight_cup",
+    "name": "History Game Night Cup",
+    "description": "A cup for family Texas/US history game night.",
+    "slot": "accessory",
+    "color": "#9b2226",
+    "unlock_quest_id": "w36-history-gamenight"
+  },
+  "campaign_iv_badge": {
+    "id": "campaign_iv_badge",
+    "name": "Campaign IV Badge",
+    "description": "The Light for the Realm campaign badge — mastery, projects, and celebration.",
+    "slot": "accessory",
+    "color": "#c9a227",
+    "unlock_quest_id": "w36-raid-feast"
+  },
+  "year_champion_cloak": {
+    "id": "year_champion_cloak",
+    "name": "Year Champion Cloak",
+    "description": "A feast cloak for completing the 36-week year arc.",
+    "slot": "cape",
+    "color": "#c9b037",
+    "unlock_quest_id": "w36-raid-feast"
+  },
+  "year_champion_certificate": {
+    "id": "year_champion_certificate",
+    "name": "Year Champion Certificate",
+    "description": "A certificate token for year completion — archive with the portfolio.",
+    "slot": "accessory",
+    "color": "#f0e6d2",
+    "unlock_quest_id": "w36-raid-feast"
+  }
+}

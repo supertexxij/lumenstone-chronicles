@@ -1,0 +1,139 @@
+{
+  "defs": {
+    "shadow_moth": {
+      "kind": "shadow_moth",
+      "name": "Shadow Moth",
+      "defeat_verb": "banished",
+      "color": "#4a4e69",
+      "accent": "#9a8c98",
+      "max_hp": 12,
+      "damage": 2,
+      "accuracy": 0.7,
+      "combat_xp": 8,
+      "respawn_sec": 12.0,
+      "description": "A fluttering moth of dim shadow \u2014 send it fluttering away!"
+    },
+    "briar_boar": {
+      "kind": "briar_boar",
+      "name": "Briar Boar",
+      "defeat_verb": "calmed",
+      "color": "#6b4226",
+      "accent": "#2d6a4f",
+      "max_hp": 20,
+      "damage": 3,
+      "accuracy": 0.65,
+      "combat_xp": 14,
+      "respawn_sec": 18.0,
+      "description": "A bristly boar tangled in briars \u2014 settle it down!"
+    },
+    "dust_golem": {
+      "kind": "dust_golem",
+      "name": "Dust Golem",
+      "defeat_verb": "restored",
+      "color": "#a89880",
+      "accent": "#c9a227",
+      "max_hp": 28,
+      "damage": 4,
+      "accuracy": 0.6,
+      "combat_xp": 20,
+      "respawn_sec": 22.0,
+      "description": "A pile of dust given form \u2014 sweep the dust back into the ground!"
+    },
+    "dim_wisp": {
+      "kind": "dim_wisp",
+      "name": "Lost Lantern Wisp",
+      "defeat_verb": "rekindled",
+      "color": "#7b8fa1",
+      "accent": "#f4a261",
+      "max_hp": 10,
+      "damage": 1,
+      "accuracy": 0.75,
+      "combat_xp": 6,
+      "respawn_sec": 10.0,
+      "description": "A lantern wisp gone dim \u2014 brighten it again!"
+    }
+  },
+  "spawns": [
+    {
+      "id": "e1",
+      "kind": "dim_wisp",
+      "x": -34,
+      "z": -34
+    },
+    {
+      "id": "e2",
+      "kind": "dim_wisp",
+      "x": 34,
+      "z": -34
+    },
+    {
+      "id": "e3",
+      "kind": "shadow_moth",
+      "x": -36,
+      "z": 20
+    },
+    {
+      "id": "e4",
+      "kind": "shadow_moth",
+      "x": 36,
+      "z": 18
+    },
+    {
+      "id": "e5",
+      "kind": "briar_boar",
+      "x": -28,
+      "z": 36
+    },
+    {
+      "id": "e6",
+      "kind": "briar_boar",
+      "x": 28,
+      "z": 36
+    },
+    {
+      "id": "e7",
+      "kind": "dust_golem",
+      "x": -38,
+      "z": -8
+    },
+    {
+      "id": "e8",
+      "kind": "dust_golem",
+      "x": 38,
+      "z": -6
+    },
+    {
+      "id": "e9",
+      "kind": "shadow_moth",
+      "x": -16,
+      "z": -38
+    },
+    {
+      "id": "e10",
+      "kind": "dim_wisp",
+      "x": 16,
+      "z": -38
+    },
+    {
+      "id": "e11",
+      "kind": "briar_boar",
+      "x": -36,
+      "z": 6
+    },
+    {
+      "id": "e12",
+      "kind": "dust_golem",
+      "x": 36,
+      "z": 6
+    }
+  ],
+  "base_combat": {
+    "damage": 2,
+    "accuracy": 0.7,
+    "max_hp": 40,
+    "tick_sec": 0.7,
+    "engage_range": 4.5,
+    "escape_range": 8.0,
+    "attack_range": 3.2
+  }
+}
