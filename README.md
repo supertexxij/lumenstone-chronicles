@@ -248,6 +248,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Bag ItemList uses fixed 16×16 icons for clearer armor glyphs
 - Re-export Linux + Windows
 
+### Wave 19 overnight (v1.19.0-overnight)
+- Added the **Moss Badger** foe with a chunky low-poly mesh, gentle defeat language, and five wilds spawns.
+- Raised the soft-defense ceiling to **7** so late cloaks and crowns can contribute together while every hit still ticks for at least 1.
+- Added denser ambient life around guild-hall doorsteps, indoor halls, and the wilds spurs.
+- Inventory polish: equipped loadout rows keep clear armor icons, and Unequip only acts on the selected worn item.
+- Re-export Linux + Windows.
+
 ### Wave 17 overnight (v1.17.0-overnight)
 - Mid/late **cloaks & hats** gain plain Soft defense (+1 early/mid, +2 late, +3 Year Champion); crowns +2
 - Clearer inventory **armor-slot icons** (head helm / cape drape / food / gear) + "Head armor" / "Cape armor" labels

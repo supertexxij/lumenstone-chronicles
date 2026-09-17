@@ -51,6 +51,19 @@
       "combat_xp": 6,
       "respawn_sec": 10.0,
       "description": "A lantern wisp gone dim \u2014 brighten it again!"
+    },
+    "moss_badger": {
+      "kind": "moss_badger",
+      "name": "Moss Badger",
+      "defeat_verb": "settled",
+      "color": "#4a6741",
+      "accent": "#c4b896",
+      "max_hp": 42,
+      "damage": 7,
+      "accuracy": 0.62,
+      "combat_xp": 30,
+      "respawn_sec": 26.0,
+      "description": "A sturdy badger dusted in soft moss \u2014 settle it gently!"
     }
   },
   "spawns": [
@@ -167,6 +180,36 @@
       "kind": "briar_boar",
       "x": -30,
       "z": -56
+    },
+    {
+      "id": "e20",
+      "kind": "moss_badger",
+      "x": -32,
+      "z": -58
+    },
+    {
+      "id": "e21",
+      "kind": "moss_badger",
+      "x": 8,
+      "z": -58
+    },
+    {
+      "id": "e22",
+      "kind": "moss_badger",
+      "x": -42,
+      "z": 36
+    },
+    {
+      "id": "e23",
+      "kind": "moss_badger",
+      "x": 44,
+      "z": 38
+    },
+    {
+      "id": "e24",
+      "kind": "moss_badger",
+      "x": -18,
+      "z": -62
     }
   ],
   "base_combat": {

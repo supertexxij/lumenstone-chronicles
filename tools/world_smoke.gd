@@ -42,7 +42,12 @@ func _finish():
 	var world = _world
 	print("PLAYER", world != null and world.get("player") != null)
 	print("NPCS", root.get_tree().get_nodes_in_group("npcs").size())
+	var badgers := 0
+	for foe in root.get_tree().get_nodes_in_group("enemies"):
+		if str(foe.get("kind")) == "moss_badger":
+			badgers += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
+	print("BADGERS", badgers)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)

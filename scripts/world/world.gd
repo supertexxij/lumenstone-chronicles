@@ -1610,12 +1610,29 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(2.5, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		# Wilds landmarks
-		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly"},
-		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow"},
-		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly"},
-		{"pos": Vector3(40.0, 0, 34.0), "birds": true, "bugs": false, "critter": "sparrow"},
-		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly"},
+		# Guild hall doorsteps — closer to plaza density (Wave 19)
+		{"pos": Vector3(22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(0.0, 0, -18.8), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(0.0, 0, 27.2), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(0.0, 0, -2.6), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		# Indoor hall dust-motes / soft moths (Interiors at x≈120+)
+		{"pos": Vector3(120.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(148.0, 0, 0.0), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(176.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(204.0, 0, 0.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(232.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		# Wilds spurs — denser ambient (Wave 19, plaza parity)
+		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(3.5, 0, -45.0), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-27.0, 0, -51.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(33.0, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(40.0, 0, 34.0), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(37.0, 0, 31.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(-33.0, 0, 33.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 	]
 	for i in sites.size():
 		var s: Dictionary = sites[i]

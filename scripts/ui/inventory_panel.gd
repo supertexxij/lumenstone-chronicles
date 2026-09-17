@@ -184,11 +184,13 @@ func _update_loadout() -> void:
 		soft_parts.append("From worn gear: +%d" % int(bd.get("gear", 0)))
 		var total_d: int = int(bd.get("total", 0))
 		var raw_d: int = int(bd.get("raw", total_d))
-		var cap_d: int = int(bd.get("cap", 5))
+		var cap_d: int = int(bd.get("cap", 7))
 		if raw_d > total_d:
-			soft_parts.append("Total defense: %d (soft max %d — hits still tick)" % [total_d, cap_d])
+			soft_parts.append("Total defense: %d of soft max %d (extra gear counted; hits still tick)" % [total_d, cap_d])
+		elif total_d >= cap_d:
+			soft_parts.append("Total defense: %d — at soft max %d (late cloaks & crowns can fill this; hits still tick)" % [total_d, cap_d])
 		else:
-			soft_parts.append("Total defense: %d (soft hits hurt less)" % total_d)
+			soft_parts.append("Total defense: %d / soft max %d — mid & late cloaks raise this; hits still tick" % [total_d, cap_d])
 	elif GameState.has_method("get_defense"):
 		soft_parts.append("Defense: %d" % GameState.get_defense())
 	if loadout_soft:
@@ -207,7 +209,7 @@ func _refresh_detail_only() -> void:
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
 	var def_n: int = int(item.get("defense", 0))
 	if def_n > 0:
-		extra += "\nArmor: Defense +%d (soft — foes poke you for less)" % def_n
+		extra += "\nArmor: Defense +%d (soft — foes poke you for less; soft max applies)" % def_n
 	elif slot in ["head", "cape"]:
 		extra += "\nArmor slot: no defense bonus (Travel Cape / plain hats are soft)"
 	if slot == "consumable":
@@ -234,7 +236,8 @@ func _on_select(idx: int) -> void:
 		equip_btn.disabled = slot == "" or slot == "consumable"
 	if unequip_btn:
 		var slot2: String = str(ItemDB.get_item(selected_id).get("slot", ""))
-		unequip_btn.disabled = slot2 == "" or slot2 == "consumable"
+		var worn: bool = slot2 != "" and slot2 != "consumable" and str(GameState.equipped.get(slot2, "")) == selected_id
+		unequip_btn.disabled = not worn
 
 func _on_equip() -> void:
 	if selected_id != "":

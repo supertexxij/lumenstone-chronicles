@@ -79,6 +79,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_moth(bob)
 		"dust_golem":
 			_build_golem(bob)
+		"moss_badger":
+			_build_badger(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -160,3 +162,32 @@ static func _build_golem(bob: Node3D) -> void:
 	bob.add_child(rl)
 	_mi(_box(Vector3(0.24, 0.5, 0.24)), Vector3(0, -0.15, 0), rl, "RThigh")
 	_mi(_box(Vector3(0.26, 0.12, 0.32)), Vector3(0, -0.45, 0.04), rl, "RFoot")
+
+
+static func _build_badger(bob: Node3D) -> void:
+	## Chunky mossy badger — low body, stripe, soft snout (no tusks).
+	var body := _mi(_capsule(0.32, 0.85), Vector3(0, 0.48, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.26), Vector3(0, 0.52, 0.48), bob, "Head")
+	_mi(_sphere(0.1), Vector3(0, 0.48, 0.7), bob, "Snout")
+	# Vertical face stripe (accent colorized), kept on the front of the snout.
+	_mi(_box(Vector3(0.12, 0.32, 0.06)), Vector3(0, 0.62, 0.69), bob, "Stripe")
+	# Short rounded ears
+	_mi(_sphere(0.08), Vector3(-0.14, 0.72, 0.4), bob, "EarL")
+	_mi(_sphere(0.08), Vector3(0.14, 0.72, 0.4), bob, "EarR")
+	# Four sturdy legs
+	for info in [
+		["FL", Vector3(-0.2, 0.26, 0.26)],
+		["FR", Vector3(0.2, 0.26, 0.26)],
+		["BL", Vector3(-0.2, 0.26, -0.26)],
+		["BR", Vector3(0.2, 0.26, -0.26)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.08, 0.28), Vector3(0, -0.04, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.13, 0.07, 0.16)), Vector3(0, -0.24, 0.02), leg, "Paw")
+	# Moss tufts on back
+	_mi(_sphere(0.12), Vector3(0.05, 0.72, -0.05), bob, "Moss1")
+	_mi(_sphere(0.1), Vector3(-0.08, 0.7, -0.15), bob, "Moss2")

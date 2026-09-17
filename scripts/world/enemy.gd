@@ -59,6 +59,9 @@ func _ready() -> void:
 		"briar_boar":
 			if label: label.position.y = 1.6
 			hp_bar.position.y = 1.35
+		"moss_badger":
+			if label: label.position.y = 1.55
+			hp_bar.position.y = 1.3
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
@@ -249,6 +252,9 @@ func _idle_anim(delta: float) -> void:
 		"briar_boar":
 			creature_bob.position.y = abs(sin(t * 0.5)) * 0.02
 			creature_bob.rotation.y = sin(t * 0.3) * 0.08
+		"moss_badger":
+			creature_bob.position.y = abs(sin(t * 0.55)) * 0.025
+			creature_bob.rotation.y = sin(t * 0.35) * 0.1
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
