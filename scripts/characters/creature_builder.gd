@@ -119,6 +119,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_quail(bob)
 		"juniper_jay":
 			_build_jay(bob)
+		"sycamore_skink":
+			_build_skink(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -861,4 +863,34 @@ static func _build_jay(bob: Node3D) -> void:
 		_mi(_cyl(0.01, 0.012, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.035, 0.01, 0.045)), Vector3(0, -0.07, 0.01), leg, "Foot")
 
+static func _build_skink(bob: Node3D) -> void:
+	## Soft sycamore-wilds skink — sleek long body, short legs, tapering tail, tiny head (distinct from birds/mammals).
+	# Elongated low body
+	var body := _mi(_capsule(0.12, 0.55), Vector3(0, 0.28, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	# Soft belly stripe (accent-friendly)
+	_mi(_sphere(0.07, 0.09), Vector3(0, 0.22, 0.02), bob, "Belly")
+	# Small pointed head
+	_mi(_sphere(0.09), Vector3(0, 0.30, 0.38), bob, "Head")
+	# Tiny eye beads
+	_mi(_sphere(0.018), Vector3(-0.04, 0.34, 0.44), bob, "EyeL")
+	_mi(_sphere(0.018), Vector3(0.04, 0.34, 0.44), bob, "EyeR")
+	# Soft snout tip
+	_mi(_box(Vector3(0.04, 0.03, 0.05)), Vector3(0, 0.28, 0.48), bob, "Snout")
+	# Short scurrying legs
+	for info in [
+		["FL", Vector3(-0.08, 0.14, 0.18)],
+		["FR", Vector3(0.08, 0.14, 0.18)],
+		["BL", Vector3(-0.08, 0.14, -0.16)],
+		["BR", Vector3(0.08, 0.14, -0.16)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.015, 0.018, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
+	# Long tapering tail (signature)
+	var tail := _mi(_cyl(0.06, 0.015, 0.42), Vector3(0, 0.26, -0.42), bob, "Tail")
+	tail.rotation_degrees = Vector3(78, 0, 0)
 

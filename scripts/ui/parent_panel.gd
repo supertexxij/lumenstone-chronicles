@@ -110,8 +110,10 @@ func _refresh() -> void:
 	var help_n: int = help_preview.size()
 	var last_sess: String = _format_last_session()
 	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
-	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
-		help_n, GameState.child_name, GameState.active_slot + 1, last_sess,
+	# Wave 49: highlight needs-help count when >0 (warm amber; PIN stays 1234; mastery ≥80%)
+	var help_bit: String = ("Needs help: [color=#e8a030][b]%d[/b][/color]" % help_n) if help_n > 0 else ("Needs help: [b]%d[/b]" % help_n)
+	var lines: String = "[b]Parent Dashboard[/b] · %s\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+		help_bit, GameState.child_name, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
 		uw, camp, week_bar, next_gate,
@@ -128,8 +130,11 @@ func _refresh() -> void:
 	if help_title:
 		if help.is_empty():
 			help_title.text = "Needs Help — all clear right now ★"
+			help_title.remove_theme_color_override("font_color")
 		else:
 			help_title.text = "Needs Help — %d item%s (WEEK · GUILD first)" % [help.size(), "" if help.size() == 1 else "s"]
+			# Wave 49: warm amber highlight when needs-help count > 0
+			help_title.add_theme_color_override("font_color", Color(0.92, 0.64, 0.18))
 	if help.is_empty():
 		# Wave 35: warmer empty-state encouragement (PIN stays 1234; mastery ≥80%)
 		help_list.add_item("All clear — wonderful work together! Check back after the next lesson.")
@@ -215,6 +220,9 @@ func _refresh_campaign_tabs(uw: int) -> void:
 				_campaign_tabs.set_tab_title(i, "★ %s" % titled)
 			else:
 				_campaign_tabs.set_tab_title(i, titled)
+			# Wave 49: campaign tab tooltip with week range
+			if _campaign_tabs.has_method("set_tab_tooltip"):
+				_campaign_tabs.set_tab_tooltip(i, "Weeks %d–%d · %d/%d mastered" % [lo_i, hi_i, c_done, c_total])
 	# Restore persisted expand state; default current week open on first visit
 	if _expanded_weeks.is_empty() and not GameState.parent_expanded_weeks.is_empty():
 		_expanded_weeks = GameState.parent_expanded_weeks.duplicate()

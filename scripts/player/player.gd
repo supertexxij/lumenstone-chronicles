@@ -145,6 +145,44 @@ func soft_respawn() -> void:
 func _on_heal_tick(amount: int) -> void:
 	if amount > 0:
 		HitsplatUtil.spawn_heal(self, amount, 2.05)
+		_play_food_heal_sparkle()  # Wave 49: soft cream/gold heal sparkle
+
+
+func _play_food_heal_sparkle() -> void:
+	## Wave 49: soft food/heal sparkle — cream-gold motes (RuneScape-chunky, wholesome; no cheesy combat labels).
+	if HeadlessGuard.is_headless():
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "FoodHealSparkle"
+	fx.position = Vector3(0, 1.25, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.9
+	fx.amount = 18
+	fx.lifetime = 0.75
+	fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	fx.emission_sphere_radius = 0.4
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 55.0
+	fx.initial_velocity_min = 0.7
+	fx.initial_velocity_max = 1.9
+	fx.gravity = Vector3(0, -0.35, 0)
+	fx.scale_amount_min = 0.07
+	fx.scale_amount_max = 0.18
+	fx.color = Color(1.0, 0.95, 0.65, 0.92)
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.98, 0.78, 0.95),
+		Color(0.98, 0.88, 0.45, 0.55),
+		Color(0.9, 0.75, 0.35, 0.0),
+	])
+	fx.color_ramp = ramp
+	HeadlessGuard.guard_particles(fx)
+	add_child(fx)
+	get_tree().create_timer(1.0).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+	)
 
 func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
 	## Apply RVO-safe velocity. WASD prefers player intent so avoidance does not fight the stick.

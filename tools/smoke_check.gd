@@ -405,5 +405,19 @@ func _initialize():
 	print("MASTERY_80_W48", "MASTERY_PCT := 0.8" in gs48 or "0.8" in gs48)
 	print("NO_DAY_CASH_W48", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+	print("VERSION_149", 'config/version="1.49.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("SYCAMORE_SKINK", '"sycamore_skink"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_skink" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e123"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("DUSK_OWL_W49", "_dusk_owl_hoot" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "DuskOwlHoot" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("TRAVEL_PUFF_W49", "_play_soft_travel_landing_puff" in FileAccess.get_file_as_string("res://scripts/ui/main.gd") and "SoftTravelLandingPuff" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("FOOD_HEAL_SPARKLE_W49", "_play_food_heal_sparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd") and "FoodHealSparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	var pp49 = FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd")
+	print("NEEDS_HELP_HIGHLIGHT_W49", "Wave 49: highlight needs-help count when >0" in pp49 and "set_tab_tooltip" in pp49)
+	var gs49 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W49", "const DEFAULT_PIN := \"1234\"" in gs49 or 'DEFAULT_PIN := "1234"' in gs49)
+	print("MASTERY_80_W49", "MASTERY_PCT := 0.8" in gs49 or "0.8" in gs49)
+	print("NO_DAY_CASH_W49", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
 	print("CHECK_OK")
 	quit(0)

@@ -113,6 +113,9 @@ func _ready() -> void:
 		"juniper_jay":
 			if label: label.position.y = 1.5
 			hp_bar.position.y = 1.25
+		"sycamore_skink":
+			if label: label.position.y = 1.15
+			hp_bar.position.y = 0.9
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -666,6 +669,20 @@ func _idle_anim(delta: float) -> void:
 			var jbib := creature_bob.get_node_or_null("Bib")
 			if jbib:
 				jbib.scale = Vector3.ONE * (1.0 + sin(t * 1.35) * 0.05)
+		"sycamore_skink":
+			# Soft ground-scurry — low bob, tapering tail sway, belly puff (Wave 49)
+			creature_bob.position.y = 0.01 + abs(sin(t * 1.4)) * 0.02
+			creature_bob.rotation.y = sin(t * 0.45) * 0.1
+			var sktail := creature_bob.get_node_or_null("Tail")
+			if sktail:
+				sktail.rotation.y = sin(t * 1.2) * 0.18
+				sktail.rotation.x = deg_to_rad(78) + sin(t * 0.9) * 0.06
+			var belly := creature_bob.get_node_or_null("Belly")
+			if belly:
+				belly.scale = Vector3.ONE * (1.0 + sin(t * 1.1) * 0.04)
+			var head_sk := creature_bob.get_node_or_null("Head")
+			if head_sk:
+				head_sk.rotation.y = sin(t * 0.85) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 49 overnight (v1.49.0-overnight)
+- Soft **dusk owl hoot outdoors** — gentle low who-who at dusk (respects mute; RuneScape-chunky, wholesome)
+- Clearer **soft-travel landing puff** — cream ground bloom at feet when Travel (T) arrives
+- Soft **food heal sparkle** — cream/gold motes with the +HP float (no cheesy combat labels)
+- New wilds foe **Sycamore Skink** — sleek long body, short legs, tapering tail, tiny head, gentle “ushered” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay)
+- Parent QoL: **highlight needs-help count when >0** (warm amber) + campaign tab **tooltip with week range** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 48 overnight (v1.48.0-overnight)
 - Soft **rain canopy drip under trees** — gentle blue-glass drips from the nearest canopy while raining outdoors (off indoors / clear / fog; RuneScape-chunky, wholesome)
 - Clearer **combat target name plate** — chunkier outline + warm cream when engaged (no cheesy combat labels)

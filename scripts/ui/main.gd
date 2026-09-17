@@ -413,7 +413,48 @@ func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
 		GameState.toast.emit("Soft travel — first discovery: %s." % label)
 	else:
 		GameState.toast.emit("Soft travel — arrived at %s." % label)
+	_play_soft_travel_landing_puff()
 	AudioBus.play_ui()
+
+
+func _play_soft_travel_landing_puff() -> void:
+	## Wave 49: clearer soft-travel landing puff — cream ground bloom at feet (RuneScape-chunky, wholesome).
+	if HeadlessGuard.is_headless():
+		return
+	if world_scene == null or world_scene.player == null:
+		return
+	var player: Node3D = world_scene.player
+	var fx := CPUParticles3D.new()
+	fx.name = "SoftTravelLandingPuff"
+	fx.position = Vector3(0, 0.12, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.92
+	fx.amount = 22
+	fx.lifetime = 0.85
+	fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	fx.emission_sphere_radius = 0.45
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 70.0
+	fx.initial_velocity_min = 0.5
+	fx.initial_velocity_max = 1.8
+	fx.gravity = Vector3(0, -1.2, 0)
+	fx.scale_amount_min = 0.08
+	fx.scale_amount_max = 0.22
+	fx.color = Color(0.98, 0.94, 0.78, 0.92)
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.98, 0.88, 0.95),
+		Color(0.92, 0.86, 0.62, 0.5),
+		Color(0.82, 0.76, 0.5, 0.0),
+	])
+	fx.color_ramp = ramp
+	HeadlessGuard.guard_particles(fx)
+	player.add_child(fx)
+	get_tree().create_timer(1.1).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+	)
 
 func _open_journal() -> void:
 	journal_panel.open()

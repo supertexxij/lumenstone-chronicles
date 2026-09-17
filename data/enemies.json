@@ -311,6 +311,19 @@
       "combat_xp": 144,
       "respawn_sec": 64.0,
       "description": "A bright jay of the juniper wilds \u2014 shoo it gently with a careful step!"
+    },
+    "sycamore_skink": {
+      "kind": "sycamore_skink",
+      "name": "Sycamore Skink",
+      "defeat_verb": "ushered",
+      "color": "#6a8a58",
+      "accent": "#c4b070",
+      "max_hp": 164,
+      "damage": 27,
+      "accuracy": 0.25,
+      "combat_xp": 150,
+      "respawn_sec": 66.0,
+      "description": "A sleek skink of the sycamore wilds \u2014 usher it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1021,6 +1034,36 @@
       "kind": "juniper_jay",
       "x": -56,
       "z": -88
+    },
+    {
+      "id": "e119",
+      "kind": "sycamore_skink",
+      "x": -90,
+      "z": -24
+    },
+    {
+      "id": "e120",
+      "kind": "sycamore_skink",
+      "x": 72,
+      "z": -62
+    },
+    {
+      "id": "e121",
+      "kind": "sycamore_skink",
+      "x": -40,
+      "z": 92
+    },
+    {
+      "id": "e122",
+      "kind": "sycamore_skink",
+      "x": 96,
+      "z": 12
+    },
+    {
+      "id": "e123",
+      "kind": "sycamore_skink",
+      "x": -68,
+      "z": -70
     }
   ],
   "base_combat": {

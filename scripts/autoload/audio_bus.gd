@@ -12,6 +12,7 @@ var _rain_wanted: bool = false
 var _indoor_drip_wanted: bool = false
 var _day_birds: AudioStreamPlayer
 var _night_hush: AudioStreamPlayer
+var _dusk_owl: AudioStreamPlayer  # Wave 49: soft dusk owl hoot outdoors
 var _campfire: AudioStreamPlayer
 var _day_audio_wanted: bool = true
 var _day_phase_cache: float = 0.25  # Wave 44: dawn bird swell
@@ -80,6 +81,12 @@ func _ready() -> void:
 	_night_hush.volume_db = -27.0
 	_night_hush.stream = _streams.get("night_hush")
 	add_child(_night_hush)
+	_dusk_owl = AudioStreamPlayer.new()
+	_dusk_owl.name = "DuskOwlHoot"
+	_dusk_owl.bus = "Master"
+	_dusk_owl.volume_db = -29.0
+	_dusk_owl.stream = _streams.get("dusk_owl")
+	add_child(_dusk_owl)
 	_campfire = AudioStreamPlayer.new()
 	_campfire.name = "CampfireCrackle"
 	_campfire.bus = "Master"
@@ -159,6 +166,8 @@ func _apply_mute() -> void:
 			_day_birds.stop()
 		if _night_hush and _night_hush.playing:
 			_night_hush.stop()
+		if _dusk_owl and _dusk_owl.playing:
+			_dusk_owl.stop()
 		if _campfire and _campfire.playing:
 			_campfire.stop()
 		if _wind and _wind.playing:
@@ -206,6 +215,8 @@ func stop_ambient() -> void:
 		_day_birds.stop()
 	if _night_hush and _night_hush.playing:
 		_night_hush.stop()
+	if _dusk_owl and _dusk_owl.playing:
+		_dusk_owl.stop()
 	set_campfire_audio(false)
 	set_wind_audio(false)
 	set_hall_reverb(false)
@@ -297,6 +308,7 @@ func _build_streams() -> void:
 	_streams["drip"] = _indoor_drip(5.0, 0.14)
 	_streams["day_birds"] = _day_birds_loop(7.0, 0.07)
 	_streams["night_hush"] = _night_cricket_hush(8.0, 0.055)  # Wave 43: soft night cricket hush outdoors
+	_streams["dusk_owl"] = _dusk_owl_hoot(9.0, 0.06)  # Wave 49: soft dusk owl hoot outdoors
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
@@ -369,6 +381,7 @@ func set_day_night_audio(dayness: float, day_phase: float = -1.0) -> void:
 	else:
 		_day_audio_wanted = want_day
 	_apply_dawn_bird_swell()
+	_apply_dusk_owl_hoot()
 
 func set_talk_duck(on: bool) -> void:
 	## Wave 32: soft music/ambient duck while mentor talk panel is open (wholesome, no mute).
@@ -412,6 +425,7 @@ func _sync_day_night_audio() -> void:
 				_night_hush.play()
 		elif _night_hush.playing:
 			_night_hush.stop()
+	_apply_dusk_owl_hoot()
 
 
 func _apply_dawn_bird_swell() -> void:
@@ -429,6 +443,28 @@ func _apply_dawn_bird_swell() -> void:
 		var u: float = (phase - 0.18) / 0.22
 		swell = sin(clampf(u, 0.0, 1.0) * PI)  # rise and fall
 	_day_birds.volume_db = _birds_base_db + swell * 7.5
+
+
+func _apply_dusk_owl_hoot() -> void:
+	## Wave 49: soft dusk owl hoot outdoors — gentle low who-who at dusk (RuneScape-chunky, wholesome).
+	if _dusk_owl == null or not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	# Outdoor dusk: night pad on (not day birds) + dusk/early-night phase window
+	var phase: float = _day_phase_cache
+	var dusk: bool = (phase >= 0.58 and phase <= 0.90)
+	var on: bool = can and (not _day_audio_wanted) and dusk
+	if on:
+		if _dusk_owl.stream == null:
+			_dusk_owl.stream = _streams.get("dusk_owl")
+		if not _dusk_owl.playing and _dusk_owl.stream:
+			_dusk_owl.play()
+		# Soft swell through dusk heart
+		var u: float = (phase - 0.58) / 0.32
+		var swell: float = sin(clampf(u, 0.0, 1.0) * PI)
+		_dusk_owl.volume_db = -30.5 + swell * 5.5
+	elif _dusk_owl.playing:
+		_dusk_owl.stop()
 
 func _sync_rain_audio() -> void:
 	if not _ready_ok:
@@ -953,6 +989,35 @@ func _night_cricket_hush(dur: float, amp: float) -> AudioStreamWAV:
 			var v := fmod(tsec, 0.1)
 			tick = sin(TAU * 1100.0 * v) * exp(-v * 45.0) * 0.035
 		samples[i] = (bed * breathe + chirp + tick) * amp
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+func _dusk_owl_hoot(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 49: soft dusk owl hoot — warm low who-who pairs, sparse and gentle (respects mute via player).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	# Soft hoot pair starts (seconds into loop)
+	var hoots := [1.1, 1.45, 4.2, 4.55, 7.0, 7.35]
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		# Warm low bed so silence between hoots is soft, not empty
+		var bed := sin(TAU * 55.0 * tsec) * 0.12 + sin(TAU * 78.0 * tsec) * 0.08
+		var breathe := 0.75 + 0.25 * sin(TAU * 0.05 * tsec)
+		for h in hoots:
+			var u := tsec - float(h)
+			if u >= 0.0 and u < 0.28:
+				var env := sin(clampf(u / 0.28, 0.0, 1.0) * PI) * exp(-u * 3.2)
+				# Soft who-gliss — low then slightly lower
+				var freq := 268.0 - 28.0 * (u / 0.28)
+				s += sin(TAU * freq * u) * env * 0.7
+				s += sin(TAU * (freq * 0.5) * u) * env * 0.25
+		samples[i] = (s + bed * breathe * 0.35) * amp
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0
