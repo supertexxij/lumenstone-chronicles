@@ -285,6 +285,19 @@
       "combat_xp": 132,
       "respawn_sec": 60.0,
       "description": "A soft sparrow of the ash wilds \u2014 greet it gently with a careful step!"
+    },
+    "hickory_quail": {
+      "kind": "hickory_quail",
+      "name": "Hickory Quail",
+      "defeat_verb": "flushed",
+      "color": "#7a6848",
+      "accent": "#c4a060",
+      "max_hp": 152,
+      "damage": 25,
+      "accuracy": 0.27,
+      "combat_xp": 138,
+      "respawn_sec": 62.0,
+      "description": "A plump quail of the hickory wilds \u2014 flush it gently with a careful step!"
     }
   },
   "spawns": [
@@ -935,6 +948,36 @@
       "kind": "ash_sparrow",
       "x": 30,
       "z": -84
+    },
+    {
+      "id": "e109",
+      "kind": "hickory_quail",
+      "x": -66,
+      "z": -42
+    },
+    {
+      "id": "e110",
+      "kind": "hickory_quail",
+      "x": 54,
+      "z": 72
+    },
+    {
+      "id": "e111",
+      "kind": "hickory_quail",
+      "x": -48,
+      "z": 68
+    },
+    {
+      "id": "e112",
+      "kind": "hickory_quail",
+      "x": 76,
+      "z": 28
+    },
+    {
+      "id": "e113",
+      "kind": "hickory_quail",
+      "x": -28,
+      "z": -76
     }
   ],
   "base_combat": {

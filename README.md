@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 47 overnight (v1.47.0-overnight)
+- Soft **snowdust particles in cold Fog** — pale motes drift around the player outdoors in Fog weather (off indoors / clear / rain; RuneScape-chunky, wholesome)
+- Clearer **soft-defeat HP restore numbers** — toast shows +N HP and a chunky floating “+N HP” at the fountain (no cheesy combat labels)
+- Soft **hall door open whoosh** when entering a guild hall (respects mute)
+- New wilds foe **Hickory Quail** — plump body, short crest, warm flank patch, gentle “flushed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow)
+- Journal QoL: **Campaign ★ count** mastered this campaign + sticky **📌 Next raid** reminder line (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 46 overnight (v1.46.0-overnight)
 - Soft **fog banks at outdoor map edges** — gentle mist along the wilds rim (denser in Fog weather; off indoors; RuneScape-chunky, wholesome)
 - Clearer **Year chip when % changes** — soft gold flash on the Year · N% plate

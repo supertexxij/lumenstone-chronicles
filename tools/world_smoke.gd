@@ -59,6 +59,7 @@ func _finish():
 	var doves := 0
 	var robins := 0
 	var sparrows := 0
+	var quails := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -94,6 +95,8 @@ func _finish():
 			robins += 1
 		if str(foe.get("kind")) == "ash_sparrow":
 			sparrows += 1
+		if str(foe.get("kind")) == "hickory_quail":
+			quails += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -112,6 +115,7 @@ func _finish():
 	print("DOVES", doves)
 	print("ROBINS", robins)
 	print("SPARROWS", sparrows)
+	print("QUAILS", quails)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -334,6 +338,14 @@ func _finish():
 	print("MASTERY_GLOW_SRC", "QuestVictoryGlow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("LANDMARK_CHIP_SRC", "_ensure_landmark_chip" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "landmark_name" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("VERSION_146_SRC", 'config/version="1.46.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+	print("HICKORY_QUAIL_SRC", '"hickory_quail"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("SNOWDUST_SRC", "_setup_snowdust" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("DOOR_WHOOSH_SRC", "play_door_whoosh" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("SOFT_DEFEAT_HP_SRC", "heal_tick.emit(restored)" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("JOURNAL_CAMPAIGN_STARS_SRC", "_count_campaign_mastered" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("VERSION_147_SRC", 'config/version="1.47.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

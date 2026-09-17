@@ -107,6 +107,9 @@ func _ready() -> void:
 		"ash_sparrow":
 			if label: label.position.y = 1.35
 			hp_bar.position.y = 1.1
+		"hickory_quail":
+			if label: label.position.y = 1.4
+			hp_bar.position.y = 1.15
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -597,6 +600,28 @@ func _idle_anim(delta: float) -> void:
 			var bib := creature_bob.get_node_or_null("Bib")
 			if bib:
 				bib.scale = Vector3.ONE * (1.0 + sin(t * 1.25) * 0.045)
+		"hickory_quail":
+			# Soft ground-scurry — plump bob, crest tip, warm flank puff (Wave 47)
+			creature_bob.position.y = 0.02 + abs(sin(t * 1.25)) * 0.035
+			creature_bob.rotation.y = sin(t * 0.5) * 0.08
+			wing_phase += delta * 9.0
+			var qlw := creature_bob.get_node_or_null("LWing")
+			var qrw := creature_bob.get_node_or_null("RWing")
+			var qflap := sin(wing_phase) * 0.18
+			if qlw:
+				qlw.rotation.z = deg_to_rad(12) + qflap
+			if qrw:
+				qrw.rotation.z = deg_to_rad(-12) - qflap
+			var qtail := creature_bob.get_node_or_null("Tail")
+			if qtail:
+				qtail.rotation.y = sin(t * 0.85) * 0.08
+				qtail.rotation.x = deg_to_rad(-18) + sin(t * 0.7) * 0.035
+			var crest := creature_bob.get_node_or_null("Crest")
+			if crest:
+				crest.rotation.x = deg_to_rad(-18) + sin(t * 1.1) * 0.06
+			var flank := creature_bob.get_node_or_null("Flank")
+			if flank:
+				flank.scale = Vector3.ONE * (1.0 + sin(t * 1.15) * 0.04)
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -811,7 +811,9 @@ func _tick_fountain_regen(delta: float) -> void:
 		toast.emit("Fully rested.")
 
 func _soft_defeat() -> void:
-	toast.emit("Soft defeat — rest safe at the village fountain. HP & pantry restored.")  # Wave 33: clearer toast
+	# Wave 47: clearer soft-defeat HP restore numbers (toast + floating heal at fountain)
+	var restored: int = maxi(1, max_hp - hp)
+	toast.emit("Soft defeat — rest safe at the village fountain. +%d HP & pantry restored." % restored)
 	position_xz = Vector2(0, 10)
 	_fountain_regen_left = 0
 	heal_full()
@@ -819,6 +821,7 @@ func _soft_defeat() -> void:
 	set_combat_target(null)
 	soft_combat_cleared.emit()
 	soft_defeated.emit()
+	heal_tick.emit(restored)  # after soft_defeated so the float reads at the fountain
 	state_changed.emit()
 	save_game()
 

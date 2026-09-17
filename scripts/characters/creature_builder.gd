@@ -115,6 +115,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_robin(bob)
 		"ash_sparrow":
 			_build_sparrow(bob)
+		"hickory_quail":
+			_build_quail(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -788,3 +790,38 @@ static func _build_sparrow(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.01, 0.012, 0.09), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.035, 0.01, 0.045)), Vector3(0, -0.07, 0.01), leg, "Foot")
+
+static func _build_quail(bob: Node3D) -> void:
+	## Soft hickory-wilds quail — plump round body, short crest, warm flank patch (distinct from sparrow/robin/dove/wren).
+	_mi(_sphere(0.20, 0.22), Vector3(0, 0.42, 0), bob, "Body")
+	# Warm flank patch (accent-friendly signature)
+	_mi(_sphere(0.11, 0.13), Vector3(0.08, 0.40, 0.06), bob, "Flank")
+	_mi(_sphere(0.12), Vector3(0, 0.58, 0.08), bob, "Head")
+	# Soft short crest (signature vs sparrow)
+	var crest := _mi(_box(Vector3(0.04, 0.08, 0.06)), Vector3(0, 0.68, 0.02), bob, "Crest")
+	crest.rotation_degrees = Vector3(-18, 0, 0)
+	# Tiny eye beads
+	_mi(_sphere(0.022), Vector3(-0.045, 0.61, 0.17), bob, "EyeL")
+	_mi(_sphere(0.022), Vector3(0.045, 0.61, 0.17), bob, "EyeR")
+	# Short stout beak
+	_mi(_box(Vector3(0.035, 0.025, 0.05)), Vector3(0, 0.56, 0.19), bob, "Beak")
+	# Compact wings folded close (plumper than sparrow)
+	var lw := _mi(_box(Vector3(0.20, 0.035, 0.16)), Vector3(-0.14, 0.44, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(6, 0, 12)
+	var rw := _mi(_box(Vector3(0.20, 0.035, 0.16)), Vector3(0.14, 0.44, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(6, 0, -12)
+	# Short rounded tail
+	var tail := _mi(_box(Vector3(0.09, 0.03, 0.10)), Vector3(0, 0.42, -0.18), bob, "Tail")
+	tail.rotation_degrees = Vector3(-18, 0, 0)
+	# Tiny ground-scurry feet
+	for info in [
+		["FL", Vector3(-0.05, 0.16, 0.04)],
+		["FR", Vector3(0.05, 0.16, 0.04)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.012, 0.014, 0.08), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.06, 0.012), leg, "Foot")
+

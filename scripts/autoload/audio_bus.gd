@@ -37,7 +37,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "swing"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "swing", "door"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -226,6 +226,18 @@ func play_swing() -> void:
 	# Wave 36: chunkier combat swing whoosh with soft pitch variety (RuneScape-feel)
 	_play_swing_varied(-9.0)
 
+func play_door_whoosh() -> void:
+	## Wave 47: soft hall door open whoosh (RuneScape-chunky, wholesome; respects mute).
+	if GameState.muted:
+		return
+	var p: AudioStreamPlayer = _players.get("door")
+	if p == null:
+		return
+	p.stream = _streams.get("door")
+	p.volume_db = -10.0
+	p.pitch_scale = randf_range(0.92, 1.08)
+	p.play()
+
 func _play_swing_varied(vol_db: float) -> void:
 	if GameState.muted:
 		return
@@ -277,6 +289,7 @@ func _build_streams() -> void:
 	_streams["miss"] = _tone_blip(220.0, 0.05, 0.15)
 	_streams["foot"] = _noise_thump(0.04, 0.18)
 	_streams["swing"] = _whoosh(0.16, 0.28)  # Wave 36: clearer chunky swing whoosh
+	_streams["door"] = _door_whoosh(0.32, 0.22)  # Wave 47: soft hall door open whoosh
 	_streams["quest"] = _quest_chime()  # Wave 38: clearer quest-complete chime
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
@@ -581,6 +594,26 @@ func _whoosh(dur: float, amp: float) -> AudioStreamWAV:
 		# Soft rising hush so the swing reads as a whoosh, not a click
 		var sweep := 0.65 + 0.35 * (tt / maxf(dur, 0.001))
 		samples[i] = prev * amp * env * sweep
+	return _make_wav(samples, rate)
+
+func _door_whoosh(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 47: soft hall door open whoosh — longer hush with a gentle wood-settle tip (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var env := sin(PI * tt / dur)
+		# Soft low wood tip near the start
+		var tip := 0.0
+		if tt < 0.06:
+			tip = sin(TAU * 180.0 * tt) * (1.0 - tt / 0.06) * 0.35
+		var noise := randf() * 2.0 - 1.0
+		prev = prev * 0.78 + noise * 0.22
+		var sweep := 0.55 + 0.45 * (tt / maxf(dur, 0.001))
+		samples[i] = (prev * amp * env * sweep) + tip * amp
 	return _make_wav(samples, rate)
 
 func _arpeggio(freqs: Array, note_dur: float, amp: float) -> AudioStreamWAV:

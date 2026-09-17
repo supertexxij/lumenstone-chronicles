@@ -33,6 +33,7 @@ var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _edge_fog_banks: Array = []  # Wave 46: soft fog banks at outdoor edges
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk outdoors
+var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
 var _puddle_ripples: CPUParticles3D  # Wave 41: soft rain puddle ripples on ground
 var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
 var _leaf_check_t: float = 0.0
@@ -1452,6 +1453,9 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 	if AudioBus.has_method("set_brook_murmur"):
 		AudioBus.set_brook_murmur(false)
 	_door_cooldown = 0.8
+	# Wave 47: soft hall door open whoosh (respects mute)
+	if AudioBus.has_method("play_door_whoosh"):
+		AudioBus.play_door_whoosh()
 	for room in _interior_root.get_children():
 		if str(room.get_meta("hall_id", "")) == hall_id:
 			body.global_position = room.global_position + Vector3(0, 0, 2.8)
@@ -1597,6 +1601,7 @@ func _setup_weather() -> void:
 	_setup_edge_fog_banks()
 	_setup_wind_leaves()
 	_setup_dusk_fireflies()
+	_setup_snowdust()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1798,6 +1803,15 @@ func _update_weather(delta: float) -> void:
 		else:
 			_dusk_fireflies.emitting = false
 			_dusk_fireflies.visible = false
+	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
+	if player and _snowdust:
+		if _inside_hall == "" and _weather_mode == 1:
+			_snowdust.global_position = Vector3(player.global_position.x, 2.8, player.global_position.z)
+			_snowdust.emitting = true
+			_snowdust.visible = true
+		else:
+			_snowdust.emitting = false
+			_snowdust.visible = false
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -3147,6 +3161,39 @@ func _is_dusk_firefly_time() -> bool:
 	if phase <= 0.12:
 		return true  # deep night spill
 	return false
+
+func _setup_snowdust() -> void:
+	## Wave 47: soft snowdust motes in cold Fog outdoors (RuneScape-chunky, wholesome; off indoors).
+	_snowdust = CPUParticles3D.new()
+	_snowdust.name = "ColdFogSnowdust"
+	_snowdust.emitting = false
+	_snowdust.amount = 36
+	_snowdust.lifetime = 4.2
+	_snowdust.preprocess = 1.5
+	_snowdust.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_snowdust.emission_box_extents = Vector3(9.5, 2.2, 9.5)
+	_snowdust.direction = Vector3(0.18, -0.35, 0.08)
+	_snowdust.spread = 48.0
+	_snowdust.initial_velocity_min = 0.15
+	_snowdust.initial_velocity_max = 0.55
+	_snowdust.gravity = Vector3(0, -0.22, 0)
+	_snowdust.angular_velocity_min = -25.0
+	_snowdust.angular_velocity_max = 25.0
+	_snowdust.scale_amount_min = 0.25
+	_snowdust.scale_amount_max = 0.55
+	var sm := SphereMesh.new()
+	sm.radius = 0.045
+	sm.height = 0.09
+	_snowdust.mesh = sm
+	var smat := StandardMaterial3D.new()
+	smat.albedo_color = Color(0.94, 0.96, 1.0, 0.72)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_snowdust.material_override = smat
+	_snowdust.position = Vector3(0, 2.8, 0)
+	add_child(_snowdust)
+	HeadlessGuard.guard_particles(_snowdust)
+
 
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).

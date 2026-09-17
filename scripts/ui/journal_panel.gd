@@ -41,7 +41,9 @@ func refresh() -> void:
 	var week_mastered := _count_week_mastered(uw)
 	# Wave 42: campaign progress fraction in header (PIN 1234; mastery ≥80% unchanged)
 	var camp_frac := _campaign_progress_fraction(uw)
-	week_lbl.text = "%s · Week %d/36 · %s · Mastered %d ★" % [_campaign_name(uw), uw, camp_frac, week_mastered]
+	# Wave 47: ★ count mastered this campaign in header (PIN 1234; mastery ≥80% unchanged)
+	var camp_stars: int = _count_campaign_mastered(uw)
+	week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered]
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -172,18 +174,24 @@ func _unlock_progress_text(uw: int) -> String:
 	var of_week := (" / %d" % total_week) if total_week > 0 else ""
 	lines.append("Mastered this week: %d%s ★" % [mastered, of_week])
 	lines.append("Week %d · need ≥80%% mastery (or 4+ quests / Friday Raid)" % next_w)
+	var sticky_raid := ""
 	if raid_id != "":
 		var rtitle: String = QuestDB.get_quest(raid_id).get("title", raid_id)
 		if raid_done:
 			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
+			sticky_raid = "📌 Next raid: mastered — Week %d unlocks soon." % mini(36, next_w + 1)
 		else:
 			# Wave 42: highlight next Friday Raid more in the progress header
 			lines.append("→ NEXT ★ Friday Raid: “%s” — master ≥80%% (or 4+ quests this week: %d/4)." % [rtitle, mastered])
+			# Wave 47: sticky next-raid reminder line (PIN 1234; mastery ≥80% unchanged)
+			sticky_raid = "📌 Next raid: “%s” · Week %d ★" % [rtitle, next_w]
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
 	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
 	if year_line != "":
 		lines.insert(0, year_line)
+	if sticky_raid != "":
+		lines.insert(0, sticky_raid)
 	return "\n".join(lines)
 
 
@@ -251,6 +259,33 @@ func _on_select(idx: int) -> void:
 		status,
 		raid_note,
 	]
+
+
+func _count_campaign_mastered(week: int) -> int:
+	## Wave 47: ★ count mastered this campaign (I–IV window; PIN 1234; mastery ≥80% unchanged).
+	var start := 1
+	var end := 9
+	if week <= 9:
+		start = 1
+		end = 9
+	elif week <= 18:
+		start = 10
+		end = 18
+	elif week <= 27:
+		start = 19
+		end = 27
+	else:
+		start = 28
+		end = 36
+	var n := 0
+	for q in _all_raw():
+		var w := int(q.get("week", 1))
+		if w < start or w > end:
+			continue
+		var qid: String = str(q.get("id", ""))
+		if qid in GameState.completed_quests:
+			n += 1
+	return n
 
 func _campaign_name(week: int) -> String:
 	## Mirror parent dashboard campaign titles (Wave 27 journal header).

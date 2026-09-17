@@ -379,5 +379,18 @@ func _initialize():
 	print("MASTERY_80_W46", "MASTERY_PCT := 0.8" in gs46 or "0.8" in gs46)
 	print("NO_DAY_CASH_W46", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+	print("VERSION_147", 'config/version="1.47.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("HICKORY_QUAIL", '"hickory_quail"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_quail" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e113"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("SNOWDUST_W47", "_setup_snowdust" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "ColdFogSnowdust" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("DOOR_WHOOSH_W47", "play_door_whoosh" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "play_door_whoosh" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	var gs47 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("SOFT_DEFEAT_HP_W47", "+%d HP & pantry restored." in gs47 and "heal_tick.emit(restored)" in gs47)
+	var jp47 = FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd")
+	print("JOURNAL_CAMPAIGN_STARS_W47", "_count_campaign_mastered" in jp47 and "Campaign ★" in jp47 and "📌 Next raid" in jp47)
+	print("PIN_STILL_1234_W47", "const DEFAULT_PIN := \"1234\"" in gs47 or 'DEFAULT_PIN := "1234"' in gs47)
+	print("MASTERY_80_W47", "MASTERY_PCT := 0.8" in gs47 or "0.8" in gs47)
+	print("NO_DAY_CASH_W47", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)
