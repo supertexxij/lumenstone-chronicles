@@ -87,6 +87,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_fox(bob)
 		"oak_hare":
 			_build_hare(bob)
+		"birch_squirrel":
+			_build_squirrel(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -302,3 +304,40 @@ static func _build_hare(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.045, 0.26), Vector3(0, -0.04, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.08, 0.05, 0.11)), Vector3(0, -0.22, 0.02), leg, "Paw")
+
+
+static func _build_squirrel(bob: Node3D) -> void:
+	## Quick birch-wilds squirrel — tuft ears, bushy upright tail (distinct from hare/fox).
+	var body := _mi(_capsule(0.16, 0.48), Vector3(0, 0.38, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.14), Vector3(0, 0.48, 0.28), bob, "Head")
+	_mi(_sphere(0.05), Vector3(0, 0.44, 0.40), bob, "Snout")
+	# Soft cheek puffs
+	_mi(_sphere(0.06), Vector3(-0.10, 0.44, 0.30), bob, "CheekL")
+	_mi(_sphere(0.06), Vector3(0.10, 0.44, 0.30), bob, "CheekR")
+	# Small tufted ears
+	var el := _mi(_cyl(0.01, 0.045, 0.14), Vector3(-0.07, 0.66, 0.24), bob, "EarL")
+	el.rotation_degrees = Vector3(10, 0, -16)
+	var er := _mi(_cyl(0.01, 0.045, 0.14), Vector3(0.07, 0.66, 0.24), bob, "EarR")
+	er.rotation_degrees = Vector3(10, 0, 16)
+	# Bushy upright curl tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.42, -0.28)
+	tail.rotation_degrees = Vector3(-55, 0, 0)
+	bob.add_child(tail)
+	_mi(_capsule(0.09, 0.48), Vector3(0, 0.18, -0.06), tail, "TailMain")
+	_mi(_sphere(0.11), Vector3(0, 0.38, -0.18), tail, "TailTip")
+	# Four light legs
+	for info in [
+		["FL", Vector3(-0.09, 0.22, 0.14)],
+		["FR", Vector3(0.09, 0.22, 0.14)],
+		["BL", Vector3(-0.09, 0.22, -0.14)],
+		["BR", Vector3(0.09, 0.22, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.04, 0.22), Vector3(0, -0.04, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.07, 0.04, 0.09)), Vector3(0, -0.18, 0.02), leg, "Paw")

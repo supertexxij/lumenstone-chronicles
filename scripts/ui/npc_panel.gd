@@ -65,7 +65,7 @@ func open(npc: Node) -> void:
 		var week_n := int(q.get("week", 1))
 		var status := ""
 		if qid in GameState.completed_quests:
-			status = " ✓"
+			status = " ★"  # Wave 33: mastered star on NPC quest list
 		elif not GameState.is_quest_unlocked(qid):
 			status = " (Week %d locked)" % week_n
 		var prefix := "W%d · " % week_n

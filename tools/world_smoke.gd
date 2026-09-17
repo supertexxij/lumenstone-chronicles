@@ -46,6 +46,7 @@ func _finish():
 	var stags := 0
 	var foxes := 0
 	var hares := 0
+	var squirrels := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -55,11 +56,14 @@ func _finish():
 			foxes += 1
 		if str(foe.get("kind")) == "oak_hare":
 			hares += 1
+		if str(foe.get("kind")) == "birch_squirrel":
+			squirrels += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
 	print("FOXES", foxes)
 	print("HARES", hares)
+	print("SQUIRRELS", squirrels)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -189,5 +193,11 @@ func _finish():
 	print("YEAR_CHIP_PLATE_SRC", "YearChipPanel" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("TALK_DUCK_SRC", "set_talk_duck" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
 	print("PANTRY_HEAL_SRC", "+%d HP" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("BIRCH_SQUIRREL_SRC", '"birch_squirrel"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CAMPFIRE_CRACKLE_SRC", "set_campfire_audio" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("SOFTER_RAIN_SRC", "Wave 33: softer rain mix" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("NEAR_MISS_SRC", "Near miss — mastery" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("NPC_STAR_SRC", "Wave 33" in FileAccess.get_file_as_string("res://scripts/ui/npc_panel.gd"))
+	print("VERSION_133_SRC", 'config/version="1.33.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

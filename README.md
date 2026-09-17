@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 33 overnight (v1.33.0-overnight)
+- Softer **rain audio mix** — quieter hush + gentler drip pops (respects **M**)
+- Clearer **soft-defeat toast** — rest-safe fountain wording with HP & pantry restore note
+- Soft **plaza campfire crackle** when near the hearth (RuneScape-chunky, wholesome; respects mute)
+- New wilds foe **Birch Squirrel** — tuft ears, bushy upright tail, gentle “gentled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare)
+- Quest QoL: near-miss toast shows **mastery %**; NPC quest list marks mastered rows with **★** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 32 overnight (v1.32.0-overnight)
 - Soft **campfire ember sparks** polish — denser loft + bright spark tips on the plaza hearth (RuneScape-chunky, wholesome)
 - Clearer **Year HUD chip** — soft green plate with **Year · N%** so year progress reads at a glance
@@ -419,7 +427,7 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 
 - Chunky low-poly **humanoid** characters (head, torso, shoulders, arms, legs, feet) — RuneScape-adjacent, not photoreal
 - Equipped hat / crown / cape or tunic / weapon held in the right hand / belt / **accessory** / cloak armor plate show on the player model; NPCs share the same humanoid base
-- Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers; wisp stays simple)
+- Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers, fox, hare, squirrel; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
 - Village green + **Lantern Glade** + **Pine Ridge** + **Prayer Garden** + **Lookout Rock** + **Mill Bridge** + **Cedar Hollow** + **Willow Bend** + **Reed Pool** + **Quiet Cross** + **Stone Arch** + **Amber Knoll** + **Birch Rest** + **Fern Dell** + **Heather Heath** + **Thistle Rise** + **Maple Copse** spurs; not a full multi-biome world map yet
 - Campaigns I–IV (Weeks 1–36) complete — full-year content arc finished

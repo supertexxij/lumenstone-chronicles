@@ -103,6 +103,19 @@
       "combat_xp": 48,
       "respawn_sec": 32.0,
       "description": "A soft hare of the oak wilds \u2014 ease it with a careful step!"
+    },
+    "birch_squirrel": {
+      "kind": "birch_squirrel",
+      "name": "Birch Squirrel",
+      "defeat_verb": "gentled",
+      "color": "#a67c52",
+      "accent": "#e8dcc8",
+      "max_hp": 68,
+      "damage": 11,
+      "accuracy": 0.54,
+      "combat_xp": 54,
+      "respawn_sec": 34.0,
+      "description": "A quick squirrel of the birch wilds \u2014 gentle it with a careful step!"
     }
   },
   "spawns": [
@@ -333,6 +346,36 @@
       "kind": "oak_hare",
       "x": 28,
       "z": -58
+    },
+    {
+      "id": "e39",
+      "kind": "birch_squirrel",
+      "x": -48,
+      "z": -40
+    },
+    {
+      "id": "e40",
+      "kind": "birch_squirrel",
+      "x": 56,
+      "z": -24
+    },
+    {
+      "id": "e41",
+      "kind": "birch_squirrel",
+      "x": -40,
+      "z": 48
+    },
+    {
+      "id": "e42",
+      "kind": "birch_squirrel",
+      "x": 22,
+      "z": -66
+    },
+    {
+      "id": "e43",
+      "kind": "birch_squirrel",
+      "x": 48,
+      "z": 42
     }
   ],
   "base_combat": {

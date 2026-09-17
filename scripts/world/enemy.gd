@@ -73,6 +73,9 @@ func _ready() -> void:
 		"oak_hare":
 			if label: label.position.y = 1.45
 			hp_bar.position.y = 1.2
+		"birch_squirrel":
+			if label: label.position.y = 1.4
+			hp_bar.position.y = 1.15
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
@@ -368,6 +371,14 @@ func _idle_anim(delta: float) -> void:
 				el.rotation.z = deg_to_rad(-12) + sin(t * 1.1) * 0.08
 			if er:
 				er.rotation.z = deg_to_rad(12) - sin(t * 1.1) * 0.08
+		"birch_squirrel":
+			# Quick sit-bob — bushy tail flicks
+			creature_bob.position.y = abs(sin(t * 0.95)) * 0.035
+			creature_bob.rotation.y = sin(t * 0.55) * 0.12
+			var sq_tail := creature_bob.get_node_or_null("Tail")
+			if sq_tail:
+				sq_tail.rotation.y = sin(t * 1.2) * 0.22
+				sq_tail.rotation.x = deg_to_rad(-55) + sin(t * 0.8) * 0.1
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -12,8 +12,10 @@ var _rain_wanted: bool = false
 var _indoor_drip_wanted: bool = false
 var _day_birds: AudioStreamPlayer
 var _night_hush: AudioStreamPlayer
+var _campfire: AudioStreamPlayer
 var _day_audio_wanted: bool = true
 var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
+var _campfire_wanted: bool = false  # Wave 33: plaza campfire crackle when near
 var _talk_duck: bool = false  # Wave 32: soft music duck while talking
 var _music_base_db: float = -18.0
 var _ambient_base_db: float = -24.0
@@ -45,7 +47,7 @@ func _ready() -> void:
 	_rain = AudioStreamPlayer.new()
 	_rain.name = "Rain"
 	_rain.bus = "Master"
-	_rain.volume_db = -28.0
+	_rain.volume_db = -34.0  # Wave 33: softer rain mix
 	_rain.stream = _streams.get("rain")
 	add_child(_rain)
 	_drip = AudioStreamPlayer.new()
@@ -66,6 +68,12 @@ func _ready() -> void:
 	_night_hush.volume_db = -27.0
 	_night_hush.stream = _streams.get("night_hush")
 	add_child(_night_hush)
+	_campfire = AudioStreamPlayer.new()
+	_campfire.name = "CampfireCrackle"
+	_campfire.bus = "Master"
+	_campfire.volume_db = -30.0
+	_campfire.stream = _streams.get("campfire")
+	add_child(_campfire)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -109,6 +117,8 @@ func _apply_mute() -> void:
 			_day_birds.stop()
 		if _night_hush and _night_hush.playing:
 			_night_hush.stop()
+		if _campfire and _campfire.playing:
+			_campfire.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -118,6 +128,7 @@ func _apply_mute() -> void:
 			_apply_talk_duck()
 			_sync_rain_audio()
 			_sync_day_night_audio()
+			_sync_campfire_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -138,6 +149,7 @@ func stop_ambient() -> void:
 		_day_birds.stop()
 	if _night_hush and _night_hush.playing:
 		_night_hush.stop()
+	set_campfire_audio(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -180,10 +192,11 @@ func _build_streams() -> void:
 	_streams["quest"] = _arpeggio([523.25, 659.25, 783.99], 0.12, 0.28)
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
-	_streams["rain"] = _soft_rain(6.0, 0.09)
+	_streams["rain"] = _soft_rain(6.0, 0.065)  # Wave 33: softer rain mix
 	_streams["drip"] = _indoor_drip(5.0, 0.14)
 	_streams["day_birds"] = _day_birds_loop(7.0, 0.07)
 	_streams["night_hush"] = _night_hush_loop(8.0, 0.06)
+	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 
 
 func set_rain_audio(on: bool) -> void:
@@ -199,6 +212,12 @@ func set_indoor_drip(on: bool) -> void:
 	if on:
 		_rain_wanted = false
 	_sync_rain_audio()
+
+
+func set_campfire_audio(on: bool) -> void:
+	## Wave 33: soft plaza campfire crackle when near hearth (respects mute).
+	_campfire_wanted = on
+	_sync_campfire_audio()
 
 
 func set_day_night_audio(dayness: float) -> void:
@@ -278,6 +297,20 @@ func _sync_rain_audio() -> void:
 				_drip.play()
 		elif _drip.playing:
 			_drip.stop()
+
+func _sync_campfire_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _campfire:
+		var should: bool = _campfire_wanted and can
+		if should:
+			if _campfire.stream == null:
+				_campfire.stream = _streams.get("campfire")
+			if not _campfire.playing and _campfire.stream:
+				_campfire.play()
+		elif _campfire.playing:
+			_campfire.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -405,13 +438,41 @@ func _soft_rain(dur: float, amp: float) -> AudioStreamWAV:
 	for i in n:
 		var t := float(i) / float(rate)
 		var noise := randf() * 2.0 - 1.0
-		# Simple low-pass for soft hush
-		prev = prev * 0.86 + noise * 0.14
-		var breathe := 0.85 + 0.15 * sin(TAU * 0.07 * t)
+		# Wave 33: softer low-pass hush (less hiss, gentler drip pops)
+		prev = prev * 0.90 + noise * 0.10
+		var breathe := 0.88 + 0.12 * sin(TAU * 0.06 * t)
 		var drip := 0.0
-		if int(t * 11.0) % 17 == 0:
-			drip = sin(TAU * 900.0 * fmod(t, 0.09)) * exp(-fmod(t, 0.09) * 40.0) * 0.08
-		samples[i] = (prev * 0.7 + drip) * amp * breathe
+		if int(t * 9.0) % 19 == 0:
+			drip = sin(TAU * 720.0 * fmod(t, 0.1)) * exp(-fmod(t, 0.1) * 36.0) * 0.05
+		samples[i] = (prev * 0.65 + drip) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _campfire_crackle(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 33: soft plaza hearth crackle — sparse pops over warm hush (wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	var pops := [0.35, 0.9, 1.55, 2.2, 2.95, 3.7, 4.4, 5.05]
+	for i in n:
+		var t := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		prev = prev * 0.92 + noise * 0.08
+		var bed := prev * 0.35
+		var pop := 0.0
+		for pt in pops:
+			var u := t - float(pt)
+			if u >= 0.0 and u < 0.08:
+				pop += (randf() * 2.0 - 1.0) * exp(-u * 48.0) * 0.55
+				pop += sin(TAU * 180.0 * u) * exp(-u * 28.0) * 0.2
+		var breathe := 0.9 + 0.1 * sin(TAU * 0.11 * t)
+		samples[i] = (bed + pop) * amp * breathe
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

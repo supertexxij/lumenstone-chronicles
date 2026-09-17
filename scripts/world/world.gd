@@ -27,6 +27,7 @@ var _door_cooldown: float = 0.0
 var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
 var _village_lamp_lights: Array = []  # Wave 28: dusk OmniLights on village lamp posts
 var _plaza_campfire_light: OmniLight3D = null  # Wave 31: soft campfire glow near plaza
+var _plaza_campfire_pos: Vector3 = Vector3(6.8, 0, 9.2)  # Wave 33: crackle proximity
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
@@ -881,11 +882,11 @@ func _update_day_night(delta: float) -> void:
 
 
 func _build_plaza_campfire() -> void:
-	## Wave 31/32: soft campfire glow + ember sparks near the village plaza (RuneScape-chunky, wholesome).
+	## Wave 31/32/33: soft campfire glow + ember sparks + crackle near the village plaza (RuneScape-chunky, wholesome).
 	var root := Node3D.new()
 	root.name = "PlazaCampfire"
 	# East of fountain keep-clear, near benches — warm hearth feel
-	root.position = Vector3(6.8, 0, 9.2)
+	root.position = _plaza_campfire_pos
 	_mi(_cyl(0.65, 0.7, 0.12), Vector3(0, 0.08, 0), root, _mats["rock"], "Ring")
 	_mi(_box(Vector3(0.45, 0.12, 0.12)), Vector3(0.05, 0.18, 0.02), root, _mats["wood"], "LogA")
 	_mi(_box(Vector3(0.12, 0.12, 0.42)), Vector3(-0.05, 0.18, -0.02), root, _mats["wood"], "LogB")
@@ -960,12 +961,16 @@ func _build_plaza_campfire() -> void:
 
 
 func _update_plaza_campfire(dayness: float) -> void:
-	## Soft hearth stays lit by day; warms up a bit at dusk.
+	## Soft hearth stays lit by day; warms up a bit at dusk. Wave 33: near-hearth crackle.
 	if _plaza_campfire_light == null or not is_instance_valid(_plaza_campfire_light):
 		return
 	var dusk: float = clampf((0.62 - dayness) / 0.35, 0.0, 1.0)
 	var pulse: float = 0.9 + 0.12 * abs(sin(float(Time.get_ticks_msec()) * 0.0045))
 	_plaza_campfire_light.light_energy = (0.85 + dusk * 1.15) * pulse
+	# Soft crackle when outdoors and near the plaza hearth (respects mute via AudioBus)
+	if AudioBus.has_method("set_campfire_audio") and player:
+		var near: bool = _inside_hall == "" and player.global_position.distance_to(_plaza_campfire_pos) < 14.0
+		AudioBus.set_campfire_audio(near)
 
 func _update_village_dusk_lamps(dayness: float) -> void:
 	## Wave 28: village lamp posts warm up as dusk falls (RuneScape-chunky, wholesome).

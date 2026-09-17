@@ -799,7 +799,7 @@ func _tick_fountain_regen(delta: float) -> void:
 		toast.emit("Fully rested.")
 
 func _soft_defeat() -> void:
-	toast.emit("Soft defeat — restored at the village fountain.")
+	toast.emit("Soft defeat — rest safe at the village fountain. HP & pantry restored.")  # Wave 33: clearer toast
 	position_xz = Vector2(0, 10)
 	_fountain_regen_left = 0
 	heal_full()
@@ -852,7 +852,7 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()
 	else:
-		toast.emit("Needs practice — score %d%% (need 80%%). Retry anytime!" % int(pct * 100))
+		toast.emit("Near miss — mastery %d%% (need ≥80%%). Retry anytime!" % int(pct * 100))  # Wave 33
 	save_game()
 	state_changed.emit()
 	return attempt
