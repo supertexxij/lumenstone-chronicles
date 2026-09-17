@@ -11,6 +11,7 @@ signal closed
 @onready var loadout: Label = $Panel/VBox/Loadout
 
 var selected_id: String = ""
+var _cd_label_was: float = -1.0
 
 func _ready() -> void:
 	if use_btn == null:
@@ -27,9 +28,28 @@ func _ready() -> void:
 	if use_btn:
 		use_btn.pressed.connect(_on_use)
 
+func _process(_delta: float) -> void:
+	## Live cooldown ticks while inventory is open (Bread / Water / Trail Rations).
+	if not visible:
+		return
+	if selected_id == "":
+		return
+	var item := ItemDB.get_item(selected_id)
+	if str(item.get("slot", "")) != "consumable":
+		return
+	var cd: float = float(GameState.consumable_cd)
+	# Refresh detail ~10×/sec while cooling down, and once when it clears
+	var bucket: float = floorf(cd * 10.0)
+	if bucket != _cd_label_was or (cd <= 0.05 and _cd_label_was > 0.0):
+		_cd_label_was = bucket
+		_refresh_detail_only()
+		if use_btn:
+			use_btn.disabled = cd > 0.05 or int(GameState.pantry_count(selected_id)) <= 0
+
 func refresh() -> void:
 	list.clear()
 	selected_id = ""
+	_cd_label_was = -1.0
 	for id in GameState.unlocked_items:
 		var item := ItemDB.get_item(id)
 		var equipped_mark := ""
@@ -54,8 +74,9 @@ func _update_loadout() -> void:
 		parts.append("%s: %s" % [slot.capitalize(), name])
 	loadout.text = "\n".join(parts)
 
-func _on_select(idx: int) -> void:
-	selected_id = str(list.get_item_metadata(idx))
+func _refresh_detail_only() -> void:
+	if selected_id == "":
+		return
 	var item := ItemDB.get_item(selected_id)
 	var extra := ""
 	var req: int = int(item.get("combat_level_req", 0))
@@ -69,9 +90,17 @@ func _on_select(idx: int) -> void:
 			extra += "\nPantry %d / %d" % [GameState.pantry_count(selected_id), GameState.pantry_max(selected_id)]
 			if GameState.consumable_cd > 0.05:
 				extra += "\nCooldown %.1fs" % GameState.consumable_cd
+			else:
+				extra += "\nReady"
 	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name",""), item.get("description",""), item.get("slot",""), extra]
+
+func _on_select(idx: int) -> void:
+	selected_id = str(list.get_item_metadata(idx))
+	_cd_label_was = -1.0
+	_refresh_detail_only()
 	if use_btn:
-		use_btn.disabled = str(item.get("slot", "")) != "consumable"
+		var is_food: bool = str(ItemDB.get_item(selected_id).get("slot", "")) == "consumable"
+		use_btn.disabled = (not is_food) or GameState.consumable_cd > 0.05
 
 func _on_equip() -> void:
 	if selected_id != "":
@@ -91,4 +120,11 @@ func _on_use() -> void:
 		return
 	AudioBus.play_ui()
 	if GameState.use_consumable(selected_id):
+		var keep := selected_id
 		refresh()
+		# Reselect after refresh so cooldown ticks keep updating
+		for i in list.item_count:
+			if str(list.get_item_metadata(i)) == keep:
+				list.select(i)
+				_on_select(i)
+				break

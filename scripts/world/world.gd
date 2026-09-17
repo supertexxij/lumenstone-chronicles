@@ -59,6 +59,7 @@ func _ready() -> void:
 	_setup_day_night()
 	_setup_weather()
 	_setup_outdoor_navigation()
+	_setup_indoor_navigation()
 	GameState.in_world = true
 	AudioBus.start_ambient()
 
@@ -641,6 +642,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	var rug := _mat(col.darkened(0.15))
 	# Floor / walls / ceiling with collision shells
 	_mi(_box(Vector3(12, 0.2, 12)), Vector3(0, 0.1, 0), room, floor_m, "Floor")
+	_add_wall_col(room, Vector3(12, 0.2, 12), Vector3(0, 0.1, 0))  # floor for indoor nav bake
 	_add_wall_col(room, Vector3(12, 3.6, 0.35), Vector3(0, 1.85, -6))
 	_add_wall_col(room, Vector3(12, 3.6, 0.35), Vector3(0, 1.85, 6))
 	_add_wall_col(room, Vector3(0.35, 3.6, 12), Vector3(-6, 1.85, 0))
@@ -654,6 +656,7 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_mi(_box(Vector3(4.5, 0.04, 3.2)), Vector3(0, 0.22, 0.5), room, rug, "Rug")
 	# Quest desk (center-north) — interactable
 	_add_quest_desk(room, Vector3(0, 0, -3.2), col, str(b.get("guild", "")), str(b.get("label", "Hall")))
+	_add_wall_col(room, Vector3(2.9, 1.0, 1.3), Vector3(0, 0.55, -3.2))  # desk blocker for indoor nav
 	# Side study tables + chairs
 	_add_study_table(room, Vector3(-3.4, 0, -1.0), 0.2)
 	_add_study_table(room, Vector3(3.4, 0, -1.0), -0.2)
@@ -664,6 +667,10 @@ func _add_interior_room(b: Dictionary, index: int) -> void:
 	_add_bookshelf(room, Vector3(5.2, 0, -3.5), col)
 	_add_bookshelf(room, Vector3(-5.2, 0, 2.0), col)
 	_add_bookshelf(room, Vector3(5.2, 0, 2.0), col)  # denser east wall
+	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(-5.2, 1.0, -3.5))
+	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(5.2, 1.0, -3.5))
+	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(-5.2, 1.0, 2.0))
+	_add_wall_col(room, Vector3(1.2, 2.0, 0.45), Vector3(5.2, 1.0, 2.0))
 	# Extra study nook + desk-side chair
 	_add_study_table(room, Vector3(0.0, 0, 2.4), 0.0)
 	_add_chair(room, Vector3(0.0, 0, 3.4), 0.0)
@@ -1229,7 +1236,7 @@ func _build_prayer_garden() -> void:
 
 
 func _build_lookout_rock() -> void:
-	## Southeast landmark — soft travel (L). Rocky overlook with a short dirt spur.
+	## Southeast landmark — soft travel (L). Rocky overlook with steps, scope, and flag.
 	var root := Node3D.new()
 	root.name = "LookoutRock"
 	static_world.add_child(root)
@@ -1239,13 +1246,26 @@ func _build_lookout_rock() -> void:
 		var x := 10.0 + t * 28.0
 		var z := 14.0 + t * 20.0
 		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "LookoutPath")
-	# Rocky outcrop
+	# Rocky outcrop + stepped stones
 	_mi(_cyl(4.2, 4.5, 0.35), Vector3(40, 0.18, 34), root, _mats["stone"], "LookoutBase")
 	_mi(_box(Vector3(3.2, 1.6, 2.4)), Vector3(40, 1.0, 34), root, _mats["stone_dark"], "LookoutMass")
 	_mi(_box(Vector3(1.4, 0.9, 1.2)), Vector3(41.2, 1.85, 33.2), root, _mats["stone"], "LookoutCap")
+	_mi(_box(Vector3(1.6, 0.28, 0.9)), Vector3(38.2, 0.35, 35.4), root, _mats["stone"], "Step1")
+	_mi(_box(Vector3(1.4, 0.28, 0.85)), Vector3(38.8, 0.65, 34.8), root, _mats["stone_dark"], "Step2")
+	_mi(_box(Vector3(1.2, 0.28, 0.8)), Vector3(39.3, 0.95, 34.3), root, _mats["stone"], "Step3")
+	# Viewing post + rail + simple spyglass
 	_mi(_cyl(0.35, 0.4, 1.4), Vector3(39.0, 1.9, 35.0), root, _mats["wood"], "LookoutPost")
 	_mi(_box(Vector3(1.1, 0.08, 0.7)), Vector3(39.0, 2.65, 35.0), root, _mats["wood_light"], "LookoutRail")
+	_mi(_cyl(0.07, 0.09, 0.85), Vector3(39.55, 2.55, 34.55), root, _mats["iron"], "Scope")
+	_mi(_cyl(0.11, 0.12, 0.12), Vector3(39.55, 2.55, 34.1), root, _mats["iron"], "ScopeLens")
+	# Small steward flag
+	_mi(_cyl(0.05, 0.06, 2.2), Vector3(41.6, 2.4, 35.2), root, _mats["wood"], "FlagPole")
+	_mi(_box(Vector3(0.7, 0.4, 0.04)), Vector3(41.95, 3.2, 35.2), root, _mat(Color("#c1121f")), "Flag")
+	# Campfire ring (decorative, unlit ash)
+	_mi(_cyl(0.7, 0.75, 0.12), Vector3(37.2, 0.08, 32.8), root, _mats["rock"], "FireRing")
+	_mi(_box(Vector3(0.35, 0.12, 0.12)), Vector3(37.2, 0.18, 32.8), root, _mats["wood"], "AshLog")
 	_add_bench(Vector3(37.5, 0, 36.2), -0.6)
+	_add_bench(Vector3(42.0, 0, 32.5), 0.9)
 	_add_lantern_post(Vector3(37.0, 0, 32.0))
 	_add_lantern_post(Vector3(42.5, 0, 36.5))
 	var rng := RandomNumberGenerator.new()
@@ -1253,6 +1273,9 @@ func _build_lookout_rock() -> void:
 	for i in 6:
 		var ang := i * TAU / 6.0
 		_add_flowers(Vector3(40.0 + cos(ang) * 5.0, 0, 34.0 + sin(ang) * 5.0), rng)
+	for i in 4:
+		var ang := float(i) * TAU / 4.0 + 0.4
+		_mi(_sphere(0.35 + float(i % 2) * 0.1), Vector3(40.0 + cos(ang) * 5.8, 0.25, 34.0 + sin(ang) * 5.8), root, _mats["rock"], "Boulder")
 	var sign := Node3D.new()
 	sign.position = Vector3(36.5, 0, 34.0)
 	root.add_child(sign)
@@ -1264,6 +1287,13 @@ func _build_lookout_rock() -> void:
 	sl.position = Vector3(0, 2.3, 0)
 	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sign.add_child(sl)
+	var tip := Label3D.new()
+	tip.text = "See the village green"
+	tip.font_size = 28
+	tip.modulate = Color(1, 1, 1, 0.75)
+	tip.position = Vector3(40, 4.15, 34)
+	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(tip)
 	var lbl := Label3D.new()
 	lbl.text = "Lookout Rock"
 	lbl.font_size = 52
@@ -1311,7 +1341,7 @@ func get_minimap_markers() -> Dictionary:
 	}
 
 func _build_mill_bridge() -> void:
-	## Southwest landmark — soft travel (K). Wooden mill + creek bridge spur.
+	## Southwest landmark — soft travel (K). Mill, sack piles, grindstone, creek foam.
 	var root := Node3D.new()
 	root.name = "MillBridge"
 	static_world.add_child(root)
@@ -1321,20 +1351,26 @@ func _build_mill_bridge() -> void:
 		var x := -8.0 + t * (-28.0)
 		var z := 14.0 + t * 16.0
 		_mi(_box(Vector3(2.6, 0.04, 2.4)), Vector3(x, 0.025, z), root, _mats["dirt"], "MillPath")
-	# Creek under the bridge
+	# Creek under the bridge + foam highlights
 	_mi(_cyl(3.4, 3.4, 0.08), Vector3(-36.0, 0.015, 30.0), root, _mats["water"], "MillCreek")
 	_mi(_cyl(1.5, 1.5, 0.05), Vector3(-39.0, 0.015, 32.5), root, _mats["water"], "MillCreekBend")
-	# Bridge planks
+	_mi(_cyl(0.55, 0.6, 0.04), Vector3(-37.2, 0.04, 29.4), root, _mat(Color("#a8d4ea"), 0.15), "Foam1")
+	_mi(_cyl(0.4, 0.45, 0.03), Vector3(-35.0, 0.04, 30.6), root, _mat(Color("#b8dff0"), 0.15), "Foam2")
+	_mi(_cyl(0.35, 0.4, 0.03), Vector3(-38.4, 0.04, 31.2), root, _mat(Color("#a8d4ea"), 0.15), "Foam3")
+	# Bridge planks + center runner
 	_mi(_box(Vector3(5.2, 0.12, 1.8)), Vector3(-36.0, 0.35, 30.0), root, _mats["wood"], "BridgeDeck")
+	_mi(_box(Vector3(5.0, 0.04, 0.35)), Vector3(-36.0, 0.43, 30.0), root, _mats["wood_light"], "BridgeRunner")
 	_mi(_box(Vector3(5.2, 0.35, 0.12)), Vector3(-36.0, 0.65, 29.0), root, _mats["wood_light"], "RailS")
 	_mi(_box(Vector3(5.2, 0.35, 0.12)), Vector3(-36.0, 0.65, 31.0), root, _mats["wood_light"], "RailN")
 	for i in 5:
 		var px := -38.0 + float(i) * 1.0
 		_mi(_cyl(0.08, 0.1, 0.7), Vector3(px, 0.2, 29.0), root, _mats["wood"], "PillarS")
 		_mi(_cyl(0.08, 0.1, 0.7), Vector3(px, 0.2, 31.0), root, _mats["wood"], "PillarN")
-	# Small mill house + water wheel
+	# Small mill house + door + water wheel
 	_mi(_box(Vector3(3.2, 2.4, 2.8)), Vector3(-40.5, 1.2, 27.0), root, _mats["wood"], "MillHouse")
 	_mi(_box(Vector3(3.6, 0.2, 3.2)), Vector3(-40.5, 2.5, 27.0), root, _mats["roof"], "MillRoof")
+	_mi(_box(Vector3(0.7, 1.3, 0.08)), Vector3(-40.5, 0.85, 28.45), root, _mats["wood_light"], "MillDoor")
+	_mi(_box(Vector3(0.55, 0.55, 0.06)), Vector3(-39.3, 1.7, 28.45), root, _mat(Color("#7ec8e3"), 0.2), "MillWindow")
 	_mi(_cyl(1.1, 1.1, 0.22), Vector3(-38.2, 1.3, 28.6), root, _mats["wood_light"], "Wheel")
 	for i in 6:
 		var ang := float(i) * TAU / 6.0
@@ -1342,8 +1378,17 @@ func _build_mill_bridge() -> void:
 		var by := 1.3 + sin(ang) * 1.05
 		_mi(_box(Vector3(0.12, 0.7, 0.08)), Vector3(bx, by, 28.6), root, _mats["wood"], "Blade")
 	_mi(_cyl(0.12, 0.14, 1.6), Vector3(-38.2, 1.3, 27.8), root, _mats["iron"], "Axle")
+	# Grindstone + grain sacks + fence stub
+	_mi(_cyl(0.55, 0.55, 0.18), Vector3(-42.2, 0.55, 29.2), root, _mats["stone"], "Grindstone")
+	_mi(_cyl(0.08, 0.1, 0.7), Vector3(-42.2, 0.25, 29.2), root, _mats["wood"], "GrindStand")
+	_mi(_sphere(0.38, 0.55), Vector3(-41.5, 0.35, 25.6), root, _mats["barrel"], "Sack1")
+	_mi(_sphere(0.32, 0.48), Vector3(-42.2, 0.3, 26.1), root, _mats["barrel"], "Sack2")
+	_mi(_box(Vector3(0.08, 0.9, 0.08)), Vector3(-34.8, 0.45, 27.2), root, _mats["fence"], "FenceA")
+	_mi(_box(Vector3(0.08, 0.9, 0.08)), Vector3(-33.6, 0.45, 27.2), root, _mats["fence"], "FenceB")
+	_mi(_box(Vector3(1.4, 0.08, 0.08)), Vector3(-34.2, 0.75, 27.2), root, _mats["fence"], "FenceRail")
 	_add_lantern_post(Vector3(-33.5, 0, 28.0))
 	_add_lantern_post(Vector3(-33.5, 0, 32.0))
+	_add_lantern_post(Vector3(-42.0, 0, 25.0))
 	_add_bench(Vector3(-34.0, 0, 33.5), 0.3)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 307
@@ -1361,6 +1406,13 @@ func _build_mill_bridge() -> void:
 	sl.position = Vector3(0, 2.3, 0)
 	sl.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	sign.add_child(sl)
+	var tip := Label3D.new()
+	tip.text = "Creek mill & bridge"
+	tip.font_size = 28
+	tip.modulate = Color(1, 1, 1, 0.75)
+	tip.position = Vector3(-36.0, 3.95, 30.0)
+	tip.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	root.add_child(tip)
 	var lbl := Label3D.new()
 	lbl.text = "Mill Bridge"
 	lbl.font_size = 52
@@ -1386,6 +1438,31 @@ func _setup_outdoor_navigation() -> void:
 	nm.filter_baking_aabb = AABB(Vector3(-54, -1, -64), Vector3(108, 5, 118))
 	var source := NavigationMeshSourceGeometryData3D.new()
 	NavigationServer3D.parse_source_geometry_data(nm, source, static_world)
+	NavigationServer3D.bake_from_source_geometry_data(nm, source)
+	region.navigation_mesh = nm
+	if player and player.has_method("set_navigation_ready"):
+		player.set_navigation_ready(true)
+
+func _setup_indoor_navigation() -> void:
+	## Indoor NavigationRegion3D (world-root, global mesh space) for guild-hall click-move.
+	if _interior_root == null:
+		return
+	var region := NavigationRegion3D.new()
+	region.name = "IndoorNavRegion"
+	add_child(region)
+	var nm := NavigationMesh.new()
+	nm.agent_radius = 0.4
+	nm.agent_height = 1.5
+	nm.agent_max_climb = 0.5
+	nm.agent_max_slope = 45.0
+	nm.cell_size = 0.25
+	nm.cell_height = 0.25
+	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+	nm.geometry_collision_mask = 1
+	# Interiors live near x≈120+; cover all five halls with margin
+	nm.filter_baking_aabb = AABB(Vector3(100, -1, -20), Vector3(160, 5, 40))
+	var source := NavigationMeshSourceGeometryData3D.new()
+	NavigationServer3D.parse_source_geometry_data(nm, source, _interior_root)
 	NavigationServer3D.bake_from_source_geometry_data(nm, source)
 	region.navigation_mesh = nm
 	if player and player.has_method("set_navigation_ready"):

@@ -1979,5 +1979,16 @@
     "cooldown": 1.2,
     "starter": true,
     "color": "#4a90c8"
+  },
+  "trail_rations": {
+    "id": "trail_rations",
+    "name": "Trail Rations",
+    "description": "Hearty dried fruit and bread for longer wilds walks. Restores 20 HP. Stack of 3; longer cooldown. Unlock Week 5 Friday Raid or Combat Lv 3; refill at the fountain.",
+    "slot": "consumable",
+    "heal": 20,
+    "max_stack": 3,
+    "cooldown": 3.5,
+    "combat_level_req": 3,
+    "color": "#a67c52"
   }
 }

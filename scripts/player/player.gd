@@ -206,9 +206,12 @@ func _set_move_target(pos: Vector3) -> void:
 	_stuck_timer = 0.0
 	_assist_waypoints.clear()
 	_path_idx = 0
-	# Prefer NavigationAgent path outdoors when navmesh is ready
-	if _nav_ready and _nav_agent and global_position.x < 90.0 and target_pos.x < 90.0:
+	# Prefer NavigationAgent when navmesh is ready (outdoor + indoor hall regions)
+	if _nav_ready and _nav_agent:
 		_nav_agent.target_position = target_pos
+		# Raycast assist as backup if agent has no path yet
+		if _nav_agent.is_navigation_finished() or not _nav_agent.is_target_reachable():
+			_build_assist_waypoints(target_pos)
 	else:
 		_build_assist_waypoints(target_pos)
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
@@ -247,6 +250,16 @@ func _build_assist_waypoints(goal: Vector3) -> void:
 			_assist_waypoints.append(via)
 			_assist_waypoints.append(goal)
 			return
+
+func _repath_around_blocker() -> void:
+	## Called when click-move is jammed against a prop — refresh nav + side waypoints.
+	if not has_click_target:
+		return
+	_assist_waypoints.clear()
+	_path_idx = 0
+	if _nav_ready and _nav_agent:
+		_nav_agent.target_position = target_pos
+	_build_assist_waypoints(target_pos)
 
 func play_attack_swing() -> void:
 	_attacking = true
@@ -299,7 +312,7 @@ func _physics_process(delta: float) -> void:
 	elif has_click_target:
 		var steer_pos: Vector3 = target_pos
 		var using_nav := false
-		if _nav_ready and _nav_agent and global_position.x < 90.0 and not _nav_agent.is_navigation_finished():
+		if _nav_ready and _nav_agent and not _nav_agent.is_navigation_finished():
 			var next_pos: Vector3 = _nav_agent.get_next_path_position()
 			if next_pos.distance_to(global_position) > 0.05:
 				steer_pos = next_pos
@@ -357,7 +370,9 @@ func _physics_process(delta: float) -> void:
 					mesh_root.rotation.y = atan2(slide_dir.x, slide_dir.z)
 			if _stuck_timer > 0.55:
 				_assist_side *= -1
-				_stuck_timer = 0.2
+				_stuck_timer = 0.15
+				# Obstacle awareness: re-path mid-walk (nav + assist)
+				_repath_around_blocker()
 		else:
 			_stuck_timer = maxf(0.0, _stuck_timer - delta * 1.5)
 	# Village + wilds clamp (incl. Mill Bridge SW) — skip guild-hall interiors (x >= 100)

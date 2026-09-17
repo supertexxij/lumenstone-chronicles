@@ -354,7 +354,13 @@ func unlock_item(id: String) -> void:
 	if id == "" or id in unlocked_items:
 		return
 	unlocked_items.append(id)
-	toast.emit("Unlocked: %s" % ItemDB.get_item(id).get("name", id))
+	var it: Dictionary = ItemDB.get_item(id)
+	# Seed pantry stacks for newly unlocked combat food
+	if str(it.get("slot", "")) == "consumable":
+		var mx: int = int(it.get("max_stack", 5))
+		if int(consumable_charges.get(id, 0)) < mx:
+			consumable_charges[id] = mx
+	toast.emit("Unlocked: %s" % it.get("name", id))
 	state_changed.emit()
 
 
@@ -459,14 +465,15 @@ func pantry_max(item_id: String) -> int:
 func refill_pantry(announce: bool = false) -> void:
 	_ensure_pantry_defaults()
 	var changed := false
-	for id in consumable_charges.keys():
-		var mx := pantry_max(str(id))
-		if int(consumable_charges[id]) < mx:
-			consumable_charges[id] = mx
-			changed = true
-	# Ensure starter consumables exist even if empty dict
+	# Refill every unlocked consumable (starters + mid-game food like Trail Rations)
+	var ids: Array = []
+	for id in unlocked_items:
+		ids.append(id)
 	for id in ItemDB.starter_ids():
-		var it: Dictionary = ItemDB.get_item(id)
+		if id not in ids:
+			ids.append(id)
+	for id in ids:
+		var it: Dictionary = ItemDB.get_item(str(id))
 		if str(it.get("slot", "")) != "consumable":
 			continue
 		var mx: int = int(it.get("max_stack", 5))
@@ -475,7 +482,7 @@ func refill_pantry(announce: bool = false) -> void:
 			changed = true
 	if changed:
 		if announce:
-			toast.emit("Fountain pantry refilled — bread and water restocked.")
+			toast.emit("Fountain pantry refilled — food and water restocked.")
 		state_changed.emit()
 		save_game()
 

@@ -211,8 +211,12 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Stronger **per-slot rename** on title + in-game Saves panel
 - Quest-desk / hall density polish (extra shelf, desk props, study nook, plaque)
 - Lookout path corridor fix (diagonal keep-clear)
-
-
+- **Indoor NavigationRegion3D** — reliable click-to-move in guild halls (desk/shelf awareness)
+- Inventory **live cooldown ticks** for Bread / Water / Trail Rations while the panel is open
+- Mid-game combat food: **Trail Rations** (+20 HP, ×3) — unlock Week 5 Friday Raid **or** Combat Lv 3; fountain refill
+- Outdoor **nav re-path** when blocked mid-walk (refresh nav + assist waypoints)
+- **Mill Bridge** polish (foam, door/window, grindstone, sacks, fence) + **Lookout Rock** polish (steps, spyglass, flag, fire ring)
+- Fountain pantry refill covers all unlocked consumables (not only starters)
 
 ### Architecture
 

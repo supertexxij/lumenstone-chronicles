@@ -3049,7 +3049,7 @@
     "xp_reward": 30,
     "lumen_on_mastery": true,
     "unlock_item_id": "hall_table_badge",
-    "bonus_items": []
+    "bonus_items": ["trail_rations"]
   },
   {
     "id": "w6-bible-rest",
