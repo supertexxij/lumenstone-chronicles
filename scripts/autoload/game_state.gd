@@ -52,6 +52,7 @@ var seen_combat_tutorial: bool = false
 var greeted_landmarks: Array = []
 ## Landmarks ever visited (persists forever) — drives first-discovery vs return toast flavor.
 var discovered_landmarks: Array = []
+var last_travel_label: String = ""  # Wave 34: last soft-travel destination
 var checkpoint_checks: Dictionary = {}
 var checkpoint_date: String = ""
 var last_daily_reminder_date: String = ""
@@ -121,6 +122,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_combat_tutorial = false
 	greeted_landmarks = []
 	discovered_landmarks = []
+	last_travel_label = ""
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -300,6 +302,7 @@ func save_game() -> void:
 		"seen_combat_tutorial": seen_combat_tutorial,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
+		"last_travel_label": last_travel_label,
 		"checkpoint_checks": checkpoint_checks,
 		"checkpoint_date": checkpoint_date,
 		"last_daily_reminder_date": last_daily_reminder_date,
@@ -361,11 +364,13 @@ func load_game(slot: int = -1) -> bool:
 				greeted_landmarks.append(sid)
 	var dl = data.get("discovered_landmarks", [])
 	discovered_landmarks = []
+	last_travel_label = ""
 	if typeof(dl) == TYPE_ARRAY:
 		for d in dl:
 			var did := str(d)
 			if did != "" and did not in discovered_landmarks:
 				discovered_landmarks.append(did)
+	last_travel_label = str(data.get("last_travel_label", ""))
 	checkpoint_checks = data.get("checkpoint_checks", {})
 	checkpoint_date = data.get("checkpoint_date", "")
 	last_daily_reminder_date = str(data.get("last_daily_reminder_date", ""))
@@ -535,6 +540,12 @@ func mark_landmark_discovered(landmark_id: String) -> bool:
 	discovered_landmarks.append(landmark_id)
 	save_game()
 	return true
+
+
+func note_last_travel(label: String) -> void:
+	## Wave 34: remember last soft-travel destination for Travel menu mark.
+	last_travel_label = str(label).strip_edges()
+	save_game()
 
 func has_landmark_greeted(landmark_id: String) -> bool:
 	return landmark_id != "" and landmark_id in greeted_landmarks

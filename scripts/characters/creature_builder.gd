@@ -89,6 +89,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_hare(bob)
 		"birch_squirrel":
 			_build_squirrel(bob)
+		"aspen_otter":
+			_build_otter(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -341,3 +343,38 @@ static func _build_squirrel(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.04, 0.22), Vector3(0, -0.04, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.07, 0.04, 0.09)), Vector3(0, -0.18, 0.02), leg, "Paw")
+
+static func _build_otter(bob: Node3D) -> void:
+	## Sleek aspen-wilds otter — long body, flat paddle tail (distinct from squirrel/hare/fox).
+	var body := _mi(_capsule(0.17, 0.72), Vector3(0, 0.36, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.15), Vector3(0, 0.42, 0.40), bob, "Head")
+	_mi(_sphere(0.07), Vector3(0, 0.38, 0.54), bob, "Snout")
+	# Soft cheek whisker pads
+	_mi(_sphere(0.05), Vector3(-0.10, 0.40, 0.44), bob, "CheekL")
+	_mi(_sphere(0.05), Vector3(0.10, 0.40, 0.44), bob, "CheekR")
+	# Small rounded ears
+	var el := _mi(_sphere(0.05), Vector3(-0.09, 0.54, 0.34), bob, "EarL")
+	var er := _mi(_sphere(0.05), Vector3(0.09, 0.54, 0.34), bob, "EarR")
+	# Flat paddle tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.34, -0.40)
+	tail.rotation_degrees = Vector3(-18, 0, 0)
+	bob.add_child(tail)
+	_mi(_box(Vector3(0.18, 0.05, 0.42)), Vector3(0, 0.02, -0.16), tail, "TailMain")
+	_mi(_box(Vector3(0.22, 0.04, 0.16)), Vector3(0, 0.0, -0.38), tail, "TailTip")
+	# Four short legs
+	for info in [
+		["FL", Vector3(-0.11, 0.20, 0.20)],
+		["FR", Vector3(0.11, 0.20, 0.20)],
+		["BL", Vector3(-0.11, 0.20, -0.18)],
+		["BR", Vector3(0.11, 0.20, -0.18)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.045, 0.20), Vector3(0, -0.03, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.08, 0.04, 0.12)), Vector3(0, -0.16, 0.02), leg, "Paw")
+

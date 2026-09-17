@@ -877,6 +877,9 @@ func _update_day_night(delta: float) -> void:
 	elif AudioBus.has_method("set_day_night_audio") and _inside_hall != "":
 		# Soft indoor: bias toward quiet day pad
 		AudioBus.set_day_night_audio(0.55)
+	# Wave 34: soft outdoor wind whoosh (off indoors)
+	if AudioBus.has_method("set_wind_audio"):
+		AudioBus.set_wind_audio(_inside_hall == "")
 	_update_village_dusk_lamps(dayness)
 	_update_plaza_campfire(dayness)
 
@@ -1288,6 +1291,8 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 	var door_z: float = body.global_position.z
 	_outdoor_return = Vector3(body.global_position.x, 0, door_z + 2.8)
 	_inside_hall = hall_id
+	if AudioBus.has_method("set_wind_audio"):
+		AudioBus.set_wind_audio(false)
 	_door_cooldown = 0.8
 	for room in _interior_root.get_children():
 		if str(room.get_meta("hall_id", "")) == hall_id:

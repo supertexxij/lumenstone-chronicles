@@ -174,7 +174,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
 - RuneScape-style **tick combat** with clearer hitsplats, player weapon swing pose, enemy flinch + death dissolve, soft wild aggro, wholesome defeat verbs, soft respawn
-- Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem, Moss Badger, Cedar Stag
+- Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem, Moss Badger, Cedar Stag, Pine Fox, Oak Hare, Birch Squirrel, Aspen Otter
 - **Camera zoom** (scroll / `=` `-`) + **entity-first click targeting** (props no longer steal enemy/NPC/ground clicks)
 - **Weapon mesh variants** on equip: practice sword, oak axe, shepherd staff, yew bow (cosmetic), flint dagger
 - **Minimap + compass** + day/dusk/night label for village/wilds orientation
@@ -257,6 +257,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Re-export Linux + Windows.
 
 
+
+### Wave 34 overnight (v1.34.0-overnight)
+- Soft **outdoor wind whoosh** — gentle filtered hush while outdoors (off indoors; respects **M**)
+- Clearer **food cooldown on HUD** — **Wait N.Ns** / **Ready** with soft color (no cryptic CD)
+- Soft **wardrobe open flourish** — gentle scale + fade when opening Look/Wardrobe (RuneScape-chunky, wholesome)
+- New wilds foe **Aspen Otter** — sleek body, flat paddle tail, gentle “lulled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel)
+- Travel QoL: Travel (T) menu marks **★ last** visited landmark; soft-travel toast names arrival (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
 
 ### Wave 33 overnight (v1.33.0-overnight)
 - Softer **rain audio mix** — quieter hush + gentler drip pops (respects **M**)

@@ -207,10 +207,13 @@ func _refresh_food_lbl() -> void:
 		elif "Stew" in bname:
 			bname = "Stew"
 		next_txt = "%s +%d" % [bname, int(best.get("heal", 0))]
+	# Wave 34: clearer food cooldown — Wait vs Ready (no cryptic CD)
 	if cd > 0.05:
-		food_lbl.text = "Pantry %s · CD %.1fs · V:%s" % [stack_txt, cd, next_txt]
+		food_lbl.text = "Pantry %s · Wait %.1fs · next V:%s" % [stack_txt, cd, next_txt]
+		food_lbl.modulate = Color(1.0, 0.88, 0.55, 1.0)
 	else:
-		food_lbl.text = "Pantry %s · V:%s" % [stack_txt, next_txt]
+		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
+		food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
 
 
 func _ensure_hurt_vignette() -> void:

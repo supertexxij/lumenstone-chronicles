@@ -85,6 +85,7 @@ func open_wardrobe() -> void:
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
 	_select(outfit_opt, GameState.appearance.get("outfit", "cream"))
 	_refresh_preview()
+	_play_wardrobe_flourish()  # Wave 34: soft open flourish
 
 func _select(opt: OptionButton, key: String) -> void:
 	for i in opt.item_count:
@@ -154,3 +155,17 @@ func _on_ok() -> void:
 		"outfit": outfit_opt.get_selected_metadata(),
 	}
 	confirmed.emit(name_edit.text.strip_edges(), app)
+
+
+func _play_wardrobe_flourish() -> void:
+	## Wave 34: soft wardrobe open flourish — gentle scale + fade (RuneScape-chunky, wholesome).
+	var panel: Control = get_node_or_null("Panel")
+	if panel == null:
+		return
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(0.92, 0.92)
+	panel.modulate = Color(1, 1, 1, 0.0)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.18)

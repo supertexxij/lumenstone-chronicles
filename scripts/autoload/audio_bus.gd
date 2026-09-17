@@ -16,6 +16,8 @@ var _campfire: AudioStreamPlayer
 var _day_audio_wanted: bool = true
 var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
 var _campfire_wanted: bool = false  # Wave 33: plaza campfire crackle when near
+var _wind: AudioStreamPlayer
+var _wind_wanted: bool = false  # Wave 34: soft outdoor wind whoosh
 var _talk_duck: bool = false  # Wave 32: soft music duck while talking
 var _music_base_db: float = -18.0
 var _ambient_base_db: float = -24.0
@@ -74,6 +76,12 @@ func _ready() -> void:
 	_campfire.volume_db = -30.0
 	_campfire.stream = _streams.get("campfire")
 	add_child(_campfire)
+	_wind = AudioStreamPlayer.new()
+	_wind.name = "WindWhoosh"
+	_wind.bus = "Master"
+	_wind.volume_db = -32.0
+	_wind.stream = _streams.get("wind")
+	add_child(_wind)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -119,6 +127,8 @@ func _apply_mute() -> void:
 			_night_hush.stop()
 		if _campfire and _campfire.playing:
 			_campfire.stop()
+		if _wind and _wind.playing:
+			_wind.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -129,6 +139,7 @@ func _apply_mute() -> void:
 			_sync_rain_audio()
 			_sync_day_night_audio()
 			_sync_campfire_audio()
+			_sync_wind_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -150,6 +161,7 @@ func stop_ambient() -> void:
 	if _night_hush and _night_hush.playing:
 		_night_hush.stop()
 	set_campfire_audio(false)
+	set_wind_audio(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -197,6 +209,7 @@ func _build_streams() -> void:
 	_streams["day_birds"] = _day_birds_loop(7.0, 0.07)
 	_streams["night_hush"] = _night_hush_loop(8.0, 0.06)
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
+	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 
 
 func set_rain_audio(on: bool) -> void:
@@ -218,6 +231,12 @@ func set_campfire_audio(on: bool) -> void:
 	## Wave 33: soft plaza campfire crackle when near hearth (respects mute).
 	_campfire_wanted = on
 	_sync_campfire_audio()
+
+
+func set_wind_audio(on: bool) -> void:
+	## Wave 34: soft outdoor wind whoosh when outdoors (respects mute).
+	_wind_wanted = on
+	_sync_wind_audio()
 
 
 func set_day_night_audio(dayness: float) -> void:
@@ -311,6 +330,20 @@ func _sync_campfire_audio() -> void:
 				_campfire.play()
 		elif _campfire.playing:
 			_campfire.stop()
+
+func _sync_wind_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _wind:
+		var should: bool = _wind_wanted and can
+		if should:
+			if _wind.stream == null:
+				_wind.stream = _streams.get("wind")
+			if not _wind.playing and _wind.stream:
+				_wind.play()
+		elif _wind.playing:
+			_wind.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -479,6 +512,28 @@ func _campfire_crackle(dur: float, amp: float) -> AudioStreamWAV:
 	stream.loop_end = n
 	return stream
 
+
+
+func _soft_wind(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 34: soft outdoor wind whoosh — gentle filtered hush (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	var prev2 := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		prev2 = prev2 * 0.88 + noise * 0.12
+		prev = prev * 0.94 + prev2 * 0.06
+		var swell := 0.75 + 0.25 * sin(TAU * 0.07 * tt) + 0.08 * sin(TAU * 0.19 * tt)
+		samples[i] = prev * amp * swell
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
 
 func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
 	## Sparse roof drips for indoor rain — quiet, non-startling, loopable.

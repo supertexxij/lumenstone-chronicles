@@ -116,6 +116,19 @@
       "combat_xp": 54,
       "respawn_sec": 34.0,
       "description": "A quick squirrel of the birch wilds \u2014 gentle it with a careful step!"
+    },
+    "aspen_otter": {
+      "kind": "aspen_otter",
+      "name": "Aspen Otter",
+      "defeat_verb": "lulled",
+      "color": "#6b5344",
+      "accent": "#c9b89a",
+      "max_hp": 74,
+      "damage": 12,
+      "accuracy": 0.52,
+      "combat_xp": 60,
+      "respawn_sec": 36.0,
+      "description": "A sleek otter of the aspen wilds \u2014 lull it with a careful step!"
     }
   },
   "spawns": [
@@ -376,6 +389,36 @@
       "kind": "birch_squirrel",
       "x": 48,
       "z": 42
+    },
+    {
+      "id": "e44",
+      "kind": "aspen_otter",
+      "x": -52,
+      "z": 28
+    },
+    {
+      "id": "e45",
+      "kind": "aspen_otter",
+      "x": 44,
+      "z": -52
+    },
+    {
+      "id": "e46",
+      "kind": "aspen_otter",
+      "x": -28,
+      "z": 58
+    },
+    {
+      "id": "e47",
+      "kind": "aspen_otter",
+      "x": 60,
+      "z": 12
+    },
+    {
+      "id": "e48",
+      "kind": "aspen_otter",
+      "x": -16,
+      "z": -70
     }
   ],
   "base_combat": {

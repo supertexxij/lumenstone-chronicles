@@ -219,6 +219,8 @@ func _open_travel() -> void:
 	if list:
 		list.clear()
 		var first_sel := -1
+		var last_lbl: String = str(GameState.last_travel_label) if "last_travel_label" in GameState else ""
+		var last_sel := -1
 		for d in _travel_dests:
 			if bool(d.get("group", false)):
 				var gi: int = list.add_item(str(d["label"]))
@@ -226,10 +228,18 @@ func _open_travel() -> void:
 				list.set_item_custom_fg_color(gi, Color(0.75, 0.7, 0.45))
 				continue
 			var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
-			var ii: int = list.add_item("%s%s" % [d["label"], key_s])
+			var mark: String = ""
+			if last_lbl != "" and str(d["label"]) == last_lbl:
+				mark = " ★ last"  # Wave 34: mark last-visited landmark
+			var ii: int = list.add_item("%s%s%s" % [d["label"], key_s, mark])
+			if mark != "":
+				last_sel = ii
+				list.set_item_custom_fg_color(ii, Color(0.95, 0.88, 0.45))
 			if first_sel < 0:
 				first_sel = ii
-		if first_sel >= 0:
+		if last_sel >= 0:
+			list.select(last_sel)
+		elif first_sel >= 0:
 			list.select(first_sel)
 	travel_panel.visible = true
 	_set_player_ui_block(true)
@@ -262,6 +272,8 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 	if "has_click_target" in world_scene.player:
 		world_scene.player.has_click_target = false
 	GameState.position_xz = Vector2(pos.x, pos.z)
+	if GameState.has_method("note_last_travel"):
+		GameState.note_last_travel(label)  # Wave 34: mark last soft-travel
 	var first_discover := false
 	if world_scene.has_method("note_soft_travel_arrival"):
 		first_discover = bool(world_scene.note_soft_travel_arrival(pos))
@@ -270,11 +282,11 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 			GameState.rest_at_fountain(true)
 		elif GameState.has_method("refill_pantry"):
 			GameState.refill_pantry(true)
-		GameState.toast.emit("Traveled to %s — resting." % label)
+		GameState.toast.emit("Soft travel — %s. Resting." % label)
 	elif first_discover:
-		GameState.toast.emit("First discovery: %s — a new place on your map." % label)
+		GameState.toast.emit("Soft travel — first discovery: %s." % label)
 	else:
-		GameState.toast.emit("Traveled to %s." % label)
+		GameState.toast.emit("Soft travel — arrived at %s." % label)
 	AudioBus.play_ui()
 
 func _open_journal() -> void:
