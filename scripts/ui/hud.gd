@@ -80,8 +80,13 @@ func _ready() -> void:
 func set_world(world: Node) -> void:
 	_world = world
 
-func _on_mute(_m: bool) -> void:
+func _on_mute(m: bool) -> void:
 	_refresh_mute_label()
+	# Wave 45: clearer mute / unmute toast (RuneScape-chunky, wholesome)
+	if m:
+		GameState.toast.emit("Muted · soft hush. Press M to hear the village again.")
+	else:
+		GameState.toast.emit("Unmuted · village sounds return.")
 
 func _refresh_mute_label() -> void:
 	## Wave 38: clearer mute indicator — warm plate + bold Muted label when silent.

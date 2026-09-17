@@ -101,6 +101,9 @@ func _ready() -> void:
 		"poplar_dove":
 			if label: label.position.y = 1.45
 			hp_bar.position.y = 1.2
+		"rowan_robin":
+			if label: label.position.y = 1.4
+			hp_bar.position.y = 1.15
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -553,6 +556,25 @@ func _idle_anim(delta: float) -> void:
 			var fluff := creature_bob.get_node_or_null("Fluff")
 			if fluff:
 				fluff.scale = Vector3.ONE * (1.0 + sin(t * 1.1) * 0.04)
+		"rowan_robin":
+			# Soft hop-bob — quick wing flick, perky tail tip, breast puff (Wave 45)
+			creature_bob.position.y = 0.04 + abs(sin(t * 1.35)) * 0.05
+			creature_bob.rotation.y = sin(t * 0.55) * 0.12
+			wing_phase += delta * 12.0
+			var rlw := creature_bob.get_node_or_null("LWing")
+			var rrw := creature_bob.get_node_or_null("RWing")
+			var rflap := sin(wing_phase) * 0.28
+			if rlw:
+				rlw.rotation.z = deg_to_rad(18) + rflap
+			if rrw:
+				rrw.rotation.z = deg_to_rad(-18) - rflap
+			var rtail := creature_bob.get_node_or_null("Tail")
+			if rtail:
+				rtail.rotation.y = sin(t * 1.1) * 0.14
+				rtail.rotation.x = deg_to_rad(-42) + sin(t * 0.9) * 0.06
+			var breast := creature_bob.get_node_or_null("Breast")
+			if breast:
+				breast.scale = Vector3.ONE * (1.0 + sin(t * 1.4) * 0.05)
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

@@ -353,5 +353,18 @@ func _initialize():
 	print("MASTERY_80_W44", "MASTERY_PCT := 0.8" in gs44 or "0.8" in gs44)
 	print("NO_DAY_CASH_W44", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+
+	print("VERSION_145", 'config/version="1.45.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("ROWAN_ROBIN", '"rowan_robin"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_robin" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e103"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CAMPFIRE_SMOKE_W45", "CampfireSmoke" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 31/32/33/45" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_TOAST_W45", "Muted · soft hush" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Unmuted · village sounds return" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("PULLBACK_SPARKLE_W45", "_leave_combat_soft" in FileAccess.get_file_as_string("res://scripts/player/player.gd") and "CombatPullbackSparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	var main45 = FileAccess.get_file_as_string("res://scripts/ui/main.gd")
+	print("TRAVEL_DIST_W45", "_travel_distance_label" in main45 and "~%d paces" in main45)
+	var gs45 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W45", "const DEFAULT_PIN := \"1234\"" in gs45 or 'DEFAULT_PIN := "1234"' in gs45)
+	print("MASTERY_80_W45", "MASTERY_PCT := 0.8" in gs45 or "0.8" in gs45)
+	print("NO_DAY_CASH_W45", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

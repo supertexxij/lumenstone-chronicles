@@ -252,7 +252,7 @@ func _open_travel() -> void:
 	AudioBus.play_ui()
 
 func _refresh_travel_list() -> void:
-	## Wave 39: search/filter by name + group counts in section headers (PIN 1234; mastery ≥80%).
+	## Wave 39/45: search/filter by name + group counts in section headers + distance estimate in rows (PIN 1234; mastery ≥80%).
 	var all_dests: Array = _travel_destinations()
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList") if travel_panel else null
 	if list == null:
@@ -301,7 +301,8 @@ func _refresh_travel_list() -> void:
 		var mark: String = ""
 		if last_lbl != "" and str(d["label"]) == last_lbl:
 			mark = " ★ last"  # Wave 34: mark last-visited landmark
-		var ii: int = list.add_item("%s%s%s" % [d["label"], key_s, mark])
+		var dist_s: String = _travel_distance_label(d.get("pos", Vector3.ZERO))  # Wave 45
+		var ii: int = list.add_item("%s%s%s%s" % [d["label"], key_s, dist_s, mark])
 		_travel_dests.append(d)
 		if mark != "":
 			last_sel = ii
@@ -312,6 +313,20 @@ func _refresh_travel_list() -> void:
 		list.select(last_sel)
 	elif first_sel >= 0:
 		list.select(first_sel)
+
+
+func _travel_distance_label(pos: Vector3) -> String:
+	## Wave 45: soft distance estimate in Travel (T) rows (~N paces). PIN 1234; mastery >=80%.
+	if world_scene == null or world_scene.player == null:
+		return ""
+	var ppos: Vector3 = world_scene.player.global_position
+	var dx: float = float(pos.x) - ppos.x
+	var dz: float = float(pos.z) - ppos.z
+	var dist: float = sqrt(dx * dx + dz * dz)
+	if dist < 4.0:
+		return " · here"
+	var paces: int = maxi(1, int(round(dist / 1.15)))
+	return " · ~%d paces" % paces
 
 func _travel_go_selected() -> void:
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")

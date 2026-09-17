@@ -111,6 +111,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_turtle(bob)
 		"poplar_dove":
 			_build_dove(bob)
+		"rowan_robin":
+			_build_robin(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -723,3 +725,33 @@ static func _build_dove(bob: Node3D) -> void:
 	# Soft chest fluff
 	_mi(_sphere(0.1, 0.12), Vector3(0, 0.44, 0.10), bob, "Fluff")
 
+static func _build_robin(bob: Node3D) -> void:
+	## Soft rowan-wilds robin — plump body, red breast, short beak, perky tail (distinct from dove/wren/duck).
+	_mi(_sphere(0.16, 0.20), Vector3(0, 0.46, 0), bob, "Body")
+	# Signature warm red breast (accent-tinted via colorize)
+	_mi(_sphere(0.11, 0.13), Vector3(0, 0.42, 0.10), bob, "Breast")
+	_mi(_sphere(0.11), Vector3(0, 0.60, 0.12), bob, "Head")
+	# Bright eye beads
+	_mi(_sphere(0.022), Vector3(-0.045, 0.64, 0.20), bob, "EyeL")
+	_mi(_sphere(0.022), Vector3(0.045, 0.64, 0.20), bob, "EyeR")
+	# Short pointed beak
+	_mi(_box(Vector3(0.035, 0.022, 0.06)), Vector3(0, 0.58, 0.23), bob, "Beak")
+	# Compact wings (less fan than dove)
+	var lw := _mi(_box(Vector3(0.22, 0.035, 0.16)), Vector3(-0.14, 0.48, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(6, 0, 18)
+	var rw := _mi(_box(Vector3(0.22, 0.035, 0.16)), Vector3(0.14, 0.48, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(6, 0, -18)
+	# Perky upright tail (signature vs dove fan)
+	var tail := _mi(_box(Vector3(0.08, 0.03, 0.14)), Vector3(0, 0.50, -0.18), bob, "Tail")
+	tail.rotation_degrees = Vector3(-42, 0, 0)
+	# Tiny hop feet
+	for info in [
+		["FL", Vector3(-0.05, 0.20, 0.03)],
+		["FR", Vector3(0.05, 0.20, 0.03)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.012, 0.015, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")

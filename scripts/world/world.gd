@@ -912,7 +912,7 @@ func _update_day_night(delta: float) -> void:
 
 
 func _build_plaza_campfire() -> void:
-	## Wave 31/32/33: soft campfire glow + ember sparks + crackle near the village plaza (RuneScape-chunky, wholesome).
+	## Wave 31/32/33/45: soft campfire glow + ember sparks + soft smoke wisps + crackle near the village plaza (RuneScape-chunky, wholesome).
 	var root := Node3D.new()
 	root.name = "PlazaCampfire"
 	# East of fountain keep-clear, near benches — warm hearth feel
@@ -986,6 +986,33 @@ func _build_plaza_campfire() -> void:
 	sparks.position = Vector3(0, 0.48, 0)
 	root.add_child(sparks)
 	HeadlessGuard.guard_particles(sparks)
+	# Soft rising smoke wisps (Wave 45) — gentle gray loft above the hearth
+	var smoke := CPUParticles3D.new()
+	smoke.name = "CampfireSmoke"
+	smoke.emitting = true
+	smoke.amount = 12
+	smoke.lifetime = 3.4
+	smoke.preprocess = 1.2
+	smoke.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	smoke.emission_sphere_radius = 0.18
+	smoke.direction = Vector3(0, 1, 0)
+	smoke.spread = 22.0
+	smoke.initial_velocity_min = 0.25
+	smoke.initial_velocity_max = 0.55
+	smoke.gravity = Vector3(0.05, 0.08, 0.02)
+	smoke.scale_amount_min = 0.22
+	smoke.scale_amount_max = 0.55
+	smoke.color = Color(0.55, 0.52, 0.48, 0.35)
+	var smoke_ramp := Gradient.new()
+	smoke_ramp.colors = PackedColorArray([
+		Color(0.65, 0.62, 0.58, 0.28),
+		Color(0.5, 0.48, 0.45, 0.18),
+		Color(0.4, 0.4, 0.4, 0.0),
+	])
+	smoke.color_ramp = smoke_ramp
+	smoke.position = Vector3(0, 0.55, 0)
+	root.add_child(smoke)
+	HeadlessGuard.guard_particles(smoke)
 	_place_label3d(root, "Campfire", 28, Vector3(0, 1.6, 0), 5, Color(1, 0.92, 0.7, 0.7))
 	static_world.add_child(root)
 

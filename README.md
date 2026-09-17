@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 45 overnight (v1.45.0-overnight)
+- Soft **campfire smoke wisps** lofting above the plaza hearth (with embers/sparks; RuneScape-chunky, wholesome)
+- Clearer **mute / unmute toast** — soft hush when muted; village sounds return when unmuted
+- Soft **combat pull-back sparkle** when walking or clicking away from aggro (cream motes; no cheesy combat labels)
+- New wilds foe **Rowan Robin** — plump body, red breast, short beak, perky tail, gentle “cheered” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove)
+- Travel QoL: Travel (T) menu rows show **~N paces** distance estimate (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 44 overnight (v1.44.0-overnight)
 - Soft **morning bird swell at dawn** — day birds lift gently through dawn then settle (respects mute; RuneScape-chunky, wholesome)
 - Clearer **weather cycle toast** — Clear / Fog / Rain each named with a soft cue (`Weather cycle · …`)

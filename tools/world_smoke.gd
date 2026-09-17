@@ -57,6 +57,7 @@ func _finish():
 	var frogs := 0
 	var turtles := 0
 	var doves := 0
+	var robins := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -88,6 +89,8 @@ func _finish():
 			turtles += 1
 		if str(foe.get("kind")) == "poplar_dove":
 			doves += 1
+		if str(foe.get("kind")) == "rowan_robin":
+			robins += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -104,6 +107,7 @@ func _finish():
 	print("FROGS", frogs)
 	print("TURTLES", turtles)
 	print("DOVES", doves)
+	print("ROBINS", robins)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -310,6 +314,14 @@ func _finish():
 	print("TALK_CAM_NUDGE_SRC", "begin_talk_camera_nudge" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
 	print("PARENT_EXPORT_HELP_SRC", "Needs help:" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "_relative_session_age" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("VERSION_144_SRC", 'config/version="1.44.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+	print("ROWAN_ROBIN_SRC", '"rowan_robin"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("CAMPFIRE_SMOKE_SRC", "CampfireSmoke" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MUTE_TOAST_SRC", "Muted · soft hush" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("PULLBACK_SPARKLE_SRC", "CombatPullbackSparkle" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("TRAVEL_DIST_SRC", "_travel_distance_label" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	print("VERSION_145_SRC", 'config/version="1.45.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

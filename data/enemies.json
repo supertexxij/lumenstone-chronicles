@@ -259,6 +259,19 @@
       "combat_xp": 120,
       "respawn_sec": 56.0,
       "description": "A soft dove of the poplar wilds \u2014 gather it gently with a careful step!"
+    },
+    "rowan_robin": {
+      "kind": "rowan_robin",
+      "name": "Rowan Robin",
+      "defeat_verb": "cheered",
+      "color": "#6a5040",
+      "accent": "#c45a3a",
+      "max_hp": 140,
+      "damage": 23,
+      "accuracy": 0.3,
+      "combat_xp": 126,
+      "respawn_sec": 58.0,
+      "description": "A bright robin of the rowan wilds \u2014 cheer it gently with a careful step!"
     }
   },
   "spawns": [
@@ -849,6 +862,36 @@
       "kind": "poplar_dove",
       "x": 8,
       "z": 82
+    },
+    {
+      "id": "e99",
+      "kind": "rowan_robin",
+      "x": -68,
+      "z": 48
+    },
+    {
+      "id": "e100",
+      "kind": "rowan_robin",
+      "x": 52,
+      "z": -68
+    },
+    {
+      "id": "e101",
+      "kind": "rowan_robin",
+      "x": -28,
+      "z": -76
+    },
+    {
+      "id": "e102",
+      "kind": "rowan_robin",
+      "x": 78,
+      "z": 12
+    },
+    {
+      "id": "e103",
+      "kind": "rowan_robin",
+      "x": 22,
+      "z": 76
     }
   ],
   "base_combat": {

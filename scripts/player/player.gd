@@ -88,6 +88,50 @@ func _on_state_changed() -> void:
 func _on_combat_target(_e: Node) -> void:
 	pass
 
+func _leave_combat_soft() -> void:
+	## Wave 45: walk-away / click-away leave — soft cream sparkle (no cheesy combat labels).
+	if GameState.combat_target == null or not is_instance_valid(GameState.combat_target):
+		GameState.set_combat_target(null)
+		return
+	_play_pullback_sparkle()
+	GameState.set_combat_target(null)
+
+func _play_pullback_sparkle() -> void:
+	## Soft cream motes when leaving aggro — RuneScape-chunky, wholesome.
+	if HeadlessGuard.is_headless():
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "CombatPullbackSparkle"
+	fx.position = Vector3(0, 1.1, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.88
+	fx.amount = 16
+	fx.lifetime = 0.7
+	fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	fx.emission_sphere_radius = 0.35
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 48.0
+	fx.initial_velocity_min = 0.6
+	fx.initial_velocity_max = 1.6
+	fx.gravity = Vector3(0, -0.4, 0)
+	fx.scale_amount_min = 0.06
+	fx.scale_amount_max = 0.16
+	fx.color = Color(1.0, 0.94, 0.72, 0.9)
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.98, 0.82, 0.95),
+		Color(0.95, 0.85, 0.55, 0.55),
+		Color(0.85, 0.75, 0.45, 0.0),
+	])
+	fx.color_ramp = ramp
+	HeadlessGuard.guard_particles(fx)
+	add_child(fx)
+	get_tree().create_timer(1.0).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+	)
+
 func soft_respawn() -> void:
 	global_position = Vector3(0, 0, 10)
 	target_pos = global_position
@@ -291,7 +335,7 @@ func _set_move_target(pos: Vector3) -> void:
 		_build_assist_waypoints(target_pos)
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		if target_pos.distance_to(GameState.combat_target.global_position) > float(EnemyDB.base_combat.get("escape_range", 8)):
-			GameState.set_combat_target(null)
+			_leave_combat_soft()
 
 func _build_assist_waypoints(goal: Vector3) -> void:
 	## Raycast lookahead around props when no navmesh path is available.
@@ -476,7 +520,7 @@ func _physics_process(delta: float) -> void:
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		var dist: float = global_position.distance_to(GameState.combat_target.global_position)
 		if dist > float(EnemyDB.base_combat.get("escape_range", 9.5)):
-			GameState.set_combat_target(null)
+			_leave_combat_soft()
 		elif dist > float(EnemyDB.base_combat.get("attack_range", 3.2)):
 			_set_move_target(GameState.combat_target.global_position)
 		else:
