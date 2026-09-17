@@ -153,6 +153,34 @@ func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
 			draw_circle(pos + Vector2(-2.2, -1.5), 1.7, col)
 			draw_circle(pos + Vector2(2.4, -1.2), 2.2, outline)
 			draw_circle(pos + Vector2(2.4, -1.2), 1.5, col)
+		"thistle":
+			# Spiky thistle rise mark (Wave 29) — distinct from soft heather tufts
+			var tpts := PackedVector2Array([
+				pos + Vector2(0, -5.2),
+				pos + Vector2(2.2, -1.0),
+				pos + Vector2(1.0, -1.0),
+				pos + Vector2(3.4, 2.5),
+				pos + Vector2(0.8, 1.2),
+				pos + Vector2(0, 4.8),
+				pos + Vector2(-0.8, 1.2),
+				pos + Vector2(-3.4, 2.5),
+				pos + Vector2(-1.0, -1.0),
+				pos + Vector2(-2.2, -1.0),
+			])
+			draw_colored_polygon(tpts, outline)
+			var tpts2 := PackedVector2Array([
+				pos + Vector2(0, -3.8),
+				pos + Vector2(1.4, -0.6),
+				pos + Vector2(0.6, -0.6),
+				pos + Vector2(2.2, 1.8),
+				pos + Vector2(0.5, 0.8),
+				pos + Vector2(0, 3.4),
+				pos + Vector2(-0.5, 0.8),
+				pos + Vector2(-2.2, 1.8),
+				pos + Vector2(-0.6, -0.6),
+				pos + Vector2(-1.4, -0.6),
+			])
+			draw_colored_polygon(tpts2, col)
 		"hall":
 			draw_rect(Rect2(pos + Vector2(-3.2, -3.2), Vector2(6.4, 6.4)), outline)
 			draw_rect(Rect2(pos + Vector2(-2.4, -2.4), Vector2(4.8, 4.8)), col)

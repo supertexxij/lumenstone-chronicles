@@ -27,6 +27,7 @@ var _door_cooldown: float = 0.0
 var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
 var _village_lamp_lights: Array = []  # Wave 28: dusk OmniLights on village lamp posts
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
+var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -73,6 +74,7 @@ func _ready() -> void:
 	_build_birch_rest()
 	_build_fern_dell()
 	_build_heather_heath()
+	_build_thistle_rise()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -82,6 +84,8 @@ func _ready() -> void:
 	AudioBus.start_ambient()
 	if not GameState.soft_defeated.is_connected(_play_fountain_restore_fx):
 		GameState.soft_defeated.connect(_play_fountain_restore_fx)
+	if GameState.has_signal("quest_mastered") and not GameState.quest_mastered.is_connected(_play_quest_victory_sparkle):
+		GameState.quest_mastered.connect(_play_quest_victory_sparkle)
 
 func _init_mats() -> void:
 	_mats["grass"] = _mat(Color("#3d6b3d"))
@@ -119,6 +123,9 @@ func _init_mats() -> void:
 	_mats["fern"] = _mat(Color("#3d7a3a"))
 	_mats["fern_light"] = _mat(Color("#5a9a48"))
 	_mats["fern_dark"] = _mat(Color("#2a5a2a"))
+	_mats["thistle"] = _mat(Color("#6a5a8a"))
+	_mats["thistle_leaf"] = _mat(Color("#4a7a48"))
+	_mats["thistle_bloom"] = _mat(Color("#7a4a9a"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -417,6 +424,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 		return true
 	# Heather Heath plaza keep-clear
 	if abs(pos.x + 48.0) < 5.0 and abs(pos.z - 42.0) < 5.0:
+		return true
+	# East-southeast path to Thistle Rise (Wave 29)
+	if _near_segment_xz(pos, Vector3(14, 0, 20), Vector3(48, 0, 42), 3.4):
+		return true
+	# Thistle Rise plaza keep-clear
+	if abs(pos.x - 48.0) < 5.0 and abs(pos.z - 42.0) < 5.0:
 		return true
 	return false
 
@@ -725,6 +738,9 @@ func _landmark_zones() -> Array:
 		{"id": "heather", "pos": Vector3(-48, 0, 42), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Heather Heath — purple heather rolls across a quiet west rise.",
 			"return_toast": "Back at Heather Heath — the heather still nods gently in the breeze."},
+		{"id": "thistle", "pos": Vector3(48, 0, 42), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Thistle Rise — spiky purple thistles crown a quiet east rise.",
+			"return_toast": "Back at Thistle Rise — the thistles still stand proud in the soft breeze."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1297,6 +1313,7 @@ func _setup_weather() -> void:
 	HeadlessGuard.guard_particles(_clouds)
 	_apply_weather_visuals()
 	_setup_rain_splash()
+	_setup_fog_mist()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1328,6 +1345,36 @@ func _setup_rain_splash() -> void:
 	add_child(_rain_splash)
 	HeadlessGuard.guard_particles(_rain_splash)
 
+func _setup_fog_mist() -> void:
+	## Wave 29: denser low ground-mist cue while foggy (player-visible fog density).
+	_fog_mist = CPUParticles3D.new()
+	_fog_mist.name = "FogMist"
+	_fog_mist.emitting = false
+	_fog_mist.amount = 40
+	_fog_mist.lifetime = 4.5
+	_fog_mist.preprocess = 2.0
+	_fog_mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_fog_mist.emission_box_extents = Vector3(14, 0.4, 14)
+	_fog_mist.direction = Vector3(0.15, 0.05, 0.1)
+	_fog_mist.spread = 35.0
+	_fog_mist.initial_velocity_min = 0.15
+	_fog_mist.initial_velocity_max = 0.45
+	_fog_mist.gravity = Vector3(0, 0.02, 0)
+	_fog_mist.scale_amount_min = 0.8
+	_fog_mist.scale_amount_max = 1.8
+	var fm := SphereMesh.new()
+	fm.radius = 0.55
+	fm.height = 0.7
+	_fog_mist.mesh = fm
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.88, 0.9, 0.94, 0.28)
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_fog_mist.material_override = fmat
+	_fog_mist.position = Vector3(0, 0.6, 0)
+	add_child(_fog_mist)
+	HeadlessGuard.guard_particles(_fog_mist)
+
 func _update_weather(delta: float) -> void:
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
 	if player and _rain:
@@ -1349,6 +1396,12 @@ func _update_weather(delta: float) -> void:
 			_clouds.visible = true
 		else:
 			_clouds.visible = false
+	if player and _fog_mist:
+		if _inside_hall == "" and _weather_mode == 1:
+			_fog_mist.global_position = Vector3(player.global_position.x, 0.6, player.global_position.z)
+			_fog_mist.visible = true
+		else:
+			_fog_mist.visible = false
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -1384,9 +1437,14 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				_rain.emitting = false
 				if _rain_splash:
 					_rain_splash.emitting = false
+			if _fog_mist:
+				_fog_mist.emitting = (_inside_hall == "")
+				_fog_mist.amount = 48
 		2:
 			_weather_label_cache = "Rain"
 			_fog_boost = 0.0025
+			if _fog_mist:
+				_fog_mist.emitting = false
 			if _rain and _inside_hall == "":
 				_rain.emitting = true
 				if _rain_splash:
@@ -1400,6 +1458,8 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		_:
 			_weather_label_cache = "Clear"
 			_fog_boost = 0.0
+			if _fog_mist:
+				_fog_mist.emitting = false
 			if _rain:
 				_rain.emitting = false
 				if _rain_splash:
@@ -1424,7 +1484,11 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		AudioBus.set_rain_audio(rain_on)
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
-		GameState.toast.emit("Weather: %s" % _weather_label_cache)
+		# Wave 29: fog density cue in the weather toast
+		if _weather_mode == 1:
+			GameState.toast.emit("Weather: Fog — soft mist gathers thick nearby.")
+		else:
+			GameState.toast.emit("Weather: %s" % _weather_label_cache)
 
 
 func _update_quest_desk_highlights() -> void:
@@ -1739,6 +1803,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
 	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
 	halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
+	halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -2440,6 +2505,70 @@ func _build_heather_heath() -> void:
 	_place_label3d(root, "Heather Heath", 52, Vector3(-48.0, 3.5, 42.0))
 
 
+func _build_thistle_rise() -> void:
+	## East-southeast wilds landmark — spiky purple thistle rise (soft travel 9).
+	## Distinct from Heather Heath (soft purple mounds WSW), Fern Dell (fern hollow SSE), Quiet Cross (wooden cross E).
+	var root := Node3D.new()
+	root.name = "ThistleRise"
+	static_world.add_child(root)
+	# Dirt spur ESE from the green
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := 8.0 + tt * 40.0
+		var z := 16.0 + tt * 26.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "ThistlePath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := 10.0 + tt * 34.0
+		var z := 18.0 + tt * 22.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "ThistleTrim")
+	# Soft thistle clearing
+	_mi(_cyl(4.2, 4.2, 0.08), Vector3(48.0, 0.04, 42.0), root, _mats["grass_dark"], "ThistleClearing")
+	_mi(_cyl(2.4, 2.4, 0.06), Vector3(48.0, 0.08, 42.0), root, _mats["thistle"], "ThistleClearingInner")
+	# Ring of spiky thistle clumps (chunky stems + purple blooms — not soft heather mounds)
+	for i in 10:
+		var ang := float(i) * TAU / 10.0 + 0.18
+		var hx := 48.0 + cos(ang) * 3.5
+		var hz := 42.0 + sin(ang) * 3.5
+		_mi(_cyl(0.08, 0.1, 0.55), Vector3(hx, 0.28, hz), root, _mats["thistle_leaf"], "ThistleStem%d" % i)
+		_mi(_sphere(0.22, 0.28), Vector3(hx, 0.62, hz), root, _mats["thistle_bloom"], "ThistleBloom%d" % i)
+		_mi(_sphere(0.12, 0.18), Vector3(hx + cos(ang) * 0.15, 0.72, hz + sin(ang) * 0.15), root, _mats["thistle"], "ThistleSpike%d" % i)
+	# Inner thistles + resting stone + benches + lanterns
+	for i in 5:
+		var ang := float(i) * TAU / 5.0
+		var ix := 48.0 + cos(ang) * 1.5
+		var iz := 42.0 + sin(ang) * 1.5
+		_mi(_cyl(0.07, 0.09, 0.45), Vector3(ix, 0.24, iz), root, _mats["thistle_leaf"], "ThistleInnerStem%d" % i)
+		_mi(_sphere(0.16, 0.2), Vector3(ix, 0.52, iz), root, _mats["thistle_bloom"], "ThistleInnerBloom%d" % i)
+	_mi(_cyl(0.55, 0.65, 0.45), Vector3(48.0, 0.28, 42.0), root, _mats["stone"], "ThistleStone")
+	_mi(_sphere(0.18, 0.2), Vector3(48.0, 0.58, 42.0), root, _mats["thistle_bloom"], "StoneThistle")
+	_add_bench(Vector3(50.5, 0, 40.2), 0.4)
+	_add_bench(Vector3(45.5, 0, 44.0), -0.5)
+	_add_crate(Vector3(51.0, 0, 44.5))
+	_add_lantern_post(Vector3(52.0, 0, 38.5))
+	_add_lantern_post(Vector3(44.0, 0, 45.5))
+	_add_lantern_post(Vector3(28.0, 0, 28.0))
+	_add_lantern_post(Vector3(18.0, 0, 22.0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1029
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := 10.0 + tt * 34.0
+		var cz := 18.0 + tt * 22.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(4.5, 7.2), 0, cz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	_add_chunky_sign(root, Vector3(50.5, 0, 42.0), "Thistle Rise", -0.35)
+	_place_label3d(root, "Spiky thistles, quiet rise", 28, Vector3(48.0, 4.1, 42.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Thistle Rise", 52, Vector3(48.0, 3.5, 42.0))
+
+
+
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
@@ -2494,6 +2623,61 @@ func _play_fountain_restore_fx() -> void:
 		if is_instance_valid(mist):
 			mist.queue_free()
 	)
+
+func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
+	## Wave 29: soft cream/gold victory sparkle near the player when a quest is mastered (RuneScape-chunky, wholesome).
+	if HeadlessGuard.is_headless():
+		return
+	var anchor: Node3D = player
+	if anchor == null or not is_instance_valid(anchor):
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "QuestVictorySparkle"
+	fx.position = Vector3(0, 1.4, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.8
+	fx.amount = 22
+	fx.lifetime = 1.05
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 60.0
+	fx.initial_velocity_min = 1.0
+	fx.initial_velocity_max = 2.4
+	fx.gravity = Vector3(0, -1.2, 0)
+	fx.scale_amount_min = 0.1
+	fx.scale_amount_max = 0.24
+	fx.color = Color(1.0, 0.94, 0.55, 0.92)
+	HeadlessGuard.guard_particles(fx)
+	anchor.add_child(fx)
+	var ring := CPUParticles3D.new()
+	ring.name = "QuestVictoryRing"
+	ring.position = Vector3(0, 0.35, 0)
+	ring.emitting = true
+	ring.one_shot = true
+	ring.explosiveness = 0.9
+	ring.amount = 12
+	ring.lifetime = 0.9
+	ring.emission_shape = CPUParticles3D.EMISSION_SHAPE_RING
+	ring.emission_ring_radius = 0.7
+	ring.emission_ring_inner_radius = 0.45
+	ring.emission_ring_height = 0.05
+	ring.direction = Vector3(0, 1, 0)
+	ring.spread = 20.0
+	ring.initial_velocity_min = 0.3
+	ring.initial_velocity_max = 0.8
+	ring.gravity = Vector3(0, 0.4, 0)
+	ring.scale_amount_min = 0.12
+	ring.scale_amount_max = 0.28
+	ring.color = Color(0.95, 0.88, 0.5, 0.7)
+	HeadlessGuard.guard_particles(ring)
+	anchor.add_child(ring)
+	get_tree().create_timer(1.8).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+		if is_instance_valid(ring):
+			ring.queue_free()
+	)
+
 
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
@@ -2573,6 +2757,10 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(-48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(-45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(-51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		# Thistle Rise (Wave 29)
+		{"pos": Vector3(48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},

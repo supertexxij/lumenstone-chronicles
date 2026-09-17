@@ -8,6 +8,7 @@ signal quest_started(quest_id: String)
 signal ui_open_requested(panel: String)
 signal combat_target_changed(enemy: Node)
 signal soft_defeated
+signal quest_mastered(quest_id: String)
 signal hurt(amount: int)
 signal soft_combat_cleared
 signal heal_tick(amount: int)
@@ -837,6 +838,7 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 				continue
 			unlock_item(str(iid))
 		toast.emit("Quest mastered: %s" % quest.get("title", quest_id))
+		quest_mastered.emit(quest_id)
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()
 	else:

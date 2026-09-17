@@ -156,6 +156,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(22, 0, 48), "Fern Dell")
 			KEY_8:
 				_goto_landmark(Vector3(-48, 0, 42), "Heather Heath")
+			KEY_9:
+				_goto_landmark(Vector3(48, 0, 42), "Thistle Rise")
 			KEY_1:
 				_goto_landmark(Vector3(22, 0, 2.5), "Builder's Hall")
 			KEY_2:
@@ -168,8 +170,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				_goto_landmark(Vector3(0, 0, -2), "Worship Hall")
 
 func _travel_destinations() -> Array:
+	## Wave 29: grouped landmark list (Village · Wilds · Halls) for clearer Travel (T) menu.
 	return [
+		{"label": "── Village ──", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Village Fountain", "pos": Vector3(0, 0, 12), "key": "H"},
+		{"label": "── Wilds landmarks ──", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Lantern Glade", "pos": Vector3(0.5, 0, -46), "key": "N"},
 		{"label": "Pine Ridge", "pos": Vector3(-20, 0, -50), "key": "B"},
 		{"label": "Prayer Garden", "pos": Vector3(30, 0, 18), "key": "G"},
@@ -184,13 +189,15 @@ func _travel_destinations() -> Array:
 		{"label": "Birch Rest", "pos": Vector3(-42, 0, -20), "key": "6"},
 		{"label": "Fern Dell", "pos": Vector3(22, 0, 48), "key": "7"},
 		{"label": "Heather Heath", "pos": Vector3(-48, 0, 42), "key": "8"},
+		{"label": "Thistle Rise", "pos": Vector3(48, 0, 42), "key": "9"},
+		{"label": "Lantern Glade center", "pos": Vector3(0.5, 0, -48), "key": ""},
+		{"label": "Pine Ridge stand", "pos": Vector3(-24, 0, -54), "key": ""},
+		{"label": "── Guild halls ──", "pos": Vector3.ZERO, "key": "", "group": true},
 		{"label": "Builder's Hall (door)", "pos": Vector3(22, 0, 2.5), "key": "1"},
 		{"label": "Scribe's Hall (door)", "pos": Vector3(-22, 0, 2.5), "key": "2"},
 		{"label": "Creation Hall (door)", "pos": Vector3(0, 0, -18), "key": "3"},
 		{"label": "Chronicle Hall (door)", "pos": Vector3(0, 0, 28), "key": "4"},
 		{"label": "Worship Hall (door)", "pos": Vector3(0, 0, -2), "key": "5"},
-		{"label": "Lantern Glade center", "pos": Vector3(0.5, 0, -48), "key": ""},
-		{"label": "Pine Ridge stand", "pos": Vector3(-24, 0, -54), "key": ""},
 	]
 
 func _open_travel() -> void:
@@ -203,11 +210,19 @@ func _open_travel() -> void:
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
 	if list:
 		list.clear()
+		var first_sel := -1
 		for d in _travel_dests:
+			if bool(d.get("group", false)):
+				var gi: int = list.add_item(str(d["label"]))
+				list.set_item_disabled(gi, true)
+				list.set_item_custom_fg_color(gi, Color(0.75, 0.7, 0.45))
+				continue
 			var key_s: String = (" [%s]" % d["key"]) if str(d.get("key", "")) != "" else ""
-			list.add_item("%s%s" % [d["label"], key_s])
-		if list.item_count > 0:
-			list.select(0)
+			var ii: int = list.add_item("%s%s" % [d["label"], key_s])
+			if first_sel < 0:
+				first_sel = ii
+		if first_sel >= 0:
+			list.select(first_sel)
 	travel_panel.visible = true
 	_set_player_ui_block(true)
 	AudioBus.play_ui()
@@ -220,6 +235,8 @@ func _travel_go_selected() -> void:
 	if idx < 0 or idx >= _travel_dests.size():
 		return
 	var d: Dictionary = _travel_dests[idx]
+	if bool(d.get("group", false)):
+		return
 	travel_panel.visible = false
 	_set_player_ui_block(false)
 	_goto_landmark(d["pos"], d["label"])

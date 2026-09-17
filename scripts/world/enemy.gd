@@ -247,8 +247,12 @@ func _soft_aggro(delta: float) -> void:
 		if not _was_warning and warning:
 			var first_warn := not GameState.seen_aggro_tutorial
 			GameState.mark_aggro_tutorial()
-			if not first_warn:
-				GameState.toast.emit("%s notices you nearby…" % def.get("name", "Foe"))
+			# Wave 29: always name the foe on soft-aggro toast (first tip + later notices)
+			var foe_name: String = str(def.get("name", "Foe"))
+			if first_warn:
+				GameState.toast.emit("%s notices you — soft yellow ring means step back anytime." % foe_name)
+			else:
+				GameState.toast.emit("%s notices you nearby…" % foe_name)
 		_was_warning = warning
 		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
@@ -501,5 +505,11 @@ func _update_hp_bar() -> void:
 	var ratio := float(hp) / float(maxi(1, max_hp))
 	hp_bar.scale.x = maxf(0.05, ratio)
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.2, 0.85, 0.3) if ratio > 0.4 else Color(0.9, 0.2, 0.2)
+	# Wave 29: soft 3-tier HP color — healthy green → amber → warm rose at low HP (wholesome, no harsh red)
+	if ratio > 0.55:
+		mat.albedo_color = Color(0.22, 0.86, 0.34)
+	elif ratio > 0.28:
+		mat.albedo_color = Color(0.92, 0.72, 0.22)
+	else:
+		mat.albedo_color = Color(0.88, 0.42, 0.38)
 	hp_bar.material_override = mat
