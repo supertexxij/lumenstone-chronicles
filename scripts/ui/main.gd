@@ -667,6 +667,11 @@ func _enter_world() -> void:
 		GameState.maybe_wave_58_toast()
 	if GameState.has_method("maybe_wave_59_toast"):
 		GameState.maybe_wave_59_toast()
+	# Wave 60: once-per-save polish tip + soft festival confetti (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_60_toast"):
+		var fresh60: bool = bool(GameState.maybe_wave_60_toast())
+		if fresh60 and world_scene != null and world_scene.has_method("play_wave60_festival_confetti"):
+			world_scene.play_wave60_festival_confetti()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

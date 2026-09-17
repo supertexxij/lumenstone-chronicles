@@ -454,6 +454,19 @@
       "combat_xp": 210,
       "respawn_sec": 86.0,
       "description": "A chunky puffin of the peach wilds \u2014 tuck it gently with a careful step!"
+    },
+    "fig_finch": {
+      "kind": "fig_finch",
+      "name": "Fig Finch",
+      "defeat_verb": "perched",
+      "color": "#9a6b5c",
+      "accent": "#c8a882",
+      "max_hp": 230,
+      "damage": 38,
+      "accuracy": 0.17,
+      "combat_xp": 216,
+      "respawn_sec": 88.0,
+      "description": "A plump finch of the fig wilds \u2014 perch it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1494,6 +1507,36 @@
       "kind": "peach_puffin",
       "x": -40,
       "z": 128
+    },
+    {
+      "id": "e174",
+      "kind": "fig_finch",
+      "x": -118,
+      "z": 55
+    },
+    {
+      "id": "e175",
+      "kind": "fig_finch",
+      "x": 95,
+      "z": -115
+    },
+    {
+      "id": "e176",
+      "kind": "fig_finch",
+      "x": -55,
+      "z": -138
+    },
+    {
+      "id": "e177",
+      "kind": "fig_finch",
+      "x": 135,
+      "z": 48
+    },
+    {
+      "id": "e178",
+      "kind": "fig_finch",
+      "x": -95,
+      "z": 118
     }
   ],
   "base_combat": {

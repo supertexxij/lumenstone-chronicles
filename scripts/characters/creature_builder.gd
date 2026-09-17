@@ -141,6 +141,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_porcupine(bob)
 		"peach_puffin":
 			_build_puffin(bob)
+		"fig_finch":
+			_build_finch(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1311,4 +1313,46 @@ static func _build_puffin(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.014, 0.018, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.07, 0.014, 0.08)), Vector3(0, -0.08, 0.02), leg, "Paddle")
+
+static func _build_finch(bob: Node3D) -> void:
+	## Soft fig-wilds finch — plump oval body, tiny cone beak, short rounded wings, slender perch legs (distinct from Willow Wren / Rowan Robin / Ash Sparrow / Poplar Dove / Hickory Quail / Juniper Jay / Peach Puffin / Olive Owl / Alder Duck).
+	# Plump oval body (more horizontal than upright puffin)
+	_mi(_sphere(0.15, 0.13), Vector3(0, 0.38, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.09, 0.08), Vector3(0, 0.34, 0.07), bob, "Belly")
+	# Round head
+	_mi(_sphere(0.10), Vector3(0, 0.52, 0.08), bob, "Head")
+	# Soft eyes
+	_mi(_sphere(0.02), Vector3(-0.038, 0.54, 0.15), bob, "EyeL")
+	_mi(_sphere(0.02), Vector3(0.038, 0.54, 0.15), bob, "EyeR")
+	_mi(_sphere(0.008), Vector3(-0.038, 0.545, 0.165), bob, "PupilL")
+	_mi(_sphere(0.008), Vector3(0.038, 0.545, 0.165), bob, "PupilR")
+	# Tiny cone beak (signature — smaller/sharper than puffin striped beak)
+	var beak := Node3D.new()
+	beak.name = "Beak"
+	beak.position = Vector3(0, 0.50, 0.16)
+	bob.add_child(beak)
+	_mi(_box(Vector3(0.04, 0.028, 0.07)), Vector3(0, 0.0, 0.03), beak, "BeakCone")
+	# Soft fig-tone cheek patch
+	_mi(_sphere(0.03), Vector3(-0.07, 0.50, 0.06), bob, "CheekL")
+	_mi(_sphere(0.03), Vector3(0.07, 0.50, 0.06), bob, "CheekR")
+	# Short rounded folded wings
+	var lw := _mi(_box(Vector3(0.12, 0.03, 0.14)), Vector3(-0.12, 0.40, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(8, 0, 22)
+	var rw := _mi(_box(Vector3(0.12, 0.03, 0.14)), Vector3(0.12, 0.40, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(8, 0, -22)
+	# Short notched tail
+	var tail := _mi(_box(Vector3(0.07, 0.025, 0.09)), Vector3(0, 0.40, -0.14), bob, "Tail")
+	tail.rotation_degrees = Vector3(-28, 0, 0)
+	# Slender perch legs (signature — thinner than paddle puffin feet)
+	for info in [
+		["FL", Vector3(-0.04, 0.22, 0.03)],
+		["FR", Vector3(0.04, 0.22, 0.03)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.01, 0.012, 0.12), Vector3(0, -0.03, 0), leg, "Shin")
+		_mi(_box(Vector3(0.035, 0.01, 0.04)), Vector3(0, -0.09, 0.01), leg, "Perch")
 

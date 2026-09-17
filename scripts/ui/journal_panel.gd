@@ -244,6 +244,12 @@ func _unlock_progress_text(uw: int) -> String:
 	# Wave 57: ★ mastered this week in sticky line (PIN 1234; mastery ≥80% unchanged)
 	var of_week_sticky := (" / %d" % total_week) if total_week > 0 else ""
 	lines.insert(0, "★ Mastered this week: %d%s" % [mastered, of_week_sticky])
+	# Wave 60: total mastered ★ in sticky header (PIN 1234; mastery ≥80% unchanged)
+	var total_stars: int = GameState.completed_quests.size()
+	var year_total: int = QuestDB.quests.size() if QuestDB != null else 0
+	if year_total <= 0:
+		year_total = maxi(1, total_stars)
+	lines.insert(0, "★ Total mastered: %d / %d" % [total_stars, year_total])
 	return "\n".join(lines)
 
 

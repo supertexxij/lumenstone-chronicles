@@ -903,6 +903,10 @@ func _update_landmark_approach() -> void:
 				elif stripped.begins_with("Back at "):
 					stripped = stripped.substr("Back at ".length())
 				msg = "✦ Near · " + stripped
+			# Wave 60: clearer landmark approach with paces (RuneScape-chunky, wholesome)
+			if msg != "":
+				var paces: int = maxi(1, int(round(best_d / 1.15)))
+				msg = "%s · ~%d paces" % [msg, paces]
 			if _landmark_toast_cd <= 0.0 and msg != "":
 				GameState.toast.emit(msg)
 				_landmark_toast_cd = 2.5
@@ -1181,11 +1185,15 @@ func _update_hall_wind_chime() -> void:
 
 func _update_plaza_campfire(dayness: float) -> void:
 	## Soft hearth stays lit by day; warms up a bit at dusk. Wave 33: near-hearth crackle.
+	## Wave 60: plaza dusk lantern flicker sync — hearth breathes with village lamp flicker.
 	if _plaza_campfire_light == null or not is_instance_valid(_plaza_campfire_light):
 		return
 	var dusk: float = clampf((0.62 - dayness) / 0.35, 0.0, 1.0)
-	var pulse: float = 0.9 + 0.12 * abs(sin(float(Time.get_ticks_msec()) * 0.0045))
-	_plaza_campfire_light.light_energy = (0.85 + dusk * 1.15) * pulse
+	var t_ms: float = float(Time.get_ticks_msec())
+	var pulse: float = 0.9 + 0.12 * abs(sin(t_ms * 0.0045))
+	# Sync soft irregular flicker with village dusk lamps (same phase recipe)
+	var flicker: float = 1.0 + 0.06 * sin(t_ms * 0.011) + 0.04 * sin(t_ms * 0.027 + 1.7)
+	_plaza_campfire_light.light_energy = (0.85 + dusk * 1.15) * pulse * clampf(flicker, 0.88, 1.12)
 	# Soft crackle when outdoors and near the plaza hearth (respects mute via AudioBus)
 	if AudioBus.has_method("set_campfire_audio") and player:
 		var near: bool = _inside_hall == "" and player.global_position.distance_to(_plaza_campfire_pos) < 14.0
@@ -3722,6 +3730,57 @@ func _play_fountain_restore_fx() -> void:
 			glow.queue_free()
 	)
 
+
+
+func play_wave60_festival_confetti() -> void:
+	## Wave 60: soft festival confetti on load once per save (RuneScape-chunky, wholesome — no cheesy combat labels).
+	if HeadlessGuard.is_headless():
+		return
+	var anchor: Node3D = player
+	if anchor == null or not is_instance_valid(anchor):
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "Wave60FestivalConfetti"
+	fx.position = Vector3(0, 2.2, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.78
+	fx.amount = 42
+	fx.lifetime = 1.65
+	fx.direction = Vector3(0, -1, 0)
+	fx.spread = 85.0
+	fx.initial_velocity_min = 0.55
+	fx.initial_velocity_max = 1.85
+	fx.gravity = Vector3(0, -2.2, 0)
+	fx.scale_amount_min = 0.10
+	fx.scale_amount_max = 0.26
+	fx.color = Color(1.0, 0.78, 0.45, 0.92)
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.86, 0.55, 0.95),
+		Color(0.95, 0.55, 0.62, 0.9),
+		Color(0.55, 0.78, 0.95, 0.85),
+		Color(0.75, 0.92, 0.55, 0.7),
+	])
+	fx.color_ramp = ramp
+	HeadlessGuard.guard_particles(fx)
+	anchor.add_child(fx)
+	var glow := OmniLight3D.new()
+	glow.name = "Wave60FestivalGlow"
+	glow.position = Vector3(0, 1.8, 0)
+	glow.light_color = Color(1.0, 0.88, 0.6)
+	glow.light_energy = 1.6
+	glow.omni_range = 5.0
+	glow.shadow_enabled = false
+	anchor.add_child(glow)
+	var tw := create_tween()
+	tw.tween_property(glow, "light_energy", 0.05, 1.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(2.2).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+		if is_instance_valid(glow):
+			glow.queue_free()
+	)
 
 func play_festival_decade_sparkle() -> void:
 	## Wave 50: soft festival sparkle when year % hits a multiple of 10 (RuneScape-chunky, wholesome).

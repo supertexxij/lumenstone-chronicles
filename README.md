@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 60 overnight (v1.60.0-overnight)
+- Soft **festival confetti on load** once per save for v1.60 (RuneScape-chunky, wholesome)
+- Clearer **landmark approach with paces** — approach toasts name ~N paces; plaza hearth flicker syncs with village dusk lanterns
+- New wilds foe **Fig Finch** — plump oval body, tiny cone beak, short rounded wings, slender perch legs, gentle “perched” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin)
+- Journal QoL: sticky header shows **★ Total mastered** year count + Wave 60 tip once (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 59 overnight (v1.59.0-overnight)
 - Soft **amber knoll glow at dusk** — warm honey OmniLight on Amber Knoll crest (RuneScape-chunky, wholesome)
 - Clearer **mute / unmute with weather note** — toast names Clear/Fog/Rain so hush state reads with the sky

@@ -58,6 +58,7 @@ var seen_wave_56_toast: bool = false  # Wave 56: once-per-save polish tip toast 
 var seen_wave_57_toast: bool = false  # Wave 57: once-per-save polish tip toast on load
 var seen_wave_58_toast: bool = false  # Wave 58: once-per-save polish tip toast on load
 var seen_wave_59_toast: bool = false  # Wave 59: once-per-save polish tip toast on load
+var seen_wave_60_toast: bool = false  # Wave 60: once-per-save polish tip toast on load
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
 ## Landmark approach toasts already shown for the current visit (persisted so reload in-zone does not re-greet).
 var greeted_landmarks: Array = []
@@ -142,6 +143,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_57_toast = false
 	seen_wave_58_toast = false
 	seen_wave_59_toast = false
+	seen_wave_60_toast = false
 	festival_decades_seen = []
 	greeted_landmarks = []
 	discovered_landmarks = []
@@ -334,6 +336,7 @@ func save_game() -> void:
 		"seen_wave_57_toast": seen_wave_57_toast,
 		"seen_wave_58_toast": seen_wave_58_toast,
 		"seen_wave_59_toast": seen_wave_59_toast,
+		"seen_wave_60_toast": seen_wave_60_toast,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
 		"discovered_landmarks": discovered_landmarks,
@@ -401,6 +404,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_57_toast = bool(data.get("seen_wave_57_toast", false))
 	seen_wave_58_toast = bool(data.get("seen_wave_58_toast", false))
 	seen_wave_59_toast = bool(data.get("seen_wave_59_toast", false))
+	seen_wave_60_toast = bool(data.get("seen_wave_60_toast", false))
 	var fd = data.get("festival_decades_seen", [])
 	festival_decades_seen = []
 	if typeof(fd) == TYPE_ARRAY:
@@ -744,6 +748,17 @@ func maybe_wave_59_toast() -> void:
 	seen_wave_59_toast = true
 	toast.emit("Wave 59 polish · amber knoll glows soft at dusk · mute notes the weather · XP floats stack on multi-foe · ★ fav paces on HUD when far · Peach Puffin in the wilds.")
 	save_game()
+
+
+func maybe_wave_60_toast() -> bool:
+	## Wave 60: once-per-save toast + soft festival confetti cue (PIN stays 1234; mastery ≥80%).
+	## Returns true when newly shown so callers can play one-shot confetti.
+	if seen_wave_60_toast:
+		return false
+	seen_wave_60_toast = true
+	toast.emit("Wave 60 polish · soft festival confetti on load · landmark approach names paces · journal shows total ★ · Fig Finch in the wilds.")
+	save_game()
+	return true
 
 
 func set_favorite_landmark(label: String) -> void:
