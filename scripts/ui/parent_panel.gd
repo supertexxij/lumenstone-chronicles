@@ -17,6 +17,15 @@ var _reset_edit: LineEdit
 var _reset_btn: Button
 var _reset_armed: bool = false
 var _hint_lbl: Label
+var _campaign_tabs: TabContainer
+var _campaign_labels: Array = []  # RichTextLabel per campaign
+
+const CAMPAIGN_RANGES := [
+	{"title": "I · Kindling (1–9)", "lo": 1, "hi": 9},
+	{"title": "II · Scrolls (10–18)", "lo": 10, "hi": 18},
+	{"title": "III · Builders (19–27)", "lo": 19, "hi": 27},
+	{"title": "IV · Light (28–36)", "lo": 28, "hi": 36},
+]
 
 func _ready() -> void:
 	content.visible = false
@@ -26,6 +35,7 @@ func _ready() -> void:
 	if change_pin_btn:
 		change_pin_btn.pressed.connect(_change_pin)
 	_ensure_recovery_ui()
+	_ensure_campaign_tabs()
 
 func open() -> void:
 	pin_edit.text = ""
@@ -95,32 +105,14 @@ func _refresh() -> void:
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]
-	lines += "\n[b]Skills / quests by week[/b]  (✓ mastered · open · [locked])\n"
-	for w in range(1, 37):
-		var titles: Array = []
-		var done_n := 0
-		var total_n := 0
-		for q in QuestDB.quests:
-			if int(q.get("week", 1)) != w:
-				continue
-			total_n += 1
-			var qid: String = str(q["id"])
-			var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")
-			if qid in GameState.completed_quests:
-				done_n += 1
-			titles.append("%s %s" % [mark, q.get("title", qid)])
-		var lock: String = "" if w <= uw else " [locked]"
-		var head: String = "Week %d (%d/%d)%s" % [w, done_n, total_n, lock]
-		if w == uw:
-			head = "[b]%s ← current[/b]" % head
-		lines += "%s: %s\n" % [head, ", ".join(titles)]
+	lines += "\nUse the [b]campaign tabs[/b] below for week-by-week skills (✓ mastered · open · – locked)."
 	summary.text = lines
+	_refresh_campaign_tabs(uw)
 	help_list.clear()
 	var help: Array = GameState.needs_help_quests()
 	if help.is_empty():
 		help_list.add_item("No needs-help items — great work!")
 	else:
-		# Sort by lowest percent first so weakest skills rise to the top
 		help.sort_custom(func(a, b): return float(a.get("percent", 0)) < float(b.get("percent", 0)))
 		for h in help:
 			var q: Dictionary = QuestDB.get_quest(str(h.get("quest_id", "")))
@@ -133,6 +125,84 @@ func _refresh() -> void:
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct
 			]
 			help_list.add_item(line)
+
+func _ensure_campaign_tabs() -> void:
+	if content.get_node_or_null("CampaignTabs") != null:
+		_campaign_tabs = content.get_node("CampaignTabs")
+		_campaign_labels.clear()
+		for i in range(_campaign_tabs.get_tab_count()):
+			var sc: ScrollContainer = _campaign_tabs.get_child(i)
+			var rtl: RichTextLabel = sc.get_child(0) if sc.get_child_count() > 0 else null
+			_campaign_labels.append(rtl)
+		return
+	var title := Label.new()
+	title.name = "CampaignTabsTitle"
+	title.text = "Skills / quests by campaign"
+	content.add_child(title)
+	content.move_child(title, summary.get_index() + 1)
+	_campaign_tabs = TabContainer.new()
+	_campaign_tabs.name = "CampaignTabs"
+	_campaign_tabs.custom_minimum_size = Vector2(0, 200)
+	_campaign_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(_campaign_tabs)
+	content.move_child(_campaign_tabs, title.get_index() + 1)
+	# Shrink overview Summary so tabs get room
+	summary.custom_minimum_size = Vector2(0, 140)
+	_campaign_labels.clear()
+	for camp in CAMPAIGN_RANGES:
+		var scroll := ScrollContainer.new()
+		scroll.name = str(camp["title"]).replace(" ", "_")
+		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		var rtl := RichTextLabel.new()
+		rtl.bbcode_enabled = true
+		rtl.fit_content = true
+		rtl.scroll_active = false
+		rtl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rtl.custom_minimum_size = Vector2(0, 160)
+		scroll.add_child(rtl)
+		_campaign_tabs.add_child(scroll)
+		_campaign_tabs.set_tab_title(_campaign_tabs.get_tab_count() - 1, str(camp["title"]))
+		_campaign_labels.append(rtl)
+
+func _refresh_campaign_tabs(uw: int) -> void:
+	_ensure_campaign_tabs()
+	# Select tab for current campaign
+	var tab_idx := 0
+	if uw <= 9:
+		tab_idx = 0
+	elif uw <= 18:
+		tab_idx = 1
+	elif uw <= 27:
+		tab_idx = 2
+	else:
+		tab_idx = 3
+	if _campaign_tabs:
+		_campaign_tabs.current_tab = tab_idx
+	for i in range(CAMPAIGN_RANGES.size()):
+		var camp: Dictionary = CAMPAIGN_RANGES[i]
+		var lo: int = int(camp["lo"])
+		var hi: int = int(camp["hi"])
+		var body := ""
+		for w in range(lo, hi + 1):
+			var titles: Array = []
+			var done_n := 0
+			var total_n := 0
+			for q in QuestDB.quests:
+				if int(q.get("week", 1)) != w:
+					continue
+				total_n += 1
+				var qid: String = str(q["id"])
+				var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")
+				if qid in GameState.completed_quests:
+					done_n += 1
+				titles.append("%s %s" % [mark, q.get("title", qid)])
+			var lock: String = "" if w <= uw else " [locked]"
+			var head: String = "Week %d (%d/%d)%s" % [w, done_n, total_n, lock]
+			if w == uw:
+				head = "[b]%s ← current[/b]" % head
+			body += "%s: %s\n" % [head, ", ".join(titles)]
+		if i < _campaign_labels.size() and _campaign_labels[i] != null:
+			_campaign_labels[i].text = body
 
 func _campaign_name(week: int) -> String:
 	if week <= 9:

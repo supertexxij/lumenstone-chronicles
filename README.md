@@ -90,7 +90,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **1–5** halls (outdoors only) |
-| Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake) |
+| Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
 | Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |
@@ -224,6 +224,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### Wave 11 overnight (v1.11.0-overnight)
+- Later-tier combat food: **Hearty Stew** (+36 HP, ×2) — unlock Week 21 Friday Raid **or** Combat Lv 7; fountain refill
+- **Parent dashboard** campaign tabs (I–IV) for week-by-week skills across all 36 weeks
+- HUD **pantry stacks / next-food** readout beside HP (V hotkey target + cooldown)
+- Indoor nav bake `agent_radius` aligned to `cell_size` (quiets precision warning)
+- Bugfix: weapons/gear with `combat_level_req` no longer unlock from quest mastery alone (AND gate); food stays OR
 
 ### Architecture
 

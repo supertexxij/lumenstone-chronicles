@@ -552,6 +552,37 @@ func use_best_consumable() -> bool:
 		return false
 	return use_consumable(best_id)
 
+func peek_best_consumable() -> Dictionary:
+	## HUD readout: best eatable food (highest heal with charges), plus cooldown.
+	_ensure_pantry_defaults()
+	var best_id := ""
+	var best_heal := -1
+	var stacks: Array = []
+	for id in unlocked_items:
+		var it: Dictionary = ItemDB.get_item(str(id))
+		if str(it.get("slot", "")) != "consumable":
+			continue
+		var cnt: int = int(consumable_charges.get(id, 0))
+		var heal_amt: int = int(it.get("heal", 0))
+		if heal_amt <= 0:
+			continue
+		stacks.append({"id": str(id), "name": str(it.get("name", id)), "count": cnt, "heal": heal_amt})
+		if cnt <= 0:
+			continue
+		if heal_amt > best_heal:
+			best_heal = heal_amt
+			best_id = str(id)
+	var best: Dictionary = {}
+	if best_id != "":
+		var bit: Dictionary = ItemDB.get_item(best_id)
+		best = {
+			"id": best_id,
+			"name": str(bit.get("name", best_id)),
+			"heal": int(bit.get("heal", 0)),
+			"count": int(consumable_charges.get(best_id, 0)),
+		}
+	return {"best": best, "stacks": stacks, "cooldown": consumable_cd}
+
 func clear_soft_combat(announce: bool = false) -> void:
 	## Leave soft combat / yellow pull without a defeat.
 	var had: bool = combat_target != null and is_instance_valid(combat_target)
@@ -625,10 +656,17 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		for bonus in quest.get("bonus_items", []):
 			unlock_item(str(bonus))
 		# Also grant any ItemDB entries keyed to this quest (mesh-variant weapons, etc.)
+		# Consumables: quest alone unlocks (OR with combat-level path).
+		# Weapons/gear with combat_level_req: both gates must pass (AND).
 		for iid in ItemDB.items:
 			var it: Dictionary = ItemDB.items[iid]
-			if str(it.get("unlock_quest_id", "")) == quest_id:
-				unlock_item(str(iid))
+			if str(it.get("unlock_quest_id", "")) != quest_id:
+				continue
+			var is_food: bool = str(it.get("slot", "")) == "consumable"
+			var req: int = int(it.get("combat_level_req", 0))
+			if (not is_food) and req > 0 and combat_level < req:
+				continue
+			unlock_item(str(iid))
 		toast.emit("Quest mastered: %s" % quest.get("title", quest_id))
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()

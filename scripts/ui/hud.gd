@@ -13,6 +13,7 @@ signal saves_pressed
 @onready var xp_lbl: Label = $TopBar/XpLbl
 @onready var combat_lbl: Label = $TopBar/CombatLbl
 @onready var hp_bar: ProgressBar = $TopBar/HpBar
+var food_lbl: Label
 @onready var lumen_lbl: Label = $TopBar/LumenLbl
 @onready var inv_btn: Button = $BottomBar/InvBtn
 @onready var look_btn: Button = $BottomBar/LookBtn
@@ -49,6 +50,7 @@ func _ready() -> void:
 		$BottomBar.add_child(saves_btn)
 		$BottomBar.move_child(saves_btn, parent_btn.get_index())
 	saves_btn.pressed.connect(func(): AudioBus.play_ui(); saves_pressed.emit())
+	_ensure_food_lbl()
 	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · 1–5 halls"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
@@ -73,6 +75,7 @@ func refresh() -> void:
 		parts.append("%s:%d" % [GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)])
 	lumen_lbl.text = " · ".join(parts)
 	set_hp(GameState.hp, GameState.max_hp)
+	_refresh_food_lbl()
 	_refresh_mute_label()
 
 func set_hp(cur: int, mx: int) -> void:
@@ -89,6 +92,7 @@ func _process(_delta: float) -> void:
 	_update_day_label()
 	if minimap and minimap.has_method("set_data"):
 		minimap.set_data(_map_data)
+	_refresh_food_lbl()
 
 func _update_compass() -> void:
 	if compass_needle == null:
@@ -120,3 +124,61 @@ func _update_day_label() -> void:
 	if weather_btn:
 		weather_btn.text = "Weather (R): %s" % weather
 
+func _ensure_food_lbl() -> void:
+	var top: HBoxContainer = $TopBar
+	if top.get_node_or_null("FoodLbl") != null:
+		food_lbl = top.get_node("FoodLbl")
+		return
+	food_lbl = Label.new()
+	food_lbl.name = "FoodLbl"
+	food_lbl.text = "Pantry —"
+	food_lbl.custom_minimum_size = Vector2(220, 0)
+	top.add_child(food_lbl)
+	# Place right after HpBar
+	var hp_i: int = hp_bar.get_index()
+	top.move_child(food_lbl, hp_i + 1)
+
+func _refresh_food_lbl() -> void:
+	if food_lbl == null:
+		_ensure_food_lbl()
+	if food_lbl == null or not GameState.has_method("peek_best_consumable"):
+		return
+	var info: Dictionary = GameState.peek_best_consumable()
+	var stacks: Array = info.get("stacks", [])
+	var bits: PackedStringArray = []
+	# Compact stack marks for unlocked foods (short names)
+	for s in stacks:
+		var nm: String = str(s.get("name", ""))
+		var short := nm
+		if "Bread" in nm:
+			short = "Bread"
+		elif "Water" in nm:
+			short = "Water"
+		elif "Trail" in nm:
+			short = "Trail"
+		elif "Honey" in nm:
+			short = "Cake"
+		elif "Stew" in nm:
+			short = "Stew"
+		bits.append("%s×%d" % [short, int(s.get("count", 0))])
+	var stack_txt := " · ".join(bits) if bits.size() > 0 else "empty"
+	var cd: float = float(info.get("cooldown", 0.0))
+	var best: Dictionary = info.get("best", {})
+	var next_txt := "—"
+	if not best.is_empty():
+		var bname: String = str(best.get("name", ""))
+		if "Bread" in bname:
+			bname = "Bread"
+		elif "Water" in bname:
+			bname = "Water"
+		elif "Trail" in bname:
+			bname = "Trail"
+		elif "Honey" in bname:
+			bname = "Cake"
+		elif "Stew" in bname:
+			bname = "Stew"
+		next_txt = "%s +%d" % [bname, int(best.get("heal", 0))]
+	if cd > 0.05:
+		food_lbl.text = "Pantry %s · CD %.1fs · V:%s" % [stack_txt, cd, next_txt]
+	else:
+		food_lbl.text = "Pantry %s · V:%s" % [stack_txt, next_txt]

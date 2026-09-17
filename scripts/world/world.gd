@@ -1484,7 +1484,8 @@ func _setup_indoor_navigation() -> void:
 	region.name = "IndoorNavRegion"
 	add_child(region)
 	var nm := NavigationMesh.new()
-	nm.agent_radius = 0.4
+	# Keep agent_radius a multiple of cell_size to avoid bake precision warnings.
+	nm.agent_radius = 0.5
 	nm.agent_height = 1.5
 	nm.agent_max_climb = 0.5
 	nm.agent_max_slope = 45.0
