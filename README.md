@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 35 overnight (v1.35.0-overnight)
+- Soft **footstep pitch variety** — gentle left/right thud pitch so walks feel alive (respects mute)
+- Clearer **combat HP number on HUD** — bold cream **HP N / M** with soft outline (RuneScape-chunky, no cheesy combat labels)
+- Soft **dusk lamp flicker** — village lanterns glow with a gentle irregular flicker at dusk
+- New wilds foe **Elm Raccoon** — face mask + ringed bushy tail, gentle “hushed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter)
+- Parent QoL: needs-help list shows **WEEK / GUILD** more boldly + warmer empty-state encouragement (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 34 overnight (v1.34.0-overnight)
 - Soft **outdoor wind whoosh** — gentle filtered hush while outdoors (off indoors; respects **M**)
 - Clearer **food cooldown on HUD** — **Wait N.Ns** / **Ready** with soft color (no cryptic CD)

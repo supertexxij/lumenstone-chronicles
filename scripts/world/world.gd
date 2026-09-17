@@ -977,16 +977,25 @@ func _update_plaza_campfire(dayness: float) -> void:
 
 func _update_village_dusk_lamps(dayness: float) -> void:
 	## Wave 28: village lamp posts warm up as dusk falls (RuneScape-chunky, wholesome).
+	## Wave 35: soft dusk lamp flicker — gentle irregular glow, not a strobe.
 	if _village_lamp_lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
-	var pulse: float = 0.92 + 0.08 * abs(sin(float(Time.get_ticks_msec()) * 0.0022))
-	var energy: float = dusk * 1.55 * pulse
+	var t_ms: float = float(Time.get_ticks_msec())
+	var pulse: float = 0.92 + 0.08 * abs(sin(t_ms * 0.0022))
+	# Soft irregular flicker layered on the slow pulse
+	var flicker: float = 1.0 + 0.06 * sin(t_ms * 0.011) + 0.04 * sin(t_ms * 0.027 + 1.7)
+	var energy: float = dusk * 1.55 * pulse * clampf(flicker, 0.88, 1.12)
+	var i: int = 0
 	for light in _village_lamp_lights:
 		if light == null or not is_instance_valid(light):
 			continue
-		light.light_energy = energy
-		light.visible = energy > 0.04
+		# Tiny per-lamp phase so posts don't blink in lockstep
+		var phase: float = 1.0 + 0.035 * sin(t_ms * 0.019 + float(i) * 1.3)
+		var e: float = energy * clampf(phase, 0.9, 1.1)
+		light.light_energy = e
+		light.visible = e > 0.04
+		i += 1
 
 func _build_interiors() -> void:
 	## Simple enterable guild-hall volumes: walk into the door, teleport to a cozy interior.

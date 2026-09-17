@@ -129,6 +129,19 @@
       "combat_xp": 60,
       "respawn_sec": 36.0,
       "description": "A sleek otter of the aspen wilds \u2014 lull it with a careful step!"
+    },
+    "elm_raccoon": {
+      "kind": "elm_raccoon",
+      "name": "Elm Raccoon",
+      "defeat_verb": "hushed",
+      "color": "#6b6560",
+      "accent": "#2a2a2a",
+      "max_hp": 80,
+      "damage": 13,
+      "accuracy": 0.5,
+      "combat_xp": 66,
+      "respawn_sec": 38.0,
+      "description": "A masked raccoon of the elm wilds \u2014 hush it with a careful step!"
     }
   },
   "spawns": [
@@ -419,6 +432,36 @@
       "kind": "aspen_otter",
       "x": -16,
       "z": -70
+    },
+    {
+      "id": "e49",
+      "kind": "elm_raccoon",
+      "x": -56,
+      "z": -32
+    },
+    {
+      "id": "e50",
+      "kind": "elm_raccoon",
+      "x": 54,
+      "z": -44
+    },
+    {
+      "id": "e51",
+      "kind": "elm_raccoon",
+      "x": -36,
+      "z": 54
+    },
+    {
+      "id": "e52",
+      "kind": "elm_raccoon",
+      "x": 58,
+      "z": 30
+    },
+    {
+      "id": "e53",
+      "kind": "elm_raccoon",
+      "x": -8,
+      "z": -72
     }
   ],
   "base_combat": {

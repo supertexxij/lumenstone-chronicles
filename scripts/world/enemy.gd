@@ -79,6 +79,9 @@ func _ready() -> void:
 		"aspen_otter":
 			if label: label.position.y = 1.35
 			hp_bar.position.y = 1.1
+		"elm_raccoon":
+			if label: label.position.y = 1.4
+			hp_bar.position.y = 1.15
 		"shadow_moth":
 			if label: label.position.y = 1.9
 			hp_bar.position.y = 1.6
@@ -390,6 +393,14 @@ func _idle_anim(delta: float) -> void:
 			if ot_tail:
 				ot_tail.rotation.y = sin(t * 0.85) * 0.18
 				ot_tail.rotation.x = deg_to_rad(-18) + sin(t * 0.6) * 0.06
+		"elm_raccoon":
+			# Soft trundle bob — ringed tail sways (Wave 35)
+			creature_bob.position.y = abs(sin(t * 0.75)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.42) * 0.11
+			var rc_tail := creature_bob.get_node_or_null("Tail")
+			if rc_tail:
+				rc_tail.rotation.y = sin(t * 0.9) * 0.2
+				rc_tail.rotation.x = deg_to_rad(-28) + sin(t * 0.65) * 0.07
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

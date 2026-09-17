@@ -91,6 +91,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_squirrel(bob)
 		"aspen_otter":
 			_build_otter(bob)
+		"elm_raccoon":
+			_build_raccoon(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -377,4 +379,42 @@ static func _build_otter(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_capsule(0.045, 0.20), Vector3(0, -0.03, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.08, 0.04, 0.12)), Vector3(0, -0.16, 0.02), leg, "Paw")
+
+static func _build_raccoon(bob: Node3D) -> void:
+	## Masked elm-wilds raccoon — face stripe mask, ringed bushy tail (distinct from otter/squirrel/fox).
+	var body := _mi(_capsule(0.18, 0.62), Vector3(0, 0.40, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	_mi(_sphere(0.16), Vector3(0, 0.46, 0.36), bob, "Head")
+	_mi(_sphere(0.07), Vector3(0, 0.42, 0.50), bob, "Snout")
+	# Soft cheek pads
+	_mi(_sphere(0.055), Vector3(-0.10, 0.44, 0.38), bob, "CheekL")
+	_mi(_sphere(0.055), Vector3(0.10, 0.44, 0.38), bob, "CheekR")
+	# Dark face mask band (accent-colored)
+	_mi(_box(Vector3(0.28, 0.10, 0.06)), Vector3(0, 0.50, 0.48), bob, "Mask")
+	# Rounded ears
+	_mi(_sphere(0.06), Vector3(-0.10, 0.60, 0.30), bob, "EarL")
+	_mi(_sphere(0.06), Vector3(0.10, 0.60, 0.30), bob, "EarR")
+	# Ringed bushy tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.42, -0.34)
+	tail.rotation_degrees = Vector3(-28, 0, 0)
+	bob.add_child(tail)
+	_mi(_capsule(0.09, 0.42), Vector3(0, 0.10, -0.10), tail, "TailMain")
+	_mi(_sphere(0.10), Vector3(0, 0.18, -0.30), tail, "Ring1")
+	_mi(_sphere(0.085), Vector3(0, 0.14, -0.42), tail, "Ring2")
+	_mi(_sphere(0.07), Vector3(0, 0.10, -0.52), tail, "TailTip")
+	# Four short legs
+	for info in [
+		["FL", Vector3(-0.11, 0.22, 0.18)],
+		["FR", Vector3(0.11, 0.22, 0.18)],
+		["BL", Vector3(-0.11, 0.22, -0.16)],
+		["BR", Vector3(0.11, 0.22, -0.16)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.045, 0.22), Vector3(0, -0.04, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.08, 0.04, 0.11)), Vector3(0, -0.18, 0.02), leg, "Paw")
 

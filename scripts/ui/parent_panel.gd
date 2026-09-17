@@ -125,20 +125,22 @@ func _refresh() -> void:
 	var help_title: Label = content.get_node_or_null("HelpTitle")
 	if help_title:
 		if help.is_empty():
-			help_title.text = "Needs Help — none right now"
+			help_title.text = "Needs Help — all clear right now ★"
 		else:
-			help_title.text = "Needs Help — %d item%s (lowest scores first)" % [help.size(), "" if help.size() == 1 else "s"]
+			help_title.text = "Needs Help — %d item%s (WEEK · GUILD first)" % [help.size(), "" if help.size() == 1 else "s"]
 	if help.is_empty():
-		help_list.add_item("No needs-help items — great work!")
+		# Wave 35: warmer empty-state encouragement (PIN stays 1234; mastery ≥80%)
+		help_list.add_item("All clear — wonderful work together! Check back after the next lesson.")
 	else:
 		help.sort_custom(func(a, b): return float(a.get("percent", 0)) < float(b.get("percent", 0)))
 		for h in help:
 			var q: Dictionary = QuestDB.get_quest(str(h.get("quest_id", "")))
 			var week_n: int = int(q.get("week", 0))
 			var guild: String = str(q.get("guild", ""))
-			var guild_short: String = str(GameState.GUILDS.get(guild, {}).get("short", guild))
+			var guild_short: String = str(GameState.GUILDS.get(guild, {}).get("short", guild)).to_upper()
 			var pct: int = int(float(h.get("percent", 0)) * 100)
-			var line: String = "Wk %d · %s · %s — %d/%d (%d%%) — needs practice" % [
+			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
+			var line: String = "▶ WEEK %d · %s  ·  %s — %d/%d (%d%%) — needs practice" % [
 				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct
 			]

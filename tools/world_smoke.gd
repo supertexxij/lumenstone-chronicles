@@ -47,6 +47,7 @@ func _finish():
 	var foxes := 0
 	var hares := 0
 	var squirrels := 0
+	var raccoons := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -58,12 +59,15 @@ func _finish():
 			hares += 1
 		if str(foe.get("kind")) == "birch_squirrel":
 			squirrels += 1
+		if str(foe.get("kind")) == "elm_raccoon":
+			raccoons += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
 	print("FOXES", foxes)
 	print("HARES", hares)
 	print("SQUIRRELS", squirrels)
+	print("RACCOONS", raccoons)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -203,5 +207,11 @@ func _finish():
 	print("WIND_WHOOSH_SRC", "set_wind_audio" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
 	print("LAST_TRAVEL_SRC", "last_travel_label" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("VERSION_134_SRC", 'config/version="1.34.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("ELM_RACCOON_SRC", '"elm_raccoon"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FOOT_PITCH_SRC", "_play_foot_varied" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("HUD_HP_CLEAR_SRC", "_ensure_clear_hp_text" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("DUSK_FLICKER_SRC", "Wave 35: soft dusk lamp flicker" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("PARENT_HELP_BOLD_SRC", "WEEK %d" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
+	print("VERSION_135_SRC", 'config/version="1.35.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

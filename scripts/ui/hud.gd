@@ -101,8 +101,21 @@ func refresh() -> void:
 func set_hp(cur: int, mx: int) -> void:
 	hp_bar.max_value = mx
 	hp_bar.value = cur
-	hp_bar.get_node("HpText").text = "%d / %d" % [cur, mx]
+	var hp_txt: Label = hp_bar.get_node("HpText")
+	_ensure_clear_hp_text(hp_txt)
+	# Wave 35: clearer combat HP number — bold "HP N / M" on the bar
+	hp_txt.text = "HP %d / %d" % [cur, mx]
 	_update_hurt_vignette(cur, mx)
+
+func _ensure_clear_hp_text(hp_txt: Label) -> void:
+	## Wave 35: larger cream HP digits with soft outline so combat HP reads at a glance.
+	if hp_txt == null or hp_txt.has_meta("wave35_hp_styled"):
+		return
+	hp_txt.add_theme_font_size_override("font_size", 15)
+	hp_txt.add_theme_color_override("font_color", Color(1.0, 0.96, 0.88, 1.0))
+	hp_txt.add_theme_color_override("font_outline_color", Color(0.12, 0.1, 0.08, 0.85))
+	hp_txt.add_theme_constant_override("outline_size", 3)
+	hp_txt.set_meta("wave35_hp_styled", true)
 
 func _process(delta: float) -> void:
 	if _def_flash_t > 0.0:

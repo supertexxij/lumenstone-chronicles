@@ -182,7 +182,20 @@ func play_footstep() -> void:
 	if _foot_cooldown > 0.0:
 		return
 	_foot_cooldown = 0.32
-	_play("foot", -16.0)
+	# Wave 35: soft footstep pitch variety — gentle left/right feel, not a single thud
+	_play_foot_varied(-16.0)
+
+func _play_foot_varied(vol_db: float) -> void:
+	if GameState.muted:
+		return
+	var p: AudioStreamPlayer = _players.get("foot")
+	if p == null:
+		return
+	p.stream = _streams.get("foot")
+	p.volume_db = vol_db
+	# Wider wholesome pitch band than generic SFX (still soft)
+	p.pitch_scale = randf_range(0.88, 1.14)
+	p.play()
 
 func _play(kind: String, vol_db: float) -> void:
 	if GameState.muted:
