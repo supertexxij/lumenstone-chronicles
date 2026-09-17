@@ -108,13 +108,12 @@ func _refresh() -> void:
 	var help_n: int = help_preview.size()
 	var last_sess: String = _format_last_session()
 	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
-	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year %%)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Day Cash[/b] (today): [b]%d[/b] — resets each calendar day (kid HUD)\n\n[b]Lumens[/b]\n" % [
+	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year %%)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
 		help_n, GameState.child_name, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
 		uw, camp, week_bar, next_gate,
-		mastered, total_q, mastery_pct, mastery_bar, year_note,
-		(int(GameState.get_day_cash()) if GameState.has_method("get_day_cash") else int(GameState.day_cash))
+		mastered, total_q, mastery_pct, mastery_bar, year_note
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]

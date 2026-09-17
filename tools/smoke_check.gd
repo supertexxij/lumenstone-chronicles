@@ -218,8 +218,6 @@ func _initialize():
 	print("JOURNAL_MASTER_STAR", "Mastered this week" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd") and "_count_week_mastered" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("PIN_STILL_1234_W31", "const DEFAULT_PIN := \"1234\"" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or 'DEFAULT_PIN := "1234"' in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("MASTERY_80_W31", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("DAY_CASH", "day_cash" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "award_day_cash" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "DAY CASH" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
-	print("DAY_CASH_HUD_ONLY", "DAY CASH" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "_refresh_day_cash_lbl" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("VERSION_132", 'config/version="1.32.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("OAK_HARE", '"oak_hare"' in FileAccess.get_file_as_string("res://data/enemies.json") and "_build_hare" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e38"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("CAMPFIRE_SPARKS", "CampfireSparks" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 32" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))

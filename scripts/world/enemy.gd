@@ -462,12 +462,8 @@ func _defeat() -> void:
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	if GameState.combat_level > prev_cl:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
-	# Wave 32: tiny Day Cash nibble on soft wilds clears (quest mastery pays more)
-	if GameState.has_method("award_day_cash"):
-		GameState.award_day_cash(1, "wilds clear")
-	else:
-		GameState.save_game()
-		GameState.state_changed.emit()
+	GameState.save_game()
+	GameState.state_changed.emit()
 	_begin_kill_flash()
 	_dissolve_t = 0.0
 	respawn_timer = float(def.get("respawn_sec", 12))
