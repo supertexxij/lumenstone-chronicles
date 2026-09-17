@@ -107,9 +107,11 @@ func _refresh() -> void:
 	var help_preview: Array = GameState.needs_help_quests()
 	var help_n: int = help_preview.size()
 	var last_sess: String = _format_last_session()
-	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
+	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year %%)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
 		help_n, GameState.child_name, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
+		export_line,
 		uw, camp, week_bar, next_gate,
 		mastered, total_q, mastery_pct, mastery_bar, year_note
 	]
@@ -189,6 +191,13 @@ func _refresh_campaign_tabs(uw: int) -> void:
 		tab_idx = 3
 	if _campaign_tabs:
 		_campaign_tabs.current_tab = tab_idx
+		# Wave 30: highlight the campaign tab that holds the current week
+		for i in range(_campaign_tabs.get_tab_count()):
+			var base: String = str(CAMPAIGN_RANGES[i]["title"]) if i < CAMPAIGN_RANGES.size() else _campaign_tabs.get_tab_title(i)
+			if i == tab_idx:
+				_campaign_tabs.set_tab_title(i, "★ %s" % base.replace("★ ", ""))
+			else:
+				_campaign_tabs.set_tab_title(i, base.replace("★ ", ""))
 	# Restore persisted expand state; default current week open on first visit
 	if _expanded_weeks.is_empty() and not GameState.parent_expanded_weeks.is_empty():
 		_expanded_weeks = GameState.parent_expanded_weeks.duplicate()
@@ -235,6 +244,11 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	btn.text = head
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Wave 30: soft gold highlight on the current week row
+	if w == uw:
+		btn.add_theme_color_override("font_color", Color(0.95, 0.82, 0.28))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.45))
+		btn.add_theme_color_override("font_pressed_color", Color(0.9, 0.75, 0.2))
 	var detail := RichTextLabel.new()
 	detail.bbcode_enabled = true
 	detail.fit_content = true

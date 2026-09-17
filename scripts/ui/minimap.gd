@@ -38,10 +38,16 @@ func _draw() -> void:
 			continue
 		draw_circle(pos, 2.8, Color(0.9, 0.35, 0.25, 0.95))
 	var yaw: float = float(map_data.get("player", {}).get("yaw", 0.0))
-	var tip := Vector2(0, -7).rotated(-yaw)
-	var left := Vector2(-5, 5).rotated(-yaw)
-	var right := Vector2(5, 5).rotated(-yaw)
-	draw_colored_polygon(PackedVector2Array([center + tip, center + left, center + right]), Color(1, 1, 1, 0.95))
+	# Wave 30: clearer chunky player arrow — larger tip + soft gold outline (RuneScape-feel)
+	var tip := Vector2(0, -9.5).rotated(-yaw)
+	var left := Vector2(-6.5, 6.5).rotated(-yaw)
+	var right := Vector2(6.5, 6.5).rotated(-yaw)
+	var outline_tip := Vector2(0, -11.2).rotated(-yaw)
+	var outline_left := Vector2(-8.0, 7.8).rotated(-yaw)
+	var outline_right := Vector2(8.0, 7.8).rotated(-yaw)
+	draw_colored_polygon(PackedVector2Array([center + outline_tip, center + outline_left, center + outline_right]), Color(0.72, 0.55, 0.12, 0.95))
+	draw_colored_polygon(PackedVector2Array([center + tip, center + left, center + right]), Color(1, 0.98, 0.92, 0.98))
+	draw_circle(center, 2.2, Color(0.95, 0.82, 0.25, 0.9))
 	draw_line(center + Vector2(0, -radius + 2), center + Vector2(0, -radius + 10), Color(1, 0.9, 0.4), 2.0)
 
 func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
@@ -181,6 +187,35 @@ func _draw_landmark_icon(pos: Vector2, col: Color, icon: String) -> void:
 				pos + Vector2(-1.4, -0.6),
 			])
 			draw_colored_polygon(tpts2, col)
+		"maple":
+			# Wave 30: broad maple leaf mark (distinct from birch trunks / fern frond)
+			var mpts := PackedVector2Array([
+				pos + Vector2(0, -5.0),
+				pos + Vector2(2.8, -2.2),
+				pos + Vector2(5.0, -0.5),
+				pos + Vector2(2.2, 0.2),
+				pos + Vector2(3.5, 3.5),
+				pos + Vector2(0, 1.5),
+				pos + Vector2(-3.5, 3.5),
+				pos + Vector2(-2.2, 0.2),
+				pos + Vector2(-5.0, -0.5),
+				pos + Vector2(-2.8, -2.2),
+			])
+			draw_colored_polygon(mpts, outline)
+			var mpts2 := PackedVector2Array([
+				pos + Vector2(0, -3.6),
+				pos + Vector2(2.0, -1.5),
+				pos + Vector2(3.6, -0.3),
+				pos + Vector2(1.5, 0.15),
+				pos + Vector2(2.4, 2.4),
+				pos + Vector2(0, 0.9),
+				pos + Vector2(-2.4, 2.4),
+				pos + Vector2(-1.5, 0.15),
+				pos + Vector2(-3.6, -0.3),
+				pos + Vector2(-2.0, -1.5),
+			])
+			draw_colored_polygon(mpts2, col)
+			draw_line(pos + Vector2(0, 0.5), pos + Vector2(0, 4.5), Color(0.45, 0.3, 0.15, 0.9), 1.6)
 		"hall":
 			draw_rect(Rect2(pos + Vector2(-3.2, -3.2), Vector2(6.4, 6.4)), outline)
 			draw_rect(Rect2(pos + Vector2(-2.4, -2.4), Vector2(4.8, 4.8)), col)

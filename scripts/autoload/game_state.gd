@@ -576,6 +576,15 @@ func get_year_progress_note() -> String:
 	return "Year: week unlock %d%% · quests mastered %d%%" % [int(w["percent"]), int(q["percent"])]
 
 
+func get_parent_export_line() -> String:
+	## Wave 30: one plain line for parents to copy (week unlock + year mastery %).
+	var w: Dictionary = get_week_unlock_progress()
+	var q: Dictionary = get_quest_mastery_progress()
+	return "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [
+		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0))
+	]
+
+
 func maybe_daily_checkpoint_reminder() -> void:
 	## Soft once-per-calendar-day toast pointing parents to the short checkpoint (PIN stays 1234).
 	var today := Time.get_date_string_from_system()

@@ -28,6 +28,7 @@ var _door_glow_mats: Array = []  # Wave 27: pulsing hall Enter glows
 var _village_lamp_lights: Array = []  # Wave 28: dusk OmniLights on village lamp posts
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
+var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -75,6 +76,7 @@ func _ready() -> void:
 	_build_fern_dell()
 	_build_heather_heath()
 	_build_thistle_rise()
+	_build_maple_copse()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -126,6 +128,10 @@ func _init_mats() -> void:
 	_mats["thistle"] = _mat(Color("#6a5a8a"))
 	_mats["thistle_leaf"] = _mat(Color("#4a7a48"))
 	_mats["thistle_bloom"] = _mat(Color("#7a4a9a"))
+	_mats["maple"] = _mat(Color("#8a3a28"))
+	_mats["maple_leaf"] = _mat(Color("#c45a28"))
+	_mats["maple_leaf_gold"] = _mat(Color("#d4a017"))
+	_mats["maple_leaf_green"] = _mat(Color("#4a7a38"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -430,6 +436,12 @@ func _in_travel_corridor(pos: Vector3) -> bool:
 		return true
 	# Thistle Rise plaza keep-clear
 	if abs(pos.x - 48.0) < 5.0 and abs(pos.z - 42.0) < 5.0:
+		return true
+	# Northwest path to Maple Copse (Wave 30)
+	if _near_segment_xz(pos, Vector3(-16, 0, -20), Vector3(-48, 0, -48), 3.4):
+		return true
+	# Maple Copse plaza keep-clear
+	if abs(pos.x + 48.0) < 5.0 and abs(pos.z + 48.0) < 5.0:
 		return true
 	return false
 
@@ -741,6 +753,9 @@ func _landmark_zones() -> Array:
 		{"id": "thistle", "pos": Vector3(48, 0, 42), "enter": 10.0, "exit": 13.0,
 			"first_toast": "First discovery: Thistle Rise — spiky purple thistles crown a quiet east rise.",
 			"return_toast": "Back at Thistle Rise — the thistles still stand proud in the soft breeze."},
+		{"id": "maple", "pos": Vector3(-48, 0, -48), "enter": 10.0, "exit": 13.0,
+			"first_toast": "First discovery: Maple Copse — warm maple leaves drift in a quiet northwest stand.",
+			"return_toast": "Back at Maple Copse — the maples still rustle kindly in the soft wind."},
 	]
 
 func _update_landmark_approach() -> void:
@@ -1314,6 +1329,7 @@ func _setup_weather() -> void:
 	_apply_weather_visuals()
 	_setup_rain_splash()
 	_setup_fog_mist()
+	_setup_wind_leaves()
 
 func _setup_rain_splash() -> void:
 	## Wave 28: soft ground-splash puffs while raining (RuneScape-chunky, wholesome).
@@ -1402,6 +1418,14 @@ func _update_weather(delta: float) -> void:
 			_fog_mist.visible = true
 		else:
 			_fog_mist.visible = false
+	if player and _wind_leaves:
+		if _inside_hall == "":
+			_wind_leaves.global_position = Vector3(player.global_position.x, 2.4, player.global_position.z)
+			_wind_leaves.emitting = true
+			_wind_leaves.visible = true
+		else:
+			_wind_leaves.emitting = false
+			_wind_leaves.visible = false
 	if _weather_auto:
 		_weather_timer -= delta
 		if _weather_timer <= 0.0:
@@ -1804,6 +1828,7 @@ func get_minimap_markers() -> Dictionary:
 	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
 	halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
 	halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
+	halls.append({"x": -48.0, "z": -48.0, "label": "Maple", "color": "#c45a28", "icon": "maple"})
 	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
@@ -2569,6 +2594,109 @@ func _build_thistle_rise() -> void:
 
 
 
+
+
+func _build_maple_copse() -> void:
+	## Northwest wilds landmark — warm maple stand with drifting autumn color (soft travel 0).
+	## Distinct from Birch Rest (pale trunks SW), Willow Bend (weeping NW brook), Pine Ridge (dark pines N), Heather Heath (purple WSW).
+	var root := Node3D.new()
+	root.name = "MapleCopse"
+	static_world.add_child(root)
+	# Dirt spur NW from the green toward the maple stand
+	for i in 14:
+		var tt := float(i) / 13.0
+		var x := -10.0 + tt * -38.0
+		var z := -14.0 + tt * -34.0
+		_mi(_box(Vector3(2.9, 0.04, 2.6)), Vector3(x, 0.025, z), root, _mats["dirt"], "MaplePath")
+	for i in 7:
+		var tt := float(i) / 6.0
+		var x := -12.0 + tt * -32.0
+		var z := -16.0 + tt * -28.0
+		_mi(_box(Vector3(3.4, 0.02, 0.32)), Vector3(x, 0.03, z), root, _mats["dirt_trim"], "MapleTrim")
+	# Soft maple clearing
+	_mi(_cyl(4.2, 4.2, 0.08), Vector3(-48.0, 0.04, -48.0), root, _mats["grass_dark"], "MapleClearing")
+	_mi(_cyl(2.4, 2.4, 0.06), Vector3(-48.0, 0.08, -48.0), root, _mats["maple_leaf"], "MapleClearingInner")
+	# Ring of chunky maple trunks + broad autumn canopies
+	for i in 8:
+		var ang := float(i) * TAU / 8.0 + 0.12
+		var mx := -48.0 + cos(ang) * 3.6
+		var mz := -48.0 + sin(ang) * 3.6
+		_mi(_cyl(0.22, 0.28, 1.7), Vector3(mx, 0.9, mz), root, _mats["maple"], "MapleTrunk%d" % i)
+		var leaf_mat: Material
+		if i % 3 == 0:
+			leaf_mat = _mats["maple_leaf"]
+		elif i % 3 == 1:
+			leaf_mat = _mats["maple_leaf_gold"]
+		else:
+			leaf_mat = _mats["maple_leaf_green"]
+		_mi(_sphere(1.05, 1.35), Vector3(mx, 2.35, mz), root, leaf_mat, "MapleCanopy%d" % i)
+		_mi(_sphere(0.55, 0.75), Vector3(mx + cos(ang) * 0.35, 2.7, mz + sin(ang) * 0.35), root, leaf_mat, "MapleCanopyTip%d" % i)
+	# Inner resting stone + fallen maple leaf tufts + benches + lanterns
+	_mi(_cyl(0.55, 0.65, 0.4), Vector3(-48.0, 0.25, -48.0), root, _mats["stone"], "MapleStone")
+	_mi(_sphere(0.22, 0.18), Vector3(-48.0, 0.55, -48.0), root, _mats["maple_leaf_gold"], "StoneLeaf")
+	for i in 6:
+		var ang := float(i) * TAU / 6.0
+		var lx := -48.0 + cos(ang) * 1.6
+		var lz := -48.0 + sin(ang) * 1.6
+		_mi(_sphere(0.18, 0.08), Vector3(lx, 0.12, lz), root, _mats["maple_leaf"] if i % 2 == 0 else _mats["maple_leaf_gold"], "FallenLeaf%d" % i)
+	_add_bench(Vector3(-45.5, 0, -50.0), -0.45)
+	_add_bench(Vector3(-50.5, 0, -46.0), 0.55)
+	_add_crate(Vector3(-45.0, 0, -45.5))
+	_add_lantern_post(Vector3(-44.0, 0, -52.0))
+	_add_lantern_post(Vector3(-52.0, 0, -44.0))
+	_add_lantern_post(Vector3(-30.0, 0, -30.0))
+	_add_lantern_post(Vector3(-20.0, 0, -22.0))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1030
+	for i in 10:
+		var tt := float(i) / 9.0
+		var cx := -12.0 + tt * -32.0
+		var cz := -16.0 + tt * -28.0
+		var side := 1.0 if i % 2 == 0 else -1.0
+		var p := Vector3(cx + side * rng.randf_range(4.5, 7.2), 0, cz)
+		if i % 3 == 0:
+			_add_rock_cluster(p, rng)
+		elif i % 3 == 1:
+			_add_bush(p, rng)
+		else:
+			_add_tree(p, 0)
+	_add_chunky_sign(root, Vector3(-45.5, 0, -48.0), "Maple Copse", 0.4)
+	_place_label3d(root, "Warm maples, soft wind", 28, Vector3(-48.0, 4.1, -48.0), 6, Color(1, 1, 1, 0.75))
+	_place_label3d(root, "Maple Copse", 52, Vector3(-48.0, 3.5, -48.0))
+
+
+func _setup_wind_leaves() -> void:
+	## Wave 30: soft wind-blown leaf flakes that follow the player outdoors (RuneScape-chunky, wholesome).
+	_wind_leaves = CPUParticles3D.new()
+	_wind_leaves.name = "WindLeaves"
+	_wind_leaves.emitting = true
+	_wind_leaves.amount = 22
+	_wind_leaves.lifetime = 5.5
+	_wind_leaves.preprocess = 2.5
+	_wind_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_wind_leaves.emission_box_extents = Vector3(11, 2.5, 11)
+	_wind_leaves.direction = Vector3(0.55, -0.12, 0.25)
+	_wind_leaves.spread = 42.0
+	_wind_leaves.initial_velocity_min = 0.35
+	_wind_leaves.initial_velocity_max = 1.1
+	_wind_leaves.gravity = Vector3(0, -0.35, 0)
+	_wind_leaves.angular_velocity_min = -40.0
+	_wind_leaves.angular_velocity_max = 40.0
+	_wind_leaves.scale_amount_min = 0.35
+	_wind_leaves.scale_amount_max = 0.85
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.22, 0.04, 0.14)
+	_wind_leaves.mesh = lm
+	var lmat := StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.78, 0.42, 0.18, 0.72)
+	lmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_wind_leaves.material_override = lmat
+	_wind_leaves.position = Vector3(0, 2.4, 0)
+	add_child(_wind_leaves)
+	HeadlessGuard.guard_particles(_wind_leaves)
+
+
 func _play_fountain_restore_fx() -> void:
 	## Soft defeat feel: brief cream/gold sparkles at the village fountain (RuneScape-chunky, wholesome).
 	if HeadlessGuard.is_headless():
@@ -2761,6 +2889,10 @@ func _build_ambient_life() -> void:
 		{"pos": Vector3(48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
 		{"pos": Vector3(45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
 		{"pos": Vector3(51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
+		# Maple Copse (Wave 30)
+		{"pos": Vector3(-48.0, 0, -48.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-45.0, 0, -45.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-51.0, 0, -50.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
 		# Village yard animals — hens and lambs near the fountain (Wave 20)
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},
