@@ -49,6 +49,7 @@ func _finish():
 	var squirrels := 0
 	var raccoons := 0
 	var hedgehogs := 0
+	var wrens := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -64,6 +65,8 @@ func _finish():
 			raccoons += 1
 		if str(foe.get("kind")) == "hazel_hedgehog":
 			hedgehogs += 1
+		if str(foe.get("kind")) == "willow_wren":
+			wrens += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -72,6 +75,7 @@ func _finish():
 	print("SQUIRRELS", squirrels)
 	print("RACCOONS", raccoons)
 	print("HEDGEHOGS", hedgehogs)
+	print("WRENS", wrens)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -222,5 +226,11 @@ func _finish():
 	print("MINIMAP_ZOOM_SRC", "Wave 36: clearer minimap zoom feel" in FileAccess.get_file_as_string("res://scripts/ui/minimap.gd"))
 	print("JOURNAL_ATTEMPT_SRC", "get_latest_attempt_percent" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("VERSION_136_SRC", 'config/version="1.36.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("WILLOW_WREN_SRC", '"willow_wren"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("HALL_REVERB_SRC", "set_hall_reverb" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("LEAF_RUSTLE_SRC", "_update_leaf_rustle" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("AGGRO_COUNTDOWN_SRC", "_countdown_nudge" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
+	print("INV_SLOT_TAGS_SRC", "SLOT_TAGS" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
+	print("VERSION_137_SRC", 'config/version="1.37.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

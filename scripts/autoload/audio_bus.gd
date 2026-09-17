@@ -18,6 +18,10 @@ var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
 var _campfire_wanted: bool = false  # Wave 33: plaza campfire crackle when near
 var _wind: AudioStreamPlayer
 var _wind_wanted: bool = false  # Wave 34: soft outdoor wind whoosh
+var _hall_reverb: AudioStreamPlayer
+var _hall_reverb_wanted: bool = false  # Wave 37: soft indoor hall reverb cue
+var _leaf_rustle: AudioStreamPlayer
+var _leaf_rustle_wanted: bool = false  # Wave 37: leaf rustle near trees
 var _talk_duck: bool = false  # Wave 32: soft music duck while talking
 var _music_base_db: float = -18.0
 var _ambient_base_db: float = -24.0
@@ -82,6 +86,18 @@ func _ready() -> void:
 	_wind.volume_db = -32.0
 	_wind.stream = _streams.get("wind")
 	add_child(_wind)
+	_hall_reverb = AudioStreamPlayer.new()
+	_hall_reverb.name = "HallReverb"
+	_hall_reverb.bus = "Master"
+	_hall_reverb.volume_db = -30.0
+	_hall_reverb.stream = _streams.get("hall_reverb")
+	add_child(_hall_reverb)
+	_leaf_rustle = AudioStreamPlayer.new()
+	_leaf_rustle.name = "LeafRustle"
+	_leaf_rustle.bus = "Master"
+	_leaf_rustle.volume_db = -31.0
+	_leaf_rustle.stream = _streams.get("leaf_rustle")
+	add_child(_leaf_rustle)
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
@@ -129,6 +145,10 @@ func _apply_mute() -> void:
 			_campfire.stop()
 		if _wind and _wind.playing:
 			_wind.stop()
+		if _hall_reverb and _hall_reverb.playing:
+			_hall_reverb.stop()
+		if _leaf_rustle and _leaf_rustle.playing:
+			_leaf_rustle.stop()
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -140,6 +160,8 @@ func _apply_mute() -> void:
 			_sync_day_night_audio()
 			_sync_campfire_audio()
 			_sync_wind_audio()
+			_sync_hall_reverb_audio()
+			_sync_leaf_rustle_audio()
 
 func start_ambient() -> void:
 	_apply_mute()
@@ -162,6 +184,8 @@ func stop_ambient() -> void:
 		_night_hush.stop()
 	set_campfire_audio(false)
 	set_wind_audio(false)
+	set_hall_reverb(false)
+	set_leaf_rustle(false)
 
 func play_ui() -> void:
 	_play("ui", -10.0)
@@ -235,6 +259,8 @@ func _build_streams() -> void:
 	_streams["night_hush"] = _night_hush_loop(8.0, 0.06)
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
+	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
+	_streams["leaf_rustle"] = _soft_leaf_rustle(5.5, 0.07)  # Wave 37: leaf rustle near trees
 
 
 func set_rain_audio(on: bool) -> void:
@@ -262,6 +288,18 @@ func set_wind_audio(on: bool) -> void:
 	## Wave 34: soft outdoor wind whoosh when outdoors (respects mute).
 	_wind_wanted = on
 	_sync_wind_audio()
+
+
+func set_hall_reverb(on: bool) -> void:
+	## Wave 37: soft indoor hall reverb cue when inside guild halls (respects mute).
+	_hall_reverb_wanted = on
+	_sync_hall_reverb_audio()
+
+
+func set_leaf_rustle(on: bool) -> void:
+	## Wave 37: soft leaf rustle when near trees outdoors (respects mute).
+	_leaf_rustle_wanted = on
+	_sync_leaf_rustle_audio()
 
 
 func set_day_night_audio(dayness: float) -> void:
@@ -369,6 +407,34 @@ func _sync_wind_audio() -> void:
 				_wind.play()
 		elif _wind.playing:
 			_wind.stop()
+
+func _sync_hall_reverb_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _hall_reverb:
+		var should: bool = _hall_reverb_wanted and can
+		if should:
+			if _hall_reverb.stream == null:
+				_hall_reverb.stream = _streams.get("hall_reverb")
+			if not _hall_reverb.playing and _hall_reverb.stream:
+				_hall_reverb.play()
+		elif _hall_reverb.playing:
+			_hall_reverb.stop()
+
+func _sync_leaf_rustle_audio() -> void:
+	if not _ready_ok:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	if _leaf_rustle:
+		var should: bool = _leaf_rustle_wanted and can
+		if should:
+			if _leaf_rustle.stream == null:
+				_leaf_rustle.stream = _streams.get("leaf_rustle")
+			if not _leaf_rustle.playing and _leaf_rustle.stream:
+				_leaf_rustle.play()
+		elif _leaf_rustle.playing:
+			_leaf_rustle.stop()
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -558,6 +624,52 @@ func _soft_wind(dur: float, amp: float) -> AudioStreamWAV:
 		prev = prev * 0.94 + prev2 * 0.06
 		var swell := 0.75 + 0.25 * sin(TAU * 0.07 * tt) + 0.08 * sin(TAU * 0.19 * tt)
 		samples[i] = prev * amp * swell
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _soft_hall_reverb(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 37: soft indoor hall reverb — warm mid hush with gentle echoes (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		prev = prev * 0.96 + noise * 0.04
+		var warm := sin(TAU * 110.0 * tt) * 0.12 + sin(TAU * 165.0 * tt) * 0.08
+		var echo := sin(TAU * 220.0 * tt) * 0.05 * (0.5 + 0.5 * sin(TAU * 0.35 * tt))
+		var breathe := 0.85 + 0.15 * sin(TAU * 0.09 * tt)
+		samples[i] = (prev * 0.55 + warm + echo) * amp * breathe
+	var stream := _make_wav(samples, rate)
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = n
+	return stream
+
+
+func _soft_leaf_rustle(dur: float, amp: float) -> AudioStreamWAV:
+	## Wave 37: soft leaf rustle near trees — light high-band crackle hush (RuneScape-chunky, wholesome).
+	var rate := 22050
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var prev := 0.0
+	var prev2 := 0.0
+	for i in n:
+		var tt := float(i) / float(rate)
+		var noise := randf() * 2.0 - 1.0
+		# High-pass-ish: keep more of the bright rustle
+		prev2 = prev2 * 0.55 + noise * 0.45
+		prev = prev * 0.7 + prev2 * 0.3
+		var bright := prev - prev * 0.35
+		var gust := 0.7 + 0.3 * sin(TAU * 0.22 * tt) + 0.1 * sin(TAU * 0.51 * tt)
+		samples[i] = bright * amp * gust
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	stream.loop_begin = 0

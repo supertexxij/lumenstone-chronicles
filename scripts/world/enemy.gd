@@ -24,6 +24,7 @@ var _base_scale: Vector3 = Vector3.ONE
 var _aggro_pulse: float = 0.0
 var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
+var _countdown_nudge: bool = false  # Wave 37: mid-telegraph countdown toast
 var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
 
 @onready var mesh_root: Node3D = $MeshRoot
@@ -99,6 +100,7 @@ func is_alive() -> bool:
 	return alive
 
 func clear_soft_aggro() -> void:
+	_countdown_nudge = false
 	## Called when player rests at the fountain — drop yellow pull / pulse.
 	_aggro_pulse = 0.0
 	_was_warning = false
@@ -304,16 +306,25 @@ func _soft_aggro(delta: float) -> void:
 		if not _was_warning and warning:
 			var first_warn := not GameState.seen_aggro_tutorial
 			GameState.mark_aggro_tutorial()
+			_countdown_nudge = false
 			# Wave 29: always name the foe on soft-aggro toast (first tip + later notices)
+			# Wave 37: clearer soft-aggro countdown — remaining telegraph seconds
 			var foe_name: String = str(def.get("name", "Foe"))
+			var remain: float = maxf(0.1, telegraph_sec - _aggro_pulse)
 			if first_warn:
-				GameState.toast.emit("%s notices you — soft yellow ring means step back anytime." % foe_name)
+				GameState.toast.emit("%s notices you — soft yellow ring · ~%.1fs to step back." % [foe_name, remain])
 			else:
-				GameState.toast.emit("%s notices you nearby…" % foe_name)
+				GameState.toast.emit("%s notices you — ~%.1fs to step back…" % [foe_name, remain])
+		elif warning and (not _countdown_nudge) and _aggro_pulse >= telegraph_sec * 0.55:
+			_countdown_nudge = true
+			var foe_mid: String = str(def.get("name", "Foe"))
+			var remain_mid: float = maxf(0.1, telegraph_sec - _aggro_pulse)
+			GameState.toast.emit("%s still watching — ~%.1fs…" % [foe_mid, remain_mid])
 		_was_warning = warning
 		if dist <= engage and _aggro_pulse > telegraph_sec:
 			_set_warning(false)
 			_was_warning = false
+			_countdown_nudge = false
 			GameState.set_combat_target(self)
 			var first_fight := GameState.mark_combat_tutorial(true)
 			if first_fight:
@@ -326,6 +337,7 @@ func _soft_aggro(delta: float) -> void:
 		_aggro_pulse = move_toward(_aggro_pulse, 0.0, delta * 2.8)
 		_set_warning(false)
 		_was_warning = false
+		_countdown_nudge = false
 
 func _idle_anim(delta: float) -> void:
 	if creature_bob == null or _flinch_t > 0.0:
@@ -401,6 +413,18 @@ func _idle_anim(delta: float) -> void:
 			if rc_tail:
 				rc_tail.rotation.y = sin(t * 0.9) * 0.2
 				rc_tail.rotation.x = deg_to_rad(-28) + sin(t * 0.65) * 0.07
+		"willow_wren":
+			# Soft hover bob — quick wing flutters (Wave 37)
+			creature_bob.position.y = 0.08 + sin(t * 1.1) * 0.06
+			creature_bob.rotation.y = sin(t * 0.5) * 0.12
+			wing_phase += delta * 16.0
+			var wlw := creature_bob.get_node_or_null("LWing")
+			var wrw := creature_bob.get_node_or_null("RWing")
+			var wflap := sin(wing_phase) * 0.4
+			if wlw:
+				wlw.rotation.z = deg_to_rad(28) + wflap
+			if wrw:
+				wrw.rotation.z = deg_to_rad(-28) - wflap
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

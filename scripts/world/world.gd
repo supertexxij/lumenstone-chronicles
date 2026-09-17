@@ -31,6 +31,8 @@ var _plaza_campfire_pos: Vector3 = Vector3(6.8, 0, 9.2)  # Wave 33: crackle prox
 var _rain_splash: CPUParticles3D  # Wave 28: soft ground splash while raining
 var _fog_mist: CPUParticles3D  # Wave 29: denser low mist cue while foggy
 var _wind_leaves: CPUParticles3D  # Wave 30: soft wind-blown leaf flakes outdoors
+var _tree_positions: Array = []  # Wave 37: leaf rustle proximity
+var _leaf_check_t: float = 0.0
 var _weather_mode: int = 0  # 0 clear, 1 fog, 2 rain
 var _weather_timer: float = 90.0
 var _weather_auto: bool = true
@@ -480,6 +482,7 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 	col.position.y = 1.0
 	body.add_child(col)
 	static_world.add_child(body)
+	_tree_positions.append(pos)  # Wave 37: leaf rustle near trees
 
 func _add_rock_cluster(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	if _in_travel_corridor(pos):
@@ -880,6 +883,10 @@ func _update_day_night(delta: float) -> void:
 	# Wave 34: soft outdoor wind whoosh (off indoors)
 	if AudioBus.has_method("set_wind_audio"):
 		AudioBus.set_wind_audio(_inside_hall == "")
+	# Wave 37: soft indoor hall reverb cue (on indoors)
+	if AudioBus.has_method("set_hall_reverb"):
+		AudioBus.set_hall_reverb(_inside_hall != "")
+	_update_leaf_rustle()
 	_update_village_dusk_lamps(dayness)
 	_update_plaza_campfire(dayness)
 
@@ -962,6 +969,32 @@ func _build_plaza_campfire() -> void:
 	_place_label3d(root, "Campfire", 28, Vector3(0, 1.6, 0), 5, Color(1, 0.92, 0.7, 0.7))
 	static_world.add_child(root)
 
+
+
+func _update_leaf_rustle() -> void:
+	## Wave 37: soft leaf rustle when outdoors and near a tree (throttled; respects mute via AudioBus).
+	if not AudioBus.has_method("set_leaf_rustle"):
+		return
+	if _inside_hall != "" or player == null:
+		AudioBus.set_leaf_rustle(false)
+		return
+	# Throttle proximity scans (~3×/sec)
+	var now: float = float(Time.get_ticks_msec()) * 0.001
+	if now - _leaf_check_t < 0.33:
+		return
+	_leaf_check_t = now
+	var near := false
+	var pp: Vector3 = player.global_position
+	for i in _tree_positions.size():
+		if i % 3 != 0 and _tree_positions.size() > 40:
+			continue
+		var tp: Vector3 = _tree_positions[i]
+		var dx: float = pp.x - tp.x
+		var dz: float = pp.z - tp.z
+		if dx * dx + dz * dz < 30.25:  # 5.5^2
+			near = true
+			break
+	AudioBus.set_leaf_rustle(near)
 
 func _update_plaza_campfire(dayness: float) -> void:
 	## Soft hearth stays lit by day; warms up a bit at dusk. Wave 33: near-hearth crackle.
@@ -1302,6 +1335,10 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 	_inside_hall = hall_id
 	if AudioBus.has_method("set_wind_audio"):
 		AudioBus.set_wind_audio(false)
+	if AudioBus.has_method("set_hall_reverb"):
+		AudioBus.set_hall_reverb(true)
+	if AudioBus.has_method("set_leaf_rustle"):
+		AudioBus.set_leaf_rustle(false)
 	_door_cooldown = 0.8
 	for room in _interior_root.get_children():
 		if str(room.get_meta("hall_id", "")) == hall_id:
@@ -1317,6 +1354,8 @@ func _exit_hall(body: Node) -> void:
 	if _inside_hall == "":
 		return
 	_inside_hall = ""
+	if AudioBus.has_method("set_hall_reverb"):
+		AudioBus.set_hall_reverb(false)
 	_door_cooldown = 1.2
 	body.global_position = _outdoor_return
 	if "has_click_target" in body:

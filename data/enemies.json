@@ -155,6 +155,19 @@
       "combat_xp": 72,
       "respawn_sec": 40.0,
       "description": "A prickly hedgehog of the hazel wilds \u2014 still it with a careful step!"
+    },
+    "willow_wren": {
+      "kind": "willow_wren",
+      "name": "Willow Wren",
+      "defeat_verb": "coaxed",
+      "color": "#6a8a4a",
+      "accent": "#c8b090",
+      "max_hp": 92,
+      "damage": 15,
+      "accuracy": 0.46,
+      "combat_xp": 78,
+      "respawn_sec": 42.0,
+      "description": "A tiny wren of the willow wilds \u2014 coax it gently with a careful step!"
     }
   },
   "spawns": [
@@ -505,6 +518,36 @@
       "kind": "hazel_hedgehog",
       "x": 12,
       "z": -74
+    },
+    {
+      "id": "e59",
+      "kind": "willow_wren",
+      "x": -62,
+      "z": -36
+    },
+    {
+      "id": "e60",
+      "kind": "willow_wren",
+      "x": 56,
+      "z": -60
+    },
+    {
+      "id": "e61",
+      "kind": "willow_wren",
+      "x": -50,
+      "z": 62
+    },
+    {
+      "id": "e62",
+      "kind": "willow_wren",
+      "x": 64,
+      "z": 24
+    },
+    {
+      "id": "e63",
+      "kind": "willow_wren",
+      "x": 6,
+      "z": -78
     }
   ],
   "base_combat": {

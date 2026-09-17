@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 37 overnight (v1.37.0-overnight)
+- Soft **indoor hall reverb** cue when inside guild halls + soft **leaf rustle near trees** outdoors (respect mute; RuneScape-chunky, wholesome)
+- Clearer **soft-aggro countdown toast** — names the foe with ~seconds remaining, plus a mid-telegraph nudge (no cheesy combat labels)
+- New wilds foe **Willow Wren** — tiny body + quick wings, gentle “coaxed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog)
+- Inventory QoL: clearer **[Head]/[Cape]/[Wpn]** equipped slot tags; gray out unequippable items with reason (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 36 overnight (v1.36.0-overnight)
 - Clearer **combat swing whoosh** — chunkier soft band-sweep with gentle pitch variety (respects mute; no cheesy combat labels)
 - Clearer **minimap zoom feel** — camera zoom in/out scales the map world radius + soft inner tick when close

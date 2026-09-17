@@ -95,6 +95,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_raccoon(bob)
 		"hazel_hedgehog":
 			_build_hedgehog(bob)
+		"willow_wren":
+			_build_wren(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -422,7 +424,7 @@ static func _build_raccoon(bob: Node3D) -> void:
 
 static func _build_hedgehog(bob: Node3D) -> void:
 	## Prickly hazel-wilds hedgehog — round body, soft snout, spine tufts (distinct from raccoon/otter/squirrel).
-_mi(_sphere(0.28, 0.42), Vector3(0, 0.38, 0), bob, "Body")
+	_mi(_sphere(0.28, 0.42), Vector3(0, 0.38, 0), bob, "Body")
 	_mi(_sphere(0.16), Vector3(0, 0.42, 0.28), bob, "Head")
 	_mi(_sphere(0.07), Vector3(0, 0.38, 0.40), bob, "Snout")
 	# Soft rounded ears
@@ -453,3 +455,22 @@ _mi(_sphere(0.28, 0.42), Vector3(0, 0.38, 0), bob, "Body")
 		_mi(_capsule(0.04, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
 		_mi(_box(Vector3(0.07, 0.035, 0.09)), Vector3(0, -0.14, 0.02), leg, "Paw")
 
+static func _build_wren(bob: Node3D) -> void:
+	## Soft willow-wilds wren — tiny round body, quick wings, stubby tail (distinct from moth + all mammal foes).
+	_mi(_sphere(0.14, 0.22), Vector3(0, 0.72, 0), bob, "Body")
+	_mi(_sphere(0.10), Vector3(0, 0.82, 0.14), bob, "Head")
+	_mi(_sphere(0.035), Vector3(0, 0.80, 0.22), bob, "Beak")
+	# Soft cheek fluff
+	_mi(_sphere(0.04), Vector3(-0.06, 0.80, 0.12), bob, "CheekL")
+	_mi(_sphere(0.04), Vector3(0.06, 0.80, 0.12), bob, "CheekR")
+	# Wings (flapped in idle)
+	var lw := _mi(_box(Vector3(0.32, 0.03, 0.22)), Vector3(-0.20, 0.74, 0), bob, "LWing")
+	lw.rotation_degrees = Vector3(8, 0, 28)
+	var rw := _mi(_box(Vector3(0.32, 0.03, 0.22)), Vector3(0.20, 0.74, 0), bob, "RWing")
+	rw.rotation_degrees = Vector3(8, 0, -28)
+	# Soft upright stubby tail
+	var tail := _mi(_box(Vector3(0.08, 0.04, 0.18)), Vector3(0, 0.70, -0.16), bob, "Tail")
+	tail.rotation_degrees = Vector3(-25, 0, 0)
+	# Tiny stick legs
+	_mi(_cyl(0.015, 0.015, 0.18), Vector3(-0.04, 0.55, 0.02), bob, "LegL")
+	_mi(_cyl(0.015, 0.015, 0.18), Vector3(0.04, 0.55, 0.02), bob, "LegR")

@@ -17,11 +17,20 @@ var selected_id: String = ""
 var _cd_label_was: float = -1.0
 
 const SLOT_LABELS := {
-	"head": "Head armor",
-	"cape": "Cape armor",
+	"head": "Head",
+	"cape": "Cape",
 	"accessory": "Accessory",
 	"weapon": "Weapon",
 	"belt": "Belt",
+}
+
+## Wave 37: worn-row tags read clearly in the loadout list.
+const SLOT_TAGS := {
+	"head": "[Head]",
+	"cape": "[Cape]",
+	"accessory": "[Acc]",
+	"weapon": "[Wpn]",
+	"belt": "[Belt]",
 }
 
 var _icon_head: Texture2D
@@ -79,12 +88,16 @@ func refresh() -> void:
 	for id in GameState.unlocked_items:
 		var item := ItemDB.get_item(id)
 		var equipped_mark := ""
+		var worn_slot := ""
 		for slot in GameState.equipped:
 			if GameState.equipped[slot] == id:
-				equipped_mark = " [E]"
+				worn_slot = str(slot)
+				# Wave 37: clearer equipped mark names the slot
+				equipped_mark = "  %s on" % str(SLOT_TAGS.get(slot, "[E]"))
 		var stack_mark := ""
 		var heal_mark := ""
-		if str(item.get("slot", "")) == "consumable":
+		var slot_s: String = str(item.get("slot", ""))
+		if slot_s == "consumable":
 			var heal_n: int = int(item.get("heal", 0))
 			if heal_n > 0:
 				heal_mark = " · +%d HP" % heal_n  # Wave 32: pantry heal preview
@@ -94,10 +107,24 @@ func refresh() -> void:
 		var def_n: int = int(item.get("defense", 0))
 		if def_n > 0:
 			def_mark = "  [Def +%d]" % def_n  # Wave 32: clearer armor Def on bag rows
-		list.add_item("%s%s%s%s%s" % [item.get("name", id), def_mark, heal_mark, equipped_mark, stack_mark])
+		# Wave 37: gray out unequippable gear with reason (combat level / food)
+		var lock_mark := ""
+		var unequippable := false
+		var req_lv: int = int(item.get("combat_level_req", 0))
+		if slot_s == "consumable":
+			unequippable = true
+			lock_mark = "  (Use — not gear)"
+		elif req_lv > 0 and GameState.combat_level < req_lv:
+			unequippable = true
+			lock_mark = "  (need Combat Lv %d)" % req_lv
+		list.add_item("%s%s%s%s%s%s" % [item.get("name", id), def_mark, heal_mark, equipped_mark, stack_mark, lock_mark])
 		var idx: int = list.item_count - 1
 		list.set_item_metadata(idx, id)
 		list.set_item_icon(idx, _icon_for_item(item))
+		if unequippable and worn_slot == "":
+			list.set_item_custom_fg_color(idx, Color(0.55, 0.55, 0.58, 0.95))
+		elif worn_slot != "":
+			list.set_item_custom_fg_color(idx, Color(0.85, 0.92, 0.55, 1.0))
 	_update_loadout()
 	detail.text = "Select gear to see armor & defense, or food to Use."
 
@@ -134,7 +161,7 @@ func _update_loadout() -> void:
 	_ensure_slot_icons()
 	_ensure_loadout_nodes()
 	if loadout_title:
-		loadout_title.text = "— Worn gear —"
+		loadout_title.text = "— Worn gear (slot labels) —"  # Wave 37: clearer equipped slots
 	var by_slot: Dictionary = {}
 	if GameState.has_method("get_defense_breakdown"):
 		by_slot = GameState.get_defense_breakdown().get("by_slot", {})
@@ -175,7 +202,9 @@ func _update_loadout() -> void:
 		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		var lbl := Label.new()
-		lbl.text = "%s: %s%s" % [_slot_label(slot), name, def_bit]
+		# Wave 37: chunky slot tag so Head/Cape/Weapon read at a glance
+		var tag: String = str(SLOT_TAGS.get(slot, _slot_label(slot)))
+		lbl.text = "%s  %s%s" % [tag, name, def_bit]
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(tex)
 		row.add_child(lbl)
@@ -209,7 +238,11 @@ func _refresh_detail_only() -> void:
 	var slot: String = str(item.get("slot", ""))
 	var req: int = int(item.get("combat_level_req", 0))
 	if req > 0:
-		extra = "\nCombat Lv req: %d" % req
+		if GameState.combat_level < req:
+			# Wave 37: gray-out reason mirrored in detail
+			extra = "\nUnequippable yet — need Combat Lv %d (you are %d)." % [req, GameState.combat_level]
+		else:
+			extra = "\nCombat Lv req: %d — ready to equip." % req
 	if slot == "weapon":
 		extra += "\nDamage %s · Accuracy %s" % [item.get("damage", "?"), item.get("accuracy", "?")]
 	var def_n: int = int(item.get("defense", 0))
@@ -237,8 +270,11 @@ func _on_select(idx: int) -> void:
 		var empty: bool = is_food and GameState.has_method("pantry_count") and int(GameState.pantry_count(selected_id)) <= 0
 		use_btn.disabled = (not is_food) or GameState.consumable_cd > 0.05 or empty
 	if equip_btn:
-		var slot: String = str(ItemDB.get_item(selected_id).get("slot", ""))
-		equip_btn.disabled = slot == "" or slot == "consumable"
+		var it_sel := ItemDB.get_item(selected_id)
+		var slot: String = str(it_sel.get("slot", ""))
+		var req_sel: int = int(it_sel.get("combat_level_req", 0))
+		var under: bool = req_sel > 0 and GameState.combat_level < req_sel
+		equip_btn.disabled = slot == "" or slot == "consumable" or under
 	if unequip_btn:
 		var slot2: String = str(ItemDB.get_item(selected_id).get("slot", ""))
 		var worn: bool = slot2 != "" and slot2 != "consumable" and str(GameState.equipped.get(slot2, "")) == selected_id
