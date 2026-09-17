@@ -1602,9 +1602,14 @@ func _build_ambient_life() -> void:
 	if HeadlessGuard.is_headless():
 		return
 	var sites := [
-		# Village green / fountain plaza — birds over the green, bugs by flowers
-		{"pos": Vector3(0.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly"},
-		{"pos": Vector3(4.5, 0, 11.5), "birds": false, "bugs": true, "critter": "sparrow"},
+		# Village green / fountain plaza — denser ambient variety (Wave 18)
+		{"pos": Vector3(0.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(4.5, 0, 11.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(-4.8, 0, 11.2), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
+		{"pos": Vector3(0.0, 0, 3.5), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(-9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
+		{"pos": Vector3(2.5, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
 		# Wilds landmarks
 		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly"},
 		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow"},
@@ -1615,18 +1620,19 @@ func _build_ambient_life() -> void:
 	for i in sites.size():
 		var s: Dictionary = sites[i]
 		var p: Vector3 = s["pos"]
+		var dense: bool = bool(s.get("dense", false))
 		if s.get("birds", false):
-			_add_bird_particles(root, p + Vector3(0, 4.5, 0), 200 + i)
+			_add_bird_particles(root, p + Vector3(0, 4.5, 0), 200 + i, dense)
 		if s.get("bugs", false):
-			_add_bug_particles(root, p + Vector3(0.8, 1.2, -0.5), 300 + i)
+			_add_bug_particles(root, p + Vector3(0.8, 1.2, -0.5), 300 + i, dense)
 		_add_idle_critter(root, p + Vector3(-1.2, 1.1, 0.9), str(s.get("critter", "butterfly")), 0.4 * float(i))
 
 
-func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int) -> void:
+func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = false) -> void:
 	var p := CPUParticles3D.new()
 	p.name = "Birds_%d" % seed_n
 	p.position = pos
-	p.amount = 6
+	p.amount = 10 if dense else 6
 	p.lifetime = 5.5
 	p.preprocess = 2.0
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -1651,11 +1657,11 @@ func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int) -> void:
 	HeadlessGuard.guard_particles(p)
 
 
-func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int) -> void:
+func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = false) -> void:
 	var p := CPUParticles3D.new()
 	p.name = "Bugs_%d" % seed_n
 	p.position = pos
-	p.amount = 10
+	p.amount = 16 if dense else 10
 	p.lifetime = 3.2
 	p.preprocess = 1.5
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE

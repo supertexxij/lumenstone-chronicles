@@ -19,10 +19,10 @@
       "defeat_verb": "calmed",
       "color": "#6b4226",
       "accent": "#2d6a4f",
-      "max_hp": 20,
-      "damage": 3,
-      "accuracy": 0.65,
-      "combat_xp": 14,
+      "max_hp": 24,
+      "damage": 4,
+      "accuracy": 0.68,
+      "combat_xp": 16,
       "respawn_sec": 18.0,
       "description": "A bristly boar tangled in briars \u2014 settle it down!"
     },
@@ -32,12 +32,12 @@
       "defeat_verb": "restored",
       "color": "#a89880",
       "accent": "#c9a227",
-      "max_hp": 28,
-      "damage": 4,
-      "accuracy": 0.6,
-      "combat_xp": 20,
+      "max_hp": 34,
+      "damage": 6,
+      "accuracy": 0.64,
+      "combat_xp": 24,
       "respawn_sec": 22.0,
-      "description": "A pile of dust given form \u2014 sweep the dust back into the ground!"
+      "description": "A sturdy pile of dust given form \u2014 sweep it back into the ground!"
     },
     "dim_wisp": {
       "kind": "dim_wisp",

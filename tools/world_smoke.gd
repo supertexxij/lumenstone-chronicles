@@ -102,5 +102,8 @@ func _finish():
 	print("VILLAGE_AMBIENT", "0.0, 0, 8.0" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("ARMOR_ICONS", "_make_slot_icon" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
 	print("HUD_DEF", "· Def" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("LATE_WILDS_TUNE", '"max_hp": 24' in FileAccess.get_file_as_string("res://data/enemies.json") and '"max_hp": 34' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("PLAZA_AMBIENT_DENSE", '"dense": true' in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("LOADOUT_ARMOR_ICONS", "SlotRows" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "SoftArmor" in FileAccess.get_file_as_string("res://scenes/main.tscn"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

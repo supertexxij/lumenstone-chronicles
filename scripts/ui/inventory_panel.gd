@@ -8,7 +8,10 @@ signal closed
 @onready var unequip_btn: Button = $Panel/VBox/HBox/UnequipBtn
 @onready var close_btn: Button = $Panel/VBox/HBox/CloseBtn
 @onready var use_btn: Button = $Panel/VBox/HBox/UseBtn
-@onready var loadout: Label = $Panel/VBox/Loadout
+@onready var loadout: VBoxContainer = $Panel/VBox/Loadout
+@onready var loadout_title: Label = $Panel/VBox/Loadout/WornTitle
+@onready var loadout_slots: VBoxContainer = $Panel/VBox/Loadout/SlotRows
+@onready var loadout_soft: Label = $Panel/VBox/Loadout/SoftArmor
 
 var selected_id: String = ""
 var _cd_label_was: float = -1.0
@@ -28,6 +31,8 @@ var _icon_food: Texture2D
 
 func _ready() -> void:
 	_ensure_slot_icons()
+	_ensure_loadout_nodes()
+	list.fixed_icon_size = Vector2(16, 16)
 	if use_btn == null:
 		use_btn = Button.new()
 		use_btn.name = "UseBtn"
@@ -35,13 +40,13 @@ func _ready() -> void:
 		use_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		$Panel/VBox/HBox.add_child(use_btn)
 		$Panel/VBox/HBox.move_child(use_btn, unequip_btn.get_index() + 1)
-	# Room for defense breakdown lines
+	# Room for defense breakdown + icon rows
 	var panel: PanelContainer = $Panel
 	if panel:
-		panel.offset_top = -290.0
-		panel.offset_bottom = 290.0
-		panel.offset_left = -280.0
-		panel.offset_right = 280.0
+		panel.offset_top = -310.0
+		panel.offset_bottom = 310.0
+		panel.offset_left = -290.0
+		panel.offset_right = 290.0
 	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	list.item_selected.connect(_on_select)
 	equip_btn.pressed.connect(_on_equip)
@@ -94,41 +99,100 @@ func refresh() -> void:
 func _slot_label(slot: String) -> String:
 	return str(SLOT_LABELS.get(slot, slot.capitalize()))
 
+func _ensure_loadout_nodes() -> void:
+	## Worn-gear rows with armor icons (Wave 18) — create if scene is older.
+	if loadout == null:
+		return
+	if loadout_title == null:
+		loadout_title = loadout.get_node_or_null("WornTitle")
+	if loadout_title == null:
+		loadout_title = Label.new()
+		loadout_title.name = "WornTitle"
+		loadout.add_child(loadout_title)
+		loadout.move_child(loadout_title, 0)
+	if loadout_slots == null:
+		loadout_slots = loadout.get_node_or_null("SlotRows")
+	if loadout_slots == null:
+		loadout_slots = VBoxContainer.new()
+		loadout_slots.name = "SlotRows"
+		loadout_slots.add_theme_constant_override("separation", 2)
+		loadout.add_child(loadout_slots)
+	if loadout_soft == null:
+		loadout_soft = loadout.get_node_or_null("SoftArmor")
+	if loadout_soft == null:
+		loadout_soft = Label.new()
+		loadout_soft.name = "SoftArmor"
+		loadout_soft.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		loadout.add_child(loadout_soft)
+
 func _update_loadout() -> void:
-	var parts: PackedStringArray = []
-	parts.append("— Worn gear —")
+	_ensure_slot_icons()
+	_ensure_loadout_nodes()
+	if loadout_title:
+		loadout_title.text = "— Worn gear —"
 	var by_slot: Dictionary = {}
 	if GameState.has_method("get_defense_breakdown"):
 		by_slot = GameState.get_defense_breakdown().get("by_slot", {})
+	# Clear prior icon rows (deferred free from last refresh)
+	if loadout_slots:
+		# Free immediately so icon rows do not briefly double after refresh.
+		var prior_rows: Array = loadout_slots.get_children()
+		for child in prior_rows:
+			loadout_slots.remove_child(child)
+			child.free()
 	for slot in ["head", "cape", "accessory", "weapon", "belt"]:
 		var id = GameState.equipped.get(slot)
 		var name := "—"
 		var def_bit := ""
+		var icon: Texture2D = _icon_gear
 		if id != null:
-			name = ItemDB.get_item(str(id)).get("name", str(id))
+			var item := ItemDB.get_item(str(id))
+			name = str(item.get("name", str(id)))
+			icon = _icon_for_item(item)
 			var d: int = int(by_slot.get(slot, 0))
 			if d <= 0:
-				d = int(ItemDB.get_item(str(id)).get("defense", 0))
+				d = int(item.get("defense", 0))
 			if d > 0:
 				def_bit = " · Def +%d" % d
 			elif slot in ["head", "cape"]:
 				def_bit = " · Def +0"
-		parts.append("%s: %s%s" % [_slot_label(slot), name, def_bit])
+		else:
+			# Empty armor slots still show the slot icon so Head/Cape read clearly.
+			if slot == "head":
+				icon = _icon_head
+			elif slot == "cape":
+				icon = _icon_cape
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		var tex := TextureRect.new()
+		tex.texture = icon
+		tex.custom_minimum_size = Vector2(16, 16)
+		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		var lbl := Label.new()
+		lbl.text = "%s: %s%s" % [_slot_label(slot), name, def_bit]
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(tex)
+		row.add_child(lbl)
+		if loadout_slots:
+			loadout_slots.add_child(row)
+	var soft_parts: PackedStringArray = []
 	if GameState.has_method("get_defense_breakdown"):
 		var bd: Dictionary = GameState.get_defense_breakdown()
-		parts.append("— Soft armor —")
-		parts.append("From combat level: +%d" % int(bd.get("level", 0)))
-		parts.append("From worn gear: +%d" % int(bd.get("gear", 0)))
+		soft_parts.append("— Soft armor —")
+		soft_parts.append("From combat level: +%d" % int(bd.get("level", 0)))
+		soft_parts.append("From worn gear: +%d" % int(bd.get("gear", 0)))
 		var total_d: int = int(bd.get("total", 0))
 		var raw_d: int = int(bd.get("raw", total_d))
 		var cap_d: int = int(bd.get("cap", 5))
 		if raw_d > total_d:
-			parts.append("Total defense: %d (soft max %d — hits still tick)" % [total_d, cap_d])
+			soft_parts.append("Total defense: %d (soft max %d — hits still tick)" % [total_d, cap_d])
 		else:
-			parts.append("Total defense: %d (soft hits hurt less)" % total_d)
+			soft_parts.append("Total defense: %d (soft hits hurt less)" % total_d)
 	elif GameState.has_method("get_defense"):
-		parts.append("Defense: %d" % GameState.get_defense())
-	loadout.text = "\n".join(parts)
+		soft_parts.append("Defense: %d" % GameState.get_defense())
+	if loadout_soft:
+		loadout_soft.text = "\n".join(soft_parts)
 
 func _refresh_detail_only() -> void:
 	if selected_id == "":
@@ -179,11 +243,19 @@ func _on_equip() -> void:
 		refresh()
 
 func _on_unequip() -> void:
-	if selected_id != "":
-		AudioBus.play_ui()
-		var item := ItemDB.get_item(selected_id)
-		GameState.unequip_slot(item.get("slot", ""))
-		refresh()
+	if selected_id == "":
+		return
+	var item := ItemDB.get_item(selected_id)
+	var slot: String = str(item.get("slot", ""))
+	if slot == "" or slot == "consumable":
+		return
+	# v1.17 bug fix: only unequip when this item is the one worn in that slot
+	if str(GameState.equipped.get(slot, "")) != selected_id:
+		GameState.toast.emit("That item is not equipped — pick the [E] row first.")
+		return
+	AudioBus.play_ui()
+	GameState.unequip_slot(slot)
+	refresh()
 
 func _on_use() -> void:
 	if selected_id == "":
@@ -200,7 +272,7 @@ func _on_use() -> void:
 				break
 
 func _ensure_slot_icons() -> void:
-	## Tiny plain armor-slot icons so Head/Cape read clearly in the bag.
+	## Tiny plain armor-slot icons so Head/Cape read clearly in the bag and loadout.
 	if _icon_head != null:
 		return
 	_icon_head = _make_slot_icon(Color(0.72, 0.78, 0.88), "head")

@@ -239,6 +239,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Bug fix: eating food emits **green heal hitsplat** (`heal_tick`); combat **level-up toast** on foe clear
 
 
+
+### Wave 18 overnight (v1.18.0-overnight)
+- Slightly tougher **late wilds** foes (Briar Boar / Dust Golem HP, damage, accuracy) so Def 5 mid-combat still has a soft poke — early wisps/moths unchanged
+- **Denser village-green / plaza ambient** — more bird/bug sites + denser particle counts around the fountain
+- **Armor icons on the equipped loadout row** (not only the bag list) with Head/Cape slot glyphs
+- Bug fix: Unequip only works when the selected bag row is the worn [E] item (v1.17 could clear another item in that slot)
+- Bag ItemList uses fixed 16×16 icons for clearer armor glyphs
+- Re-export Linux + Windows
+
 ### Wave 17 overnight (v1.17.0-overnight)
 - Mid/late **cloaks & hats** gain plain Soft defense (+1 early/mid, +2 late, +3 Year Champion); crowns +2
 - Clearer inventory **armor-slot icons** (head helm / cape drape / food / gear) + "Head armor" / "Cape armor" labels
