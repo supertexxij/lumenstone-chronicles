@@ -21,7 +21,7 @@ var correct_count: int = 0
 var selected_option: String = ""
 
 func _ready() -> void:
-	close_btn.pressed.connect(func(): closed.emit())
+	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	submit_btn.pressed.connect(_on_submit)
 	fill_edit.text_submitted.connect(func(_t): _on_submit())
 
@@ -90,6 +90,7 @@ func _make_select(opt: String, btn: Button) -> Callable:
 		btn.modulate = Color(0.7, 0.95, 0.7)
 
 func _on_submit() -> void:
+	AudioBus.play_ui()
 	if phase == "dialogue":
 		dialogue_i += 1
 		_show_dialogue()

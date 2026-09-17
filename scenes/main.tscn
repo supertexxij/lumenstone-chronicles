@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://main001"]
+[gd_scene load_steps=10 format=3 uid="uid://main001"]
 
 [ext_resource type="Script" path="res://scripts/ui/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/title_screen.gd" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/quest_panel.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/ui/npc_panel.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/ui/parent_panel.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/ui/journal_panel.gd" id="9"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1")
@@ -72,7 +73,7 @@ text = "New Game"
 [node name="Blurb" type="Label" parent="UI/TitleScreen/Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 12
-text = "Open village · five guilds · tick combat · Week 1 lessons"
+text = "Open village · five guilds · Weeks 1–36 · journal · soft combat"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -225,6 +226,14 @@ text = "Inventory (I)"
 [node name="LookBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
 text = "Wardrobe (C)"
+
+[node name="JournalBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Journal (J)"
+
+[node name="MuteBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Mute (M)"
 
 [node name="ParentBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
@@ -512,6 +521,82 @@ custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
 [node name="CloseBtn" type="Button" parent="UI/ParentPanel/Panel/VBox"]
+layout_mode = 2
+text = "Close"
+
+
+[node name="JournalPanel" type="Control" parent="UI"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("9")
+
+[node name="Dim" type="ColorRect" parent="UI/JournalPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.5)
+
+[node name="Panel" type="PanelContainer" parent="UI/JournalPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -280.0
+offset_right = 320.0
+offset_bottom = 280.0
+
+[node name="VBox" type="VBoxContainer" parent="UI/JournalPanel/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="UI/JournalPanel/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Quest Journal"
+horizontal_alignment = 1
+
+[node name="WeekLbl" type="Label" parent="UI/JournalPanel/Panel/VBox"]
+layout_mode = 2
+text = "Week"
+horizontal_alignment = 1
+
+[node name="ProgressLbl" type="Label" parent="UI/JournalPanel/Panel/VBox"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Progress"
+
+[node name="FilterRow" type="HBoxContainer" parent="UI/JournalPanel/Panel/VBox"]
+layout_mode = 2
+
+[node name="FilterLbl" type="Label" parent="UI/JournalPanel/Panel/VBox/FilterRow"]
+layout_mode = 2
+text = "Show:"
+
+[node name="FilterOpt" type="OptionButton" parent="UI/JournalPanel/Panel/VBox/FilterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="QuestList" type="ItemList" parent="UI/JournalPanel/Panel/VBox"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Detail" type="RichTextLabel" parent="UI/JournalPanel/Panel/VBox"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = true
+text = "Select a quest"
+
+[node name="CloseBtn" type="Button" parent="UI/JournalPanel/Panel/VBox"]
 layout_mode = 2
 text = "Close"
 

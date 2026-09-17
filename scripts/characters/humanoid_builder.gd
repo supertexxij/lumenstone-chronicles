@@ -101,6 +101,16 @@ static func build(root: Node3D) -> Dictionary:
 	var hilt := _mi(_box(Vector3(0.18, 0.08, 0.08)), Vector3(0, -0.22, 0), weapon, "Hilt")
 	var pommel := _mi(_sphere(0.06), Vector3(0, -0.32, 0), weapon, "Pommel")
 
+	# Accessory (chest charm / belt pouch / lantern) — hidden until equipped
+	var accessory := Node3D.new()
+	accessory.name = "Accessory"
+	accessory.visible = false
+	accessory.position = Vector3(0.0, 1.05, 0.22)
+	bob.add_child(accessory)
+	var acc_body := _mi(_sphere(0.11), Vector3(0, 0, 0), accessory, "AccBody")
+	var acc_glow := _mi(_sphere(0.06), Vector3(0, 0.08, 0.04), accessory, "AccGlow")
+	var acc_strap := _mi(_box(Vector3(0.08, 0.22, 0.04)), Vector3(0, 0.16, -0.02), accessory, "AccStrap")
+
 	# --- Arms (pivots at shoulders for swing) ---
 	var l_arm := Node3D.new()
 	l_arm.name = "LArm"
@@ -151,6 +161,10 @@ static func build(root: Node3D) -> Dictionary:
 		"blade": blade,
 		"hilt": hilt,
 		"pommel": pommel,
+		"accessory": accessory,
+		"acc_body": acc_body,
+		"acc_glow": acc_glow,
+		"acc_strap": acc_strap,
 		"l_arm": l_arm,
 		"r_arm": r_arm,
 		"l_leg": l_leg,
@@ -202,3 +216,59 @@ static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Col
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
+
+
+## Style accessory mesh from item id/name heuristics (lantern, pin, beads, pouch, scroll…).
+static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
+	var root: Node3D = parts.get("accessory")
+	if root == null:
+		return
+	var iid: String = str(item.get("id", "")).to_lower()
+	var name: String = str(item.get("name", "")).to_lower()
+	var col := Color(item.get("color", "#c9a227"))
+	var body: MeshInstance3D = parts.get("acc_body")
+	var glow: MeshInstance3D = parts.get("acc_glow")
+	var strap: MeshInstance3D = parts.get("acc_strap")
+	set_color(body, col)
+	set_color(glow, col.lightened(0.35), 0.3)
+	set_color(strap, col.darkened(0.25))
+	if "lantern" in iid or "lantern" in name:
+		root.position = Vector3(0.38, 0.85, 0.12)
+		if body and body.mesh is SphereMesh:
+			pass
+		# Swap to box-ish lantern look via scale
+		if body:
+			body.scale = Vector3(0.7, 1.1, 0.7)
+		if glow:
+			glow.visible = true
+			glow.scale = Vector3.ONE
+	elif "bead" in iid or "prayer" in name:
+		root.position = Vector3(0, 1.38, 0.18)
+		if body:
+			body.scale = Vector3(1.4, 0.45, 1.4)
+		if glow:
+			glow.visible = false
+	elif "pin" in iid or "star" in name or "badge" in name:
+		root.position = Vector3(0.18, 1.15, 0.18)
+		if body:
+			body.scale = Vector3(0.9, 0.35, 0.9)
+		if glow:
+			glow.visible = true
+			glow.scale = Vector3(0.6, 0.6, 0.6)
+	elif "scroll" in iid or "notebook" in name or "bookmark" in name or "map" in name:
+		root.position = Vector3(-0.32, 0.95, 0.1)
+		if body:
+			body.scale = Vector3(0.55, 1.4, 0.35)
+		if glow:
+			glow.visible = false
+	else:
+		# Generic charm / purse at belt
+		root.position = Vector3(0.28, 0.78, 0.14)
+		if body:
+			body.scale = Vector3(1.0, 0.9, 1.0)
+		if glow:
+			glow.visible = true
+			glow.scale = Vector3(0.7, 0.7, 0.7)
+	if strap:
+		strap.visible = "lantern" in iid or "purse" in iid or "pouch" in name
+

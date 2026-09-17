@@ -13,7 +13,7 @@ var current_npc: Node = null
 var selected_quest: String = ""
 
 func _ready() -> void:
-	close_btn.pressed.connect(func(): closed.emit())
+	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	start_btn.pressed.connect(_on_start)
 	list.item_selected.connect(_on_select)
 	list.item_activated.connect(func(i): _on_select(i); _on_start())

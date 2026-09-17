@@ -12,7 +12,7 @@ signal closed
 var selected_id: String = ""
 
 func _ready() -> void:
-	close_btn.pressed.connect(func(): closed.emit())
+	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	list.item_selected.connect(_on_select)
 	equip_btn.pressed.connect(_on_equip)
 	unequip_btn.pressed.connect(_on_unequip)
@@ -48,11 +48,13 @@ func _on_select(idx: int) -> void:
 
 func _on_equip() -> void:
 	if selected_id != "":
+		AudioBus.play_ui()
 		GameState.equip_item(selected_id)
 		refresh()
 
 func _on_unequip() -> void:
 	if selected_id != "":
+		AudioBus.play_ui()
 		var item := ItemDB.get_item(selected_id)
 		GameState.unequip_slot(item.get("slot", ""))
 		refresh()

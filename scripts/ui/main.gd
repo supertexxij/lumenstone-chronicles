@@ -9,6 +9,7 @@ extends Node
 @onready var quest_panel: Control = $UI/QuestPanel
 @onready var npc_panel: Control = $UI/NpcPanel
 @onready var parent_panel: Control = $UI/ParentPanel
+@onready var journal_panel: Control = $UI/JournalPanel
 @onready var toast_label: Label = $UI/Toast
 
 var world_scene: Node3D = null
@@ -24,6 +25,7 @@ func _ready() -> void:
 	quest_panel.visible = false
 	npc_panel.visible = false
 	parent_panel.visible = false
+	journal_panel.visible = false
 	title_screen.new_game_pressed.connect(_on_new_game)
 	title_screen.continue_pressed.connect(_on_continue)
 	customize_screen.confirmed.connect(_on_customize_done)
@@ -33,6 +35,8 @@ func _ready() -> void:
 		customize_screen.visible = true
 		_set_player_ui_block(true)
 	)
+	hud.journal_pressed.connect(_open_journal)
+	hud.mute_pressed.connect(func(): AudioBus.toggle_mute())
 	hud.parent_pressed.connect(func():
 		parent_panel.open()
 		parent_panel.visible = true
@@ -43,6 +47,7 @@ func _ready() -> void:
 	npc_panel.closed.connect(func(): npc_panel.visible = false; _set_player_ui_block(false))
 	npc_panel.quest_chosen.connect(_on_quest_chosen)
 	parent_panel.closed.connect(func(): parent_panel.visible = false; _set_player_ui_block(false))
+	journal_panel.closed.connect(func(): journal_panel.visible = false; _set_player_ui_block(false))
 	customize_screen.cancelled.connect(func():
 		customize_screen.visible = false
 		_set_player_ui_block(false)
@@ -65,8 +70,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		customize_screen.open_wardrobe()
 		customize_screen.visible = true
 		_set_player_ui_block(true)
+	if event.is_action_pressed("journal"):
+		_open_journal()
+	if event.is_action_pressed("mute_toggle"):
+		AudioBus.toggle_mute()
 	if event.is_action_pressed("interact"):
 		_try_nearby_npc()
+
+func _open_journal() -> void:
+	journal_panel.open()
+	journal_panel.visible = true
+	_set_player_ui_block(true)
 
 func _try_nearby_npc() -> void:
 	if not world_scene:
@@ -74,10 +88,15 @@ func _try_nearby_npc() -> void:
 	var player = world_scene.player
 	if not player:
 		return
+	var best = null
+	var best_d := 4.0
 	for npc in get_tree().get_nodes_in_group("npcs"):
-		if player.global_position.distance_to(npc.global_position) < 4.0:
-			_open_npc(npc)
-			return
+		var d: float = player.global_position.distance_to(npc.global_position)
+		if d < best_d:
+			best_d = d
+			best = npc
+	if best:
+		_open_npc(best)
 
 func _toggle(panel: Control) -> void:
 	panel.visible = not panel.visible
@@ -90,11 +109,13 @@ func _set_player_ui_block(v: bool) -> void:
 		world_scene.player.set_ui_blocking(v)
 
 func _on_new_game() -> void:
+	AudioBus.play_ui()
 	title_screen.visible = false
 	customize_screen.open_new()
 	customize_screen.visible = true
 
 func _on_continue() -> void:
+	AudioBus.play_ui()
 	if GameState.load_game():
 		title_screen.visible = false
 		_enter_world()
@@ -125,6 +146,7 @@ func _enter_world() -> void:
 		GameState.state_changed.connect(hud.refresh)
 	if not GameState.hp_changed.is_connected(hud.set_hp):
 		GameState.hp_changed.connect(hud.set_hp)
+	AudioBus.start_ambient()
 
 func _open_npc(npc: Node) -> void:
 	npc_panel.open(npc)
@@ -132,6 +154,7 @@ func _open_npc(npc: Node) -> void:
 	_set_player_ui_block(true)
 
 func _on_quest_chosen(quest_id: String) -> void:
+	AudioBus.play_ui()
 	npc_panel.visible = false
 	quest_panel.open(quest_id)
 	quest_panel.visible = true
