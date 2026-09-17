@@ -56,6 +56,7 @@ func _finish():
 	var ducks := 0
 	var frogs := 0
 	var turtles := 0
+	var doves := 0
 	for foe in root.get_tree().get_nodes_in_group("enemies"):
 		if str(foe.get("kind")) == "moss_badger":
 			badgers += 1
@@ -85,6 +86,8 @@ func _finish():
 			frogs += 1
 		if str(foe.get("kind")) == "cypress_turtle":
 			turtles += 1
+		if str(foe.get("kind")) == "poplar_dove":
+			doves += 1
 	print("ENEMIES", root.get_tree().get_nodes_in_group("enemies").size())
 	print("BADGERS", badgers)
 	print("STAGS", stags)
@@ -100,6 +103,7 @@ func _finish():
 	print("DUCKS", ducks)
 	print("FROGS", frogs)
 	print("TURTLES", turtles)
+	print("DOVES", doves)
 	print("STATIC", world.static_world.get_child_count() if world else -1)
 	print("INTERIORS", world.get_node_or_null("Interiors") != null if world else false)
 	print("GLADE", world.static_world.get_node_or_null("LanternGlade") != null if world else false)
@@ -299,6 +303,13 @@ func _finish():
 	print("HIT_EDGE_SOFT_SRC", "_hit_edge_flash_t" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("INV_SORT_UNLOCK_SRC", "SLOT_SORT" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "_append_locked_gear_hints" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
 	print("VERSION_143_SRC", 'config/version="1.43.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+	print("POPLAR_DOVE_SRC", '"poplar_dove"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("DAWN_BIRD_SWELL_SRC", "_apply_dawn_bird_swell" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("WEATHER_CYCLE_TOAST_SRC", "Weather cycle ·" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TALK_CAM_NUDGE_SRC", "begin_talk_camera_nudge" in FileAccess.get_file_as_string("res://scripts/player/player.gd"))
+	print("PARENT_EXPORT_HELP_SRC", "Needs help:" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "_relative_session_age" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
+	print("VERSION_144_SRC", 'config/version="1.44.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

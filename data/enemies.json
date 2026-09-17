@@ -246,6 +246,19 @@
       "combat_xp": 114,
       "respawn_sec": 54.0,
       "description": "A shelled turtle of the cypress wilds \u2014 shelter it gently with a careful step!"
+    },
+    "poplar_dove": {
+      "kind": "poplar_dove",
+      "name": "Poplar Dove",
+      "defeat_verb": "gathered",
+      "color": "#8a8a78",
+      "accent": "#e8dcc8",
+      "max_hp": 134,
+      "damage": 22,
+      "accuracy": 0.32,
+      "combat_xp": 120,
+      "respawn_sec": 56.0,
+      "description": "A soft dove of the poplar wilds \u2014 gather it gently with a careful step!"
     }
   },
   "spawns": [
@@ -806,6 +819,36 @@
       "kind": "cypress_turtle",
       "x": -12,
       "z": -82
+    },
+    {
+      "id": "e94",
+      "kind": "poplar_dove",
+      "x": -72,
+      "z": -52
+    },
+    {
+      "id": "e95",
+      "kind": "poplar_dove",
+      "x": 74,
+      "z": 56
+    },
+    {
+      "id": "e96",
+      "kind": "poplar_dove",
+      "x": -56,
+      "z": 74
+    },
+    {
+      "id": "e97",
+      "kind": "poplar_dove",
+      "x": 66,
+      "z": -36
+    },
+    {
+      "id": "e98",
+      "kind": "poplar_dove",
+      "x": 8,
+      "z": 82
     }
   ],
   "base_combat": {

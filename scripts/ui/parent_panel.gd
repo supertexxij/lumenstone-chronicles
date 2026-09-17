@@ -110,7 +110,7 @@ func _refresh() -> void:
 	var help_n: int = help_preview.size()
 	var last_sess: String = _format_last_session()
 	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
-	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year %%)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+	var lines: String = "[b]Parent Dashboard[/b] · Needs help: [b]%d[/b]\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
 		help_n, GameState.child_name, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
@@ -294,17 +294,37 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	parent.add_child(row)
 
 func _format_last_session() -> String:
-	## Wave 27: show last save/session time (local clock; PIN stays 1234).
+	## Wave 27/44: show last save/session time + relative age (local clock; PIN stays 1234).
 	var ts: int = int(GameState.last_played) if GameState.get("last_played") != null else 0
 	if ts <= 0:
 		return "Last session: not saved yet"
 	# Godot 4.3: unix dict is UTC — shift by system timezone bias (minutes).
 	var bias: int = int(Time.get_time_zone_from_system().get("bias", 0))
 	var dt: Dictionary = Time.get_datetime_dict_from_unix_time(ts + bias * 60)
-	return "Last session: %04d-%02d-%02d %02d:%02d" % [
+	var absolute: String = "%04d-%02d-%02d %02d:%02d" % [
 		int(dt.get("year", 0)), int(dt.get("month", 0)), int(dt.get("day", 0)),
 		int(dt.get("hour", 0)), int(dt.get("minute", 0))
 	]
+	var rel: String = _relative_session_age(ts)
+	return "Last session: %s (%s)" % [absolute, rel]
+
+
+func _relative_session_age(ts: int) -> String:
+	## Wave 44: soft relative last-session age for parent skim (PIN stays 1234; mastery ≥80%).
+	var now: int = int(Time.get_unix_time_from_system())
+	var sec: int = maxi(0, now - ts)
+	if sec < 60:
+		return "just now"
+	if sec < 3600:
+		var m: int = int(sec / 60)
+		return "%d minute%s ago" % [m, "" if m == 1 else "s"]
+	if sec < 86400:
+		var h: int = int(sec / 3600)
+		return "%d hour%s ago" % [h, "" if h == 1 else "s"]
+	var d: int = int(sec / 86400)
+	if d < 14:
+		return "%d day%s ago" % [d, "" if d == 1 else "s"]
+	return "%d weeks ago" % maxi(1, int(round(float(d) / 7.0)))
 
 
 func _campaign_name(week: int) -> String:

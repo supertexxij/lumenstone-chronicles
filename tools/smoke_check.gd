@@ -341,5 +341,17 @@ func _initialize():
 	print("MASTERY_80_W43", "MASTERY_PCT := 0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") or "0.8" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
 	print("NO_DAY_CASH_W43", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
+	print("VERSION_144", 'config/version="1.44.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("POPLAR_DOVE", '"poplar_dove"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_dove" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e98"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("DAWN_BIRD_SWELL_W44", "_apply_dawn_bird_swell" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "Wave 44: soft morning bird swell" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("WEATHER_CYCLE_TOAST_W44", "Weather cycle ·" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "bright open skies settle soft" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("TALK_CAM_NUDGE_W44", "begin_talk_camera_nudge" in FileAccess.get_file_as_string("res://scripts/player/player.gd") and "_begin_talk_camera_nudge" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var pp44 = FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd")
+	var gs44 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PARENT_EXPORT_HELP_W44", "Needs help:" in gs44 and "_relative_session_age" in pp44)
+	print("PIN_STILL_1234_W44", "const DEFAULT_PIN := \"1234\"" in gs44 or 'DEFAULT_PIN := "1234"' in gs44)
+	print("MASTERY_80_W44", "MASTERY_PCT := 0.8" in gs44 or "0.8" in gs44)
+	print("NO_DAY_CASH_W44", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
 	print("CHECK_OK")
 	quit(0)

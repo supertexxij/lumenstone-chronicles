@@ -98,6 +98,9 @@ func _ready() -> void:
 		"cypress_turtle":
 			if label: label.position.y = 1.3
 			hp_bar.position.y = 1.05
+		"poplar_dove":
+			if label: label.position.y = 1.45
+			hp_bar.position.y = 1.2
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -531,6 +534,25 @@ func _idle_anim(delta: float) -> void:
 			var ttail := creature_bob.get_node_or_null("Tail")
 			if ttail:
 				ttail.rotation.y = sin(t * 0.6) * 0.1
+		"poplar_dove":
+			# Soft perch-bob — gentle wing tuck flutter, fan tail tip (Wave 44)
+			creature_bob.position.y = 0.06 + sin(t * 0.9) * 0.04
+			creature_bob.rotation.y = sin(t * 0.42) * 0.1
+			wing_phase += delta * 10.0
+			var dlw := creature_bob.get_node_or_null("LWing")
+			var drw := creature_bob.get_node_or_null("RWing")
+			var dflap := sin(wing_phase) * 0.22
+			if dlw:
+				dlw.rotation.z = deg_to_rad(22) + dflap
+			if drw:
+				drw.rotation.z = deg_to_rad(-22) - dflap
+			var dtail := creature_bob.get_node_or_null("Tail")
+			if dtail:
+				dtail.rotation.y = sin(t * 0.75) * 0.12
+				dtail.rotation.x = deg_to_rad(-28) + sin(t * 0.6) * 0.05
+			var fluff := creature_bob.get_node_or_null("Fluff")
+			if fluff:
+				fluff.scale = Vector3.ONE * (1.0 + sin(t * 1.1) * 0.04)
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

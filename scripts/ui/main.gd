@@ -71,6 +71,7 @@ func _ready() -> void:
 		_set_player_ui_block(false)
 		if AudioBus.has_method("set_talk_duck"):
 			AudioBus.set_talk_duck(false)
+		_end_talk_camera_nudge()
 	)
 	npc_panel.quest_chosen.connect(_on_quest_chosen)
 	parent_panel.closed.connect(func(): parent_panel.visible = false; _set_player_ui_block(false))
@@ -514,12 +515,15 @@ func _open_npc(npc: Node) -> void:
 	_set_player_ui_block(true)
 	if AudioBus.has_method("set_talk_duck"):
 		AudioBus.set_talk_duck(true)
+	# Wave 44: soft NPC talk camera nudge
+	_begin_talk_camera_nudge(npc)
 
 func _on_quest_chosen(quest_id: String) -> void:
 	AudioBus.play_ui()
 	npc_panel.visible = false
 	if AudioBus.has_method("set_talk_duck"):
 		AudioBus.set_talk_duck(false)
+	_end_talk_camera_nudge()
 	quest_panel.open(quest_id)
 	quest_panel.visible = true
 	_set_player_ui_block(true)
@@ -788,3 +792,16 @@ func _save_clear_selected() -> void:
 		return
 	var idx: int = list.get_selected_items()[0]
 	_on_clear_slot(idx)
+
+func _begin_talk_camera_nudge(npc: Node) -> void:
+	## Wave 44: soft talk camera nudge via player (no combat/navmesh impact).
+	var pl = get_tree().get_first_node_in_group("player")
+	if pl and pl.has_method("begin_talk_camera_nudge") and npc is Node3D:
+		pl.begin_talk_camera_nudge((npc as Node3D).global_position)
+
+
+func _end_talk_camera_nudge() -> void:
+	var pl = get_tree().get_first_node_in_group("player")
+	if pl and pl.has_method("end_talk_camera_nudge"):
+		pl.end_talk_camera_nudge()
+

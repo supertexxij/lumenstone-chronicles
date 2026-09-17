@@ -14,6 +14,8 @@ var _day_birds: AudioStreamPlayer
 var _night_hush: AudioStreamPlayer
 var _campfire: AudioStreamPlayer
 var _day_audio_wanted: bool = true
+var _day_phase_cache: float = 0.25  # Wave 44: dawn bird swell
+var _birds_base_db: float = -26.0
 var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
 var _campfire_wanted: bool = false  # Wave 33: plaza campfire crackle when near
 var _wind: AudioStreamPlayer
@@ -69,7 +71,7 @@ func _ready() -> void:
 	_day_birds = AudioStreamPlayer.new()
 	_day_birds.name = "DayBirds"
 	_day_birds.bus = "Master"
-	_day_birds.volume_db = -26.0
+	_day_birds.volume_db = _birds_base_db
 	_day_birds.stream = _streams.get("day_birds")
 	add_child(_day_birds)
 	_night_hush = AudioStreamPlayer.new()
@@ -340,16 +342,20 @@ func set_brook_murmur(on: bool) -> void:
 	_sync_brook_murmur_audio()
 
 
-func set_day_night_audio(dayness: float) -> void:
-	## Wave 26/43: soft day bird chirps vs night cricket hush outdoors (respects mute). Hysteresis avoids flicker.
+func set_day_night_audio(dayness: float, day_phase: float = -1.0) -> void:
+	## Wave 26/43/44: soft day bird chirps vs night cricket hush outdoors (respects mute). Hysteresis avoids flicker.
+	## Wave 44: soft morning bird swell at dawn (phase ~0.2–0.38).
+	if day_phase >= 0.0:
+		_day_phase_cache = day_phase
 	var want_day: bool = dayness >= 0.48
 	var mode: int = 1 if want_day else 0
-	if mode == _last_day_audio:
+	if mode != _last_day_audio:
+		_last_day_audio = mode
 		_day_audio_wanted = want_day
-		return
-	_last_day_audio = mode
-	_day_audio_wanted = want_day
-	_sync_day_night_audio()
+		_sync_day_night_audio()
+	else:
+		_day_audio_wanted = want_day
+	_apply_dawn_bird_swell()
 
 func set_talk_duck(on: bool) -> void:
 	## Wave 32: soft music/ambient duck while mentor talk panel is open (wholesome, no mute).
@@ -381,6 +387,7 @@ func _sync_day_night_audio() -> void:
 				_day_birds.stream = _streams.get("day_birds")
 			if not _day_birds.playing and _day_birds.stream:
 				_day_birds.play()
+			_apply_dawn_bird_swell()
 		elif _day_birds.playing:
 			_day_birds.stop()
 	if _night_hush:
@@ -392,6 +399,23 @@ func _sync_day_night_audio() -> void:
 				_night_hush.play()
 		elif _night_hush.playing:
 			_night_hush.stop()
+
+
+func _apply_dawn_bird_swell() -> void:
+	## Wave 44: soft morning bird swell at dawn — birds lift gently then settle (RuneScape-chunky, wholesome).
+	if _day_birds == null or not _ready_ok:
+		return
+	if GameState.muted or not GameState.in_world or not _day_audio_wanted:
+		return
+	if not _day_birds.playing:
+		return
+	var phase: float = _day_phase_cache
+	var swell: float = 0.0
+	# Dawn window matches HUD Dawn (phase 0.2–0.35), with a soft shoulder
+	if phase >= 0.18 and phase < 0.40:
+		var u: float = (phase - 0.18) / 0.22
+		swell = sin(clampf(u, 0.0, 1.0) * PI)  # rise and fall
+	_day_birds.volume_db = _birds_base_db + swell * 7.5
 
 func _sync_rain_audio() -> void:
 	if not _ready_ok:
@@ -842,6 +866,7 @@ func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:
 
 func _day_birds_loop(dur: float, amp: float) -> AudioStreamWAV:
 	## Soft sparse daytime chirps — wholesome, non-startling, loopable.
+	## Wave 44 pairs with dawn volume swell in _apply_dawn_bird_swell.
 	var rate := 22050
 	var n := int(dur * rate)
 	var samples := PackedFloat32Array()

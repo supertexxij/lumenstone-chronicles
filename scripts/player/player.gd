@@ -39,6 +39,9 @@ var _click_marker: MeshInstance3D = null
 var _click_marker_t: float = -1.0
 var _click_marker_mat: StandardMaterial3D = null
 var _foot_dust: CPUParticles3D = null
+var _talk_nudge_active: bool = false  # Wave 44: soft NPC talk camera nudge
+var _talk_nudge_zoom_saved: float = 1.0
+var _talk_nudge_yaw_saved: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -205,6 +208,35 @@ func _apply_camera_zoom() -> void:
 	if camera == null:
 		return
 	camera.position = CAM_BASE * cam_zoom
+
+
+func begin_talk_camera_nudge(toward: Vector3) -> void:
+	## Wave 44: soft NPC talk camera nudge — ease in a little closer and face the mentor (RuneScape-chunky, wholesome).
+	if _talk_nudge_active:
+		return
+	_talk_nudge_active = true
+	_talk_nudge_zoom_saved = cam_zoom
+	_talk_nudge_yaw_saved = cam_yaw
+	var flat := Vector3(toward.x - global_position.x, 0.0, toward.z - global_position.z)
+	if flat.length() > 0.15:
+		# Camera sits behind player looking along -Z local; yaw toward NPC
+		var desired: float = atan2(flat.x, flat.z)
+		# Soft blend so it does not snap hard
+		var diff: float = wrapf(desired - cam_yaw, -PI, PI)
+		cam_yaw = cam_yaw + diff * 0.55
+	if camera_pivot:
+		camera_pivot.rotation.y = cam_yaw
+	cam_zoom = clampf(cam_zoom * 0.84, CAM_ZOOM_MIN, CAM_ZOOM_MAX)
+	_apply_camera_zoom()
+
+
+func end_talk_camera_nudge() -> void:
+	## Restore zoom after talk; leave yaw where the nudge settled (player can Q/E).
+	if not _talk_nudge_active:
+		return
+	_talk_nudge_active = false
+	cam_zoom = clampf(_talk_nudge_zoom_saved, CAM_ZOOM_MIN, CAM_ZOOM_MAX)
+	_apply_camera_zoom()
 
 func _handle_click() -> void:
 	var mouse := get_viewport().get_mouse_position()

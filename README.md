@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 44 overnight (v1.44.0-overnight)
+- Soft **morning bird swell at dawn** — day birds lift gently through dawn then settle (respects mute; RuneScape-chunky, wholesome)
+- Clearer **weather cycle toast** — Clear / Fog / Rain each named with a soft cue (`Weather cycle · …`)
+- Soft **NPC talk camera nudge** — ease closer and face the mentor when talking (restore zoom on close; no navmesh/combat change)
+- New wilds foe **Poplar Dove** — plump body, soft wings, round head, short beak, fan tail, gentle “gathered” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle)
+- Parent QoL: export **copy line includes needs-help count** + **last-session relative time** (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 43 overnight (v1.43.0-overnight)
 - Soft **night cricket hush** outdoors — warm low bed with sparse gentle cricket chirps at night (respects mute; RuneScape-chunky, wholesome)
 - Clearer **soft-travel fade** — cream hush fade out/in when Travel (T) arrives at a landmark

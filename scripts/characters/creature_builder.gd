@@ -109,6 +109,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_frog(bob)
 		"cypress_turtle":
 			_build_turtle(bob)
+		"poplar_dove":
+			_build_dove(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -689,3 +691,35 @@ static func _build_turtle(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.09, 0.03, 0.1)), Vector3(0, -0.10, 0.02), leg, "Foot")
 	# Short stubby tail
 	_mi(_sphere(0.06, 0.08), Vector3(0, 0.28, -0.28), bob, "Tail")
+
+static func _build_dove(bob: Node3D) -> void:
+	## Soft poplar-wilds dove — plump body, soft wings, round head, short beak, fan tail (distinct from wren/duck/turtle).
+	_mi(_sphere(0.18, 0.22), Vector3(0, 0.48, 0), bob, "Body")
+	_mi(_sphere(0.12), Vector3(0, 0.62, 0.14), bob, "Head")
+	# Soft cream eye rings
+	_mi(_sphere(0.025), Vector3(-0.05, 0.66, 0.22), bob, "EyeL")
+	_mi(_sphere(0.025), Vector3(0.05, 0.66, 0.22), bob, "EyeR")
+	# Short gentle beak
+	_mi(_box(Vector3(0.04, 0.025, 0.07)), Vector3(0, 0.60, 0.26), bob, "Beak")
+	# Soft folded wings (signature — will flutter gently)
+	var lw := _mi(_box(Vector3(0.28, 0.04, 0.22)), Vector3(-0.18, 0.50, -0.02), bob, "LWing")
+	lw.rotation_degrees = Vector3(8, 0, 22)
+	var rw := _mi(_box(Vector3(0.28, 0.04, 0.22)), Vector3(0.18, 0.50, -0.02), bob, "RWing")
+	rw.rotation_degrees = Vector3(8, 0, -22)
+	# Fan tail
+	var tail := _mi(_box(Vector3(0.16, 0.03, 0.18)), Vector3(0, 0.46, -0.22), bob, "Tail")
+	tail.rotation_degrees = Vector3(-28, 0, 0)
+	# Tiny perch feet
+	for info in [
+		["FL", Vector3(-0.06, 0.22, 0.04)],
+		["FR", Vector3(0.06, 0.22, 0.04)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.015, 0.02, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.05, 0.015, 0.06)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Soft chest fluff
+	_mi(_sphere(0.1, 0.12), Vector3(0, 0.44, 0.10), bob, "Fluff")
+

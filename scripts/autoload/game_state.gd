@@ -588,11 +588,12 @@ func get_year_progress_note() -> String:
 
 
 func get_parent_export_line() -> String:
-	## Wave 30: one plain line for parents to copy (week unlock + year mastery %).
+	## Wave 30/44: one plain line for parents to copy (week unlock + year mastery % + needs-help count).
 	var w: Dictionary = get_week_unlock_progress()
 	var q: Dictionary = get_quest_mastery_progress()
-	return "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [
-		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0))
+	var help_n: int = needs_help_quests().size() if has_method("needs_help_quests") else 0
+	return "Week unlock %d/36 (%d%%) · Year mastery %d%% · Needs help: %d" % [
+		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0)), help_n
 	]
 
 

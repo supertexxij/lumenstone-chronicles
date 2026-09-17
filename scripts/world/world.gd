@@ -892,10 +892,11 @@ func _update_day_night(delta: float) -> void:
 			_env.fog_density = base_fog + _fog_boost
 
 	if AudioBus.has_method("set_day_night_audio") and _inside_hall == "":
-		AudioBus.set_day_night_audio(dayness)
+		# Wave 44: pass day_phase for soft morning bird swell at dawn
+		AudioBus.set_day_night_audio(dayness, _day_phase)
 	elif AudioBus.has_method("set_day_night_audio") and _inside_hall != "":
 		# Soft indoor: bias toward quiet day pad
-		AudioBus.set_day_night_audio(0.55)
+		AudioBus.set_day_night_audio(0.55, _day_phase)
 	# Wave 34: soft outdoor wind whoosh (off indoors)
 	if AudioBus.has_method("set_wind_audio"):
 		AudioBus.set_wind_audio(_inside_hall == "")
@@ -1771,11 +1772,14 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		AudioBus.set_rain_audio(rain_on)
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
-		# Wave 29: fog density cue in the weather toast
-		if _weather_mode == 1:
-			GameState.toast.emit("Weather: Fog — soft mist gathers thick nearby.")
-		else:
-			GameState.toast.emit("Weather: %s" % _weather_label_cache)
+		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
+		match _weather_mode:
+			1:
+				GameState.toast.emit("Weather cycle · Fog — soft mist gathers thick nearby.")
+			2:
+				GameState.toast.emit("Weather cycle · Rain — gentle drops patter on the green.")
+			_:
+				GameState.toast.emit("Weather cycle · Clear — bright open skies settle soft over the village.")
 
 
 func _update_quest_desk_highlights() -> void:
