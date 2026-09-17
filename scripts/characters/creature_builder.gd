@@ -131,6 +131,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_beaver(bob)
 		"olive_owl":
 			_build_owl(bob)
+		"palm_pika":
+			_build_pika(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1099,4 +1101,40 @@ static func _build_owl(bob: Node3D) -> void:
 		bob.add_child(leg)
 		_mi(_cyl(0.012, 0.014, 0.11), Vector3(0, -0.02, 0), leg, "Shin")
 		_mi(_box(Vector3(0.04, 0.012, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
+
+static func _build_pika(bob: Node3D) -> void:
+	## Soft palm-wilds pika — round body, big round ears, short snout, cotton puff tail (distinct from Maple Mouse / Hazel Hedgehog / Oak Hare / Beech Chipmunk / Olive Owl).
+	# Round plump body
+	_mi(_sphere(0.18, 0.22), Vector3(0, 0.32, 0.0), bob, "Body")
+	# Soft cream belly
+	_mi(_sphere(0.10, 0.12), Vector3(0, 0.26, 0.06), bob, "Belly")
+	# Round head
+	_mi(_sphere(0.13), Vector3(0, 0.48, 0.06), bob, "Head")
+	# Big round ears (signature)
+	_mi(_sphere(0.055, 0.02), Vector3(-0.09, 0.60, -0.01), bob, "EarL")
+	_mi(_sphere(0.055, 0.02), Vector3(0.09, 0.60, -0.01), bob, "EarR")
+	_mi(_sphere(0.028, 0.012), Vector3(-0.09, 0.60, 0.01), bob, "EarInnerL")
+	_mi(_sphere(0.028, 0.012), Vector3(0.09, 0.60, 0.01), bob, "EarInnerR")
+	# Soft eyes
+	_mi(_sphere(0.028), Vector3(-0.045, 0.50, 0.15), bob, "EyeL")
+	_mi(_sphere(0.028), Vector3(0.045, 0.50, 0.15), bob, "EyeR")
+	_mi(_sphere(0.012), Vector3(-0.045, 0.505, 0.17), bob, "PupilL")
+	_mi(_sphere(0.012), Vector3(0.045, 0.505, 0.17), bob, "PupilR")
+	# Short snout
+	_mi(_sphere(0.04, 0.035), Vector3(0, 0.44, 0.16), bob, "Snout")
+	# Tiny cotton puff tail
+	_mi(_sphere(0.06), Vector3(0, 0.30, -0.18), bob, "TailPuff")
+	# Short legs
+	for info in [
+		["FL", Vector3(-0.06, 0.14, 0.06)],
+		["FR", Vector3(0.06, 0.14, 0.06)],
+		["BL", Vector3(-0.06, 0.14, -0.06)],
+		["BR", Vector3(0.06, 0.14, -0.06)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.014, 0.016, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.035, 0.012, 0.04)), Vector3(0, -0.07, 0.01), leg, "Foot")
 

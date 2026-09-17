@@ -3544,25 +3544,25 @@ func _play_fountain_restore_fx() -> void:
 	fx.color = Color(1.0, 0.92, 0.65, 0.9)
 	HeadlessGuard.guard_particles(fx)
 	anchor.add_child(fx)
-	# Soft rising mist disc (second layer)
+	# Soft rising mist disc (second layer) — Wave 55: soft-defeat mist linger (longer cream mist)
 	var mist := CPUParticles3D.new()
 	mist.name = "FountainRestoreMist"
 	mist.position = Vector3(0, 0.5, 0)
 	mist.emitting = true
 	mist.one_shot = true
-	mist.explosiveness = 0.6
-	mist.amount = 14
-	mist.lifetime = 1.4
+	mist.explosiveness = 0.35  # Wave 55: less bursty so mist lingers
+	mist.amount = 22
+	mist.lifetime = 3.2  # Wave 55: linger longer after soft defeat
 	mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	mist.emission_sphere_radius = 1.4
+	mist.emission_sphere_radius = 1.6
 	mist.direction = Vector3(0, 1, 0)
-	mist.spread = 30.0
-	mist.initial_velocity_min = 0.4
-	mist.initial_velocity_max = 1.0
-	mist.gravity = Vector3(0, 0.2, 0)
-	mist.scale_amount_min = 0.2
-	mist.scale_amount_max = 0.45
-	mist.color = Color(0.85, 0.95, 1.0, 0.55)
+	mist.spread = 36.0
+	mist.initial_velocity_min = 0.22
+	mist.initial_velocity_max = 0.75
+	mist.gravity = Vector3(0, 0.08, 0)
+	mist.scale_amount_min = 0.22
+	mist.scale_amount_max = 0.55
+	mist.color = Color(0.85, 0.95, 1.0, 0.58)
 	HeadlessGuard.guard_particles(mist)
 	anchor.add_child(mist)
 	# Wave 42: clearer soft-defeat fountain glow — warm cream OmniLight pulse (RuneScape-chunky, wholesome)
@@ -3576,7 +3576,8 @@ func _play_fountain_restore_fx() -> void:
 	anchor.add_child(glow)
 	var tw := create_tween()
 	tw.tween_property(glow, "light_energy", 0.15, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	get_tree().create_timer(2.0).timeout.connect(func():
+	# Wave 55: hold mist/glow a bit longer so soft-defeat mist lingers (RuneScape-chunky, wholesome)
+	get_tree().create_timer(4.0).timeout.connect(func():
 		if is_instance_valid(fx):
 			fx.queue_free()
 		if is_instance_valid(mist):

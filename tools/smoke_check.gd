@@ -499,5 +499,20 @@ func _initialize():
 
 
 
+
+	print("VERSION_155", 'config/version="1.55.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("PALM_PIKA", '"palm_pika"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_pika" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e153"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("EMBER_POP_W55", "play_ember_pop" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "_ember_pop_sfx" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("YEAR_WEEK_FLASH_W55", "_year_chip_last_week" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Wave 55: clearer Year chip when week unlocks" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("DEFEAT_MIST_LINGER_W55", "Wave 55: soft-defeat mist linger" in FileAccess.get_file_as_string("res://scripts/world/world.gd") or "lifetime = 3.2" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("SAVE_SLOT_CHIP_W55", "Save · #%d · %s" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Wave 55: show save slot number" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE55_TOAST", "maybe_wave_55_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_55_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs55 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W55", "const DEFAULT_PIN := \"1234\"" in gs55 or 'DEFAULT_PIN := "1234"' in gs55)
+	print("MASTERY_80_W55", "MASTERY_PCT := 0.8" in gs55 or "0.8" in gs55)
+	print("NO_DAY_CASH_W55", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
 	print("CHECK_OK")
 	quit(0)

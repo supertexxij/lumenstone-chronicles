@@ -434,5 +434,16 @@ func _finish():
 
 
 
+
+	print("PALM_PIKA_SRC", '"palm_pika"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("EMBER_POP_SRC", "play_ember_pop" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd"))
+	print("YEAR_WEEK_FLASH_SRC", "_year_chip_last_week" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("DEFEAT_MIST_LINGER_SRC", "lifetime = 3.2" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("SAVE_SLOT_CHIP_SRC", "Save · #%d · %s" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE55_TOAST_SRC", "maybe_wave_55_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_155_SRC", 'config/version="1.55.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+
 	print("WORLD_SMOKE_OK")
 	quit(0)

@@ -19,6 +19,7 @@ var _day_phase_cache: float = 0.25  # Wave 44: dawn bird swell
 var _birds_base_db: float = -26.0
 var _last_day_audio: int = -1  # -1 unset, 0 night, 1 day
 var _campfire_wanted: bool = false  # Wave 33: plaza campfire crackle when near
+var _ember_pop_cd: float = 0.0  # Wave 55: soft campfire ember pop cooldown
 var _wind: AudioStreamPlayer
 var _wind_wanted: bool = false  # Wave 34: soft outdoor wind whoosh
 var _hall_reverb: AudioStreamPlayer
@@ -40,7 +41,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -139,6 +140,13 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _foot_cooldown > 0.0:
 		_foot_cooldown -= delta
+	# Wave 55: occasional soft ember pop when near plaza campfire (respects mute)
+	if _ember_pop_cd > 0.0:
+		_ember_pop_cd -= delta
+	elif _campfire_wanted and _ready_ok and (not GameState.muted) and GameState.in_world:
+		if randf() < 0.018:  # soft sparse pops while near hearth
+			play_ember_pop()
+			_ember_pop_cd = randf_range(1.6, 3.8)
 
 func _on_state() -> void:
 	_apply_mute()
@@ -280,6 +288,10 @@ func play_quest_near_miss() -> void:
 	## Wave 54: softer near-miss chime than mastery — quieter, fewer notes, lower pitch (wholesome, no combat cheese).
 	_play("quest_near_miss", -9.0)
 
+func play_ember_pop() -> void:
+	## Wave 55: soft campfire ember pop — brief warm crackle tick (RuneScape-chunky, wholesome).
+	_play("ember_pop", -11.0)
+
 func play_footstep() -> void:
 	if _foot_cooldown > 0.0:
 		return
@@ -327,6 +339,7 @@ func _build_streams() -> void:
 	_streams["night_hush"] = _night_cricket_hush(8.0, 0.055)  # Wave 43: soft night cricket hush outdoors
 	_streams["dusk_owl"] = _dusk_owl_hoot(9.0, 0.06)  # Wave 49: soft dusk owl hoot outdoors
 	_streams["campfire"] = _campfire_crackle(5.5, 0.08)
+	_streams["ember_pop"] = _ember_pop_sfx()  # Wave 55: soft campfire ember pop
 	_streams["wind"] = _soft_wind(7.0, 0.07)  # Wave 34: soft outdoor wind whoosh
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
 	_streams["hall_chatter"] = _soft_hall_chatter(7.0, 0.055)  # Wave 42: soft guild-hall ambient chatter
@@ -969,6 +982,22 @@ func _quest_near_miss_chime() -> AudioStreamWAV:
 		samples[i] = clampf(s, -1.0, 1.0)
 	return _make_wav(samples, rate)
 
+
+
+func _ember_pop_sfx() -> AudioStreamWAV:
+	## Wave 55: soft campfire ember pop — brief warm noise tick + soft tone (wholesome).
+	var rate := 22050
+	var dur := 0.14
+	var n := int(dur * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	for i in n:
+		var u := float(i) / float(rate)
+		var env := exp(-u * 36.0)
+		var noise := (randf() * 2.0 - 1.0) * 0.45
+		var tone := sin(TAU * 210.0 * u) * 0.22 + sin(TAU * 140.0 * u) * 0.12
+		samples[i] = clampf((noise + tone) * env * 0.55, -1.0, 1.0)
+	return _make_wav(samples, rate)
 
 
 func _indoor_drip(dur: float, amp: float) -> AudioStreamWAV:

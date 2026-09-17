@@ -38,6 +38,8 @@ var _hurt_vignette: Control = null
 var _year_chip: Label = null
 var _year_chip_panel: PanelContainer = null  # Wave 32: clearer chip plate
 var _year_chip_last_pct: int = -1  # Wave 46: flash when year % changes
+var _year_chip_last_week: int = -1  # Wave 55: clearer flash when week unlocks
+var _year_chip_flash_dur: float = 0.85  # Wave 55: longer on week unlock
 var _year_chip_flash_t: float = 0.0
 var _year_chip_style: StyleBoxFlat = null
 var _save_chip: Label = null
@@ -416,12 +418,25 @@ func _refresh_year_chip() -> void:
 	_year_chip.tooltip_text = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
+		_year_chip_flash_dur = 0.85
 		_year_chip_flash_t = 0.85
 		_apply_year_chip_flash()
 		# Wave 50: soft festival sparkle when year % hits multiples of 10
 		if GameState.has_method("maybe_festival_decade") and GameState.maybe_festival_decade(pct):
 			if _world != null and _world.has_method("play_festival_decade_sparkle"):
 				_world.play_festival_decade_sparkle()
+	# Wave 55: clearer Year chip when week unlocks — longer cream-gold flash (RuneScape-chunky, wholesome)
+	var week_n: int = int(GameState.unlocked_week)
+	if _year_chip_last_week >= 0 and week_n > _year_chip_last_week:
+		_year_chip_flash_dur = 1.35
+		_year_chip_flash_t = 1.35
+		_apply_year_chip_flash()
+		if _year_chip_panel != null:
+			_year_chip_panel.pivot_offset = _year_chip_panel.size * 0.5
+			_year_chip_panel.scale = Vector2(1.08, 1.08)
+			var tw := create_tween()
+			tw.tween_property(_year_chip_panel, "scale", Vector2.ONE, 0.42).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_year_chip_last_week = week_n
 	_year_chip_last_pct = pct
 
 
@@ -434,7 +449,8 @@ func _apply_year_chip_flash() -> void:
 			_year_chip_style = (st as StyleBoxFlat).duplicate()
 			_year_chip_panel.add_theme_stylebox_override("panel", _year_chip_style)
 	if _year_chip_flash_t > 0.0:
-		var u := clampf(_year_chip_flash_t / 0.85, 0.0, 1.0)
+		var dur := maxf(_year_chip_flash_dur, 0.01)
+		var u := clampf(_year_chip_flash_t / dur, 0.0, 1.0)
 		var pulse := sin(u * PI)
 		_year_chip.modulate = Color(1.0, 1.0, 0.72, 1.0).lerp(Color(0.94, 0.98, 0.82, 1.0), 1.0 - pulse)
 		if _year_chip_style:
@@ -578,8 +594,9 @@ func _refresh_save_chip() -> void:
 		return
 	var lab := str(GameState.slot_label).strip_edges()
 	var slot_n: int = int(GameState.active_slot) + 1
+	# Wave 55: show save slot number beside nickname chip (PIN stays 1234; mastery ≥80%)
 	if lab != "":
-		_save_chip.text = "Save · %s" % lab
+		_save_chip.text = "Save · #%d · %s" % [slot_n, lab]
 		_save_chip.tooltip_text = "Slot %d nickname — rename from Saves" % slot_n
 	else:
 		_save_chip.text = "Save · Slot %d" % slot_n

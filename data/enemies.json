@@ -389,6 +389,19 @@
       "combat_xp": 180,
       "respawn_sec": 76.0,
       "description": "A round owl of the olive wilds — hush it gently with a careful step!"
+    },
+    "palm_pika": {
+      "kind": "palm_pika",
+      "name": "Palm Pika",
+      "defeat_verb": "eased",
+      "color": "#7a8a52",
+      "accent": "#d4c890",
+      "max_hp": 200,
+      "damage": 33,
+      "accuracy": 0.19,
+      "combat_xp": 186,
+      "respawn_sec": 78.0,
+      "description": "A round pika of the palm wilds — ease it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1279,6 +1292,36 @@
       "kind": "olive_owl",
       "x": -104,
       "z": 92
+    },
+    {
+      "id": "e149",
+      "kind": "palm_pika",
+      "x": -118,
+      "z": -28
+    },
+    {
+      "id": "e150",
+      "kind": "palm_pika",
+      "x": 96,
+      "z": -118
+    },
+    {
+      "id": "e151",
+      "kind": "palm_pika",
+      "x": -72,
+      "z": 118
+    },
+    {
+      "id": "e152",
+      "kind": "palm_pika",
+      "x": 118,
+      "z": 60
+    },
+    {
+      "id": "e153",
+      "kind": "palm_pika",
+      "x": -48,
+      "z": -120
     }
   ],
   "base_combat": {

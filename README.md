@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 55 overnight (v1.55.0-overnight)
+- Soft **campfire ember pop SFX** — occasional warm crackle ticks near the plaza hearth (respects mute; RuneScape-chunky, wholesome)
+- Clearer **Year chip when week unlocks** — longer cream-gold flash + soft scale bloom on campaign week unlock
+- Soft-defeat **mist linger** — cream fountain mist stays a little longer after a soft defeat (no cheesy combat labels)
+- New wilds foe **Palm Pika** — round body, big round ears, short snout, cotton puff tail, gentle “eased” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl)
+- HUD QoL: **save slot number beside nickname** chip (`Save · #N · nickname`) (PIN stays **1234**; mastery still ≥80%)
+- Re-export Linux + Windows
+
 ### Wave 54 overnight (v1.54.0-overnight)
 - Soft **brook sparkle near water** — cream-cyan motes gather by brooks and pools outdoors (RuneScape-chunky, wholesome)
 - Clearer **soft-travel menu open** — gentle scale + cream fade when opening Travel (T)
