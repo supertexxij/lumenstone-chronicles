@@ -288,9 +288,7 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	var titles: Array = []
 	var done_n := 0
 	var total_n := 0
-	for q in QuestDB.quests:
-		if int(q.get("week", 1)) != w:
-			continue
+	for q in QuestDB.quests_for_week(w):
 		total_n += 1
 		var qid: String = str(q["id"])
 		var mark := "✓" if qid in GameState.completed_quests else ("·" if w <= uw else "–")

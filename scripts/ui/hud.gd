@@ -409,6 +409,38 @@ func _update_hurt_vignette(cur: int, mx: int) -> void:
 
 
 
+func _make_hud_chip(panel_name: String, label_name: String, preset: int, ol: float, ot: float, oright: float, obottom: float, bg: Color, border: Color, font_size: int, mod: Color, border_w: int = 2, radius: int = 8, margin: int = 10) -> Dictionary:
+	## Shared HUD chip plate (Year / Foes / Save / landmark / ★ fav).
+	var panel := PanelContainer.new()
+	panel.name = panel_name
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.set_anchors_preset(preset)
+	panel.offset_left = ol
+	panel.offset_top = ot
+	panel.offset_right = oright
+	panel.offset_bottom = obottom
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.border_color = border
+	style.set_border_width_all(border_w)
+	style.set_corner_radius_all(radius)
+	style.content_margin_left = margin
+	style.content_margin_right = margin
+	style.content_margin_top = 4 if margin >= 10 else 3
+	style.content_margin_bottom = 4 if margin >= 10 else 3
+	panel.add_theme_stylebox_override("panel", style)
+	var lab := Label.new()
+	lab.name = label_name
+	lab.add_theme_font_size_override("font_size", font_size)
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lab.modulate = mod
+	panel.add_child(lab)
+	add_child(panel)
+	return {"panel": panel, "label": lab}
+
+
 func _ensure_year_chip() -> void:
 	## Compact year-progress chip near the day label (Wave 22; Wave 32 clearer plate).
 	if _year_chip != null and is_instance_valid(_year_chip):
@@ -421,33 +453,14 @@ func _ensure_year_chip() -> void:
 	if has_node("YearChip"):
 		_year_chip = $YearChip
 		return
-	_year_chip_panel = PanelContainer.new()
-	_year_chip_panel.name = "YearChipPanel"
-	_year_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_year_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_year_chip_panel.offset_left = -300.0
-	_year_chip_panel.offset_top = 84.0
-	_year_chip_panel.offset_right = -12.0
-	_year_chip_panel.offset_bottom = 118.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.18, 0.14, 0.72)
-	style.border_color = Color(0.78, 0.86, 0.55, 0.75)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 10
-	style.content_margin_right = 10
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	_year_chip_panel.add_theme_stylebox_override("panel", style)
-	_year_chip = Label.new()
-	_year_chip.name = "YearChip"
-	_year_chip.add_theme_font_size_override("font_size", 15)
-	_year_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_year_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_year_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_year_chip.modulate = Color(0.94, 0.98, 0.82, 1.0)
-	_year_chip_panel.add_child(_year_chip)
-	add_child(_year_chip_panel)
+	var made_year := _make_hud_chip(
+		"YearChipPanel", "YearChip", Control.PRESET_TOP_RIGHT,
+		-300.0, 84.0, -12.0, 118.0,
+		Color(0.14, 0.18, 0.14, 0.72), Color(0.78, 0.86, 0.55, 0.75),
+		15, Color(0.94, 0.98, 0.82, 1.0)
+	)
+	_year_chip_panel = made_year["panel"]
+	_year_chip = made_year["label"]
 
 
 func _refresh_year_chip() -> void:
@@ -564,34 +577,15 @@ func _ensure_foe_count() -> void:
 		_foe_count_lbl = _foe_count_panel.get_node_or_null("FoeCount")
 		if _foe_count_lbl != null:
 			return
-	_foe_count_panel = PanelContainer.new()
-	_foe_count_panel.name = "FoeCountPanel"
-	_foe_count_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_foe_count_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	_foe_count_panel.offset_left = -168.0
-	_foe_count_panel.offset_top = -248.0
-	_foe_count_panel.offset_right = -16.0
-	_foe_count_panel.offset_bottom = -220.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.16, 0.14, 0.14, 0.72)
-	style.border_color = Color(0.78, 0.55, 0.42, 0.75)
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 3
-	style.content_margin_bottom = 3
-	_foe_count_panel.add_theme_stylebox_override("panel", style)
-	_foe_count_lbl = Label.new()
-	_foe_count_lbl.name = "FoeCount"
-	_foe_count_lbl.add_theme_font_size_override("font_size", 13)
-	_foe_count_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_foe_count_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_foe_count_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_foe_count_lbl.modulate = Color(0.98, 0.88, 0.78, 1.0)
+	var made_foe := _make_hud_chip(
+		"FoeCountPanel", "FoeCount", Control.PRESET_BOTTOM_RIGHT,
+		-168.0, -248.0, -16.0, -220.0,
+		Color(0.16, 0.14, 0.14, 0.72), Color(0.78, 0.55, 0.42, 0.75),
+		13, Color(0.98, 0.88, 0.78, 1.0), 1, 6, 8
+	)
+	_foe_count_panel = made_foe["panel"]
+	_foe_count_lbl = made_foe["label"]
 	_foe_count_lbl.text = "Foes · 0"
-	_foe_count_panel.add_child(_foe_count_lbl)
-	add_child(_foe_count_panel)
 
 
 func _refresh_foe_count() -> void:
@@ -683,33 +677,14 @@ func _ensure_save_chip() -> void:
 		_save_chip = _save_chip_panel.get_node_or_null("SaveChip")
 		if _save_chip != null:
 			return
-	_save_chip_panel = PanelContainer.new()
-	_save_chip_panel.name = "SaveChipPanel"
-	_save_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_save_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_save_chip_panel.offset_left = -196.0
-	_save_chip_panel.offset_top = 112.0
-	_save_chip_panel.offset_right = -12.0
-	_save_chip_panel.offset_bottom = 144.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.16, 0.18, 0.72)
-	style.border_color = Color(0.70, 0.82, 0.90, 0.75)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 10
-	style.content_margin_right = 10
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	_save_chip_panel.add_theme_stylebox_override("panel", style)
-	_save_chip = Label.new()
-	_save_chip.name = "SaveChip"
-	_save_chip.add_theme_font_size_override("font_size", 14)
-	_save_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_save_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_save_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_save_chip.modulate = Color(0.88, 0.94, 0.98, 1.0)
-	_save_chip_panel.add_child(_save_chip)
-	add_child(_save_chip_panel)
+	var made_save := _make_hud_chip(
+		"SaveChipPanel", "SaveChip", Control.PRESET_TOP_RIGHT,
+		-196.0, 112.0, -12.0, 144.0,
+		Color(0.14, 0.16, 0.18, 0.72), Color(0.70, 0.82, 0.90, 0.75),
+		14, Color(0.88, 0.94, 0.98, 1.0)
+	)
+	_save_chip_panel = made_save["panel"]
+	_save_chip = made_save["label"]
 	# v1.78 refine: save nickname lives on the Year chip — hide the extra plate
 	_save_chip_panel.visible = false
 
@@ -772,34 +747,15 @@ func _ensure_landmark_chip() -> void:
 		_landmark_chip = _landmark_chip_panel.get_node_or_null("LandmarkChip")
 		if _landmark_chip != null:
 			return
-	_landmark_chip_panel = PanelContainer.new()
-	_landmark_chip_panel.name = "LandmarkChipPanel"
-	_landmark_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_landmark_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_landmark_chip_panel.offset_left = -280.0
-	_landmark_chip_panel.offset_top = 124.0
-	_landmark_chip_panel.offset_right = -12.0
-	_landmark_chip_panel.offset_bottom = 158.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.14, 0.16, 0.14, 0.78)
-	style.border_color = Color(0.85, 0.78, 0.45, 0.8)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.content_margin_left = 10
-	style.content_margin_right = 10
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	_landmark_chip_panel.add_theme_stylebox_override("panel", style)
-	_landmark_chip = Label.new()
-	_landmark_chip.name = "LandmarkChip"
-	_landmark_chip.add_theme_font_size_override("font_size", 14)
-	_landmark_chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_landmark_chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_landmark_chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_landmark_chip.modulate = Color(0.98, 0.94, 0.78, 1.0)
-	_landmark_chip_panel.add_child(_landmark_chip)
+	var made_lm := _make_hud_chip(
+		"LandmarkChipPanel", "LandmarkChip", Control.PRESET_TOP_RIGHT,
+		-280.0, 124.0, -12.0, 158.0,
+		Color(0.14, 0.16, 0.14, 0.78), Color(0.85, 0.78, 0.45, 0.8),
+		14, Color(0.98, 0.94, 0.78, 1.0)
+	)
+	_landmark_chip_panel = made_lm["panel"]
+	_landmark_chip = made_lm["label"]
 	_landmark_chip_panel.visible = false
-	add_child(_landmark_chip_panel)
 
 
 func _refresh_landmark_chip() -> void:
@@ -934,35 +890,16 @@ func _ensure_fav_paces() -> void:
 		_fav_paces_lbl = _fav_paces_panel.get_node_or_null("FavPaces")
 		if _fav_paces_lbl != null:
 			return
-	_fav_paces_panel = PanelContainer.new()
-	_fav_paces_panel.name = "FavPacesPanel"
-	_fav_paces_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fav_paces_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	_fav_paces_panel.offset_left = 12.0
-	_fav_paces_panel.offset_top = 150.0
-	_fav_paces_panel.offset_right = 220.0
-	_fav_paces_panel.offset_bottom = 184.0
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.16, 0.14, 0.10, 0.82)
-	style.border_color = Color(0.95, 0.82, 0.38, 0.85)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(6)
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 3
-	style.content_margin_bottom = 3
-	_fav_paces_panel.add_theme_stylebox_override("panel", style)
-	_fav_paces_lbl = Label.new()
-	_fav_paces_lbl.name = "FavPaces"
-	_fav_paces_lbl.add_theme_font_size_override("font_size", 13)
-	_fav_paces_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_fav_paces_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_fav_paces_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fav_paces_lbl.modulate = Color(1.0, 0.92, 0.55, 1.0)
+	var made_fav := _make_hud_chip(
+		"FavPacesPanel", "FavPaces", Control.PRESET_TOP_LEFT,
+		12.0, 150.0, 220.0, 184.0,
+		Color(0.16, 0.14, 0.10, 0.82), Color(0.95, 0.82, 0.38, 0.85),
+		13, Color(1.0, 0.92, 0.55, 1.0), 2, 6, 8
+	)
+	_fav_paces_panel = made_fav["panel"]
+	_fav_paces_lbl = made_fav["label"]
 	_fav_paces_lbl.text = "★ fav · —"
-	_fav_paces_panel.add_child(_fav_paces_lbl)
 	_fav_paces_panel.visible = false
-	add_child(_fav_paces_panel)
 
 
 
