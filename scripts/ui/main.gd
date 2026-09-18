@@ -772,99 +772,36 @@ func _enter_world() -> void:
 	AudioBus.start_ambient()
 	if GameState.has_method("maybe_daily_checkpoint_reminder"):
 		GameState.maybe_daily_checkpoint_reminder()
-	# Wave 50: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_50_toast"):
-		GameState.maybe_wave_50_toast()
-	# Wave 51: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_51_toast"):
-		GameState.maybe_wave_51_toast()
-	# Wave 52: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_52_toast"):
-		GameState.maybe_wave_52_toast()
-	# Wave 53: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_53_toast"):
-		GameState.maybe_wave_53_toast()
-	# Wave 54: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_54_toast"):
-		GameState.maybe_wave_54_toast()
-	# Wave 55: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_55_toast"):
-		GameState.maybe_wave_55_toast()
-	# Wave 56: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_56_toast"):
-		GameState.maybe_wave_56_toast()
-	# Wave 57: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_57_toast"):
-		GameState.maybe_wave_57_toast()
-	# Wave 58: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_58_toast"):
-		GameState.maybe_wave_58_toast()
-	if GameState.has_method("maybe_wave_59_toast"):
-		GameState.maybe_wave_59_toast()
-	# Wave 60: once-per-save polish tip + soft festival confetti (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_60_toast"):
-		var fresh60: bool = bool(GameState.maybe_wave_60_toast())
-		if fresh60 and world_scene != null and world_scene.has_method("play_wave60_festival_confetti"):
-			world_scene.play_wave60_festival_confetti()
-	# Wave 61: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_61_toast"):
-		GameState.maybe_wave_61_toast()
-	# Wave 62: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_62_toast"):
-		GameState.maybe_wave_62_toast()
-	# Wave 63: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_63_toast"):
-		GameState.maybe_wave_63_toast()
-	# Wave 64: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_64_toast"):
-		GameState.maybe_wave_64_toast()
-	# Wave 65: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_65_toast"):
-		GameState.maybe_wave_65_toast()
-	# Wave 66: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_66_toast"):
-		GameState.maybe_wave_66_toast()
-	# Wave 67: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_67_toast"):
-		GameState.maybe_wave_67_toast()
-	# Wave 68: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_68_toast"):
-		GameState.maybe_wave_68_toast()
-	if GameState.has_method("maybe_wave_69_toast"):
-		GameState.maybe_wave_69_toast()
-	# Wave 70: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_70_toast"):
-		GameState.maybe_wave_70_toast()
-	# Wave 71: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_71_toast"):
-		GameState.maybe_wave_71_toast()
-	# Wave 72: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_72_toast"):
-		GameState.maybe_wave_72_toast()
-	# Wave 73: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_73_toast"):
-		GameState.maybe_wave_73_toast()
-	# Wave 74: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_74_toast"):
-		GameState.maybe_wave_74_toast()
-	# Wave 75: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_75_toast"):
-		GameState.maybe_wave_75_toast()
-	# Wave 76: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_76_toast"):
-		GameState.maybe_wave_76_toast()
-	# Wave 77: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_77_toast"):
-		GameState.maybe_wave_77_toast()
-	# v1.78 refine: once-per-save look / HUD / Parent tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_refine_178_toast"):
-		GameState.maybe_refine_178_toast()
+	_play_load_toasts()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":
 		_on_toast("Autosaved · %s" % lab)
 	else:
 		_on_toast("Autosaved · Slot %d" % (int(GameState.active_slot) + 1))
+
+func _play_load_toasts() -> void:
+	## Wave 50–77 + v1.78 refine once-per-save polish tips (PIN 1234; mastery ≥80%).
+	## Method names stay listed so smoke_check string scans still pass.
+	var methods := PackedStringArray([
+		"maybe_wave_50_toast", "maybe_wave_51_toast", "maybe_wave_52_toast",
+		"maybe_wave_53_toast", "maybe_wave_54_toast", "maybe_wave_55_toast",
+		"maybe_wave_56_toast", "maybe_wave_57_toast", "maybe_wave_58_toast",
+		"maybe_wave_59_toast", "maybe_wave_60_toast", "maybe_wave_61_toast",
+		"maybe_wave_62_toast", "maybe_wave_63_toast", "maybe_wave_64_toast",
+		"maybe_wave_65_toast", "maybe_wave_66_toast", "maybe_wave_67_toast",
+		"maybe_wave_68_toast", "maybe_wave_69_toast", "maybe_wave_70_toast",
+		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
+		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
+		"maybe_wave_77_toast", "maybe_refine_178_toast",
+	])
+	for m in methods:
+		if not GameState.has_method(m):
+			continue
+		var fresh: Variant = GameState.call(m)
+		if m == "maybe_wave_60_toast" and bool(fresh) and world_scene != null and world_scene.has_method("play_wave60_festival_confetti"):
+			world_scene.play_wave60_festival_confetti()
+
 
 func _open_npc(npc: Node) -> void:
 	npc_panel.open(npc)
@@ -1112,10 +1049,6 @@ func _save_rename_slot(slot: int, forced_text: String = "") -> void:
 		AudioBus.play_ui()
 	else:
 		_on_toast("Could not rename slot %d." % (slot + 1))
-
-func _save_rename_current() -> void:
-	## Kept for compatibility; renames the list selection.
-	_save_rename_selected()
 
 func _save_switch_selected() -> void:
 	var list: ItemList = _save_panel.find_child("SlotList", true, false)

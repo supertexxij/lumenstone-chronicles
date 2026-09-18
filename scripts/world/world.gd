@@ -1246,6 +1246,18 @@ func _build_plaza_campfire() -> void:
 
 
 
+func _near_points_xz(points: Array, origin: Vector3, dist_sq: float, stride: int = 1) -> bool:
+	for i in points.size():
+		if stride > 1 and i % stride != 0:
+			continue
+		var p: Vector3 = points[i]
+		var dx: float = origin.x - p.x
+		var dz: float = origin.z - p.z
+		if dx * dx + dz * dz < dist_sq:
+			return true
+	return false
+
+
 func _update_leaf_rustle() -> void:
 	## Wave 37: soft leaf rustle when outdoors and near a tree (throttled; respects mute via AudioBus).
 	if not AudioBus.has_method("set_leaf_rustle"):
@@ -1258,17 +1270,7 @@ func _update_leaf_rustle() -> void:
 	if now - _leaf_check_t < 0.33:
 		return
 	_leaf_check_t = now
-	var near := false
-	var pp: Vector3 = player.global_position
-	for i in _tree_positions.size():
-		if i % 3 != 0 and _tree_positions.size() > 40:
-			continue
-		var tp: Vector3 = _tree_positions[i]
-		var dx: float = pp.x - tp.x
-		var dz: float = pp.z - tp.z
-		if dx * dx + dz * dz < 30.25:  # 5.5^2
-			near = true
-			break
+	var near := _near_points_xz(_tree_positions, player.global_position, 30.25, 3 if _tree_positions.size() > 40 else 1)
 	AudioBus.set_leaf_rustle(near)
 
 func _update_brook_murmur() -> void:
@@ -1283,14 +1285,7 @@ func _update_brook_murmur() -> void:
 	if now - _brook_check_t < 0.33:
 		return
 	_brook_check_t = now
-	var near := false
-	var pp: Vector3 = player.global_position
-	for wp in _water_positions:
-		var dx: float = pp.x - wp.x
-		var dz: float = pp.z - wp.z
-		if dx * dx + dz * dz < 144.0:  # Wave 73: 12^2 — soft brook murmur polish hear-distance
-			near = true
-			break
+	var near := _near_points_xz(_water_positions, player.global_position, 144.0)  # Wave 73: 12^2 — soft brook murmur polish hear-distance
 	AudioBus.set_brook_murmur(near)
 
 
@@ -1306,20 +1301,13 @@ func _update_hall_wind_chime() -> void:
 	if now - _wind_chime_check_t < 0.33:
 		return
 	_wind_chime_check_t = now
-	var near := false
-	var pp: Vector3 = player.global_position
 	var pts: Array = []
 	if not _hall_eaves.is_empty():
 		pts = _hall_eaves
 	else:
 		for b in world_data.get("buildings", []):
 			pts.append(Vector3(float(b.get("x", 0)), 0.0, float(b.get("z", 0))))
-	for ep in pts:
-		var dx: float = pp.x - ep.x
-		var dz: float = pp.z - ep.z
-		if dx * dx + dz * dz < 132.25:  # ~11.5^2 soft hear-distance by halls
-			near = true
-			break
+	var near := _near_points_xz(pts, player.global_position, 132.25)  # ~11.5^2 soft hear-distance by halls
 	AudioBus.set_wind_chime(near)
 
 
@@ -1363,20 +1351,18 @@ func _update_village_dusk_lamps(dayness: float) -> void:
 		light.visible = e > 0.04
 		i += 1
 
-func _update_knoll_dusk_glow(dayness: float) -> void:
-	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
-	## Wave 73: soft Amber Knoll amber-glow polish at dusk — warmer honey energy + gentler pulse (RuneScape-chunky, wholesome).
-	if _knoll_dusk_lights.is_empty():
+func _apply_dusk_glow_lights(lights: Array, dayness: float, pulse_a: float, pulse_b: float, pulse_speed: float, energy_scale: float, phase_speed: float, phase_spread: float) -> void:
+	if lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.88 + 0.12 * abs(sin(t_ms * 0.0017))
-	var energy: float = dusk * 2.35 * pulse
+	var pulse: float = pulse_a + pulse_b * abs(sin(t_ms * pulse_speed))
+	var energy: float = dusk * energy_scale * pulse
 	var i: int = 0
-	for light in _knoll_dusk_lights:
+	for light in lights:
 		if light == null or not is_instance_valid(light):
 			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.017 + float(i) * 1.1)
+		var phase: float = 1.0 + 0.04 * sin(t_ms * phase_speed + float(i) * phase_spread)
 		var e: float = energy * clampf(phase, 0.88, 1.12)
 		# Rim light a touch softer than crest
 		if "Rim" in str(light.name):
@@ -1386,46 +1372,20 @@ func _update_knoll_dusk_glow(dayness: float) -> void:
 		i += 1
 
 
+func _update_knoll_dusk_glow(dayness: float) -> void:
+	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
+	## Wave 73: soft Amber Knoll amber-glow polish at dusk — warmer honey energy + gentler pulse (RuneScape-chunky, wholesome).
+	_apply_dusk_glow_lights(_knoll_dusk_lights, dayness, 0.88, 0.12, 0.0017, 2.35, 0.017, 1.1)
+
+
 func _update_arch_dusk_glow(dayness: float) -> void:
 	## Wave 64: soft stone arch glow at dusk — cool limestone OmniLight on Stone Arch gateway (RuneScape-chunky, wholesome).
-	if _arch_dusk_lights.is_empty():
-		return
-	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
-	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0018))
-	var energy: float = dusk * 1.70 * pulse
-	var i: int = 0
-	for light in _arch_dusk_lights:
-		if light == null or not is_instance_valid(light):
-			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.015 + float(i) * 1.2)
-		var e: float = energy * clampf(phase, 0.88, 1.12)
-		if "Rim" in str(light.name):
-			e *= 0.55
-		light.light_energy = e
-		light.visible = e > 0.04
-		i += 1
+	_apply_dusk_glow_lights(_arch_dusk_lights, dayness, 0.90, 0.10, 0.0018, 1.70, 0.015, 1.2)
 
 
 func _update_cross_dusk_glow(dayness: float) -> void:
 	## Wave 65: soft quiet cross lantern at dusk — warm honey OmniLight on Quiet Cross knoll (RuneScape-chunky, wholesome).
-	if _cross_dusk_lights.is_empty():
-		return
-	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
-	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0021))
-	var energy: float = dusk * 1.80 * pulse
-	var i: int = 0
-	for light in _cross_dusk_lights:
-		if light == null or not is_instance_valid(light):
-			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.016 + float(i) * 1.15)
-		var e: float = energy * clampf(phase, 0.88, 1.12)
-		if "Rim" in str(light.name):
-			e *= 0.55
-		light.light_energy = e
-		light.visible = e > 0.04
-		i += 1
+	_apply_dusk_glow_lights(_cross_dusk_lights, dayness, 0.90, 0.10, 0.0021, 1.80, 0.016, 1.15)
 
 
 func _build_interiors() -> void:
@@ -2927,85 +2887,49 @@ func _build_reed_pool() -> void:
 	_place_label3d(root, "Reed Pool", 52, Vector3(-20.0, 3.4, 48.0))
 
 
-func _update_reed_sway(_delta: float) -> void:
-	## Wave 57: soft reed sway near Reed Pool — gentle wind lean (RuneScape-chunky, wholesome).
-	if _reed_sway_nodes.is_empty():
+func _dusk_sway_boost() -> float:
+	return 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
+
+
+func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: float, x_scale: float, default_amp: float, dusk_boost: float = 1.0) -> void:
+	if nodes.is_empty():
 		return
 	var t := Time.get_ticks_msec() * 0.001
-	for reed in _reed_sway_nodes:
-		if reed == null or not is_instance_valid(reed):
+	for n in nodes:
+		if n == null or not is_instance_valid(n):
 			continue
-		var phase := float(reed.get_meta("sway_phase", 0.0))
-		var amp := float(reed.get_meta("sway_amp", 0.06))
-		var lean := sin(t * 1.15 + phase) * amp
-		reed.rotation.z = lean
-		reed.rotation.x = cos(t * 0.95 + phase * 0.7) * amp * 0.55
+		var phase := float(n.get_meta("sway_phase", 0.0))
+		var amp := float(n.get_meta("sway_amp", default_amp)) * dusk_boost
+		n.rotation.z = sin(t * freq_z + phase) * amp
+		n.rotation.x = cos(t * freq_x + phase * phase_mul) * amp * x_scale
+
+
+func _update_reed_sway(_delta: float) -> void:
+	## Wave 57: soft reed sway near Reed Pool — gentle wind lean (RuneScape-chunky, wholesome).
+	_apply_plant_sway(_reed_sway_nodes, 1.15, 0.95, 0.7, 0.55, 0.06)
 
 
 func _update_thistle_sway(_delta: float) -> void:
 	## Wave 58: soft thistle sway at Thistle Rise — gentle wind lean (RuneScape-chunky, wholesome).
 	## Wave 71: soft thistle sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	if _thistle_sway_nodes.is_empty():
-		return
-	var t := Time.get_ticks_msec() * 0.001
-	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
-	for thistle in _thistle_sway_nodes:
-		if thistle == null or not is_instance_valid(thistle):
-			continue
-		var phase := float(thistle.get_meta("sway_phase", 0.0))
-		var amp := float(thistle.get_meta("sway_amp", 0.05)) * dusk_boost
-		var lean := sin(t * 1.05 + phase) * amp
-		thistle.rotation.z = lean
-		thistle.rotation.x = cos(t * 0.88 + phase * 0.65) * amp * 0.5
+	_apply_plant_sway(_thistle_sway_nodes, 1.05, 0.88, 0.65, 0.5, 0.05, _dusk_sway_boost())
 
 
 func _update_willow_sway(_delta: float) -> void:
 	## Wave 61: soft willow weep sway at Willow Bend — gentle canopy lean (RuneScape-chunky, wholesome).
-	if _willow_sway_nodes.is_empty():
-		return
-	var t := Time.get_ticks_msec() * 0.001
-	for canopy in _willow_sway_nodes:
-		if canopy == null or not is_instance_valid(canopy):
-			continue
-		var phase := float(canopy.get_meta("sway_phase", 0.0))
-		var amp := float(canopy.get_meta("sway_amp", 0.028))
-		var lean := sin(t * 0.72 + phase) * amp
-		canopy.rotation.z = lean
-		canopy.rotation.x = cos(t * 0.58 + phase * 0.7) * amp * 0.55
+	_apply_plant_sway(_willow_sway_nodes, 0.72, 0.58, 0.7, 0.55, 0.028)
 
 
 func _update_fern_sway(_delta: float) -> void:
 	## Wave 62: soft fern sway at Fern Dell — gentle frond lean (RuneScape-chunky, wholesome).
 	## Wave 69: soft fern-frond sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	if _fern_sway_nodes.is_empty():
-		return
-	var t := Time.get_ticks_msec() * 0.001
-	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
-	for frond in _fern_sway_nodes:
-		if frond == null or not is_instance_valid(frond):
-			continue
-		var phase := float(frond.get_meta("sway_phase", 0.0))
-		var amp := float(frond.get_meta("sway_amp", 0.045)) * dusk_boost
-		var lean := sin(t * 1.08 + phase) * amp
-		frond.rotation.z = lean
-		frond.rotation.x = cos(t * 0.92 + phase * 0.65) * amp * 0.55
+	_apply_plant_sway(_fern_sway_nodes, 1.08, 0.92, 0.65, 0.55, 0.045, _dusk_sway_boost())
 
 
 func _update_heather_sway(_delta: float) -> void:
 	## Wave 63: soft heather sway at Heather Heath — gentle tuft lean (RuneScape-chunky, wholesome).
 	## Wave 70: soft heather sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	if _heather_sway_nodes.is_empty():
-		return
-	var t := Time.get_ticks_msec() * 0.001
-	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
-	for tuft in _heather_sway_nodes:
-		if tuft == null or not is_instance_valid(tuft):
-			continue
-		var phase := float(tuft.get_meta("sway_phase", 0.0))
-		var amp := float(tuft.get_meta("sway_amp", 0.04)) * dusk_boost
-		var lean := sin(t * 0.95 + phase) * amp
-		tuft.rotation.z = lean
-		tuft.rotation.x = cos(t * 0.78 + phase * 0.6) * amp * 0.5
+	_apply_plant_sway(_heather_sway_nodes, 0.95, 0.78, 0.6, 0.5, 0.04, _dusk_sway_boost())
 
 
 func _begin_hall_light_dip() -> void:

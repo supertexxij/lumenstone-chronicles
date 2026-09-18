@@ -48,94 +48,39 @@ func _ready() -> void:
 		p.volume_db = -8.0
 		add_child(p)
 		_players[kind] = p
-	_ambient = AudioStreamPlayer.new()
-	_ambient.name = "Ambient"
-	_ambient.bus = "Master"
-	_ambient.volume_db = -24.0
-	_ambient.stream = _streams.get("ambient")
-	add_child(_ambient)
-	_music = AudioStreamPlayer.new()
-	_music.name = "Music"
-	_music.bus = "Master"
-	_music.volume_db = -18.0
-	_music.stream = _streams.get("music")
-	add_child(_music)
-	_rain = AudioStreamPlayer.new()
-	_rain.name = "Rain"
-	_rain.bus = "Master"
-	_rain.volume_db = -34.0  # Wave 33: softer rain mix
-	_rain.stream = _streams.get("rain")
-	add_child(_rain)
-	_drip = AudioStreamPlayer.new()
-	_drip.name = "IndoorDrip"
-	_drip.bus = "Master"
-	_drip.volume_db = -22.0
-	_drip.stream = _streams.get("drip")
-	add_child(_drip)
-	_day_birds = AudioStreamPlayer.new()
-	_day_birds.name = "DayBirds"
-	_day_birds.bus = "Master"
-	_day_birds.volume_db = _birds_base_db
-	_day_birds.stream = _streams.get("day_birds")
-	add_child(_day_birds)
-	_night_hush = AudioStreamPlayer.new()
-	_night_hush.name = "NightHush"
-	_night_hush.bus = "Master"
-	_night_hush.volume_db = -27.0
-	_night_hush.stream = _streams.get("night_hush")
-	add_child(_night_hush)
-	_dusk_owl = AudioStreamPlayer.new()
-	_dusk_owl.name = "DuskOwlHoot"
-	_dusk_owl.bus = "Master"
-	_dusk_owl.volume_db = -29.0
-	_dusk_owl.stream = _streams.get("dusk_owl")
-	add_child(_dusk_owl)
-	_campfire = AudioStreamPlayer.new()
-	_campfire.name = "CampfireCrackle"
-	_campfire.bus = "Master"
-	_campfire.volume_db = -30.0
-	_campfire.stream = _streams.get("campfire")
-	add_child(_campfire)
-	_wind = AudioStreamPlayer.new()
-	_wind.name = "WindWhoosh"
-	_wind.bus = "Master"
-	_wind.volume_db = -32.0
-	_wind.stream = _streams.get("wind")
-	add_child(_wind)
-	_hall_reverb = AudioStreamPlayer.new()
-	_hall_reverb.name = "HallReverb"
-	_hall_reverb.bus = "Master"
-	_hall_reverb.volume_db = -30.0
-	_hall_reverb.stream = _streams.get("hall_reverb")
-	add_child(_hall_reverb)
-	_hall_chatter = AudioStreamPlayer.new()
-	_hall_chatter.name = "HallChatter"
-	_hall_chatter.bus = "Master"
-	_hall_chatter.volume_db = -28.0
-	_hall_chatter.stream = _streams.get("hall_chatter")
-	add_child(_hall_chatter)
-	_leaf_rustle = AudioStreamPlayer.new()
-	_leaf_rustle.name = "LeafRustle"
-	_leaf_rustle.bus = "Master"
-	_leaf_rustle.volume_db = -31.0
-	_leaf_rustle.stream = _streams.get("leaf_rustle")
-	add_child(_leaf_rustle)
-	_brook_murmur = AudioStreamPlayer.new()
-	_brook_murmur.name = "BrookMurmur"
-	_brook_murmur.bus = "Master"
-	_brook_murmur.volume_db = -26.5  # Wave 73: soft brook murmur polish
-	_brook_murmur.stream = _streams.get("brook_murmur")
-	add_child(_brook_murmur)
-	_wind_chime = AudioStreamPlayer.new()
-	_wind_chime.name = "HallWindChime"
-	_wind_chime.bus = "Master"
-	_wind_chime.volume_db = -31.0
-	_wind_chime.stream = _streams.get("wind_chime")
-	add_child(_wind_chime)
+	_ambient = _make_loop_player("Ambient", -24.0, "ambient")
+	_music = _make_loop_player("Music", -18.0, "music")
+	_rain = _make_loop_player("Rain", -34.0, "rain")  # Wave 33: softer rain mix
+	_drip = _make_loop_player("IndoorDrip", -22.0, "drip")
+	_day_birds = _make_loop_player("DayBirds", _birds_base_db, "day_birds")
+	_night_hush = _make_loop_player("NightHush", -27.0, "night_hush")
+	_dusk_owl = _make_loop_player("DuskOwlHoot", -29.0, "dusk_owl")
+	_campfire = _make_loop_player("CampfireCrackle", -30.0, "campfire")
+	_wind = _make_loop_player("WindWhoosh", -32.0, "wind")
+	_hall_reverb = _make_loop_player("HallReverb", -30.0, "hall_reverb")
+	_hall_chatter = _make_loop_player("HallChatter", -28.0, "hall_chatter")
+	_leaf_rustle = _make_loop_player("LeafRustle", -31.0, "leaf_rustle")
+	_brook_murmur = _make_loop_player("BrookMurmur", -26.5, "brook_murmur")  # Wave 73: soft brook murmur polish
+	_wind_chime = _make_loop_player("HallWindChime", -31.0, "wind_chime")
 	_ready_ok = true
 	_apply_mute()
 	if not GameState.state_changed.is_connected(_on_state):
 		GameState.state_changed.connect(_on_state)
+
+
+func _make_loop_player(p_name: String, vol_db: float, stream_key: String) -> AudioStreamPlayer:
+	var p := AudioStreamPlayer.new()
+	p.name = p_name
+	p.bus = "Master"
+	p.volume_db = vol_db
+	p.stream = _streams.get(stream_key)
+	add_child(p)
+	return p
+
+
+func _stop_if_playing(p: AudioStreamPlayer) -> void:
+	if p and p.playing:
+		p.stop()
 
 func _process(delta: float) -> void:
 	if _foot_cooldown > 0.0:
@@ -161,43 +106,26 @@ func set_muted(v: bool) -> void:
 func toggle_mute() -> void:
 	set_muted(not GameState.muted)
 
-func is_muted() -> bool:
-	return GameState.muted
-
 func _apply_mute() -> void:
 	if not _ready_ok:
 		return
 	var muted: bool = GameState.muted
 	AudioServer.set_bus_mute(0, muted)
 	if muted:
-		if _ambient and _ambient.playing:
-			_ambient.stop()
-		if _music and _music.playing:
-			_music.stop()
-		if _rain and _rain.playing:
-			_rain.stop()
-		if _drip and _drip.playing:
-			_drip.stop()
-		if _day_birds and _day_birds.playing:
-			_day_birds.stop()
-		if _night_hush and _night_hush.playing:
-			_night_hush.stop()
-		if _dusk_owl and _dusk_owl.playing:
-			_dusk_owl.stop()
-		if _campfire and _campfire.playing:
-			_campfire.stop()
-		if _wind and _wind.playing:
-			_wind.stop()
-		if _hall_reverb and _hall_reverb.playing:
-			_hall_reverb.stop()
-		if _hall_chatter and _hall_chatter.playing:
-			_hall_chatter.stop()
-		if _leaf_rustle and _leaf_rustle.playing:
-			_leaf_rustle.stop()
-		if _brook_murmur and _brook_murmur.playing:
-			_brook_murmur.stop()
-		if _wind_chime and _wind_chime.playing:
-			_wind_chime.stop()
+		_stop_if_playing(_ambient)
+		_stop_if_playing(_music)
+		_stop_if_playing(_rain)
+		_stop_if_playing(_drip)
+		_stop_if_playing(_day_birds)
+		_stop_if_playing(_night_hush)
+		_stop_if_playing(_dusk_owl)
+		_stop_if_playing(_campfire)
+		_stop_if_playing(_wind)
+		_stop_if_playing(_hall_reverb)
+		_stop_if_playing(_hall_chatter)
+		_stop_if_playing(_leaf_rustle)
+		_stop_if_playing(_brook_murmur)
+		_stop_if_playing(_wind_chime)
 	else:
 		if GameState.in_world:
 			if _ambient and not _ambient.playing and _ambient.stream:
@@ -224,18 +152,13 @@ func start_ambient() -> void:
 			_music.play()
 
 func stop_ambient() -> void:
-	if _ambient and _ambient.playing:
-		_ambient.stop()
-	if _music and _music.playing:
-		_music.stop()
+	_stop_if_playing(_ambient)
+	_stop_if_playing(_music)
 	set_rain_audio(false)
 	set_indoor_drip(false)
-	if _day_birds and _day_birds.playing:
-		_day_birds.stop()
-	if _night_hush and _night_hush.playing:
-		_night_hush.stop()
-	if _dusk_owl and _dusk_owl.playing:
-		_dusk_owl.stop()
+	_stop_if_playing(_day_birds)
+	_stop_if_playing(_night_hush)
+	_stop_if_playing(_dusk_owl)
 	set_campfire_audio(false)
 	set_wind_audio(false)
 	set_hall_reverb(false)
@@ -513,6 +436,20 @@ func _apply_dusk_owl_hoot() -> void:
 	elif _dusk_owl.playing:
 		_dusk_owl.stop()
 
+func _sync_loop(player: AudioStreamPlayer, wanted: bool, stream_key: String) -> void:
+	if not _ready_ok or player == null:
+		return
+	var can: bool = (not GameState.muted) and GameState.in_world
+	var should: bool = wanted and can
+	if should:
+		if player.stream == null:
+			player.stream = _streams.get(stream_key)
+		if not player.playing and player.stream:
+			player.play()
+	elif player.playing:
+		player.stop()
+
+
 func _sync_rain_audio() -> void:
 	if not _ready_ok:
 		return
@@ -539,102 +476,25 @@ func _sync_rain_audio() -> void:
 			_drip.stop()
 
 func _sync_campfire_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _campfire:
-		var should: bool = _campfire_wanted and can
-		if should:
-			if _campfire.stream == null:
-				_campfire.stream = _streams.get("campfire")
-			if not _campfire.playing and _campfire.stream:
-				_campfire.play()
-		elif _campfire.playing:
-			_campfire.stop()
+	_sync_loop(_campfire, _campfire_wanted, "campfire")
 
 func _sync_wind_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _wind:
-		var should: bool = _wind_wanted and can
-		if should:
-			if _wind.stream == null:
-				_wind.stream = _streams.get("wind")
-			if not _wind.playing and _wind.stream:
-				_wind.play()
-		elif _wind.playing:
-			_wind.stop()
+	_sync_loop(_wind, _wind_wanted, "wind")
 
 func _sync_hall_reverb_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _hall_reverb:
-		var should: bool = _hall_reverb_wanted and can
-		if should:
-			if _hall_reverb.stream == null:
-				_hall_reverb.stream = _streams.get("hall_reverb")
-			if not _hall_reverb.playing and _hall_reverb.stream:
-				_hall_reverb.play()
-		elif _hall_reverb.playing:
-			_hall_reverb.stop()
+	_sync_loop(_hall_reverb, _hall_reverb_wanted, "hall_reverb")
 
 func _sync_hall_chatter_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _hall_chatter:
-		var should: bool = _hall_chatter_wanted and can
-		if should:
-			if _hall_chatter.stream == null:
-				_hall_chatter.stream = _streams.get("hall_chatter")
-			if not _hall_chatter.playing and _hall_chatter.stream:
-				_hall_chatter.play()
-		elif _hall_chatter.playing:
-			_hall_chatter.stop()
+	_sync_loop(_hall_chatter, _hall_chatter_wanted, "hall_chatter")
 
 func _sync_leaf_rustle_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _leaf_rustle:
-		var should: bool = _leaf_rustle_wanted and can
-		if should:
-			if _leaf_rustle.stream == null:
-				_leaf_rustle.stream = _streams.get("leaf_rustle")
-			if not _leaf_rustle.playing and _leaf_rustle.stream:
-				_leaf_rustle.play()
-		elif _leaf_rustle.playing:
-			_leaf_rustle.stop()
+	_sync_loop(_leaf_rustle, _leaf_rustle_wanted, "leaf_rustle")
 
 func _sync_brook_murmur_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _brook_murmur:
-		var should: bool = _brook_murmur_wanted and can
-		if should:
-			if _brook_murmur.stream == null:
-				_brook_murmur.stream = _streams.get("brook_murmur")
-			if not _brook_murmur.playing and _brook_murmur.stream:
-				_brook_murmur.play()
-		elif _brook_murmur.playing:
-			_brook_murmur.stop()
+	_sync_loop(_brook_murmur, _brook_murmur_wanted, "brook_murmur")
 
 func _sync_wind_chime_audio() -> void:
-	if not _ready_ok:
-		return
-	var can: bool = (not GameState.muted) and GameState.in_world
-	if _wind_chime:
-		var should: bool = _wind_chime_wanted and can
-		if should:
-			if _wind_chime.stream == null:
-				_wind_chime.stream = _streams.get("wind_chime")
-			if not _wind_chime.playing and _wind_chime.stream:
-				_wind_chime.play()
-		elif _wind_chime.playing:
-			_wind_chime.stop()
+	_sync_loop(_wind_chime, _wind_chime_wanted, "wind_chime")
 
 func _make_wav(samples: PackedFloat32Array, mix_rate: int = 22050) -> AudioStreamWAV:
 	var bytes := PackedByteArray()
@@ -711,20 +571,6 @@ func _door_whoosh(dur: float, amp: float) -> AudioStreamWAV:
 		prev = prev * 0.78 + noise * 0.22
 		var sweep := 0.55 + 0.45 * (tt / maxf(dur, 0.001))
 		samples[i] = (prev * amp * env * sweep) + tip * amp
-	return _make_wav(samples, rate)
-
-func _arpeggio(freqs: Array, note_dur: float, amp: float) -> AudioStreamWAV:
-	var rate := 22050
-	var total := note_dur * float(freqs.size())
-	var n := int(total * rate)
-	var samples := PackedFloat32Array()
-	samples.resize(n)
-	for i in n:
-		var t := float(i) / float(rate)
-		var idx := mini(freqs.size() - 1, int(t / note_dur))
-		var local_t := t - float(idx) * note_dur
-		var env := 1.0 - local_t / note_dur
-		samples[i] = sin(TAU * float(freqs[idx]) * local_t) * amp * env * env
 	return _make_wav(samples, rate)
 
 func _soft_drone(dur: float, amp: float) -> AudioStreamWAV:
@@ -1058,11 +904,6 @@ func _day_birds_loop(dur: float, amp: float) -> AudioStreamWAV:
 	stream.loop_begin = 0
 	stream.loop_end = n
 	return stream
-
-
-func _night_hush_loop(dur: float, amp: float) -> AudioStreamWAV:
-	## Soft night hush — low drone with sparse gentle ticks (kept for fallback).
-	return _night_cricket_hush(dur, amp)
 
 
 func _night_cricket_hush(dur: float, amp: float) -> AudioStreamWAV:

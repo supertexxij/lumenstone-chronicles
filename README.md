@@ -226,6 +226,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.79.0-cleanup — maintainability pass
+
+Code cleanup only (no gameplay features). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes/landmarks/FX waves; quest JSON and combat wording unchanged.
+
+- Removed unused audio helpers (`_arpeggio`, `_night_hush_loop`, `is_muted`) and unused title/save compatibility shims
+- Shared helpers: once-per-save wave toasts, plant sway, dusk landmark glow, HUD chip plates, audio loop players / mute stop / loop sync, proximity scans
+- Smoke tests cache source reads and compare `project.godot` version numerically instead of giant OR-chains
+- Parent week rows use `QuestDB.quests_for_week`
+- Intentionally left alone: landmark builders, creature meshes, navmesh/corridors, tick combat, save-slot format keys, Parent PIN / mastery rules, 36-week quest JSON
+
 ### v1.78.0-refine — looks, HUD / Parent, bugs
 
 Refinement pass (not another foe or FX micro-wave). Player feedback after v1.77: the world and people felt unfinished, and HUD / Parent were cluttered.

@@ -164,10 +164,3 @@ func _on_set_label_slot(slot: int) -> void:
 	else:
 		if status_lbl:
 			status_lbl.text = "Could not save that label."
-
-func _on_set_label() -> void:
-	## Compatibility shim — names first non-empty slot if old UI called.
-	for i in GameState.SLOT_COUNT:
-		if GameState.has_save(i):
-			_on_set_label_slot(i)
-			return
