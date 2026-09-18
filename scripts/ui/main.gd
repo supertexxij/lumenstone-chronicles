@@ -78,6 +78,10 @@ func _ready() -> void:
 			title_screen.visible = true
 			title_screen.refresh_slots()
 	)
+	# v1.84 celebrate demo: auto-Continue slot 0 when LUMEN_CELEBRATE_DEMO=1 (visual QA).
+	if OS.get_environment("LUMEN_CELEBRATE_DEMO") == "1":
+		call_deferred("_celebrate_demo_auto_enter")
+
 	_setup_travel_panel()
 	_setup_confirm_dialog()
 	_setup_save_panel()
@@ -957,6 +961,17 @@ func _on_continue(slot: int = 0) -> void:
 	else:
 		_on_toast("No save in that slot.")
 		title_screen.refresh_slots()
+
+
+func _celebrate_demo_auto_enter() -> void:
+	## Visual QA helper for LUMEN_CELEBRATE_DEMO=1 — skip title and load slot 0.
+	if GameState.has_save(0):
+		_on_continue(0)
+	else:
+		GameState.new_game("CelebrateKid", {"hair":"brown","skin":"medium","cape_color":"crimson","outfit":"cream"}, 0)
+		title_screen.visible = false
+		_enter_world()
+
 
 func _on_clear_slot(slot: int) -> void:
 	if not GameState.has_save(slot):
