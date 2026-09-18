@@ -4956,7 +4956,7 @@ func _spawn_firework_burst(anchor: Node3D, local_pos: Vector3, col: Color, play_
 
 
 func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> void:
-	## v1.84: after a week assignment unlocks the next week, colorful unicorns dance around the apprentice.
+	## v1.84: after a week assignment unlocks the next week, animated unicorn art dances around the apprentice.
 	if HeadlessGuard.is_headless():
 		return
 	var anchor: Node3D = player
@@ -4971,34 +4971,32 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	# Keep party in world space near the player (not parented to moving mesh root forever)
 	add_child(party)
 	party.global_position = anchor.global_position
-	var palette: Array = [
-		# Soft MLP-ish coat + vivid contrasting mane
-		[Color("#ffb6d9"), Color("#ff4fa3")],  # pink pony / hot-pink mane
-		[Color("#b8e0ff"), Color("#4a7dff")],  # sky pony / blue mane
-		[Color("#d4b8ff"), Color("#7a3cff")],  # lilac pony / violet mane
-		[Color("#ffe29a"), Color("#ff8c2a")],  # buttercream / orange mane
-		[Color("#b8f5c8"), Color("#2db86a")],  # mint pony / green mane
-		[Color("#ffd0b8"), Color("#ff5c7a")],  # peach pony / coral mane
+	var frames: SpriteFrames = _party_unicorn_dance_frames()
+	if frames == null:
+		return
+	# Soft coat tints — art already has a rainbow mane; keep modulate gentle
+	var tints: Array = [
+		Color(1.0, 1.0, 1.0),
+		Color(1.0, 0.88, 0.95),
+		Color(0.88, 0.94, 1.0),
+		Color(0.95, 0.9, 1.0),
+		Color(1.0, 0.95, 0.85),
+		Color(0.88, 1.0, 0.92),
 	]
-	var count: int = palette.size()
+	var count: int = tints.size()
 	var radius: float = 3.2
 	for i in count:
-		var pair: Array = palette[i]
 		var uni := Node3D.new()
 		uni.name = "PartyUnicorn%d" % i
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
-		# Face party center (+Z forward on the mesh). ang+PI was 90° off and made
-		# the slim nose→tail barrel read as sideways-wide in the orbit.
-		uni.rotation.y = atan2(-cos(ang), -sin(ang))
 		uni.scale = Vector3(1.0, 1.0, 1.0)
 		party.add_child(uni)
-		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
-		CreatureBuilder.colorize_party_unicorn(bob, pair[0], pair[1])
+		var spr := _make_party_unicorn_sprite(uni, frames, tints[i], float(i))
 		# Soft rainbow trail sparkle under each unicorn
 		var trail := CPUParticles3D.new()
 		trail.name = "UnicornTrail"
-		trail.position = Vector3(0, 0.4, 0)
+		trail.position = Vector3(0, 0.35, 0)
 		trail.emitting = true
 		trail.amount = 10
 		trail.lifetime = 0.7
@@ -5011,10 +5009,11 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		trail.gravity = Vector3(0, 0.6, 0)
 		trail.scale_amount_min = 0.06
 		trail.scale_amount_max = 0.14
-		trail.color = Color(pair[0].r, pair[0].g, pair[0].b, 0.7)
+		var tint: Color = tints[i]
+		trail.color = Color(tint.r, tint.g, tint.b, 0.7)
 		HeadlessGuard.guard_particles(trail)
 		uni.add_child(trail)
-		_dance_unicorn(uni, bob, ang, radius, float(i))
+		_dance_unicorn(uni, spr, ang, radius, float(i))
 	# Soft center rainbow fountain
 	var fountain := CPUParticles3D.new()
 	fountain.name = "PartyFountain"
@@ -5078,23 +5077,79 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	)
 
 
-func _dance_unicorn(uni: Node3D, bob: Node3D, start_ang: float, radius: float, idx: float) -> void:
-	## Orbit + hop + sway dance for one party unicorn (~7s).
+var _party_unicorn_frames_cache: SpriteFrames = null
+
+
+func _party_unicorn_dance_frames() -> SpriteFrames:
+	## Atlas from assets/vfx/party_unicorn_dance_sheet.png — 6 prance frames.
+	if _party_unicorn_frames_cache != null:
+		return _party_unicorn_frames_cache
+	var path := "res://assets/vfx/party_unicorn_dance_sheet.png"
+	if not ResourceLoader.exists(path):
+		push_warning("Party unicorn sheet missing: %s" % path)
+		return null
+	var tex: Texture2D = load(path) as Texture2D
+	if tex == null:
+		return null
+	var cols: int = 6
+	var cell_w: int = int(tex.get_width() / cols)
+	var cell_h: int = tex.get_height()
+	var frames := SpriteFrames.new()
+	frames.add_animation("dance")
+	frames.set_animation_speed("dance", 11.0)
+	frames.set_animation_loop("dance", true)
+	for i in cols:
+		var at := AtlasTexture.new()
+		at.atlas = tex
+		at.region = Rect2(i * cell_w, 0, cell_w, cell_h)
+		frames.add_frame("dance", at)
+	_party_unicorn_frames_cache = frames
+	return frames
+
+
+func _make_party_unicorn_sprite(parent: Node3D, frames: SpriteFrames, tint: Color, idx: float) -> AnimatedSprite3D:
+	## Billboard prancing unicorn from the player-provided MLP art.
+	var spr := AnimatedSprite3D.new()
+	spr.name = "Art"
+	spr.sprite_frames = frames
+	spr.animation = &"dance"
+	spr.pixel_size = 0.0042
+	spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	spr.shaded = false
+	spr.transparent = true
+	spr.double_sided = true
+	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
+	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	spr.modulate = tint
+	spr.position = Vector3(0, 1.05, 0)
+	spr.frame = int(idx) % 6
+	parent.add_child(spr)
+	spr.play("dance")
+	return spr
+
+
+func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, idx: float) -> void:
+	## Orbit + hop + flip dance for one party unicorn sprite (~7s).
 	if uni == null or not is_instance_valid(uni):
 		return
-	var hop_h: float = 0.28 + (idx * 0.03)
+	var hop_h: float = 0.32 + (idx * 0.03)
 	var orbit := create_tween()
 	orbit.set_loops(8)
 	orbit.tween_method(func(t: float):
 		if not is_instance_valid(uni):
 			return
 		var a: float = start_ang + t * TAU
-		uni.position = Vector3(cos(a) * radius, absf(sin(t * TAU * 2.0)) * hop_h, sin(a) * radius)
-		# Nose toward party center (+Z mesh forward). Old `a+PI` was 90° off.
-		uni.rotation.y = atan2(-cos(a), -sin(a)) + 0.25
-		if bob != null and is_instance_valid(bob):
-			bob.rotation_degrees.y = sin(t * TAU * 4.0) * 18.0
-			bob.position.y = absf(sin(t * TAU * 2.0)) * 0.08
+		var hop: float = absf(sin(t * TAU * 2.0)) * hop_h
+		uni.position = Vector3(cos(a) * radius, hop, sin(a) * radius)
+		if spr != null and is_instance_valid(spr):
+			# Flip with orbit direction so the prance reads left/right
+			var moving_east: bool = -sin(a) > 0.0
+			if spr is AnimatedSprite3D:
+				(spr as AnimatedSprite3D).flip_h = moving_east
+			# Soft squash/stretch on the hop
+			var squash: float = 1.0 + absf(sin(t * TAU * 2.0)) * 0.06
+			spr.scale = Vector3(2.0 - squash, squash, 1.0)
+			spr.position.y = 1.05 + absf(sin(t * TAU * 4.0)) * 0.06
 	, 0.0, 1.0, 0.9).set_trans(Tween.TRANS_LINEAR)
 
 

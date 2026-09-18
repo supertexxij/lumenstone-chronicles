@@ -226,6 +226,11 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.1-celebrate — animated unicorn art party
+
+- Week-complete party now uses the player-provided MLP unicorn illustration as **billboard AnimatedSprite3D** dancers (6-frame prance sheet, hop orbit, flip, soft tint)
+- Sheet: `assets/vfx/party_unicorn_dance_sheet.png`
+
 ### v1.84.0-celebrate — quest fireworks & unicorn week party
 
 Celebration polish so mastery and week-complete feel joyful. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new combat foes; quest JSON XP values unchanged in this pass; navmesh / tick combat / save keys unchanged.
