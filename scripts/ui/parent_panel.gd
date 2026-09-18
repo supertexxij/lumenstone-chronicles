@@ -124,6 +124,10 @@ func _try_pin() -> void:
 		_reset_btn.visible = false
 	_set_pin_change_visible(false)
 	_refresh()
+	if pin_edit:
+		pin_edit.release_focus()
+	if close_btn:
+		close_btn.grab_focus()
 
 
 func _mask_pin_last4(pin: String) -> String:
@@ -233,7 +237,7 @@ func _refresh() -> void:
 			var week_n: int = int(q.get("week", 0))
 			var guild: String = str(q.get("guild", ""))
 			var guild_short: String = str(GameState.GUILDS.get(guild, {}).get("short", guild)).to_upper()
-			var pct: int = int(float(h.get("percent", 0)) * 100)
+			var pct: int = GameState.percent_to_int(float(h.get("percent", 0))) if GameState.has_method("percent_to_int") else int(round(float(h.get("percent", 0)) * 100.0))
 			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
 			var age: String = _days_since_attempt(int(h.get("timestamp", 0)))
 			var line: String = "WEEK %d · %s · %s  %d/%d (%d%%)  ·  %s" % [

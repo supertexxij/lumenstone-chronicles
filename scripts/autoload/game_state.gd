@@ -52,6 +52,7 @@ const ONCE_TOAST_FLAGS := [
 	"seen_wave_77_toast",
 	"seen_refine_178_toast",
 	"seen_refine_181_toast",
+	"seen_bugs_182_toast",
 ]
 
 
@@ -113,6 +114,7 @@ var seen_wave_76_toast: bool = false  # Wave 76: once-per-save polish tip toast 
 var seen_wave_77_toast: bool = false  # Wave 77: once-per-save polish tip toast on load
 var seen_refine_178_toast: bool = false  # v1.78 refine: once-per-save look/HUD/Parent tip
 var seen_refine_181_toast: bool = false  # v1.81 UI: once-per-save menus/HUD/Parent tip
+var seen_bugs_182_toast: bool = false  # v1.82 bugs: once-per-save Esc/one-menu tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -137,6 +139,7 @@ var consumable_charges: Dictionary = {}
 var consumable_cd: float = 0.0
 var _fountain_regen_left: int = 0
 var _fountain_regen_timer: float = 0.0
+var _fountain_rest_ms: int = 0  # debounce overlapping fountain rest (travel + Area3D)
 
 var hp: int = 40
 var max_hp: int = 40
@@ -405,6 +408,7 @@ func save_game() -> void:
 		"unlocked_week": unlocked_week,
 		"slot_label": slot_label,
 		"consumable_charges": consumable_charges,
+		"hp": hp,
 		"save_version": 3,
 	}
 	_write_once_toasts(data)
@@ -437,7 +441,9 @@ func load_game(slot: int = -1) -> bool:
 	f.close()
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
-	child_name = data.get("child_name", "Apprentice")
+	child_name = str(data.get("child_name", "Apprentice")).strip_edges()
+	if child_name == "":
+		child_name = "Apprentice"
 	appearance = data.get("appearance", appearance)
 	xp = int(data.get("xp", 0))
 	level = int(data.get("level", 1))
@@ -491,7 +497,11 @@ func load_game(slot: int = -1) -> bool:
 	_recalc_unlocked_week()
 	_apply_starters()
 	check_combat_item_unlocks()
-	hp = max_hp
+	set_combat_target(null)
+	if data.has("hp"):
+		hp = clampi(int(data.get("hp", max_hp)), 1, max_hp)
+	else:
+		hp = max_hp
 	state_changed.emit()
 	hp_changed.emit(hp, max_hp)
 	return true
@@ -897,6 +907,11 @@ func maybe_refine_181_toast() -> bool:
 	return _maybe_once_toast("seen_refine_181_toast", "Menus and Parent screen cleaned up — quieter HUD, clearer year and mastery, easier Parent PIN lock.")
 
 
+func maybe_bugs_182_toast() -> bool:
+	## v1.82 bugs: once-per-save tip (PIN stays 1234; mastery ≥80%).
+	return _maybe_once_toast("seen_bugs_182_toast", "Tip: one menu at a time. Esc closes it.")
+
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -933,7 +948,7 @@ func maybe_daily_checkpoint_reminder() -> void:
 	if last_daily_reminder_date == today:
 		return
 	last_daily_reminder_date = today
-	toast.emit("Daily checkpoint · open Parent · today’s short check (PIN 1234). Takes about a minute.")
+	toast.emit("Daily checkpoint · open Parent to see today’s progress.")
 	save_game()
 
 
@@ -1040,7 +1055,7 @@ func use_consumable(item_id: String) -> bool:
 	if heal_amt <= 0:
 		return false
 	if hp >= max_hp:
-		toast.emit("Already at full health.")
+		toast.emit("Already at full health — save your food.")
 		return false
 	_ensure_pantry_defaults()
 	var left: int = int(consumable_charges.get(item_id, 0))
@@ -1066,7 +1081,7 @@ func use_consumable(item_id: String) -> bool:
 func use_best_consumable() -> bool:
 	## Hotkey food: pick unlocked pantry item with charges, off cooldown, highest heal.
 	if hp >= max_hp:
-		toast.emit("Already at full health.")
+		toast.emit("Already at full health — save your food.")
 		return false
 	if consumable_cd > 0.05:
 		toast.emit("Give it a moment (%.1fs)." % consumable_cd)
@@ -1134,6 +1149,11 @@ func clear_soft_combat(announce: bool = false) -> void:
 func rest_at_fountain(announce: bool = true) -> void:
 	## Soft rest: clear combat status, refill pantry, brief HP regen ticks.
 	## Wave 72: clearer Fountain rest toast (RuneScape-chunky, wholesome; no cheesy combat labels).
+	## v1.82: debounce travel-to-fountain + Area3D body_entered so rest does not double-toast.
+	var now_ms: int = Time.get_ticks_msec()
+	if _fountain_rest_ms > 0 and now_ms - _fountain_rest_ms < 1800:
+		return
+	_fountain_rest_ms = now_ms
 	clear_soft_combat(false)
 	refill_pantry(announce)
 	# Wave 68: soft fountain-rest chime (RuneScape-chunky, wholesome; respects mute)
@@ -1179,8 +1199,10 @@ func _soft_defeat() -> void:
 	save_game()
 
 func record_quest_attempt(quest_id: String, correct: int, total: int) -> Dictionary:
-	var pct: float = float(correct) / float(maxi(1, total))
-	var mastered: bool = pct >= MASTERY_PCT
+	var safe_total: int = maxi(1, total)
+	var pct: float = float(correct) / float(safe_total)
+	# Integer ≥80% gate so 4/5 never misses mastery to float rounding (MASTERY_PCT stays 0.8).
+	var mastered: bool = is_mastered_score(correct, total)
 	var attempt: Dictionary = {
 		"quest_id": quest_id,
 		"correct": correct,
@@ -1229,7 +1251,7 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		var short_title := str(quest.get("title", quest_id)).strip_edges()
 		if short_title.length() > 28:
 			short_title = short_title.substr(0, 26) + "…"
-		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Retry anytime!" % [short_title, int(pct * 100)])
+		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Retry anytime!" % [short_title, percent_to_int(pct)])
 		if AudioBus.has_method("play_quest_near_miss"):
 			AudioBus.play_quest_near_miss()  # Wave 54: softer than mastery chime
 	save_game()
@@ -1246,6 +1268,20 @@ func get_latest_attempt_percent(quest_id: String) -> float:
 		found = true
 		latest = float(a.get("percent", 0.0))
 	return latest if found else -1.0
+
+
+func percent_to_int(pct: float) -> int:
+	## Rounded 0–100 so mastery 4/5 shows 80%, not 79%.
+	return int(round(clampf(pct, 0.0, 1.0) * 100.0))
+
+
+func mastery_percent_int(correct: int, total: int) -> int:
+	return percent_to_int(float(correct) / float(maxi(1, total)))
+
+
+func is_mastered_score(correct: int, total: int) -> bool:
+	## Same ≥80% rule as MASTERY_PCT, without float truncation.
+	return correct * 10 >= maxi(1, total) * 8
 
 
 func needs_help_quests() -> Array:

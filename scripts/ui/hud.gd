@@ -88,8 +88,10 @@ func _ready() -> void:
 	_ensure_foe_count()
 	_ensure_fav_paces()
 	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
-	hint_lbl.text = "I bag · J journal · T travel · V eat · Parent for grown-ups"
+	hint_lbl.text = "I bag · J journal · T travel · V eat · Esc closes · Parent for grown-ups"
 	_style_compact_hud()
+	if minimap:
+		minimap.mouse_filter = Control.MOUSE_FILTER_STOP
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
@@ -161,10 +163,12 @@ func _style_compact_hud() -> void:
 		journal_btn.text = "Journal (J)"
 	if travel_btn:
 		travel_btn.text = "Travel (T)"
+		travel_btn.tooltip_text = "Open Travel. Letter keys (H Fountain, P Willow) work after this menu is closed — or from the list."
 	if weather_btn:
 		weather_btn.text = "Weather (R)"
 	if parent_btn:
 		parent_btn.text = "Parent"
+		parent_btn.tooltip_text = "For grown-ups. P walks to Willow Bend — use this button for the Parent PIN screen."
 		PanelChrome.style_button(parent_btn, true)
 	if hint_lbl:
 		hint_lbl.modulate = Color(0.88, 0.84, 0.72, 0.85)

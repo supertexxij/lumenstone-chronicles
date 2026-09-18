@@ -332,7 +332,7 @@ offset_left = -168.0
 offset_top = -220.0
 offset_right = -16.0
 offset_bottom = -68.0
-mouse_filter = 2
+mouse_filter = 0
 
 [node name="DayLbl" type="Label" parent="UI/HUD"]
 layout_mode = 1

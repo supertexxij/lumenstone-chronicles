@@ -452,6 +452,8 @@ func play_attack_swing() -> void:
 	# Weapon is parented to the right arm, so the swing pose carries it.
 
 func _physics_process(delta: float) -> void:
+	if GameState.combat_target != null and not is_instance_valid(GameState.combat_target):
+		GameState.set_combat_target(null)
 	if ui_blocking:
 		velocity = Vector3.ZERO
 		_animate_walk(false, delta)

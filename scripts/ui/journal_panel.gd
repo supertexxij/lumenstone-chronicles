@@ -179,7 +179,7 @@ func refresh() -> void:
 		if unlocked and not done and GameState.has_method("get_latest_attempt_percent"):
 			var ap: float = float(GameState.get_latest_attempt_percent(qid))
 			if ap >= 0.0:
-				pct_tag = " · %d%%" % int(ap * 100.0)
+				pct_tag = " · %d%%" % (GameState.percent_to_int(ap) if GameState.has_method("percent_to_int") else int(round(ap * 100.0)))
 		list.add_item("W%d %s [%s] %s%s%s" % [week_n, mark, gname, title_s, raid_tag, pct_tag])
 		list.set_item_metadata(list.item_count - 1, qid)
 		if not unlocked:
@@ -385,7 +385,7 @@ func _on_select(idx: int) -> void:
 	if (not done) and unlocked and GameState.has_method("get_latest_attempt_percent"):
 		var ap2: float = float(GameState.get_latest_attempt_percent(qid))
 		if ap2 >= 0.0:
-			status = "Attempted — mastery %d%% (need ≥80%%)" % int(ap2 * 100.0)
+			status = "Attempted — mastery %d%% (need ≥80%%)" % (GameState.percent_to_int(ap2) if GameState.has_method("percent_to_int") else int(round(ap2 * 100.0)))
 	var guild: String = str(q.get("guild", ""))
 	var gfull: String = str(GameState.GUILDS.get(guild, {}).get("name", guild))
 	var raid_note := ""
