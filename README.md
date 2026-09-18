@@ -226,6 +226,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.0-rewards — denser lesson progression
+
+Lesson/quest rewards feel more generous so progressing any idea pays off. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; navmesh, tick combat, and save keys unchanged.
+
+- **2× quest XP** across Weeks 1–36 (typical lesson 20 XP; Friday Raid 60 XP)
+- **Progress XP on near-miss** — half of your score share (at least +1 XP) so attempts still reward effort
+- **2 guild lumens** on mastery (was 1)
+- Result screen and toasts show the XP awarded
+- Re-export Linux + Windows when shipping a build
+
 ### v1.83.0-curriculum — school-day feel
 
 Curriculum-feel pass so a Grade 3 player and a glancing parent can see **what to do next**. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; 36-week quest JSON is not rewritten (tiny Week 1 first-lesson hook only); navmesh, tick combat, and save keys unchanged (`checkpoint_checks` / `checkpoint_date` now drive the school-day loop).
