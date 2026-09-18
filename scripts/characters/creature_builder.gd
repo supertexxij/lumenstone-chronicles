@@ -188,37 +188,38 @@ static func _build_party_unicorn(bob: Node3D) -> void:
 	## My-Little-Pony-inspired party unicorn — slim soft pony facing +Z,
 	## big shiny eyes, flowing hair locks, cute short legs.
 	# Barrel along Z (nose→tail), NOT along X — earlier Z-roll made them look sideways-wide.
-	var body := _mi(_soft_capsule(0.14, 0.86), Vector3(0, 0.58, 0.0), bob, "Body")
+	# Radius ~0.18 keeps an MLP-plump silhouette without the old blob width.
+	var body := _mi(_soft_capsule(0.18, 0.74), Vector3(0, 0.58, 0.0), bob, "Body")
 	body.rotation_degrees = Vector3(90, 0, 0)
-	_mi(_soft_sphere(0.10, 0.095), Vector3(0, 0.46, 0.02), bob, "Belly")
+	_mi(_soft_sphere(0.13, 0.12), Vector3(0, 0.45, 0.02), bob, "Belly")
 	# Soft short neck toward +Z
-	var neck := _mi(_soft_cyl(0.08, 0.10, 0.26), Vector3(0, 0.78, 0.32), bob, "Neck")
+	var neck := _mi(_soft_cyl(0.09, 0.11, 0.26), Vector3(0, 0.78, 0.30), bob, "Neck")
 	neck.rotation_degrees = Vector3(18, 0, 0)
 	# Cute head + tiny muzzle (still MLP-round, but not oversized)
-	_mi(_soft_sphere(0.17, 0.18), Vector3(0, 0.98, 0.50), bob, "Head")
-	_mi(_soft_sphere(0.075, 0.085), Vector3(0, 0.92, 0.66), bob, "Muzzle")
-	_mi(_soft_sphere(0.026, 0.020), Vector3(0, 0.90, 0.74), bob, "Nose")
+	_mi(_soft_sphere(0.19, 0.20), Vector3(0, 0.98, 0.48), bob, "Head")
+	_mi(_soft_sphere(0.08, 0.09), Vector3(0, 0.92, 0.64), bob, "Muzzle")
+	_mi(_soft_sphere(0.028, 0.022), Vector3(0, 0.90, 0.72), bob, "Nose")
 	# Big shiny cartoon eyes
-	_mi(_soft_sphere(0.052, 0.055), Vector3(-0.075, 1.02, 0.60), bob, "EyeWhiteL")
-	_mi(_soft_sphere(0.052, 0.055), Vector3(0.075, 1.02, 0.60), bob, "EyeWhiteR")
-	_mi(_soft_sphere(0.034), Vector3(-0.075, 1.02, 0.64), bob, "IrisL")
-	_mi(_soft_sphere(0.034), Vector3(0.075, 1.02, 0.64), bob, "IrisR")
-	_mi(_soft_sphere(0.016), Vector3(-0.075, 1.02, 0.67), bob, "PupilL")
-	_mi(_soft_sphere(0.016), Vector3(0.075, 1.02, 0.67), bob, "PupilR")
-	_mi(_soft_sphere(0.011), Vector3(-0.06, 1.04, 0.675), bob, "ShineL")
-	_mi(_soft_sphere(0.011), Vector3(0.09, 1.04, 0.675), bob, "ShineR")
+	_mi(_soft_sphere(0.055, 0.06), Vector3(-0.08, 1.02, 0.58), bob, "EyeWhiteL")
+	_mi(_soft_sphere(0.055, 0.06), Vector3(0.08, 1.02, 0.58), bob, "EyeWhiteR")
+	_mi(_soft_sphere(0.036), Vector3(-0.08, 1.02, 0.62), bob, "IrisL")
+	_mi(_soft_sphere(0.036), Vector3(0.08, 1.02, 0.62), bob, "IrisR")
+	_mi(_soft_sphere(0.018), Vector3(-0.08, 1.02, 0.65), bob, "PupilL")
+	_mi(_soft_sphere(0.018), Vector3(0.08, 1.02, 0.65), bob, "PupilR")
+	_mi(_soft_sphere(0.012), Vector3(-0.065, 1.04, 0.655), bob, "ShineL")
+	_mi(_soft_sphere(0.012), Vector3(0.095, 1.04, 0.655), bob, "ShineR")
 	# Soft blush
-	_mi(_soft_sphere(0.034, 0.022), Vector3(-0.11, 0.94, 0.56), bob, "BlushL")
-	_mi(_soft_sphere(0.034, 0.022), Vector3(0.11, 0.94, 0.56), bob, "BlushR")
+	_mi(_soft_sphere(0.038, 0.025), Vector3(-0.12, 0.94, 0.54), bob, "BlushL")
+	_mi(_soft_sphere(0.038, 0.025), Vector3(0.12, 0.94, 0.54), bob, "BlushR")
 	# Soft rounded ears
-	var ear_l := _mi(_soft_cyl(0.011, 0.036, 0.10), Vector3(-0.09, 1.14, 0.44), bob, "EarL")
+	var ear_l := _mi(_soft_cyl(0.012, 0.04, 0.10), Vector3(-0.10, 1.14, 0.42), bob, "EarL")
 	ear_l.rotation_degrees = Vector3(8, 0, -22)
-	var ear_r := _mi(_soft_cyl(0.011, 0.036, 0.10), Vector3(0.09, 1.14, 0.44), bob, "EarR")
+	var ear_r := _mi(_soft_cyl(0.012, 0.04, 0.10), Vector3(0.10, 1.14, 0.42), bob, "EarR")
 	ear_r.rotation_degrees = Vector3(8, 0, 22)
 	# Elegant pearl horn
 	var horn_root := Node3D.new()
 	horn_root.name = "Horn"
-	horn_root.position = Vector3(0, 1.14, 0.46)
+	horn_root.position = Vector3(0, 1.14, 0.44)
 	horn_root.rotation_degrees = Vector3(-10, 0, 0)
 	bob.add_child(horn_root)
 	_mi(_soft_cyl(0.032, 0.022, 0.10), Vector3(0, 0.04, 0), horn_root, "HornBase")
@@ -243,7 +244,7 @@ static func _build_party_unicorn(bob: Node3D) -> void:
 	# Soft flowing tail
 	var tail := Node3D.new()
 	tail.name = "Tail"
-	tail.position = Vector3(0, 0.62, -0.42)
+	tail.position = Vector3(0, 0.62, -0.36)
 	bob.add_child(tail)
 	var t1 := _mi(_soft_capsule(0.048, 0.34), Vector3(0.01, 0.02, -0.10), tail, "TailA")
 	t1.rotation_degrees = Vector3(42, 8, 0)
@@ -251,20 +252,20 @@ static func _build_party_unicorn(bob: Node3D) -> void:
 	t2.rotation_degrees = Vector3(52, -10, 4)
 	var t3 := _mi(_soft_capsule(0.042, 0.28), Vector3(0.03, -0.05, -0.40), tail, "TailC")
 	t3.rotation_degrees = Vector3(60, 6, -3)
-	# Cute short pony legs — narrow stance under slim barrel
+	# Cute short pony legs — stance under the barrel
 	for info in [
-		["FL", Vector3(-0.07, 0.34, 0.26)],
-		["FR", Vector3(0.07, 0.34, 0.26)],
-		["BL", Vector3(-0.07, 0.34, -0.26)],
-		["BR", Vector3(0.07, 0.34, -0.26)],
+		["FL", Vector3(-0.09, 0.34, 0.22)],
+		["FR", Vector3(0.09, 0.34, 0.22)],
+		["BL", Vector3(-0.09, 0.34, -0.22)],
+		["BR", Vector3(0.09, 0.34, -0.22)],
 	]:
 		var leg := Node3D.new()
 		leg.name = "Leg" + str(info[0])
 		leg.position = info[1]
 		bob.add_child(leg)
-		_mi(_soft_cyl(0.028, 0.032, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
-		_mi(_soft_cyl(0.024, 0.026, 0.12), Vector3(0, -0.14, 0), leg, "Shin")
-		_mi(_soft_sphere(0.034, 0.028), Vector3(0, -0.23, 0.01), leg, "Hoof")
+		_mi(_soft_cyl(0.032, 0.036, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
+		_mi(_soft_cyl(0.026, 0.028, 0.12), Vector3(0, -0.14, 0), leg, "Shin")
+		_mi(_soft_sphere(0.038, 0.032), Vector3(0, -0.23, 0.01), leg, "Hoof")
 
 
 static func _soft_sphere(r: float, h: float = -1.0) -> SphereMesh:
