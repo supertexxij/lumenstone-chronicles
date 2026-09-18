@@ -1048,10 +1048,6 @@ func _spawn_player() -> void:
 
 
 func _process(delta: float) -> void:
-	# #region agent log
-	if delta > 0.08:
-		_agent_dbg_wx("H", "world.gd:_process", "frame_spike", {"delta": delta, "fps": Engine.get_frames_per_second(), "weather": _weather_mode, "label": _weather_label_cache})
-	# #endregion
 	if _door_cooldown > 0.0:
 		_door_cooldown -= delta
 	if _landmark_toast_cd > 0.0:
@@ -2468,9 +2464,6 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		fx.scale_amount_min = 1.0 if _weather_mode == 1 else 0.9
 		fx.scale_amount_max = 1.65 if _weather_mode == 1 else 1.4
 	weather_changed.emit(_weather_mode, _weather_label_cache)
-	# #region agent log
-	_agent_dbg_wx("C", "world.gd:_apply_weather_visuals", "weather_changed", {"mode": _weather_mode, "label": _weather_label_cache, "rain_on": rain_on, "fog_on": _fog_mist != null and _fog_mist.emitting})
-	# #endregion
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
 		match _weather_mode:
@@ -2499,20 +2492,6 @@ func _set_fog_mat_alpha(p: CPUParticles3D, a: float) -> void:
 	var c: Color = mat.albedo_color
 	c.a = a
 	mat.albedo_color = c
-
-
-# #region agent log
-func _agent_dbg_wx(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
-	var path := "/opt/cursor/logs/debug.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
-	f.close()
-# #endregion
 
 
 func _update_quest_desk_highlights() -> void:
@@ -3915,7 +3894,7 @@ func _setup_maple_leaves() -> void:
 	_maple_leaves = CPUParticles3D.new()
 	_maple_leaves.name = "MapleCopseLeaves"
 	_maple_leaves.emitting = true
-	_maple_leaves.amount = 56
+	_maple_leaves.amount = 28  # v1.84.3: fixed budget (no dusk amount thrash)
 	_maple_leaves.lifetime = 5.8
 	_maple_leaves.preprocess = 2.8
 	_maple_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX

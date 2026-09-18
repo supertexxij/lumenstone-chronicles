@@ -390,9 +390,6 @@ func clear_slot(slot: int) -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(LEGACY_SAVE_PATH))
 
 func save_game() -> void:
-	# #region agent log
-	var _sv_t0: int = Time.get_ticks_msec()
-	# #endregion
 	last_played = int(Time.get_unix_time_from_system())
 	var data: Dictionary = {
 		"child_name": child_name,
@@ -442,18 +439,6 @@ func save_game() -> void:
 			leg.store_string(JSON.stringify(data))
 			leg.close()
 	game_saved.emit()  # Wave 69: nickname chip pulse on save
-	# #region agent log
-	var _sv_ms: int = Time.get_ticks_msec() - _sv_t0
-	if _sv_ms >= 5:
-		var path_log := "/opt/cursor/logs/debug.log"
-		var lf := FileAccess.open(path_log, FileAccess.READ_WRITE)
-		if lf == null:
-			lf = FileAccess.open(path_log, FileAccess.WRITE)
-		if lf:
-			lf.seek_end()
-			lf.store_line(JSON.stringify({"hypothesisId": "S", "location": "game_state.gd:save_game", "message": "save_ms", "data": {"ms": _sv_ms, "slot": active_slot}, "timestamp": Time.get_ticks_msec()}))
-			lf.close()
-	# #endregion
 
 
 func load_game(slot: int = -1) -> bool:
