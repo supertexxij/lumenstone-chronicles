@@ -5,8 +5,8 @@ const HitsplatUtil = preload("res://scripts/combat/hitsplat.gd")
 
 signal clicked_ground(pos: Vector3)
 
-const SPEED := 6.5
-const ACCEL := 18.0
+const SPEED := 8.2
+const ACCEL := 26.0
 const CAM_BASE := Vector3(0, 10.5, 12.6)
 const CAM_ZOOM_MIN := 0.55
 const CAM_ZOOM_MAX := 1.55
@@ -462,9 +462,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if Input.is_action_pressed("cam_left"):
-		cam_yaw += 1.5 * delta
+		cam_yaw += 2.2 * delta
 	if Input.is_action_pressed("cam_right"):
-		cam_yaw -= 1.5 * delta
+		cam_yaw -= 2.2 * delta
 	camera_pivot.rotation.y = cam_yaw
 
 	# Arrive near pending NPC → talk

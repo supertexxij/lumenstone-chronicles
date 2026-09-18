@@ -497,8 +497,8 @@ func _play_travel_open_flourish() -> void:
 	panel.modulate = Color(1, 1, 1, 0.0)
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(panel, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.12)
 
 func _refresh_travel_list() -> void:
 	## Wave 39/45/56: search/filter + group counts + distance + ★ fav hoisted to top (PIN 1234; mastery ≥80%).
@@ -797,17 +797,17 @@ func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
 			_travel_fade_label.add_theme_color_override("font_outline_color", Color(0.18, 0.14, 0.10, 0.85))
 		var tw := create_tween()
 		tw.set_parallel(true)
-		tw.tween_property(_travel_fade, "color:a", 0.68, 0.26).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tw.tween_property(_travel_fade, "color:a", 0.68, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		if _travel_fade_label:
-			tw.tween_property(_travel_fade_label, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tw.tween_property(_travel_fade_label, "modulate:a", 1.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		await tw.finished
 	_apply_soft_travel_arrival(pos, label)
 	if _travel_fade:
 		var tw2 := create_tween()
 		tw2.set_parallel(true)
-		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		if _travel_fade_label:
-			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await tw2.finished
 		_travel_fade.visible = false
 		_travel_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1020,13 +1020,15 @@ func _play_load_toasts() -> void:
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
-		"maybe_bugs_182_toast", "maybe_curriculum_183_toast",
+		"maybe_bugs_182_toast", "maybe_curriculum_183_toast", "maybe_smooth_184_toast",
 	])
 	var early: bool = GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save()
 	if early and GameState.has_method("quiet_legacy_polish_toasts"):
 		GameState.quiet_legacy_polish_toasts()
 		if GameState.has_method("maybe_curriculum_183_toast"):
 			GameState.maybe_curriculum_183_toast()
+		if GameState.has_method("maybe_smooth_184_toast"):
+			GameState.maybe_smooth_184_toast()
 		return
 	for m in methods:
 		if not GameState.has_method(m):
@@ -1080,8 +1082,8 @@ func _play_hit_pause() -> void:
 		return
 	_hit_pausing = true
 	var prev: float = Engine.time_scale
-	Engine.time_scale = 0.14
-	await get_tree().create_timer(0.05, true, false, true).timeout
+	Engine.time_scale = 0.35
+	await get_tree().create_timer(0.03, true, false, true).timeout
 	Engine.time_scale = prev if prev > 0.01 else 1.0
 	_hit_pausing = false
 

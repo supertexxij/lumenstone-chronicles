@@ -38,6 +38,9 @@ var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Ris
 var _willow_sway_nodes: Array = []  # Wave 61: soft willow weep sway at Willow Bend
 var _fern_sway_nodes: Array = []  # Wave 62: soft fern sway at Fern Dell
 var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Heath
+var _process_frame: int = 0  # v1.84 smooth: stagger non-critical polish
+var _maple_dusk_amt: int = -1  # avoid rewriting particle amount every frame
+var _minimap_halls_cache: Array = []  # static landmark/hall markers
 var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
@@ -1047,17 +1050,23 @@ func _process(delta: float) -> void:
 		_door_cooldown -= delta
 	if _landmark_toast_cd > 0.0:
 		_landmark_toast_cd -= delta
+	_process_frame = (_process_frame + 1) % 4
 	_update_day_night(delta)
 	_update_weather(delta)
-	_update_quest_desk_highlights()
-	_update_door_glows()
-	_update_landmark_approach()
-	_update_ambient_critters(delta)
-	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
-	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
-	_update_willow_sway(delta)  # Wave 61: soft willow weep sway at Willow Bend
-	_update_fern_sway(delta)  # Wave 62: soft fern sway at Fern Dell
-	_update_heather_sway(delta)  # Wave 63: soft heather sway at Heather Heath
+	# Stagger polish that does not need every-frame updates (llvmpipe / dense village)
+	if _process_frame == 0:
+		_update_quest_desk_highlights()
+		_update_door_glows()
+	elif _process_frame == 1:
+		_update_landmark_approach()
+		_update_ambient_critters(delta * 4.0)  # compensate for 1/4 cadence
+	elif _process_frame == 2:
+		_update_reed_sway(delta)
+		_update_thistle_sway(delta)
+		_update_willow_sway(delta)
+	else:
+		_update_fern_sway(delta)
+		_update_heather_sway(delta)
 	_update_hall_light_dip(delta)  # Wave 63: soft hall enter/exit light dip
 
 
@@ -1984,7 +1993,7 @@ func _setup_weather() -> void:
 	_rain = CPUParticles3D.new()
 	_rain.name = "Rain"
 	_rain.emitting = false
-	_rain.amount = 280
+	_rain.amount = 160  # v1.84 smooth: lighter rain budget (was 280)
 	_rain.lifetime = 1.1
 	_rain.preprocess = 0.4
 	_rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -2250,15 +2259,18 @@ func _update_weather(delta: float) -> void:
 			_wind_leaves.emitting = false
 			_wind_leaves.visible = false
 	# Wave 56: denser soft leaf fall at Maple Copse (RuneScape-chunky, wholesome)
+	# v1.84 smooth: only emit when the player is near Maple Copse
 	if _maple_leaves:
-		var maple_out := (_inside_hall == "")
-		_maple_leaves.emitting = maple_out
-		_maple_leaves.visible = maple_out
+		var maple_near := _inside_hall == "" and _player_near_xz(Vector3(-48, 0, -48), 28.0)
+		_maple_leaves.emitting = maple_near
+		_maple_leaves.visible = maple_near
 		# Wave 72: denser Maple Copse leaf fall reads stronger at dusk (RuneScape-chunky, wholesome)
-		if maple_out and _is_dusk_firefly_time():
-			_maple_leaves.amount = 72
-		else:
-			_maple_leaves.amount = 56
+		var want_amt := 56
+		if maple_near and _is_dusk_firefly_time():
+			want_amt = 64
+		if want_amt != _maple_dusk_amt:
+			_maple_dusk_amt = want_amt
+			_maple_leaves.amount = want_amt
 	if player and _dusk_fireflies:
 		# Wave 39: soft firefly sparkles at dusk/night outdoors only
 		var dusk_on := _inside_hall == "" and _is_dusk_firefly_time()
@@ -2269,58 +2281,20 @@ func _update_weather(delta: float) -> void:
 		else:
 			_dusk_fireflies.emitting = false
 			_dusk_fireflies.visible = false
-	# Wave 53: denser soft fireflies gather near Prayer Garden at dusk (RuneScape-chunky, wholesome)
-	if _garden_fireflies:
-		var garden_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_garden_fireflies.emitting = garden_dusk
-		_garden_fireflies.visible = garden_dusk
-	# Wave 66: soft birch-rest firefly wink at dusk (RuneScape-chunky, wholesome)
-	if _birch_fireflies:
-		var birch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_birch_fireflies.emitting = birch_dusk
-		_birch_fireflies.visible = birch_dusk
-	# Wave 67: soft Reed Pool ripple gleam at dusk (RuneScape-chunky, wholesome)
-	if _reed_pool_gleam:
-		var reed_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_reed_pool_gleam.emitting = reed_dusk
-		_reed_pool_gleam.visible = reed_dusk
-	# Wave 68: soft Willow Bend willow-leaf drift at dusk (RuneScape-chunky, wholesome)
-	if _willow_leaves:
-		var willow_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_willow_leaves.emitting = willow_dusk
-		_willow_leaves.visible = willow_dusk
-	if _fern_fronds:
-		var fern_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_fern_fronds.emitting = fern_dusk
-		_fern_fronds.visible = fern_dusk
-	if _heather_blooms:
-		var heather_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_heather_blooms.emitting = heather_dusk
-		_heather_blooms.visible = heather_dusk
-	if _thistle_blooms:
-		var thistle_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_thistle_blooms.emitting = thistle_dusk
-		_thistle_blooms.visible = thistle_dusk
-	if _maple_dusk_leaves:
-		var maple_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_maple_dusk_leaves.emitting = maple_dusk
-		_maple_dusk_leaves.visible = maple_dusk
-	if _amber_knoll_motes:
-		var amber_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_amber_knoll_motes.emitting = amber_dusk
-		_amber_knoll_motes.visible = amber_dusk
-	if _cedar_needles:
-		var cedar_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_cedar_needles.emitting = cedar_dusk
-		_cedar_needles.visible = cedar_dusk
-	if _stone_arch_dust:
-		var arch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_stone_arch_dust.emitting = arch_dusk
-		_stone_arch_dust.visible = arch_dusk
-	if _cross_lantern_moths:
-		var cross_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_cross_lantern_moths.emitting = cross_dusk
-		_cross_lantern_moths.visible = cross_dusk
+	# Landmark dusk FX — only when near that landmark (v1.84 smooth)
+	var dusk_out := _inside_hall == "" and _is_dusk_firefly_time()
+	_set_landmark_fx(_garden_fireflies, dusk_out and _player_near_xz(Vector3(30, 0, 18), 26.0))
+	_set_landmark_fx(_birch_fireflies, dusk_out and _player_near_xz(Vector3(-42, 0, -20), 26.0))
+	_set_landmark_fx(_reed_pool_gleam, dusk_out and _player_near_xz(Vector3(-20, 0, 48), 26.0))
+	_set_landmark_fx(_willow_leaves, dusk_out and _player_near_xz(Vector3(-38, 0, -34), 26.0))
+	_set_landmark_fx(_fern_fronds, dusk_out and _player_near_xz(Vector3(22, 0, 48), 26.0))
+	_set_landmark_fx(_heather_blooms, dusk_out and _player_near_xz(Vector3(-48, 0, 42), 26.0))
+	_set_landmark_fx(_thistle_blooms, dusk_out and _player_near_xz(Vector3(48, 0, 42), 26.0))
+	_set_landmark_fx(_maple_dusk_leaves, dusk_out and _player_near_xz(Vector3(-48, 0, -48), 26.0))
+	_set_landmark_fx(_amber_knoll_motes, dusk_out and _player_near_xz(Vector3(48, 0, -22), 26.0))
+	_set_landmark_fx(_cedar_needles, dusk_out and _player_near_xz(Vector3(38, 0, -36), 26.0))
+	_set_landmark_fx(_stone_arch_dust, dusk_out and _player_near_xz(Vector3(-48, 0, 8), 26.0))
+	_set_landmark_fx(_cross_lantern_moths, dusk_out and _player_near_xz(Vector3(48, 0, 8), 26.0))
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2338,6 +2312,21 @@ func _update_weather(delta: float) -> void:
 		if _weather_timer <= 0.0:
 			cycle_weather(true)
 			_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+
+
+func _player_near_xz(anchor: Vector3, radius: float) -> bool:
+	if player == null:
+		return false
+	var dx: float = player.global_position.x - anchor.x
+	var dz: float = player.global_position.z - anchor.z
+	return dx * dx + dz * dz <= radius * radius
+
+
+func _set_landmark_fx(fx: CPUParticles3D, on: bool) -> void:
+	if fx == null:
+		return
+	fx.emitting = on
+	fx.visible = on
 
 func cycle_weather(announce: bool = true) -> void:
 	_weather_mode = (_weather_mode + 1) % 3
@@ -2734,27 +2723,29 @@ func _build_lookout_rock() -> void:
 
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
-	var halls: Array = []
-	for b in world_data.get("buildings", []):
-		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888")), "icon": "hall"})
-	# Landmarks for wilds spurs (Wave 25: icon kinds for chunky minimap marks)
-	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8", "icon": "tree"})
-	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32", "icon": "tree"})
-	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037", "icon": "tree"})
-	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a", "icon": "rock"})
-	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40", "icon": "mill"})
-	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32", "icon": "tree"})
-	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48", "icon": "tree"})
-	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a", "icon": "water"})
-	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
-	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
-	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
-	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
-	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
-	halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
-	halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
-	halls.append({"x": -48.0, "z": -48.0, "label": "Maple", "color": "#c45a28", "icon": "maple"})
-	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
+	if _minimap_halls_cache.is_empty():
+		var halls: Array = []
+		for b in world_data.get("buildings", []):
+			halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888")), "icon": "hall"})
+		# Landmarks for wilds spurs (Wave 25: icon kinds for chunky minimap marks)
+		halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8", "icon": "tree"})
+		halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32", "icon": "tree"})
+		halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037", "icon": "tree"})
+		halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a", "icon": "rock"})
+		halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40", "icon": "mill"})
+		halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32", "icon": "tree"})
+		halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48", "icon": "tree"})
+		halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a", "icon": "water"})
+		halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
+		halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
+		halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
+		halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
+		halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
+		halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
+		halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
+		halls.append({"x": -48.0, "z": -48.0, "label": "Maple", "color": "#c45a28", "icon": "maple"})
+		halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
+		_minimap_halls_cache = halls
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
 		# Hide indoor duplicates on minimap (keep outdoor mentors)
@@ -2762,9 +2753,19 @@ func get_minimap_markers() -> Dictionary:
 			continue
 		npcs.append({"x": n.global_position.x, "z": n.global_position.z})
 	var foes: Array = []
+	var px0 := player.global_position.x if player else 0.0
+	var pz0 := player.global_position.z if player else 0.0
+	# v1.84 smooth: only plot foes near the player (minimap world radius is local)
 	for e in get_tree().get_nodes_in_group("enemies"):
-		if e.has_method("is_alive") and e.is_alive() and e.visible:
-			foes.append({"x": e.global_position.x, "z": e.global_position.z})
+		if not (e.has_method("is_alive") and e.is_alive() and e.visible):
+			continue
+		var ex: float = e.global_position.x
+		var ez: float = e.global_position.z
+		var dx: float = ex - px0
+		var dz: float = ez - pz0
+		if dx * dx + dz * dz > 55.0 * 55.0:
+			continue
+		foes.append({"x": ex, "z": ez})
 	var px := 0.0
 	var pz := 0.0
 	var yaw := 0.0
@@ -2779,7 +2780,7 @@ func get_minimap_markers() -> Dictionary:
 		landmark_name = _landmark_display_name(_landmark_here)
 	return {
 		"player": {"x": px, "z": pz, "yaw": yaw, "zoom": zoom},
-		"halls": halls,
+		"halls": _minimap_halls_cache,
 		"npcs": npcs,
 		"foes": foes,
 		"inside": _inside_hall,
@@ -3072,9 +3073,15 @@ func _dusk_sway_boost() -> float:
 	return 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
 
 
-func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: float, x_scale: float, default_amp: float, dusk_boost: float = 1.0) -> void:
+func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: float, x_scale: float, default_amp: float, dusk_boost: float = 1.0, anchor: Vector3 = Vector3.ZERO, near_radius: float = 26.0) -> void:
 	if nodes.is_empty():
 		return
+	# v1.84 smooth: skip sway when the player is far from this landmark cluster
+	if player != null and near_radius > 0.0:
+		var dx: float = player.global_position.x - anchor.x
+		var dz: float = player.global_position.z - anchor.z
+		if dx * dx + dz * dz > near_radius * near_radius:
+			return
 	var t := Time.get_ticks_msec() * 0.001
 	for n in nodes:
 		if n == null or not is_instance_valid(n):
@@ -3087,30 +3094,30 @@ func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: fl
 
 func _update_reed_sway(_delta: float) -> void:
 	## Wave 57: soft reed sway near Reed Pool — gentle wind lean (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_reed_sway_nodes, 1.15, 0.95, 0.7, 0.55, 0.06)
+	_apply_plant_sway(_reed_sway_nodes, 1.15, 0.95, 0.7, 0.55, 0.06, 1.0, Vector3(-20, 0, 48), 24.0)
 
 
 func _update_thistle_sway(_delta: float) -> void:
 	## Wave 58: soft thistle sway at Thistle Rise — gentle wind lean (RuneScape-chunky, wholesome).
 	## Wave 71: soft thistle sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_thistle_sway_nodes, 1.05, 0.88, 0.65, 0.5, 0.05, _dusk_sway_boost())
+	_apply_plant_sway(_thistle_sway_nodes, 1.05, 0.88, 0.65, 0.5, 0.05, _dusk_sway_boost(), Vector3(48, 0, 42), 24.0)
 
 
 func _update_willow_sway(_delta: float) -> void:
 	## Wave 61: soft willow weep sway at Willow Bend — gentle canopy lean (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_willow_sway_nodes, 0.72, 0.58, 0.7, 0.55, 0.028)
+	_apply_plant_sway(_willow_sway_nodes, 0.72, 0.58, 0.7, 0.55, 0.028, 1.0, Vector3(-38, 0, -34), 24.0)
 
 
 func _update_fern_sway(_delta: float) -> void:
 	## Wave 62: soft fern sway at Fern Dell — gentle frond lean (RuneScape-chunky, wholesome).
 	## Wave 69: soft fern-frond sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_fern_sway_nodes, 1.08, 0.92, 0.65, 0.55, 0.045, _dusk_sway_boost())
+	_apply_plant_sway(_fern_sway_nodes, 1.08, 0.92, 0.65, 0.55, 0.045, _dusk_sway_boost(), Vector3(22, 0, 48), 24.0)
 
 
 func _update_heather_sway(_delta: float) -> void:
 	## Wave 63: soft heather sway at Heather Heath — gentle tuft lean (RuneScape-chunky, wholesome).
 	## Wave 70: soft heather sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_heather_sway_nodes, 0.95, 0.78, 0.6, 0.5, 0.04, _dusk_sway_boost())
+	_apply_plant_sway(_heather_sway_nodes, 0.95, 0.78, 0.6, 0.5, 0.04, _dusk_sway_boost(), Vector3(-48, 0, 42), 24.0)
 
 
 func _begin_hall_light_dip() -> void:
@@ -5171,13 +5178,22 @@ func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) 
 func _update_ambient_critters(delta: float) -> void:
 	if _ambient_critters.is_empty():
 		return
+	var ppx := player.global_position.x if player else 0.0
+	var ppz := player.global_position.z if player else 0.0
 	for c in _ambient_critters:
 		var n: Node3D = c.get("node")
 		if n == null or not is_instance_valid(n):
 			continue
+		var base: Vector3 = c.get("base", n.position)
+		# v1.84 smooth: skip far ambient life
+		var adx: float = base.x - ppx
+		var adz: float = base.z - ppz
+		if adx * adx + adz * adz > 36.0 * 36.0:
+			n.visible = false
+			continue
+		n.visible = true
 		var phase: float = float(c.get("phase", 0.0)) + delta
 		c["phase"] = phase
-		var base: Vector3 = c.get("base", n.position)
 		var kind: String = str(c.get("kind", "butterfly"))
 		match kind:
 			"sparrow":

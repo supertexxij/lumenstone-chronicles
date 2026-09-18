@@ -91,7 +91,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **U** Quiet Cross · **X** Stone Arch · **Z** Amber Knoll · **6** Birch Rest · **7** Fern Dell · **8** Heather Heath · **9** Thistle Rise · **0** Maple Copse · **1–5** halls (outdoors only) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
-| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
+| Combat | **Click** enemy · auto-attack ~0.55s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
 | Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |
 
@@ -225,6 +225,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.84.0-smooth — smoother & quicker
+
+Performance and feel pass so the village and wilds run lighter and respond faster. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON and save keys unchanged.
+
+- **Foe distance LOD** — far wild creatures skip idle/aggro work and hide past ~42 paces (263 spawns no longer all animate every frame)
+- **Landmark FX distance gate** — dusk fireflies/leaves/motes only emit near that landmark
+- **Staggered world polish** — plant sway, desk pulse, ambient critters update on a 4-frame cadence
+- **Lighter render** — MSAA off, FXAA on; rain particle budget cut; minimap rebuilds alternate frames
+- **Snappier play** — walk speed 6.5→8.2, camera turn faster, combat tick 0.7→0.55s, shorter UI/travel fades and quest answer pause
 
 ### v1.83.0-curriculum — school-day feel
 

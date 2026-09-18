@@ -26,6 +26,11 @@ var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
 var _countdown_nudge: bool = false  # Wave 37: mid-telegraph countdown toast
 var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
+## v1.84 smooth: distance LOD so 200+ wild foes do not burn CPU when off-screen
+const LOD_ANIM_DIST2 := 28.0 * 28.0
+const LOD_HIDE_DIST2 := 42.0 * 42.0
+var _cached_player: Node3D = null
+var _lod_hidden: bool = false
 
 @onready var mesh_root: Node3D = $MeshRoot
 var label: Label3D
@@ -209,16 +214,51 @@ func _physics_process(delta: float) -> void:
 			_respawn()
 		return
 
+	var in_combat := GameState.combat_target == self
+	var near := in_combat or _player_near(LOD_ANIM_DIST2)
+	if not near:
+		# Far foes: cheap hide + skip idle/aggro work (still respond when player walks up)
+		if not _lod_hidden and not _player_near(LOD_HIDE_DIST2):
+			_lod_hidden = true
+			visible = false
+		elif _lod_hidden and _player_near(LOD_HIDE_DIST2 * 0.85):
+			_lod_hidden = false
+			visible = true
+		_aggro_pulse = 0.0
+		_set_warning(false)
+		_was_warning = false
+		return
+
+	if _lod_hidden:
+		_lod_hidden = false
+		visible = true
+
 	_idle_anim(delta)
 	_update_flinch(delta)
 	_soft_aggro(delta)
 	_update_target_reticle(delta)
 
-	if GameState.combat_target == self:
+	if in_combat:
 		tick_timer -= delta
 		if tick_timer <= 0:
-			tick_timer = float(EnemyDB.base_combat.get("tick_sec", 0.7))
+			tick_timer = float(EnemyDB.base_combat.get("tick_sec", 0.55))
 			_combat_tick()
+
+
+func _player_near(dist2: float) -> bool:
+	var p := _get_player()
+	if p == null:
+		return false
+	var dx: float = global_position.x - p.global_position.x
+	var dz: float = global_position.z - p.global_position.z
+	return dx * dx + dz * dz <= dist2
+
+
+func _get_player() -> Node3D:
+	if _cached_player != null and is_instance_valid(_cached_player):
+		return _cached_player
+	_cached_player = get_tree().get_first_node_in_group("player") as Node3D
+	return _cached_player
 
 func modulate_meshes(a: float) -> void:
 	## Fade meshes during dissolve (alpha via albedo)
@@ -351,7 +391,7 @@ func _set_warning(on: bool) -> void:
 			label.modulate = Color(1.0, 0.96, 0.72)
 			# Wave 50: clearer soft-aggro name+countdown combo on the floating nameplate
 			var foe_n: String = str(def.get("name", kind))
-			var remain_lbl: float = maxf(0.1, 1.15 - _aggro_pulse)
+			var remain_lbl: float = maxf(0.1, 0.95 - _aggro_pulse)
 			label.text = "%s · ~%.1fs" % [foe_n, remain_lbl]
 			label.outline_size = 10
 		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
@@ -359,7 +399,7 @@ func _set_warning(on: bool) -> void:
 		# Wave 64: clearer soft-aggro ring when armor Def high (RuneScape-chunky, wholesome; no cheesy combat labels)
 		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
 		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
-		var prog: float = clampf(_aggro_pulse / 1.15, 0.0, 1.0)
+		var prog: float = clampf(_aggro_pulse / 0.95, 0.0, 1.0)
 		var def_n: int = 0
 		if GameState.has_method("get_defense"):
 			def_n = int(GameState.get_defense())
@@ -403,7 +443,7 @@ func _soft_aggro(delta: float) -> void:
 		_set_warning(false)
 		_aggro_pulse = 0.0
 		return
-	var player: Node = get_tree().get_first_node_in_group("player")
+	var player: Node = _get_player()
 	if player == null:
 		_set_warning(false)
 		return
@@ -417,7 +457,7 @@ func _soft_aggro(delta: float) -> void:
 		return
 	var engage: float = float(EnemyDB.base_combat.get("engage_range", 3.8))
 	var warn_range: float = engage + 1.6
-	var telegraph_sec: float = 1.15  # longer fair warning
+	var telegraph_sec: float = 0.95  # v1.84 smooth: slightly snappier fair warning
 	var dist: float = global_position.distance_to(player.global_position)
 	if dist <= warn_range:
 		_aggro_pulse += delta
@@ -451,7 +491,7 @@ func _soft_aggro(delta: float) -> void:
 			if first_fight:
 				# Wave 65: clearer first-fight tip with foe name — lead with who, then soft ticks + how to leave (RuneScape-chunky, wholesome)
 				var foe_nm := str(def.get("name", "Foe"))
-				GameState.toast.emit("First fight · %s: soft ticks (~0.7s). Walk away or click the ground to leave." % foe_nm)
+				GameState.toast.emit("First fight · %s: soft ticks (~0.55s). Walk away or click the ground to leave." % foe_nm)
 			else:
 				GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
@@ -1045,7 +1085,7 @@ func _update_flinch(delta: float) -> void:
 		creature_bob.rotation.z = 0.0
 
 func _combat_tick() -> void:
-	var player: Node = get_tree().get_first_node_in_group("player")
+	var player: Node = _get_player()
 	if not player:
 		return
 	var dist: float = global_position.distance_to(player.global_position)
@@ -1253,6 +1293,7 @@ func _tick_kill_flash(delta: float) -> void:
 
 func _respawn() -> void:
 	alive = true
+	_lod_hidden = false
 	visible = true
 	$CollisionShape3D.disabled = false
 	hp = max_hp

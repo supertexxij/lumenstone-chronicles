@@ -35,6 +35,7 @@ var _food_bread_low: bool = false  # Wave 71: pantry Bread N/M flashes when low
 
 var _world: Node = null
 var _map_data: Dictionary = {}
+var _hud_tick: int = 0  # v1.84 smooth: alternate heavy minimap rebuilds
 var _hurt_vignette: Control = null
 var _year_chip: Label = null
 var _year_chip_panel: PanelContainer = null  # Wave 32: clearer chip plate
@@ -249,8 +250,20 @@ func _process(delta: float) -> void:
 			refresh()
 	if not visible or _world == null:
 		return
-	if _world.has_method("get_minimap_markers"):
-		_map_data = _world.get_minimap_markers()
+	# v1.84 smooth: rebuild full minimap payload every other frame; keep yaw live
+	_hud_tick = (_hud_tick + 1) % 2
+	if _hud_tick == 0 or _map_data.is_empty():
+		if _world.has_method("get_minimap_markers"):
+			_map_data = _world.get_minimap_markers()
+	else:
+		var p = _world.get("player")
+		if p != null and not _map_data.is_empty():
+			var pl: Dictionary = _map_data.get("player", {})
+			pl["yaw"] = float(p.get("cam_yaw"))
+			pl["zoom"] = float(p.get("cam_zoom"))
+			pl["x"] = p.global_position.x
+			pl["z"] = p.global_position.z
+			_map_data["player"] = pl
 	_update_compass()
 	_update_day_label()
 	_refresh_landmark_chip()
