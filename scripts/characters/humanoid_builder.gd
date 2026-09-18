@@ -45,13 +45,15 @@ static func _load_face_tex() -> Texture2D:
 
 
 static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
-	## Painted storybook face card — much cleaner than stacked primitive blobs.
+	## Painted storybook face card — tipped toward the elevated village camera.
 	var mi := MeshInstance3D.new()
 	mi.name = "FaceDecal"
 	var q := QuadMesh.new()
-	q.size = Vector2(0.50, 0.50)
+	q.size = Vector2(0.55, 0.55)
 	mi.mesh = q
-	mi.position = Vector3(0, 1.82, 0.385)
+	# Upper-front of the head, tipped so the painted face faces the overhead camera.
+	mi.position = Vector3(0, 1.92, 0.22)
+	mi.rotation_degrees.x = -40
 	parent.add_child(mi)
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -62,9 +64,11 @@ static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.roughness = 1.0
-	# Keep the painted card in front of the head sphere so no “clown nose” poke-through.
-	mat.no_depth_test = false
-	mat.render_priority = 1
+	# Always draw over the head sphere so the face stays readable from above
+	# (otherwise the sphere depth-tests away most of the painted card).
+	mat.no_depth_test = true
+	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	mat.render_priority = 10
 	mi.material_override = mat
 	HeadlessGuard.guard_mesh(mi)
 	return mi
