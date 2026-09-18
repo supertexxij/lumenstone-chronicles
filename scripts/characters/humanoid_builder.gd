@@ -1,17 +1,28 @@
 class_name HumanoidBuilder
 extends RefCounted
-## Soft cartoon humanoid from MeshInstance3D primitives (rounded, not blocky/Roblox).
-## Kid-readable proportions: big head, soft face, rounded torso, elbows/knees, pudgy feet.
+## Soft cartoon humanoid from MeshInstance3D primitives (storybook toon, not Roblox boxes).
+## Kid-readable proportions: big head, big eyes on the face, rounded torso, pudgy feet.
 
-static func make_mat(c: Color, roughness: float = 0.55) -> StandardMaterial3D:
+static func make_mat(c: Color, roughness: float = 0.72) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = c
 	mat.roughness = roughness
 	mat.metallic = 0.0
+	# Flat cartoon bands instead of shiny plastic / Roblox lighting.
+	mat.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+	mat.specular_mode = BaseMaterial3D.SPECULAR_TOON
+	# Soft ink outline (front-cull grow) so silhouettes read as storybook cartoon.
+	var outline := StandardMaterial3D.new()
+	outline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	outline.albedo_color = Color(0.14, 0.10, 0.12)
+	outline.cull_mode = BaseMaterial3D.CULL_FRONT
+	outline.grow = true
+	outline.grow_amount = 0.028
+	mat.next_pass = outline
 	return mat
 
 
-static func set_color(mi: MeshInstance3D, c: Color, roughness: float = 0.55) -> void:
+static func set_color(mi: MeshInstance3D, c: Color, roughness: float = 0.72) -> void:
 	if mi == null:
 		return
 	mi.material_override = make_mat(c, roughness)
@@ -69,66 +80,70 @@ static func build(root: Node3D) -> Dictionary:
 	bob.name = "BodyBob"
 	root.add_child(bob)
 
-	# --- Core (v1.84 cartoon: soft rounded silhouette that reads from the elevated camera) ---
+	# --- Core (v1.84 cartoon: chibi toon silhouette that reads from the elevated camera) ---
 	# Capsule/sphere body — no hard boxes so it doesn't read as Roblox blocks.
-	var torso := _mi(_capsule(0.28, 0.62), Vector3(0, 1.14, 0), bob, "Torso")
-	var pelvis := _mi(_sphere(0.24, 0.28), Vector3(0, 0.78, 0), bob, "Pelvis")
-	var hem := _mi(_sphere(0.30, 0.22), Vector3(0, 0.70, 0.02), bob, "Hem")
-	var neck := _mi(_cyl(0.10, 0.12, 0.12), Vector3(0, 1.48, 0), bob, "Neck")
-	var collar := _mi(_sphere(0.18, 0.12), Vector3(0, 1.42, 0.02), bob, "Collar")
-	# Bigger cartoon head so the face reads clearly from the village camera.
-	var head := _mi(_sphere(0.28), Vector3(0, 1.74, 0.02), bob, "Head")
-	# Hair sits back so the face stays visible from the elevated camera.
-	var hair := _mi(_sphere(0.30, 0.38), Vector3(0, 1.90, -0.05), bob, "Hair")
-	var bangs := _mi(_sphere(0.16, 0.12), Vector3(0, 1.92, 0.16), bob, "Bangs")
-	var l_shoulder := _mi(_sphere(0.14), Vector3(-0.34, 1.36, 0), bob, "LShoulder")
-	var r_shoulder := _mi(_sphere(0.14), Vector3(0.34, 1.36, 0), bob, "RShoulder")
-	# Face — oversized soft eyes, round nose/mouth (storybook cartoon, not blocky).
-	var l_eye := _mi(_sphere(0.072, 0.068), Vector3(-0.09, 1.76, 0.22), bob, "LEye")
-	var r_eye := _mi(_sphere(0.072, 0.068), Vector3(0.09, 1.76, 0.22), bob, "REye")
-	var l_pupil := _mi(_sphere(0.036, 0.038), Vector3(-0.09, 1.76, 0.27), bob, "LPupil")
-	var r_pupil := _mi(_sphere(0.036, 0.038), Vector3(0.09, 1.76, 0.27), bob, "RPupil")
-	var l_brow := _mi(_sphere(0.055, 0.028), Vector3(-0.09, 1.86, 0.22), bob, "LBrow")
-	var r_brow := _mi(_sphere(0.055, 0.028), Vector3(0.09, 1.86, 0.22), bob, "RBrow")
-	var nose := _mi(_sphere(0.045), Vector3(0, 1.70, 0.28), bob, "Nose")
-	var mouth := _mi(_sphere(0.06, 0.028), Vector3(0, 1.62, 0.26), bob, "Mouth")
-	var l_ear := _mi(_sphere(0.07, 0.10), Vector3(-0.26, 1.74, 0.0), bob, "LEar")
-	var r_ear := _mi(_sphere(0.07, 0.10), Vector3(0.26, 1.74, 0.0), bob, "REar")
+	var torso := _mi(_capsule(0.30, 0.56), Vector3(0, 1.10, 0), bob, "Torso")
+	var pelvis := _mi(_sphere(0.26, 0.28), Vector3(0, 0.76, 0), bob, "Pelvis")
+	var hem := _mi(_sphere(0.32, 0.20), Vector3(0, 0.68, 0.02), bob, "Hem")
+	var neck := _mi(_cyl(0.11, 0.13, 0.10), Vector3(0, 1.42, 0), bob, "Neck")
+	var collar := _mi(_sphere(0.20, 0.12), Vector3(0, 1.36, 0.03), bob, "Collar")
+	# Big storybook head — face features sit on the front surface (not buried inside).
+	var head := _mi(_sphere(0.32), Vector3(0, 1.78, 0.04), bob, "Head")
+	# Hair: soft back mound + forehead fringe (reads as hair, not a beanie/cap).
+	var hair := _mi(_sphere(0.33, 0.26), Vector3(0, 2.04, -0.14), bob, "Hair")
+	var bangs := _mi(_sphere(0.28, 0.11), Vector3(0, 1.98, 0.24), bob, "Bangs")
+	var l_shoulder := _mi(_sphere(0.15), Vector3(-0.36, 1.32, 0), bob, "LShoulder")
+	var r_shoulder := _mi(_sphere(0.15), Vector3(0.36, 1.32, 0), bob, "RShoulder")
+	# Face — oversized eyes with shine dots, blush cheeks, round nose/smile.
+	var l_eye := _mi(_sphere(0.095, 0.090), Vector3(-0.11, 1.82, 0.30), bob, "LEye")
+	var r_eye := _mi(_sphere(0.095, 0.090), Vector3(0.11, 1.82, 0.30), bob, "REye")
+	var l_pupil := _mi(_sphere(0.048, 0.050), Vector3(-0.11, 1.82, 0.37), bob, "LPupil")
+	var r_pupil := _mi(_sphere(0.048, 0.050), Vector3(0.11, 1.82, 0.37), bob, "RPupil")
+	var l_shine := _mi(_sphere(0.020), Vector3(-0.08, 1.86, 0.40), bob, "LShine")
+	var r_shine := _mi(_sphere(0.020), Vector3(0.14, 1.86, 0.40), bob, "RShine")
+	var l_brow := _mi(_sphere(0.07, 0.028), Vector3(-0.11, 1.94, 0.30), bob, "LBrow")
+	var r_brow := _mi(_sphere(0.07, 0.028), Vector3(0.11, 1.94, 0.30), bob, "RBrow")
+	var nose := _mi(_sphere(0.05), Vector3(0, 1.74, 0.36), bob, "Nose")
+	var mouth := _mi(_sphere(0.08, 0.032), Vector3(0, 1.64, 0.34), bob, "Mouth")
+	var l_cheek := _mi(_sphere(0.05, 0.035), Vector3(-0.20, 1.70, 0.28), bob, "LCheek")
+	var r_cheek := _mi(_sphere(0.05, 0.035), Vector3(0.20, 1.70, 0.28), bob, "RCheek")
+	var l_ear := _mi(_sphere(0.08, 0.11), Vector3(-0.30, 1.78, 0.02), bob, "LEar")
+	var r_ear := _mi(_sphere(0.08, 0.11), Vector3(0.30, 1.78, 0.02), bob, "REar")
 
 	# Hat (explorer brim + crown; jewel for crownlets) — hidden until equipped
 	var hat := Node3D.new()
 	hat.name = "Hat"
 	hat.visible = false
-	hat.position = Vector3(0, 2.00, 0)
+	hat.position = Vector3(0, 2.10, 0)
 	bob.add_child(hat)
-	var hat_crown := _mi(_sphere(0.20, 0.24), Vector3(0, 0.10, 0), hat, "HatCrown")
-	var hat_brim := _mi(_cyl(0.38, 0.38, 0.045), Vector3(0, -0.02, 0), hat, "HatBrim")
-	var hat_jewel := _mi(_sphere(0.07), Vector3(0, 0.24, 0), hat, "HatJewel")
+	var hat_crown := _mi(_sphere(0.22, 0.26), Vector3(0, 0.10, 0), hat, "HatCrown")
+	var hat_brim := _mi(_cyl(0.40, 0.40, 0.045), Vector3(0, -0.02, 0), hat, "HatBrim")
+	var hat_jewel := _mi(_sphere(0.07), Vector3(0, 0.26, 0), hat, "HatJewel")
 	hat_jewel.visible = false
 
 	# Soft cape drape — flattened capsule (reads as cloth, not a plank).
-	var cape := _mi(_capsule(0.30, 0.92), Vector3(0, 1.02, -0.24), bob, "Cape")
+	var cape := _mi(_capsule(0.32, 0.88), Vector3(0, 0.98, -0.26), bob, "Cape")
 	cape.scale = Vector3(1.05, 1.0, 0.22)
 
 	# Soft belt ring + round buckle so the tunic/pants break still reads from above.
-	var belt := _mi(_cyl(0.27, 0.27, 0.09), Vector3(0, 0.82, 0), bob, "Belt")
+	var belt := _mi(_cyl(0.29, 0.29, 0.09), Vector3(0, 0.80, 0), bob, "Belt")
 	belt.visible = true
-	var buckle := _mi(_sphere(0.055), Vector3(0, 0.82, 0.20), bob, "Buckle")
+	var buckle := _mi(_sphere(0.06), Vector3(0, 0.80, 0.22), bob, "Buckle")
 
 	# Soft armor overlays (chest + pads) — hidden until a defensive cloak is worn
-	var chest_plate := _mi(_sphere(0.20, 0.28), Vector3(0, 1.14, 0.18), bob, "ChestPlate")
+	var chest_plate := _mi(_sphere(0.22, 0.28), Vector3(0, 1.10, 0.20), bob, "ChestPlate")
 	chest_plate.scale = Vector3(1.15, 1.0, 0.35)
 	chest_plate.visible = false
-	var l_pad := _mi(_sphere(0.12), Vector3(-0.30, 1.38, 0.02), bob, "LPad")
+	var l_pad := _mi(_sphere(0.13), Vector3(-0.32, 1.34, 0.02), bob, "LPad")
 	l_pad.visible = false
-	var r_pad := _mi(_sphere(0.12), Vector3(0.30, 1.38, 0.02), bob, "RPad")
+	var r_pad := _mi(_sphere(0.13), Vector3(0.32, 1.34, 0.02), bob, "RPad")
 	r_pad.visible = false
 
 	# Accessory (chest charm / belt pouch / lantern) — hidden until equipped
 	var accessory := Node3D.new()
 	accessory.name = "Accessory"
 	accessory.visible = false
-	accessory.position = Vector3(0.0, 1.12, 0.20)
+	accessory.position = Vector3(0.0, 1.08, 0.22)
 	bob.add_child(accessory)
 	var acc_body := _mi(_sphere(0.11), Vector3(0, 0, 0), accessory, "AccBody")
 	var acc_glow := _mi(_sphere(0.06), Vector3(0, 0.08, 0.04), accessory, "AccGlow")
@@ -140,30 +155,30 @@ static func build(root: Node3D) -> Dictionary:
 	l_arm.position = Vector3(-0.42, 1.36, 0)
 	l_arm.rotation.z = deg_to_rad(-16)
 	bob.add_child(l_arm)
-	var l_upper := _mi(_capsule(0.10, 0.40), Vector3(-0.02, -0.18, 0), l_arm, "LUpperArm")
-	var l_elbow := _mi(_sphere(0.085), Vector3(-0.03, -0.38, 0), l_arm, "LElbow")
+	var l_upper := _mi(_capsule(0.11, 0.38), Vector3(-0.02, -0.18, 0), l_arm, "LUpperArm")
+	var l_elbow := _mi(_sphere(0.09), Vector3(-0.03, -0.38, 0), l_arm, "LElbow")
 	var l_forearm := Node3D.new()
 	l_forearm.name = "LForearm"
 	l_forearm.position = Vector3(-0.03, -0.38, 0)
 	l_arm.add_child(l_forearm)
-	var l_lower := _mi(_capsule(0.085, 0.38), Vector3(0, -0.20, 0), l_forearm, "LLowerArm")
-	var l_cuff := _mi(_cyl(0.095, 0.098, 0.08), Vector3(0, -0.36, 0), l_forearm, "LCuff")
-	var l_hand := _mi(_sphere(0.10), Vector3(0, -0.42, 0.02), l_forearm, "LHand")
+	var l_lower := _mi(_capsule(0.09, 0.36), Vector3(0, -0.20, 0), l_forearm, "LLowerArm")
+	var l_cuff := _mi(_cyl(0.10, 0.105, 0.08), Vector3(0, -0.36, 0), l_forearm, "LCuff")
+	var l_hand := _mi(_sphere(0.11), Vector3(0, -0.42, 0.02), l_forearm, "LHand")
 
 	var r_arm := Node3D.new()
 	r_arm.name = "RArm"
 	r_arm.position = Vector3(0.42, 1.36, 0)
 	r_arm.rotation.z = deg_to_rad(16)
 	bob.add_child(r_arm)
-	var r_upper := _mi(_capsule(0.10, 0.40), Vector3(0.02, -0.18, 0), r_arm, "RUpperArm")
-	var r_elbow := _mi(_sphere(0.085), Vector3(0.03, -0.38, 0), r_arm, "RElbow")
+	var r_upper := _mi(_capsule(0.11, 0.38), Vector3(0.02, -0.18, 0), r_arm, "RUpperArm")
+	var r_elbow := _mi(_sphere(0.09), Vector3(0.03, -0.38, 0), r_arm, "RElbow")
 	var r_forearm := Node3D.new()
 	r_forearm.name = "RForearm"
 	r_forearm.position = Vector3(0.03, -0.38, 0)
 	r_arm.add_child(r_forearm)
-	var r_lower := _mi(_capsule(0.085, 0.38), Vector3(0, -0.20, 0), r_forearm, "RLowerArm")
-	var r_cuff := _mi(_cyl(0.095, 0.098, 0.08), Vector3(0, -0.36, 0), r_forearm, "RCuff")
-	var r_hand := _mi(_sphere(0.10), Vector3(0, -0.42, 0.02), r_forearm, "RHand")
+	var r_lower := _mi(_capsule(0.09, 0.36), Vector3(0, -0.20, 0), r_forearm, "RLowerArm")
+	var r_cuff := _mi(_cyl(0.10, 0.105, 0.08), Vector3(0, -0.36, 0), r_forearm, "RCuff")
+	var r_hand := _mi(_sphere(0.11), Vector3(0, -0.42, 0.02), r_forearm, "RHand")
 
 	# Weapon held in the right hand so walk/attack swings it
 	# Live parent is the forearm so elbow flex carries the blade.
@@ -183,30 +198,30 @@ static func build(root: Node3D) -> Dictionary:
 	l_leg.name = "LLeg"
 	l_leg.position = Vector3(-0.22, 0.72, 0)
 	bob.add_child(l_leg)
-	var l_thigh := _mi(_capsule(0.12, 0.40), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
-	var l_knee := _mi(_sphere(0.10), Vector3(0, -0.38, 0), l_leg, "LKnee")
+	var l_thigh := _mi(_capsule(0.13, 0.38), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
+	var l_knee := _mi(_sphere(0.11), Vector3(0, -0.38, 0), l_leg, "LKnee")
 	var l_shin_pivot := Node3D.new()
 	l_shin_pivot.name = "LShinPivot"
 	l_shin_pivot.position = Vector3(0, -0.38, 0)
 	l_leg.add_child(l_shin_pivot)
-	var l_shin := _mi(_capsule(0.10, 0.38), Vector3(0, -0.20, 0), l_shin_pivot, "LLowerLeg")
-	var l_boot := _mi(_sphere(0.11, 0.16), Vector3(0, -0.28, 0), l_shin_pivot, "LBoot")
-	var l_foot := _mi(_sphere(0.11, 0.14), Vector3(0, -0.38, 0.10), l_shin_pivot, "LFoot")
+	var l_shin := _mi(_capsule(0.11, 0.36), Vector3(0, -0.20, 0), l_shin_pivot, "LLowerLeg")
+	var l_boot := _mi(_sphere(0.12, 0.16), Vector3(0, -0.28, 0), l_shin_pivot, "LBoot")
+	var l_foot := _mi(_sphere(0.12, 0.14), Vector3(0, -0.38, 0.11), l_shin_pivot, "LFoot")
 	l_foot.scale = Vector3(1.0, 0.85, 1.45)
 
 	var r_leg := Node3D.new()
 	r_leg.name = "RLeg"
 	r_leg.position = Vector3(0.22, 0.72, 0)
 	bob.add_child(r_leg)
-	var r_thigh := _mi(_capsule(0.12, 0.40), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
-	var r_knee := _mi(_sphere(0.10), Vector3(0, -0.38, 0), r_leg, "RKnee")
+	var r_thigh := _mi(_capsule(0.13, 0.38), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
+	var r_knee := _mi(_sphere(0.11), Vector3(0, -0.38, 0), r_leg, "RKnee")
 	var r_shin_pivot := Node3D.new()
 	r_shin_pivot.name = "RShinPivot"
 	r_shin_pivot.position = Vector3(0, -0.38, 0)
 	r_leg.add_child(r_shin_pivot)
-	var r_shin := _mi(_capsule(0.10, 0.38), Vector3(0, -0.20, 0), r_shin_pivot, "RLowerLeg")
-	var r_boot := _mi(_sphere(0.11, 0.16), Vector3(0, -0.28, 0), r_shin_pivot, "RBoot")
-	var r_foot := _mi(_sphere(0.11, 0.14), Vector3(0, -0.38, 0.10), r_shin_pivot, "RFoot")
+	var r_shin := _mi(_capsule(0.11, 0.36), Vector3(0, -0.20, 0), r_shin_pivot, "RLowerLeg")
+	var r_boot := _mi(_sphere(0.12, 0.16), Vector3(0, -0.28, 0), r_shin_pivot, "RBoot")
+	var r_foot := _mi(_sphere(0.12, 0.14), Vector3(0, -0.38, 0.11), r_shin_pivot, "RFoot")
 	r_foot.scale = Vector3(1.0, 0.85, 1.45)
 
 	return {
@@ -271,10 +286,14 @@ static func build(root: Node3D) -> Dictionary:
 		"r_eye": r_eye,
 		"l_pupil": l_pupil,
 		"r_pupil": r_pupil,
+		"l_shine": l_shine,
+		"r_shine": r_shine,
 		"l_brow": l_brow,
 		"r_brow": r_brow,
 		"nose": nose,
 		"mouth": mouth,
+		"l_cheek": l_cheek,
+		"r_cheek": r_cheek,
 		"l_ear": l_ear,
 		"r_ear": r_ear,
 	}
@@ -309,15 +328,19 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("r_elbow"), skin)
 	set_color(parts.get("l_knee"), pants.darkened(0.08))
 	set_color(parts.get("r_knee"), pants.darkened(0.08))
-	# Face — bright cartoon eyes (softer gloss)
-	set_color(parts.get("l_eye"), Color("#fff8ef"), 0.28)
-	set_color(parts.get("r_eye"), Color("#fff8ef"), 0.28)
-	set_color(parts.get("l_pupil"), Color("#1a1410"), 0.25)
-	set_color(parts.get("r_pupil"), Color("#1a1410"), 0.25)
+	# Face — bright cartoon eyes + blush (toon materials)
+	set_color(parts.get("l_eye"), Color("#fff8ef"), 0.35)
+	set_color(parts.get("r_eye"), Color("#fff8ef"), 0.35)
+	set_color(parts.get("l_pupil"), Color("#1a1410"), 0.4)
+	set_color(parts.get("r_pupil"), Color("#1a1410"), 0.4)
+	set_color(parts.get("l_shine"), Color("#ffffff"), 0.15)
+	set_color(parts.get("r_shine"), Color("#ffffff"), 0.15)
 	set_color(parts.get("l_brow"), hair.darkened(0.1))
 	set_color(parts.get("r_brow"), hair.darkened(0.1))
 	set_color(parts.get("nose"), skin.darkened(0.06))
-	set_color(parts.get("mouth"), skin.darkened(0.18))
+	set_color(parts.get("mouth"), Color("#c45c6a"), 0.55)
+	set_color(parts.get("l_cheek"), Color("#f0a0a8"), 0.6)
+	set_color(parts.get("r_cheek"), Color("#f0a0a8"), 0.6)
 	set_color(parts.get("l_ear"), skin.darkened(0.04))
 	set_color(parts.get("r_ear"), skin.darkened(0.04))
 	# Legs / feet

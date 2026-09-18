@@ -53,8 +53,10 @@ static func colorize(root: Node3D, primary: Color, accent: Color) -> void:
 		if c is MeshInstance3D:
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = accent if (i % 3 == 1) else primary
-			mat.roughness = 0.55
+			mat.roughness = 0.72
 			mat.metallic = 0.0
+			mat.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+			mat.specular_mode = BaseMaterial3D.SPECULAR_TOON
 			(c as MeshInstance3D).material_override = mat
 			i += 1
 		elif c is Node3D:
@@ -62,8 +64,10 @@ static func colorize(root: Node3D, primary: Color, accent: Color) -> void:
 				if gc is MeshInstance3D:
 					var mat2 := StandardMaterial3D.new()
 					mat2.albedo_color = accent if (i % 3 == 1) else primary
-					mat2.roughness = 0.55
+					mat2.roughness = 0.72
 					mat2.metallic = 0.0
+					mat2.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
+					mat2.specular_mode = BaseMaterial3D.SPECULAR_TOON
 					(gc as MeshInstance3D).material_override = mat2
 					i += 1
 
