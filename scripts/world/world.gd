@@ -5090,7 +5090,8 @@ func _dance_unicorn(uni: Node3D, bob: Node3D, start_ang: float, radius: float, i
 			return
 		var a: float = start_ang + t * TAU
 		uni.position = Vector3(cos(a) * radius, absf(sin(t * TAU * 2.0)) * hop_h, sin(a) * radius)
-		uni.rotation.y = a + PI + 0.4
+		# Nose toward party center (+Z mesh forward). Old `a+PI` was 90° off.
+		uni.rotation.y = atan2(-cos(a), -sin(a)) + 0.25
 		if bob != null and is_instance_valid(bob):
 			bob.rotation_degrees.y = sin(t * TAU * 4.0) * 18.0
 			bob.position.y = absf(sin(t * TAU * 2.0)) * 0.08
