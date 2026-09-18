@@ -228,7 +228,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 ### v1.84.2-smooth — Fog weather freeze fix
 
-Fog weather no longer freezes click-to-move: lighter mist/edge-fog particle budgets, no `CPUParticles3D.amount` rebuild thrash on weather cycle, and click-move keeps desired velocity when RVO collapses to zero under load.
+Fog weather no longer freezes click-to-move: lighter mist/edge-fog particle budgets, no `CPUParticles3D.amount` rebuild thrash on weather cycle, click-to-move forces nav velocity (RVO was collapsing to zero under Fog load), and desired velocity is kept when avoidance still returns ~0.
 
 ### v1.84.1-smooth — player freeze fix
 
