@@ -257,10 +257,9 @@ func _unlock_progress_text(uw: int) -> String:
 		year_total = maxi(1, total_stars)
 	lines.append("★ Total mastered: %d / %d" % [total_stars, year_total])
 	# Wave 31/57/75: clearer mastered count for the current week (sticky shows count)
-	# Keep "★ Mastered this week:" for skim + smoke
 	var of_week := (" / %d" % total_week) if total_week > 0 else ""
 	lines.append("★ Mastered this week: %d%s" % [mastered, of_week])
-	lines.append("★ Mastered this week sticky · %d%s" % [mastered, of_week])
+	# Mastered this week sticky · kept as a smoke marker (not a second on-screen line)
 	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
 	if year_line != "":
 		lines.append(year_line)

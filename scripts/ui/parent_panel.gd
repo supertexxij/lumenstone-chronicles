@@ -33,6 +33,7 @@ var _copy_edit: LineEdit
 var _copy_btn: Button
 var _next_lbl: Label
 var _lumen_lbl: Label
+var _meta_lbl: Label
 
 const CAMPAIGN_RANGES := [
 	{"title": "I · Kindling (1–9)", "lo": 1, "hi": 9},
@@ -47,6 +48,7 @@ func _ready() -> void:
 	if title_n:
 		title_n.text = "Parent Dashboard"
 		PanelChrome.style_title(title_n, 24)
+	_ensure_content_scroll()
 	content.visible = false
 	unlock_btn.pressed.connect(_try_pin)
 	pin_edit.text_submitted.connect(func(_t): _try_pin())
@@ -202,6 +204,11 @@ func _refresh() -> void:
 		child_line, GameState.active_slot + 1, last_sess,
 		help_bit, year_note, week_bar, mastery_bar
 	]
+	summary.visible = false
+	summary.custom_minimum_size = Vector2(0, 0)
+	summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	if _meta_lbl:
+		_meta_lbl.text = "%s · Slot %d · %s" % [GameState.child_name, GameState.active_slot + 1, last_sess]
 	_refresh_campaign_tabs(uw)
 	help_list.clear()
 	var help: Array = GameState.needs_help_quests()
@@ -508,6 +515,28 @@ func _next_week_gate(uw: int) -> String:
 		return "Week %d raid done — week unlock should advance soon." % uw
 	return "Master Week %d Friday raid: %s (or 4+ quests that week)." % [uw, title]
 
+func _ensure_content_scroll() -> void:
+	## Keep title + Close on screen; scroll the unlocked dashboard.
+	var vbox: VBoxContainer = $Panel/VBox
+	if vbox.get_node_or_null("ContentScroll") != null:
+		return
+	if content == null:
+		return
+	var scroll := ScrollContainer.new()
+	scroll.name = "ContentScroll"
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var idx: int = content.get_index()
+	vbox.remove_child(content)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
+	vbox.add_child(scroll)
+	vbox.move_child(scroll, idx)
+	if close_btn:
+		vbox.move_child(close_btn, vbox.get_child_count() - 1)
+
+
 func _ensure_lock_blurb() -> void:
 	var vbox: VBoxContainer = $Panel/VBox
 	if vbox.get_node_or_null("LockBlurb") != null:
@@ -534,6 +563,7 @@ func _ensure_hero_row() -> void:
 		_copy_btn = _copy_row.get_node_or_null("CopyBtn") if _copy_row else null
 		_next_lbl = content.get_node_or_null("NextLbl")
 		_lumen_lbl = content.get_node_or_null("LumenLbl")
+		_meta_lbl = content.get_node_or_null("MetaLbl")
 		return
 	_hero_row = HBoxContainer.new()
 	_hero_row.name = "HeroRow"
@@ -544,6 +574,13 @@ func _ensure_hero_row() -> void:
 	_hero_help = _make_hero_card(_hero_row, "HelpCard", "HelpLbl", "NEEDS HELP")
 	content.add_child(_hero_row)
 	content.move_child(_hero_row, 0)
+	_meta_lbl = Label.new()
+	_meta_lbl.name = "MetaLbl"
+	_meta_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_meta_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	PanelChrome.style_muted(_meta_lbl, 13)
+	content.add_child(_meta_lbl)
+	content.move_child(_meta_lbl, _hero_row.get_index() + 1)
 	_copy_row = HBoxContainer.new()
 	_copy_row.name = "CopyRow"
 	_copy_row.add_theme_constant_override("separation", 8)
@@ -564,7 +601,7 @@ func _ensure_hero_row() -> void:
 	_copy_btn.pressed.connect(_copy_export_line)
 	_copy_row.add_child(_copy_btn)
 	content.add_child(_copy_row)
-	content.move_child(_copy_row, _hero_row.get_index() + 1)
+	content.move_child(_copy_row, _meta_lbl.get_index() + 1)
 	_next_lbl = Label.new()
 	_next_lbl.name = "NextLbl"
 	_next_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
