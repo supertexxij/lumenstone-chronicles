@@ -572,8 +572,9 @@ func _physics_process(delta: float) -> void:
 	velocity.y = 0
 	_desired_vel = Vector3(velocity.x, 0.0, velocity.z)
 	# Feed desired velocity into avoidance. WASD uses forced velocity so RVO does not fight keys.
+	# v1.84.2: click-to-move also forces velocity — Fog/load RVO was collapsing safe vel to 0 (rings lied).
 	if _nav_agent and _nav_agent.avoidance_enabled:
-		if _manual_move:
+		if _manual_move or has_click_target:
 			_nav_agent.set_velocity_forced(_desired_vel)
 		else:
 			_nav_agent.set_velocity(_desired_vel)
