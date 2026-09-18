@@ -102,8 +102,8 @@ static func build(root: Node3D) -> Dictionary:
 	var hair_spike_r := _mi(_box(Vector3(0.08, 0.18, 0.08)), Vector3(0.10, 2.02, -0.02), bob, "HairSpikeR")
 	hair_spike_r.rotation_degrees = Vector3(0, 0, 18)
 	hair_spike_r.visible = false
-	var hair_ponytail := _mi(_capsule(0.07, 0.42), Vector3(0.0, 1.55, -0.22), bob, "HairPonytail")
-	hair_ponytail.rotation_degrees = Vector3(28, 0, 0)
+	var hair_ponytail := _mi(_capsule(0.08, 0.48), Vector3(0.12, 1.58, -0.18), bob, "HairPonytail")
+	hair_ponytail.rotation_degrees = Vector3(35, -25, 12)
 	hair_ponytail.visible = false
 	var hair_bun := _mi(_sphere(0.11), Vector3(0.0, 2.02, -0.08), bob, "HairBun")
 	hair_bun.visible = false
@@ -488,7 +488,7 @@ static func apply_hair_style(parts: Dictionary, style: String) -> void:
 				hair_n.position = Vector3(0, 1.88, -0.02)
 			if bangs_n:
 				bangs_n.scale = Vector3(0.95, 0.9, 1.0)
-			_show_parts(parts, ["hair_ponytail"])
+			_show_parts(parts, ["hair_ponytail", "hair_l_lock"])
 		"bun":
 			if hair_n:
 				hair_n.scale = Vector3(0.98, 0.85, 1.0)
