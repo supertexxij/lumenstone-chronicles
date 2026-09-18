@@ -220,7 +220,7 @@ func _refresh() -> void:
 	if _daily_lbl and GameState.has_method("get_school_day_line"):
 		var day: Dictionary = GameState.get_school_day() if GameState.has_method("get_school_day") else {}
 		var next_up := GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else ""
-		_daily_lbl.text = "%s\n%s" % [GameState.get_school_day_line(), next_up]
+		_daily_lbl.text = GameState.get_school_day_line() + "\n" + next_up
 		if bool(day.get("complete", false)):
 			_daily_lbl.add_theme_color_override("font_color", Color(0.72, 0.88, 0.52, 1.0))
 		else:
@@ -228,10 +228,7 @@ func _refresh() -> void:
 	if _lumen_lbl:
 		_lumen_lbl.text = "Lumens  %s" % " · ".join(lumen_bits)
 	# Keep a short skim in Summary so existing smoke strings still live here.
-	summary.text = "[b]%s[/b] · Slot %d · %s\n%s\n%s · %s\n%s" % [
-		child_line, GameState.active_slot + 1, last_sess,
-		help_bit, year_note, week_bar, mastery_bar
-	]
+	summary.text = "[b]" + child_line + "[/b] · Slot %d · %s\n" % [GameState.active_slot + 1, last_sess] + help_bit + "\n" + year_note + " · " + week_bar + "\n" + mastery_bar
 	summary.visible = false
 	summary.custom_minimum_size = Vector2(0, 0)
 	summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -269,7 +266,7 @@ func _refresh() -> void:
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct, age
 			]
 			if GameState.has_method("format_needs_help_row"):
-				line = "%s · %s" % [line, age]
+				line = line + " · " + age
 			help_list.add_item(line)
 
 func _ensure_campaign_tabs() -> void:

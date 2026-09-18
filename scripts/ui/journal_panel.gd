@@ -419,7 +419,7 @@ func _refresh_next_up() -> void:
 	var n: Dictionary = GameState.get_next_up() if GameState.has_method("get_next_up") else {}
 	var qid: String = str(n.get("quest_id", ""))
 	if qid == "":
-		_next_up.text = "[b]Next up[/b]\n%s" % (GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else "All open lessons mastered ★")
+		_next_up.text = "[b]Next up[/b]\n" + (GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else "All open lessons mastered ★")
 	else:
 		var how := "Walk to %s, press F, pick this lesson, then Start." % str(n.get("mentor", "the mentor"))
 		var status_s := "Not started yet"
@@ -430,17 +430,12 @@ func _refresh_next_up() -> void:
 		elif str(n.get("status", "")) == "raid":
 			status_s = "Friday Raid · 80% unlocks next week"
 		var first := ""
-		if GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save():
+		if GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save() and str(n.get("guild", "")) == "bible":
 			first = "\nNew here? Start at the gold Worship hall."
-		_next_up.text = "[b]Next up[/b]  talk to [color=#e8c44a]%s[/color] — [b]%s[/b]\n%s · Week %d · %s\n%s%s" % [
+		_next_up.text = "[b]Next up[/b]  talk to [color=#e8c44a]%s[/color] — [b]%s[/b]\n" % [
 			str(n.get("mentor", "a guild mentor")),
 			str(n.get("title", qid)),
-			status_s,
-			int(n.get("week", 1)),
-			str(n.get("hall", "")),
-			how,
-			first,
-		]
+		] + status_s + " · Week %d · %s\n" % [int(n.get("week", 1)), str(n.get("hall", ""))] + how + first
 	if _daily_lbl:
 		var day_line := GameState.get_school_day_line() if GameState.has_method("get_school_day_line") else ""
 		_daily_lbl.text = day_line
@@ -488,7 +483,7 @@ func _on_select(idx: int) -> void:
 	elif not unlocked:
 		do_next = "Locked until this week opens (Friday Raid at ≥80%, or 4★ this week)."
 	else:
-		do_next = "What to do: talk to %s at %s, pick this lesson, press Start. Score 80% or more to master." % [mentor, hall]
+		do_next = "What to do: talk to %s at %s, pick this lesson, press Start. Score 80%% or more to master." % [mentor, hall]
 	if (not done) and unlocked and GameState.has_method("get_latest_attempt_percent"):
 		var ap2: float = float(GameState.get_latest_attempt_percent(qid))
 		if ap2 >= 0.0:
@@ -497,15 +492,11 @@ func _on_select(idx: int) -> void:
 	var raid_note := ""
 	if _is_friday_raid(qid, str(q.get("title", ""))):
 		raid_note = "\n\n[color=#e8c44a]★ Friday Raid Review[/color] — master at ≥80% to unlock the next week (or master 4+ quests this week)."
-	detail.text = "[b]%s[/b]\nWeek %d · %s\nStatus: %s\n%s%s\n\n%s" % [
+	detail.text = "[b]%s[/b]\nWeek %d · %s\nStatus: " % [
 		q.get("title", qid),
 		int(q.get("week", 1)),
 		gfull,
-		status,
-		do_next,
-		raid_note,
-		q.get("hook", q.get("description", "")),
-	]
+	] + status + "\n" + do_next + raid_note + "\n\n" + str(q.get("hook", q.get("description", "")))
 
 
 func _count_campaign_mastered(week: int) -> int:

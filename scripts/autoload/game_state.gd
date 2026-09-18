@@ -1247,7 +1247,7 @@ func maybe_daily_checkpoint_reminder() -> void:
 	var day_line := get_school_day_line()
 	var next_line := get_next_up_line()
 	# Keep "Daily checkpoint · open Parent" so older smoke scans still pass.
-	toast.emit("Daily checkpoint · open Parent or Journal (J). %s. %s" % [day_line, next_line])
+	toast.emit("Daily checkpoint · open Parent or Journal (J). " + day_line + ". " + next_line)
 	save_game()
 
 
@@ -1542,7 +1542,7 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		var check: Dictionary = note_quest_for_checkpoint(quest_id, true)
 		_recalc_unlocked_week()
 		var next_line := get_next_up_line()
-		toast.emit("Quest complete · %s · Week %d ★. %s" % [short_title, week_n, next_line])
+		toast.emit("Quest complete · %s · Week %d ★. " % [short_title, week_n] + next_line)
 		if bool(check.get("crossed_goal", false)):
 			toast.emit("School day on track ★ · %d lessons today. Open Parent to see Needs Help." % int(check.get("done", 0)))
 		quest_mastered.emit(quest_id)
