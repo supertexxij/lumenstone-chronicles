@@ -130,12 +130,12 @@ func request_talk() -> void:
 	AudioBus.play_ui()
 
 func _ensure_nav_obstacle() -> void:
-	## Light avoidance bubble so NavigationAgent steers around mentors.
+	## Soft bubble kept for future path awareness; RVO off while player avoidance is disabled.
 	if get_node_or_null("NavObstacle") != null:
 		return
 	var obs := NavigationObstacle3D.new()
 	obs.name = "NavObstacle"
 	obs.radius = 0.55
 	obs.height = 1.8
-	obs.avoidance_enabled = true
+	obs.avoidance_enabled = false  # v1.84.4: no mentor RVO cost
 	add_child(obs)

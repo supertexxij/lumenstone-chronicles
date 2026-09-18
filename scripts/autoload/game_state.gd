@@ -54,6 +54,7 @@ const ONCE_TOAST_FLAGS := [
 	"seen_refine_181_toast",
 	"seen_bugs_182_toast",
 	"seen_curriculum_183_toast",
+	"seen_smooth_184_toast",
 ]
 
 
@@ -127,6 +128,7 @@ var seen_refine_178_toast: bool = false  # v1.78 refine: once-per-save look/HUD/
 var seen_refine_181_toast: bool = false  # v1.81 UI: once-per-save menus/HUD/Parent tip
 var seen_bugs_182_toast: bool = false  # v1.82 bugs: once-per-save Esc/one-menu tip
 var seen_curriculum_183_toast: bool = false  # v1.83 curriculum: first-session / next-lesson tip
+var seen_smooth_184_toast: bool = false  # v1.84 smooth: once-per-save snappier-village tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -947,10 +949,15 @@ func maybe_curriculum_183_toast() -> bool:
 	return _maybe_once_toast("seen_curriculum_183_toast", msg)
 
 
+func maybe_smooth_184_toast() -> bool:
+	## v1.84 smooth: once-per-save tip (PIN stays 1234; mastery ≥80%).
+	return _maybe_once_toast("seen_smooth_184_toast", "Village feels snappier — quicker walk, faster combat ticks, lighter wilds load.")
+
+
 func quiet_legacy_polish_toasts() -> void:
 	## New / early saves should not replay Wave 50–77 polish tips (first session stays about lessons).
 	for f in ONCE_TOAST_FLAGS:
-		if str(f) == "seen_curriculum_183_toast":
+		if str(f) in ["seen_curriculum_183_toast", "seen_smooth_184_toast"]:
 			continue
 		set(f, true)
 

@@ -117,8 +117,8 @@ func _play_journal_open_flourish() -> void:
 	panel.modulate = Color(1, 1, 1, 0.0)
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(panel, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.12)
 
 func _on_filter(idx: int) -> void:
 	AudioBus.play_ui()

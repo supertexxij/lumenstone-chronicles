@@ -279,7 +279,7 @@ func _finish():
 
 	print("ALDER_DUCK_SRC", '"alder_duck"' in _src("res://data/enemies.json"))
 	print("PUDDLE_RIPPLES_SRC", "_setup_rain_puddle_ripples" in _src("res://scripts/world/world.gd"))
-	print("FIRST_FIGHT_TIP_SRC", "First fight: soft ticks" in _src("res://scripts/world/enemy.gd"))
+	print("FIRST_FIGHT_TIP_SRC", "First fight · %s: soft ticks" in _src("res://scripts/world/enemy.gd") or "First fight: soft ticks" in _src("res://scripts/world/enemy.gd"))
 	print("HP_COMBAT_LV_SRC", "HP %d / %d · Lv %d" in _src("res://scripts/ui/hud.gd"))
 	print("FOOD_READY_FLASH_SRC", "_food_ready_flash_t" in _src("res://scripts/ui/hud.gd"))
 	print("VERSION_141_SRC", _ver_ge(41))
@@ -676,5 +676,14 @@ func _finish():
 				gs.quest_attempts.pop_back()
 		print("PIN_STILL_1234_W183_RT", gs.verify_pin("1234"))
 		print("MASTERY_80_W183_RT", gs.has_method("is_mastered_score") and gs.is_mastered_score(4, 5) and not gs.is_mastered_score(3, 4))
+
+	print("VERSION_184_SRC", _ver_ge(84))
+	print("ENEMY_LOD_SRC", "LOD_ANIM_DIST2" in _src("res://scripts/world/enemy.gd") and "_player_near" in _src("res://scripts/world/enemy.gd"))
+	print("LANDMARK_FX_NEAR_SRC", "_player_near_xz" in _src("res://scripts/world/world.gd") and "_set_landmark_fx" in _src("res://scripts/world/world.gd"))
+	print("PLAYER_SPEED_SRC", "const SPEED := 8.2" in _src("res://scripts/player/player.gd"))
+	print("TICK_055_SRC", "0.55" in _src("res://data/enemies.json") and "tick_sec" in _src("res://data/enemies.json"))
+	print("SMOOTH_184_TOAST_SRC", "maybe_smooth_184_toast" in _src("res://scripts/autoload/game_state.gd"))
+	if gs and gs.has_method("maybe_smooth_184_toast"):
+		print("SMOOTH_184_TOAST_RT", gs.has_method("maybe_smooth_184_toast"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

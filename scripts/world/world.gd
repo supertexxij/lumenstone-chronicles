@@ -38,6 +38,11 @@ var _thistle_sway_nodes: Array = []  # Wave 58: soft thistle sway at Thistle Ris
 var _willow_sway_nodes: Array = []  # Wave 61: soft willow weep sway at Willow Bend
 var _fern_sway_nodes: Array = []  # Wave 62: soft fern sway at Fern Dell
 var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Heath
+var _process_frame: int = 0  # v1.84 smooth: stagger non-critical polish
+var _maple_dusk_amt: int = -1  # avoid rewriting particle amount every frame
+var _minimap_halls_cache: Array = []  # static landmark/hall markers
+var _foe_wake_timer: float = 0.0  # v1.84.1: sparse wake for sleeping foes
+var _foe_wake_cursor: int = 0
 var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
@@ -1047,18 +1052,61 @@ func _process(delta: float) -> void:
 		_door_cooldown -= delta
 	if _landmark_toast_cd > 0.0:
 		_landmark_toast_cd -= delta
-	_update_day_night(delta)
-	_update_weather(delta)
-	_update_quest_desk_highlights()
-	_update_door_glows()
-	_update_landmark_approach()
-	_update_ambient_critters(delta)
-	_update_reed_sway(delta)  # Wave 57: soft reed sway near Reed Pool
-	_update_thistle_sway(delta)  # Wave 58: soft thistle sway at Thistle Rise
-	_update_willow_sway(delta)  # Wave 61: soft willow weep sway at Willow Bend
-	_update_fern_sway(delta)  # Wave 62: soft fern sway at Fern Dell
-	_update_heather_sway(delta)  # Wave 63: soft heather sway at Heather Heath
+	# v1.84.3: stagger more aggressively — day/night + weather follow on alternate frames
+	_process_frame = (_process_frame + 1) % 6
+	if _process_frame % 2 == 0:
+		_update_day_night(delta * 2.0)
+	else:
+		_update_weather(delta * 2.0)
+	if _process_frame == 1:
+		_update_foe_lod_wake(delta * 6.0)
+	# Stagger polish that does not need every-frame updates (llvmpipe / dense village)
+	if _process_frame == 0:
+		_update_quest_desk_highlights()
+		_update_door_glows()
+	elif _process_frame == 2:
+		_update_landmark_approach()
+	elif _process_frame == 3:
+		_update_ambient_critters(delta * 6.0)
+	elif _process_frame == 4:
+		_update_reed_sway(delta)
+		_update_thistle_sway(delta)
+		_update_willow_sway(delta)
+	else:
+		_update_fern_sway(delta)
+		_update_heather_sway(delta)
 	_update_hall_light_dip(delta)  # Wave 63: soft hall enter/exit light dip
+
+
+func _update_foe_lod_wake(delta: float) -> void:
+	## v1.84.1: wake sleeping foes near the player in small batches (avoids hitch + frozen click-move).
+	## v1.84.4: thinner wake — fewer physics wakes per pass on family PCs.
+	_foe_wake_timer -= delta
+	if _foe_wake_timer > 0.0:
+		return
+	_foe_wake_timer = 0.5
+	if player == null:
+		return
+	var foes: Array = get_tree().get_nodes_in_group("enemies")
+	if foes.is_empty():
+		return
+	var n: int = foes.size()
+	var batch: int = mini(12, n)
+	var px: float = player.global_position.x
+	var pz: float = player.global_position.z
+	var wake_r2: float = 26.0 * 26.0
+	for i in batch:
+		var idx: int = (_foe_wake_cursor + i) % n
+		var e: Node = foes[idx]
+		if e == null or not is_instance_valid(e):
+			continue
+		var dx: float = e.global_position.x - px
+		var dz: float = e.global_position.z - pz
+		if dx * dx + dz * dz > wake_r2:
+			continue
+		if e.has_method("wake_for_player"):
+			e.wake_for_player()
+	_foe_wake_cursor = (_foe_wake_cursor + batch) % n
 
 
 func _landmark_zones() -> Array:
@@ -1243,6 +1291,9 @@ func _setup_day_night() -> void:
 	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if we:
 		_env = we.environment
+	# v1.84.4: directional shadows off — huge hitch source on Compatibility / llvmpipe / family PCs.
+	if _sun:
+		_sun.shadow_enabled = false
 	# v1.80 world: warm fill so midday shadows stay readable, not muddy gray
 	if get_node_or_null("DayFill") == null:
 		var fill := DirectionalLight3D.new()
@@ -1344,9 +1395,9 @@ func _build_plaza_campfire() -> void:
 	var embers := CPUParticles3D.new()
 	embers.name = "CampfireEmbers"
 	embers.emitting = true
-	embers.amount = 22
+	embers.amount = 8  # v1.84.4: lighter campfire FX for Compatibility
 	embers.lifetime = 2.1
-	embers.preprocess = 0.8
+	embers.preprocess = 0.4
 	embers.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	embers.emission_sphere_radius = 0.26
 	embers.direction = Vector3(0, 1, 0)
@@ -1371,9 +1422,9 @@ func _build_plaza_campfire() -> void:
 	var sparks := CPUParticles3D.new()
 	sparks.name = "CampfireSparks"
 	sparks.emitting = true
-	sparks.amount = 10
+	sparks.amount = 4  # v1.84.4
 	sparks.lifetime = 1.15
-	sparks.preprocess = 0.4
+	sparks.preprocess = 0.2
 	sparks.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	sparks.emission_sphere_radius = 0.12
 	sparks.direction = Vector3(0, 1, 0)
@@ -1398,9 +1449,9 @@ func _build_plaza_campfire() -> void:
 	var smoke := CPUParticles3D.new()
 	smoke.name = "CampfireSmoke"
 	smoke.emitting = true
-	smoke.amount = 24  # Wave 77: soft campfire smoke wisps polish
+	smoke.amount = 8  # v1.84.4: lighter smoke for Compatibility
 	smoke.lifetime = 4.1
-	smoke.preprocess = 1.5
+	smoke.preprocess = 0.6
 	smoke.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	smoke.emission_sphere_radius = 0.24
 	smoke.direction = Vector3(0, 1, 0)
@@ -1984,11 +2035,11 @@ func _setup_weather() -> void:
 	_rain = CPUParticles3D.new()
 	_rain.name = "Rain"
 	_rain.emitting = false
-	_rain.amount = 280
-	_rain.lifetime = 1.1
-	_rain.preprocess = 0.4
+	_rain.amount = 32  # v1.84.4: lighter rain for Compatibility / family PCs
+	_rain.lifetime = 1.0
+	_rain.preprocess = 0.15
 	_rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_rain.emission_box_extents = Vector3(28, 0.2, 28)
+	_rain.emission_box_extents = Vector3(18, 0.2, 18)
 	_rain.direction = Vector3(0.08, -1, 0.02)
 	_rain.spread = 4.0
 	_rain.initial_velocity_min = 8.0
@@ -2010,19 +2061,18 @@ func _setup_weather() -> void:
 	_clouds = CPUParticles3D.new()
 	_clouds.name = "WeatherClouds"
 	_clouds.emitting = true
-	_clouds.amount = 12
+	_clouds.amount = 4  # v1.84.4: sparse clouds — SphereMesh puffs were costly
 	_clouds.lifetime = 14.0
-	_clouds.preprocess = 6.0
+	_clouds.preprocess = 0.8
 	_clouds.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_clouds.emission_box_extents = Vector3(40, 2, 40)
+	_clouds.emission_box_extents = Vector3(36, 2, 36)
 	_clouds.direction = Vector3(1, 0.02, 0.15)
 	_clouds.spread = 12.0
 	_clouds.initial_velocity_min = 0.35
 	_clouds.initial_velocity_max = 0.85
 	_clouds.gravity = Vector3(0, 0, 0)
-	var cm := SphereMesh.new()
-	cm.radius = 1.6
-	cm.height = 2.2
+	var cm := BoxMesh.new()
+	cm.size = Vector3(1.6, 0.55, 1.1)
 	_clouds.mesh = cm
 	var cmat := StandardMaterial3D.new()
 	cmat.albedo_color = Color(0.92, 0.94, 0.98, 0.35)
@@ -2062,11 +2112,11 @@ func _setup_rain_splash() -> void:
 	_rain_splash = CPUParticles3D.new()
 	_rain_splash.name = "RainSplash"
 	_rain_splash.emitting = false
-	_rain_splash.amount = 36
-	_rain_splash.lifetime = 0.45
-	_rain_splash.preprocess = 0.2
+	_rain_splash.amount = 14
+	_rain_splash.lifetime = 0.4
+	_rain_splash.preprocess = 0.1
 	_rain_splash.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_rain_splash.emission_box_extents = Vector3(10, 0.05, 10)
+	_rain_splash.emission_box_extents = Vector3(7, 0.05, 7)
 	_rain_splash.direction = Vector3(0, 1, 0)
 	_rain_splash.spread = 40.0
 	_rain_splash.initial_velocity_min = 0.4
@@ -2090,14 +2140,15 @@ func _setup_rain_splash() -> void:
 func _setup_rain_puddle_ripples() -> void:
 	## Wave 41: soft expanding puddle ripples while raining (RuneScape-chunky, wholesome).
 	## Wave 73: soft puddle ripple polish — denser rings, gentler fade (RuneScape-chunky, wholesome).
+	## v1.84.4: QuadMesh instead of TorusMesh — torus rings were a hitch on Compatibility.
 	_puddle_ripples = CPUParticles3D.new()
 	_puddle_ripples.name = "RainPuddleRipples"
 	_puddle_ripples.emitting = false
-	_puddle_ripples.amount = 22
-	_puddle_ripples.lifetime = 1.55
-	_puddle_ripples.preprocess = 0.4
+	_puddle_ripples.amount = 6
+	_puddle_ripples.lifetime = 1.4
+	_puddle_ripples.preprocess = 0.1
 	_puddle_ripples.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_puddle_ripples.emission_box_extents = Vector3(7.5, 0.02, 7.5)
+	_puddle_ripples.emission_box_extents = Vector3(5.5, 0.02, 5.5)
 	_puddle_ripples.direction = Vector3(0, 1, 0)
 	_puddle_ripples.spread = 5.0
 	_puddle_ripples.initial_velocity_min = 0.0
@@ -2105,11 +2156,8 @@ func _setup_rain_puddle_ripples() -> void:
 	_puddle_ripples.gravity = Vector3(0, 0, 0)
 	_puddle_ripples.scale_amount_min = 0.35
 	_puddle_ripples.scale_amount_max = 1.65
-	var ring := TorusMesh.new()
-	ring.inner_radius = 0.12
-	ring.outer_radius = 0.18
-	ring.rings = 8
-	ring.ring_segments = 16
+	var ring := QuadMesh.new()
+	ring.size = Vector2(0.28, 0.28)
 	_puddle_ripples.mesh = ring
 	var rmat := StandardMaterial3D.new()
 	rmat.albedo_color = Color(0.72, 0.82, 0.92, 0.42)
@@ -2129,77 +2177,18 @@ func _setup_rain_puddle_ripples() -> void:
 
 
 func _setup_fog_mist() -> void:
-	## Wave 29: denser low ground-mist cue while foggy (player-visible fog density).
-	_fog_mist = CPUParticles3D.new()
-	_fog_mist.name = "FogMist"
-	_fog_mist.emitting = false
-	_fog_mist.amount = 40
-	_fog_mist.lifetime = 4.5
-	_fog_mist.preprocess = 2.0
-	_fog_mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_fog_mist.emission_box_extents = Vector3(14, 0.4, 14)
-	_fog_mist.direction = Vector3(0.15, 0.05, 0.1)
-	_fog_mist.spread = 35.0
-	_fog_mist.initial_velocity_min = 0.15
-	_fog_mist.initial_velocity_max = 0.45
-	_fog_mist.gravity = Vector3(0, 0.02, 0)
-	_fog_mist.scale_amount_min = 0.8
-	_fog_mist.scale_amount_max = 1.8
-	var fm := SphereMesh.new()
-	fm.radius = 0.55
-	fm.height = 0.7
-	_fog_mist.mesh = fm
-	var fmat := StandardMaterial3D.new()
-	fmat.albedo_color = Color(0.88, 0.9, 0.94, 0.28)
-	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_fog_mist.material_override = fmat
-	_fog_mist.position = Vector3(0, 0.6, 0)
-	add_child(_fog_mist)
-	HeadlessGuard.guard_particles(_fog_mist)
+	## Wave 29 FogMist: denser low ground-mist cue while foggy (historical).
+	## v1.84.2/3: lighter mist budget — large sphere CPUParticles were freezing click-move on Fog.
+	## v1.84.4: skip FogMist particles entirely — env fog density already reads as Fog.
+	_fog_mist = null
 
 func _setup_edge_fog_banks() -> void:
-	## Wave 46: soft fog banks along outdoor map edges (RuneScape-chunky, wholesome; off indoors).
-	## Wave 72: soft edge-fog banks polish — taller cream mist, gentler drift (RuneScape-chunky, wholesome).
+	## Wave 46 EdgeFogBanks: soft fog banks along outdoor map edges.
+	## Wave 72: soft edge-fog banks polish — taller cream mist (historical).
+	## v1.84.4: skip edge-bank particles entirely — env fog already reads as Fog,
+	## and 8× sphere CPUParticles were a major freeze source on family PCs.
 	_edge_fog_banks.clear()
-	var root := Node3D.new()
-	root.name = "EdgeFogBanks"
-	add_child(root)
-	var spots: Array = [
-		Vector3(0, 0.9, -78), Vector3(0, 0.9, 78),
-		Vector3(-78, 0.9, 0), Vector3(78, 0.9, 0),
-		Vector3(-62, 0.9, -62), Vector3(62, 0.9, -62),
-		Vector3(-62, 0.9, 62), Vector3(62, 0.9, 62),
-	]
-	for i in spots.size():
-		var fx := CPUParticles3D.new()
-		fx.name = "EdgeFog%d" % i
-		fx.emitting = true
-		fx.amount = 22
-		fx.lifetime = 6.2
-		fx.preprocess = 2.8
-		fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-		fx.emission_box_extents = Vector3(11, 0.95, 11)
-		fx.direction = Vector3(0.08, 0.05, 0.04)
-		fx.spread = 32.0
-		fx.initial_velocity_min = 0.06
-		fx.initial_velocity_max = 0.26
-		fx.gravity = Vector3(0, 0.012, 0)
-		fx.scale_amount_min = 1.35
-		fx.scale_amount_max = 2.7
-		var sm := SphereMesh.new()
-		sm.radius = 0.62
-		sm.height = 1.05
-		fx.mesh = sm
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.88, 0.92, 0.96, 0.26)
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		fx.material_override = mat
-		fx.position = spots[i]
-		root.add_child(fx)
-		HeadlessGuard.guard_particles(fx)
-		_edge_fog_banks.append(fx)
+
 
 func _update_weather(delta: float) -> void:
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
@@ -2234,11 +2223,11 @@ func _update_weather(delta: float) -> void:
 			_fog_mist.visible = true
 		else:
 			_fog_mist.visible = false
-	# Wave 46: soft edge fog banks outdoors (always gentle; denser in Fog via _apply_weather_visuals)
+	# Wave 46: soft edge fog banks — Fog weather only outdoors (v1.84.3)
 	for fx in _edge_fog_banks:
 		if fx == null or not is_instance_valid(fx):
 			continue
-		var out := (_inside_hall == "")
+		var out := (_inside_hall == "" and _weather_mode == 1)
 		fx.visible = out
 		fx.emitting = out
 	if player and _wind_leaves:
@@ -2250,15 +2239,16 @@ func _update_weather(delta: float) -> void:
 			_wind_leaves.emitting = false
 			_wind_leaves.visible = false
 	# Wave 56: denser soft leaf fall at Maple Copse (RuneScape-chunky, wholesome)
+	# v1.84 smooth: only emit when the player is near Maple Copse
 	if _maple_leaves:
-		var maple_out := (_inside_hall == "")
-		_maple_leaves.emitting = maple_out
-		_maple_leaves.visible = maple_out
-		# Wave 72: denser Maple Copse leaf fall reads stronger at dusk (RuneScape-chunky, wholesome)
-		if maple_out and _is_dusk_firefly_time():
-			_maple_leaves.amount = 72
-		else:
-			_maple_leaves.amount = 56
+		var maple_near := _inside_hall == "" and _player_near_xz(Vector3(-48, 0, -48), 28.0)
+		_maple_leaves.emitting = maple_near
+		_maple_leaves.visible = maple_near
+		# v1.84.4: fixed maple amount — never rewrite .amount at dusk (rebuild hitch)
+		var want_amt := 12
+		if want_amt != _maple_dusk_amt:
+			_maple_dusk_amt = want_amt
+			_set_cpu_amount_if(_maple_leaves, want_amt)
 	if player and _dusk_fireflies:
 		# Wave 39: soft firefly sparkles at dusk/night outdoors only
 		var dusk_on := _inside_hall == "" and _is_dusk_firefly_time()
@@ -2269,58 +2259,20 @@ func _update_weather(delta: float) -> void:
 		else:
 			_dusk_fireflies.emitting = false
 			_dusk_fireflies.visible = false
-	# Wave 53: denser soft fireflies gather near Prayer Garden at dusk (RuneScape-chunky, wholesome)
-	if _garden_fireflies:
-		var garden_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_garden_fireflies.emitting = garden_dusk
-		_garden_fireflies.visible = garden_dusk
-	# Wave 66: soft birch-rest firefly wink at dusk (RuneScape-chunky, wholesome)
-	if _birch_fireflies:
-		var birch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_birch_fireflies.emitting = birch_dusk
-		_birch_fireflies.visible = birch_dusk
-	# Wave 67: soft Reed Pool ripple gleam at dusk (RuneScape-chunky, wholesome)
-	if _reed_pool_gleam:
-		var reed_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_reed_pool_gleam.emitting = reed_dusk
-		_reed_pool_gleam.visible = reed_dusk
-	# Wave 68: soft Willow Bend willow-leaf drift at dusk (RuneScape-chunky, wholesome)
-	if _willow_leaves:
-		var willow_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_willow_leaves.emitting = willow_dusk
-		_willow_leaves.visible = willow_dusk
-	if _fern_fronds:
-		var fern_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_fern_fronds.emitting = fern_dusk
-		_fern_fronds.visible = fern_dusk
-	if _heather_blooms:
-		var heather_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_heather_blooms.emitting = heather_dusk
-		_heather_blooms.visible = heather_dusk
-	if _thistle_blooms:
-		var thistle_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_thistle_blooms.emitting = thistle_dusk
-		_thistle_blooms.visible = thistle_dusk
-	if _maple_dusk_leaves:
-		var maple_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_maple_dusk_leaves.emitting = maple_dusk
-		_maple_dusk_leaves.visible = maple_dusk
-	if _amber_knoll_motes:
-		var amber_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_amber_knoll_motes.emitting = amber_dusk
-		_amber_knoll_motes.visible = amber_dusk
-	if _cedar_needles:
-		var cedar_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_cedar_needles.emitting = cedar_dusk
-		_cedar_needles.visible = cedar_dusk
-	if _stone_arch_dust:
-		var arch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_stone_arch_dust.emitting = arch_dusk
-		_stone_arch_dust.visible = arch_dusk
-	if _cross_lantern_moths:
-		var cross_dusk := _inside_hall == "" and _is_dusk_firefly_time()
-		_cross_lantern_moths.emitting = cross_dusk
-		_cross_lantern_moths.visible = cross_dusk
+	# Landmark dusk FX — only when near that landmark (v1.84 smooth)
+	var dusk_out := _inside_hall == "" and _is_dusk_firefly_time()
+	_set_landmark_fx(_garden_fireflies, dusk_out and _player_near_xz(Vector3(30, 0, 18), 26.0))
+	_set_landmark_fx(_birch_fireflies, dusk_out and _player_near_xz(Vector3(-42, 0, -20), 26.0))
+	_set_landmark_fx(_reed_pool_gleam, dusk_out and _player_near_xz(Vector3(-20, 0, 48), 26.0))
+	_set_landmark_fx(_willow_leaves, dusk_out and _player_near_xz(Vector3(-38, 0, -34), 26.0))
+	_set_landmark_fx(_fern_fronds, dusk_out and _player_near_xz(Vector3(22, 0, 48), 26.0))
+	_set_landmark_fx(_heather_blooms, dusk_out and _player_near_xz(Vector3(-48, 0, 42), 26.0))
+	_set_landmark_fx(_thistle_blooms, dusk_out and _player_near_xz(Vector3(48, 0, 42), 26.0))
+	_set_landmark_fx(_maple_dusk_leaves, dusk_out and _player_near_xz(Vector3(-48, 0, -48), 26.0))
+	_set_landmark_fx(_amber_knoll_motes, dusk_out and _player_near_xz(Vector3(48, 0, -22), 26.0))
+	_set_landmark_fx(_cedar_needles, dusk_out and _player_near_xz(Vector3(38, 0, -36), 26.0))
+	_set_landmark_fx(_stone_arch_dust, dusk_out and _player_near_xz(Vector3(-48, 0, 8), 26.0))
+	_set_landmark_fx(_cross_lantern_moths, dusk_out and _player_near_xz(Vector3(48, 0, 8), 26.0))
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2338,6 +2290,21 @@ func _update_weather(delta: float) -> void:
 		if _weather_timer <= 0.0:
 			cycle_weather(true)
 			_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+
+
+func _player_near_xz(anchor: Vector3, radius: float) -> bool:
+	if player == null:
+		return false
+	var dx: float = player.global_position.x - anchor.x
+	var dz: float = player.global_position.z - anchor.z
+	return dx * dx + dz * dz <= radius * radius
+
+
+func _set_landmark_fx(fx: CPUParticles3D, on: bool) -> void:
+	if fx == null:
+		return
+	fx.emitting = on
+	fx.visible = on
 
 func cycle_weather(announce: bool = true) -> void:
 	_weather_mode = (_weather_mode + 1) % 3
@@ -2363,7 +2330,8 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 	match _weather_mode:
 		1:
 			_weather_label_cache = "Fog"
-			_fog_boost = 0.0045
+			# Softer env fog — high density + huge mist spheres starved frames (v1.84.2)
+			_fog_boost = 0.0028
 			if _rain:
 				_rain.emitting = false
 				if _rain_splash:
@@ -2372,12 +2340,15 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 					_puddle_ripples.emitting = false
 			if _fog_mist:
 				_fog_mist.emitting = (_inside_hall == "")
-				_fog_mist.amount = 48
+				# Toggle emit only — never rebuild particle buffers on weather cycle
+				_set_cpu_amount_if(_fog_mist, 12)
+				_set_fog_mat_alpha(_fog_mist, 0.28)
 		2:
 			_weather_label_cache = "Rain"
 			_fog_boost = 0.0025
 			if _fog_mist:
 				_fog_mist.emitting = false
+				_set_fog_mat_alpha(_fog_mist, 0.22)
 			if _rain and _inside_hall == "":
 				_rain.emitting = true
 				if _rain_splash:
@@ -2397,6 +2368,7 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 			_fog_boost = 0.0
 			if _fog_mist:
 				_fog_mist.emitting = false
+				_set_fog_mat_alpha(_fog_mist, 0.22)
 			if _rain:
 				_rain.emitting = false
 				if _rain_splash:
@@ -2404,16 +2376,17 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				if _puddle_ripples:
 					_puddle_ripples.emitting = false
 	# Wave 26: weather cloud density (clear sparse · fog dense · rain medium)
+	# v1.84.2: only rewrite amount when it changes (CPUParticles rebuild hitch)
 	if _clouds:
 		match _weather_mode:
 			1:
-				_clouds.amount = 28
+				_set_cpu_amount_if(_clouds, 5)
 				_clouds.emitting = true
 			2:
-				_clouds.amount = 18
+				_set_cpu_amount_if(_clouds, 4)
 				_clouds.emitting = true
 			_:
-				_clouds.amount = 10
+				_set_cpu_amount_if(_clouds, 3)
 				_clouds.emitting = true
 		if _inside_hall != "":
 			_clouds.emitting = false
@@ -2421,11 +2394,14 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		AudioBus.set_indoor_drip(drip_on)
 	if AudioBus.has_method("set_rain_audio"):
 		AudioBus.set_rain_audio(rain_on)
-	# Wave 46: edge fog denser in Fog weather
+	# Wave 46: edge fog denser in Fog weather (alpha/scale — not amount thrash)
 	for fx in _edge_fog_banks:
 		if fx == null or not is_instance_valid(fx):
 			continue
-		fx.amount = 34 if _weather_mode == 1 else 20
+		_set_cpu_amount_if(fx, 6)
+		_set_fog_mat_alpha(fx, 0.26 if _weather_mode == 1 else 0.18)
+		fx.scale_amount_min = 1.0 if _weather_mode == 1 else 0.9
+		fx.scale_amount_max = 1.65 if _weather_mode == 1 else 1.4
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
@@ -2436,6 +2412,25 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				GameState.toast.emit("Weather cycle · Rain — gentle drops patter on the green.")
 			_:
 				GameState.toast.emit("Weather cycle · Clear — bright open skies settle soft over the village.")
+
+
+func _set_cpu_amount_if(p: CPUParticles3D, amt: int) -> void:
+	## Avoid CPUParticles3D.amount rebuilds — rewriting amount freezes the main thread (v1.84.2).
+	if p == null:
+		return
+	if p.amount != amt:
+		p.amount = amt
+
+
+func _set_fog_mat_alpha(p: CPUParticles3D, a: float) -> void:
+	if p == null:
+		return
+	var mat := p.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	var c: Color = mat.albedo_color
+	c.a = a
+	mat.albedo_color = c
 
 
 func _update_quest_desk_highlights() -> void:
@@ -2734,27 +2729,29 @@ func _build_lookout_rock() -> void:
 
 func get_minimap_markers() -> Dictionary:
 	## Data for HUD minimap / compass
-	var halls: Array = []
-	for b in world_data.get("buildings", []):
-		halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888")), "icon": "hall"})
-	# Landmarks for wilds spurs (Wave 25: icon kinds for chunky minimap marks)
-	halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8", "icon": "tree"})
-	halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32", "icon": "tree"})
-	halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037", "icon": "tree"})
-	halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a", "icon": "rock"})
-	halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40", "icon": "mill"})
-	halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32", "icon": "tree"})
-	halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48", "icon": "tree"})
-	halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a", "icon": "water"})
-	halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
-	halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
-	halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
-	halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
-	halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
-	halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
-	halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
-	halls.append({"x": -48.0, "z": -48.0, "label": "Maple", "color": "#c45a28", "icon": "maple"})
-	halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
+	if _minimap_halls_cache.is_empty():
+		var halls: Array = []
+		for b in world_data.get("buildings", []):
+			halls.append({"x": float(b["x"]), "z": float(b["z"]), "label": str(b.get("label", "")), "color": str(b.get("color", "#888")), "icon": "hall"})
+		# Landmarks for wilds spurs (Wave 25: icon kinds for chunky minimap marks)
+		halls.append({"x": 0.5, "z": -48.0, "label": "Glade", "color": "#4a90c8", "icon": "tree"})
+		halls.append({"x": -24.0, "z": -54.0, "label": "Pine", "color": "#1f4d32", "icon": "tree"})
+		halls.append({"x": 30.0, "z": 18.0, "label": "Garden", "color": "#c9b037", "icon": "tree"})
+		halls.append({"x": 40.0, "z": 34.0, "label": "Lookout", "color": "#8a8a9a", "icon": "rock"})
+		halls.append({"x": -36.0, "z": 30.0, "label": "Mill", "color": "#7a5a40", "icon": "mill"})
+		halls.append({"x": 38.0, "z": -36.0, "label": "Hollow", "color": "#1e4a32", "icon": "tree"})
+		halls.append({"x": -38.0, "z": -34.0, "label": "Willow", "color": "#4a7a48", "icon": "tree"})
+		halls.append({"x": -20.0, "z": 48.0, "label": "Reed", "color": "#3a6a5a", "icon": "water"})
+		halls.append({"x": 48.0, "z": 8.0, "label": "Cross", "color": "#c9b037", "icon": "cross"})
+		halls.append({"x": -48.0, "z": 8.0, "label": "Arch", "color": "#8a8a9a", "icon": "arch"})
+		halls.append({"x": 48.0, "z": -22.0, "label": "Knoll", "color": "#c9a227", "icon": "knoll"})
+		halls.append({"x": -42.0, "z": -20.0, "label": "Birch", "color": "#e8e0d0", "icon": "birch"})
+		halls.append({"x": 22.0, "z": 48.0, "label": "Fern", "color": "#3d7a3a", "icon": "fern"})
+		halls.append({"x": -48.0, "z": 42.0, "label": "Heather", "color": "#9a6a9a", "icon": "heather"})
+		halls.append({"x": 48.0, "z": 42.0, "label": "Thistle", "color": "#6a5a8a", "icon": "thistle"})
+		halls.append({"x": -48.0, "z": -48.0, "label": "Maple", "color": "#c45a28", "icon": "maple"})
+		halls.append({"x": 0.0, "z": 8.0, "label": "Fountain", "color": "#4a90c8", "icon": "fountain"})
+		_minimap_halls_cache = halls
 	var npcs: Array = []
 	for n in get_tree().get_nodes_in_group("npcs"):
 		# Hide indoor duplicates on minimap (keep outdoor mentors)
@@ -2762,9 +2759,19 @@ func get_minimap_markers() -> Dictionary:
 			continue
 		npcs.append({"x": n.global_position.x, "z": n.global_position.z})
 	var foes: Array = []
+	var px0 := player.global_position.x if player else 0.0
+	var pz0 := player.global_position.z if player else 0.0
+	# v1.84 smooth: only plot foes near the player (minimap world radius is local)
 	for e in get_tree().get_nodes_in_group("enemies"):
-		if e.has_method("is_alive") and e.is_alive() and e.visible:
-			foes.append({"x": e.global_position.x, "z": e.global_position.z})
+		if not (e.has_method("is_alive") and e.is_alive() and e.visible):
+			continue
+		var ex: float = e.global_position.x
+		var ez: float = e.global_position.z
+		var dx: float = ex - px0
+		var dz: float = ez - pz0
+		if dx * dx + dz * dz > 55.0 * 55.0:
+			continue
+		foes.append({"x": ex, "z": ez})
 	var px := 0.0
 	var pz := 0.0
 	var yaw := 0.0
@@ -2779,7 +2786,7 @@ func get_minimap_markers() -> Dictionary:
 		landmark_name = _landmark_display_name(_landmark_here)
 	return {
 		"player": {"x": px, "z": pz, "yaw": yaw, "zoom": zoom},
-		"halls": halls,
+		"halls": _minimap_halls_cache,
 		"npcs": npcs,
 		"foes": foes,
 		"inside": _inside_hall,
@@ -3072,9 +3079,15 @@ func _dusk_sway_boost() -> float:
 	return 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
 
 
-func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: float, x_scale: float, default_amp: float, dusk_boost: float = 1.0) -> void:
+func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: float, x_scale: float, default_amp: float, dusk_boost: float = 1.0, anchor: Vector3 = Vector3.ZERO, near_radius: float = 26.0) -> void:
 	if nodes.is_empty():
 		return
+	# v1.84 smooth: skip sway when the player is far from this landmark cluster
+	if player != null and near_radius > 0.0:
+		var dx: float = player.global_position.x - anchor.x
+		var dz: float = player.global_position.z - anchor.z
+		if dx * dx + dz * dz > near_radius * near_radius:
+			return
 	var t := Time.get_ticks_msec() * 0.001
 	for n in nodes:
 		if n == null or not is_instance_valid(n):
@@ -3087,30 +3100,30 @@ func _apply_plant_sway(nodes: Array, freq_z: float, freq_x: float, phase_mul: fl
 
 func _update_reed_sway(_delta: float) -> void:
 	## Wave 57: soft reed sway near Reed Pool — gentle wind lean (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_reed_sway_nodes, 1.15, 0.95, 0.7, 0.55, 0.06)
+	_apply_plant_sway(_reed_sway_nodes, 1.15, 0.95, 0.7, 0.55, 0.06, 1.0, Vector3(-20, 0, 48), 24.0)
 
 
 func _update_thistle_sway(_delta: float) -> void:
 	## Wave 58: soft thistle sway at Thistle Rise — gentle wind lean (RuneScape-chunky, wholesome).
 	## Wave 71: soft thistle sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_thistle_sway_nodes, 1.05, 0.88, 0.65, 0.5, 0.05, _dusk_sway_boost())
+	_apply_plant_sway(_thistle_sway_nodes, 1.05, 0.88, 0.65, 0.5, 0.05, _dusk_sway_boost(), Vector3(48, 0, 42), 24.0)
 
 
 func _update_willow_sway(_delta: float) -> void:
 	## Wave 61: soft willow weep sway at Willow Bend — gentle canopy lean (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_willow_sway_nodes, 0.72, 0.58, 0.7, 0.55, 0.028)
+	_apply_plant_sway(_willow_sway_nodes, 0.72, 0.58, 0.7, 0.55, 0.028, 1.0, Vector3(-38, 0, -34), 24.0)
 
 
 func _update_fern_sway(_delta: float) -> void:
 	## Wave 62: soft fern sway at Fern Dell — gentle frond lean (RuneScape-chunky, wholesome).
 	## Wave 69: soft fern-frond sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_fern_sway_nodes, 1.08, 0.92, 0.65, 0.55, 0.045, _dusk_sway_boost())
+	_apply_plant_sway(_fern_sway_nodes, 1.08, 0.92, 0.65, 0.55, 0.045, _dusk_sway_boost(), Vector3(22, 0, 48), 24.0)
 
 
 func _update_heather_sway(_delta: float) -> void:
 	## Wave 63: soft heather sway at Heather Heath — gentle tuft lean (RuneScape-chunky, wholesome).
 	## Wave 70: soft heather sway reads stronger at dusk (RuneScape-chunky, wholesome).
-	_apply_plant_sway(_heather_sway_nodes, 0.95, 0.78, 0.6, 0.5, 0.04, _dusk_sway_boost())
+	_apply_plant_sway(_heather_sway_nodes, 0.95, 0.78, 0.6, 0.5, 0.04, _dusk_sway_boost(), Vector3(-48, 0, 42), 24.0)
 
 
 func _begin_hall_light_dip() -> void:
@@ -3778,9 +3791,9 @@ func _setup_wind_leaves() -> void:
 	_wind_leaves = CPUParticles3D.new()
 	_wind_leaves.name = "WindLeaves"
 	_wind_leaves.emitting = true
-	_wind_leaves.amount = 28
+	_wind_leaves.amount = 10  # v1.84.4: always-on follow FX — keep light
 	_wind_leaves.lifetime = 5.8
-	_wind_leaves.preprocess = 2.6
+	_wind_leaves.preprocess = 0.8
 	_wind_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_wind_leaves.emission_box_extents = Vector3(11.5, 2.8, 11.5)
 	_wind_leaves.direction = Vector3(0.58, -0.14, 0.28)
@@ -3820,7 +3833,7 @@ func _setup_maple_leaves() -> void:
 	_maple_leaves = CPUParticles3D.new()
 	_maple_leaves.name = "MapleCopseLeaves"
 	_maple_leaves.emitting = true
-	_maple_leaves.amount = 56
+	_maple_leaves.amount = 28  # v1.84.3: fixed budget (no dusk amount thrash)
 	_maple_leaves.lifetime = 5.8
 	_maple_leaves.preprocess = 2.8
 	_maple_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -3852,9 +3865,9 @@ func _setup_garden_fireflies() -> void:
 	_garden_fireflies = CPUParticles3D.new()
 	_garden_fireflies.name = "PrayerGardenFireflies"
 	_garden_fireflies.emitting = false
-	_garden_fireflies.amount = 52
+	_garden_fireflies.amount = 12  # v1.84.4: cut SphereMesh firefly budget
 	_garden_fireflies.lifetime = 4.2
-	_garden_fireflies.preprocess = 1.4
+	_garden_fireflies.preprocess = 0.5
 	_garden_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_garden_fireflies.emission_box_extents = Vector3(6.5, 1.6, 6.5)
 	_garden_fireflies.direction = Vector3(0, 0.4, 0)
@@ -3898,9 +3911,9 @@ func _setup_birch_fireflies() -> void:
 	_birch_fireflies = CPUParticles3D.new()
 	_birch_fireflies.name = "BirchRestFireflies"
 	_birch_fireflies.emitting = false
-	_birch_fireflies.amount = 58  # Wave 77: denser birch-rest firefly wink
+	_birch_fireflies.amount = 12  # v1.84.4: cut SphereMesh firefly budget
 	_birch_fireflies.lifetime = 3.9
-	_birch_fireflies.preprocess = 1.3
+	_birch_fireflies.preprocess = 0.5
 	_birch_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_birch_fireflies.emission_box_extents = Vector3(5.6, 1.7, 5.6)
 	_birch_fireflies.direction = Vector3(0, 0.34, 0)
@@ -3954,11 +3967,8 @@ func _setup_reed_pool_gleam() -> void:
 	_reed_pool_gleam.gravity = Vector3(0, 0, 0)
 	_reed_pool_gleam.scale_amount_min = 0.45
 	_reed_pool_gleam.scale_amount_max = 1.8
-	var ring := TorusMesh.new()
-	ring.inner_radius = 0.08
-	ring.outer_radius = 0.22
-	ring.rings = 8
-	ring.ring_segments = 12
+	var ring := QuadMesh.new()
+	ring.size = Vector2(0.36, 0.36)
 	_reed_pool_gleam.mesh = ring
 	var rmat := StandardMaterial3D.new()
 	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -4435,9 +4445,9 @@ func _setup_dusk_fireflies() -> void:
 	_dusk_fireflies = CPUParticles3D.new()
 	_dusk_fireflies.name = "DuskFireflies"
 	_dusk_fireflies.emitting = false
-	_dusk_fireflies.amount = 26
+	_dusk_fireflies.amount = 8  # v1.84.4: lighter dusk follow FX
 	_dusk_fireflies.lifetime = 3.8
-	_dusk_fireflies.preprocess = 1.2
+	_dusk_fireflies.preprocess = 0.4
 	_dusk_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_dusk_fireflies.emission_box_extents = Vector3(8.5, 1.8, 8.5)
 	_dusk_fireflies.direction = Vector3(0, 0.35, 0)
@@ -4449,9 +4459,8 @@ func _setup_dusk_fireflies() -> void:
 	_dusk_fireflies.angular_velocity_max = 20.0
 	_dusk_fireflies.scale_amount_min = 0.45
 	_dusk_fireflies.scale_amount_max = 1.05
-	var fm := SphereMesh.new()
-	fm.radius = 0.035
-	fm.height = 0.07
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.06, 0.06, 0.06)
 	_dusk_fireflies.mesh = fm
 	var fmat := StandardMaterial3D.new()
 	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -4483,36 +4492,9 @@ func _is_dusk_firefly_time() -> bool:
 	return false
 
 func _setup_snowdust() -> void:
-	## Wave 47: soft snowdust motes in cold Fog outdoors (RuneScape-chunky, wholesome; off indoors).
-	_snowdust = CPUParticles3D.new()
-	_snowdust.name = "ColdFogSnowdust"
-	_snowdust.emitting = false
-	_snowdust.amount = 36
-	_snowdust.lifetime = 4.2
-	_snowdust.preprocess = 1.5
-	_snowdust.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_snowdust.emission_box_extents = Vector3(9.5, 2.2, 9.5)
-	_snowdust.direction = Vector3(0.18, -0.35, 0.08)
-	_snowdust.spread = 48.0
-	_snowdust.initial_velocity_min = 0.15
-	_snowdust.initial_velocity_max = 0.55
-	_snowdust.gravity = Vector3(0, -0.22, 0)
-	_snowdust.angular_velocity_min = -25.0
-	_snowdust.angular_velocity_max = 25.0
-	_snowdust.scale_amount_min = 0.25
-	_snowdust.scale_amount_max = 0.55
-	var sm := SphereMesh.new()
-	sm.radius = 0.045
-	sm.height = 0.09
-	_snowdust.mesh = sm
-	var smat := StandardMaterial3D.new()
-	smat.albedo_color = Color(0.94, 0.96, 1.0, 0.72)
-	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_snowdust.material_override = smat
-	_snowdust.position = Vector3(0, 2.8, 0)
-	add_child(_snowdust)
-	HeadlessGuard.guard_particles(_snowdust)
+	## Wave 47 ColdFogSnowdust: soft snowdust motes in cold Fog outdoors (historical).
+	## v1.84.3/4: skip snowdust particles — Fog env density is enough and SphereMesh motes hitch.
+	_snowdust = null
 
 func _setup_canopy_drip() -> void:
 	## Wave 48: soft canopy drip motes under trees while raining outdoors (RuneScape-chunky, wholesome).
@@ -4520,11 +4502,12 @@ func _setup_canopy_drip() -> void:
 	_canopy_drip.name = "RainCanopyDrip"
 	_canopy_drip.emitting = false
 	# Wave 69: soft rain-canopy drip polish — denser motes, softer fade (RuneScape-chunky, wholesome)
-	_canopy_drip.amount = 44
-	_canopy_drip.lifetime = 1.85
-	_canopy_drip.preprocess = 0.55
+	# v1.84.4: lighter drip budget under rain
+	_canopy_drip.amount = 8
+	_canopy_drip.lifetime = 1.6
+	_canopy_drip.preprocess = 0.15
 	_canopy_drip.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_canopy_drip.emission_box_extents = Vector3(2.5, 0.18, 2.5)
+	_canopy_drip.emission_box_extents = Vector3(2.0, 0.18, 2.0)
 	_canopy_drip.direction = Vector3(0.02, -1, 0.01)
 	_canopy_drip.spread = 10.0
 	_canopy_drip.initial_velocity_min = 1.05
@@ -4532,9 +4515,8 @@ func _setup_canopy_drip() -> void:
 	_canopy_drip.gravity = Vector3(0, -4.2, 0)
 	_canopy_drip.scale_amount_min = 0.16
 	_canopy_drip.scale_amount_max = 0.42
-	var dm := SphereMesh.new()
-	dm.radius = 0.032
-	dm.height = 0.064
+	var dm := BoxMesh.new()
+	dm.size = Vector3(0.05, 0.08, 0.05)
 	_canopy_drip.mesh = dm
 	var dmat := StandardMaterial3D.new()
 	dmat.albedo_color = Color(0.74, 0.86, 0.96, 0.70)
@@ -4591,9 +4573,9 @@ func _setup_eaves_splash() -> void:
 	_eaves_splash = CPUParticles3D.new()
 	_eaves_splash.name = "RainEavesSplash"
 	_eaves_splash.emitting = false
-	_eaves_splash.amount = 22
-	_eaves_splash.lifetime = 0.55
-	_eaves_splash.preprocess = 0.15
+	_eaves_splash.amount = 10
+	_eaves_splash.lifetime = 0.5
+	_eaves_splash.preprocess = 0.1
 	_eaves_splash.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_eaves_splash.emission_box_extents = Vector3(1.8, 0.08, 0.35)
 	_eaves_splash.direction = Vector3(0, -1, 0.15)
@@ -5171,13 +5153,22 @@ func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) 
 func _update_ambient_critters(delta: float) -> void:
 	if _ambient_critters.is_empty():
 		return
+	var ppx := player.global_position.x if player else 0.0
+	var ppz := player.global_position.z if player else 0.0
 	for c in _ambient_critters:
 		var n: Node3D = c.get("node")
 		if n == null or not is_instance_valid(n):
 			continue
+		var base: Vector3 = c.get("base", n.position)
+		# v1.84 smooth: skip far ambient life
+		var adx: float = base.x - ppx
+		var adz: float = base.z - ppz
+		if adx * adx + adz * adz > 36.0 * 36.0:
+			n.visible = false
+			continue
+		n.visible = true
 		var phase: float = float(c.get("phase", 0.0)) + delta
 		c["phase"] = phase
-		var base: Vector3 = c.get("base", n.position)
 		var kind: String = str(c.get("kind", "butterfly"))
 		match kind:
 			"sparrow":
