@@ -16,26 +16,34 @@ func _run() -> void:
 		print("FRAME", i, " SIZE=", tex.get_width(), "x", tex.get_height())
 
 	var world_src := FileAccess.get_file_as_string("res://scripts/world/world.gd")
-	assert("TRANSPARENCY_ALPHA_SCISSOR" in world_src)
+	assert("discard" in world_src)
 	assert("_set_party_unicorn_frame" in world_src)
 	assert("party_unicorn_frame_%d.png" in world_src)
+	assert("ShaderMaterial" in world_src)
 
 	var root := Node3D.new()
 	get_root().add_child(root)
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	mat.alpha_scissor_threshold = 0.5
-	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	mat.albedo_color = Color(1, 1, 1, 1)
-	mat.albedo_texture = load("res://assets/vfx/party_unicorn_frame_0.png")
+	var sh := Shader.new()
+	sh.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled, depth_draw_opaque, specular_disabled;
+uniform sampler2D unicorn_tex : source_color, filter_linear;
+void fragment() {
+	vec4 c = texture(unicorn_tex, UV);
+	if (c.a < 0.5) { discard; }
+	ALBEDO = c.rgb;
+}
+"""
+	var mat := ShaderMaterial.new()
+	mat.shader = sh
+	mat.set_shader_parameter("unicorn_tex", load("res://assets/vfx/party_unicorn_frame_0.png"))
 	var quad := QuadMesh.new()
-	quad.size = Vector2(1.4, 1.95)
+	quad.size = Vector2(1.5, 2.1)
 	var mi := MeshInstance3D.new()
 	mi.mesh = quad
 	mi.material_override = mat
 	root.add_child(mi)
-	mat.albedo_texture = load("res://assets/vfx/party_unicorn_frame_3.png")
-	print("MESH_READY transparency=", mat.transparency, " albedo_a=", mat.albedo_color.a)
+	mat.set_shader_parameter("unicorn_tex", load("res://assets/vfx/party_unicorn_frame_3.png"))
+	print("MESH_READY shader_ok")
 	print("UNICORN_ART_SMOKE_OK")
 	quit()
