@@ -59,8 +59,8 @@ var _fact_answer: String = ""
 
 func _ready() -> void:
 	visible = false
-	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_ensure_built()
 	set_process(false)
 
@@ -69,29 +69,39 @@ func _ensure_built() -> void:
 	if _built:
 		return
 	_built = true
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build_chrome()
 
 
 func _build_chrome() -> void:
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
 	var dim := ColorRect.new()
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	dim.color = Color(0, 0, 0, 0.5)
 	dim.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(dim)
 
 	_root_panel = PanelContainer.new()
 	_root_panel.name = "Panel"
-	_root_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_root_panel.offset_left = -340
-	_root_panel.offset_top = -300
-	_root_panel.offset_right = 340
-	_root_panel.offset_bottom = 300
+	_root_panel.anchor_left = 0.5
+	_root_panel.anchor_top = 0.5
+	_root_panel.anchor_right = 0.5
+	_root_panel.anchor_bottom = 0.5
+	_root_panel.offset_left = -360
+	_root_panel.offset_top = -310
+	_root_panel.offset_right = 360
+	_root_panel.offset_bottom = 310
+	_root_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_root_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(_root_panel)
 	PanelChrome.apply_panel(_root_panel, 16)
 
 	var vbox := VBoxContainer.new()
 	vbox.name = "VBox"
 	vbox.add_theme_constant_override("separation", 10)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_root_panel.add_child(vbox)
 
 	_title = Label.new()
@@ -111,12 +121,15 @@ func _build_chrome() -> void:
 	_hub = VBoxContainer.new()
 	_hub.name = "Hub"
 	_hub.add_theme_constant_override("separation", 8)
+	_hub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hub.custom_minimum_size = Vector2(0, 220)
 	vbox.add_child(_hub)
 
 	_play_host = Control.new()
 	_play_host.name = "PlayHost"
 	_play_host.visible = false
-	_play_host.custom_minimum_size = Vector2(0, 360)
+	_play_host.custom_minimum_size = Vector2(0, 0)
+	_play_host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_play_host.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(_play_host)
 
@@ -151,9 +164,11 @@ func _build_chrome() -> void:
 
 func open() -> void:
 	_ensure_built()
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_stop_play()
 	_show_hub()
 	visible = true
+	move_to_front()
 	AudioBus.play_ui()
 
 
@@ -173,9 +188,10 @@ func _on_back() -> void:
 func _show_hub() -> void:
 	_mode = "hub"
 	_title.text = "Village Games"
-	_hint.text = "Fun recess between lessons. Beat your best for a tiny XP cheer (a few per day)."
+	_hint.text = "Fun recess between lessons. Beat your best for a tiny XP cheer (a few per day). Press 1 / 2 / 3 to play."
 	_hub.visible = true
 	_play_host.visible = false
+	_play_host.custom_minimum_size = Vector2(0, 0)
 	_back_btn.visible = false
 	_close_btn.text = "Close"
 	_rebuild_hub()
@@ -193,8 +209,10 @@ func _best_summary() -> String:
 
 
 func _rebuild_hub() -> void:
+	## Free immediately so same-frame rebuild does not stack ghost rows.
 	for c in _hub.get_children():
-		c.queue_free()
+		_hub.remove_child(c)
+		c.free()
 	_add_game_row(
 		"Lantern Catch",
 		"Catch falling lanterns with your basket · A/D or ←/→",
@@ -273,6 +291,7 @@ func _start_game(game_id: String) -> void:
 	_stop_play()
 	_hub.visible = false
 	_play_host.visible = true
+	_play_host.custom_minimum_size = Vector2(0, 360)
 	_back_btn.visible = true
 	_close_btn.text = "Close"
 	_score = 0
@@ -677,7 +696,25 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not visible or not _active or _mode != "lantern":
+	if not visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		var code: int = event.keycode if event.keycode != 0 else event.physical_keycode
+		if _mode == "hub":
+			match code:
+				KEY_1:
+					_start_game(GAME_LANTERN)
+					get_viewport().set_input_as_handled()
+					return
+				KEY_2:
+					_start_game(GAME_MATCH)
+					get_viewport().set_input_as_handled()
+					return
+				KEY_3:
+					_start_game(GAME_FACTS)
+					get_viewport().set_input_as_handled()
+					return
+	if not _active or _mode != "lantern":
 		return
 	if event is InputEventMouseMotion:
 		if _lantern_arena and _lantern_arena.size.x > 1.0:

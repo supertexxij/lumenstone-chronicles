@@ -91,7 +91,7 @@ func _ready() -> void:
 	_ensure_foe_count()
 	_ensure_fav_paces()
 	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
-	hint_lbl.text = "I bag · J journal (next lesson) · T travel · Games recess · V eat · Esc closes · Parent for grown-ups"
+	hint_lbl.text = "I bag · J journal · T travel · ; Games · V eat · Esc closes · Parent for grown-ups"
 	_style_compact_hud()
 	if minimap:
 		minimap.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -194,8 +194,8 @@ func _style_compact_hud() -> void:
 		travel_btn.text = "Travel (T)"
 		travel_btn.tooltip_text = "Open Travel. Letter keys (H Fountain, P Willow) work after this menu is closed — or from the list."
 	if games_btn:
-		games_btn.text = "Games"
-		games_btn.tooltip_text = "Village Games — fun recess between lessons"
+		games_btn.text = "Games (;)"
+		games_btn.tooltip_text = "Village Games — fun recess between lessons (; or ')"
 	if weather_btn:
 		weather_btn.text = "Weather (R)"
 	if parent_btn:

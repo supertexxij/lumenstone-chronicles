@@ -416,6 +416,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("journal"):
 		_toggle_journal()
 		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		var early_code: int = event.keycode if event.keycode != 0 else event.physical_keycode
+		# Village Games recess hub (HUD Games button also works)
+		if early_code == KEY_SEMICOLON or early_code == KEY_APOSTROPHE:
+			_toggle_minigames()
+			return
 	if event.is_action_pressed("mute_toggle"):
 		AudioBus.toggle_mute()
 		return
@@ -774,7 +780,7 @@ func _goto_landmark(pos: Vector3, label: String) -> void:
 		return
 	if _travel_fading:
 		return
-	if _is_busy_overlay() or _panel_is_open(_save_panel):
+	if _is_busy_overlay() or _panel_is_open(_save_panel) or _panel_is_open(_minigames_panel):
 		return
 	# Allow landmark keys while Travel is open; block them under bag/journal/wardrobe.
 	if world_scene.player.get("ui_blocking") and not _panel_is_open(travel_panel):
