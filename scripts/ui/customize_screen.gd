@@ -131,8 +131,14 @@ func open_new() -> void:
 	_select(gender_opt, demo_gender)
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
-	_select(hair_style_opt, "long" if demo_gender == "girl" else "short")
-	_select(facial_hair_opt, "none")
+	var demo_style := str(OS.get_environment("LUMEN_DEMO_HAIR_STYLE")).to_lower()
+	if demo_style == "" or not HAIR_STYLES.has(demo_style):
+		demo_style = "long" if demo_gender == "girl" else "short"
+	_select(hair_style_opt, demo_style)
+	var demo_face := str(OS.get_environment("LUMEN_DEMO_FACIAL_HAIR")).to_lower()
+	if demo_face == "" or not FACIAL_HAIR_STYLES.has(demo_face) or demo_gender == "girl":
+		demo_face = "none"
+	_select(facial_hair_opt, demo_face)
 	_select(cape_opt, "crimson")
 	_select(outfit_opt, "cream")
 	_sync_facial_hair_enabled()
