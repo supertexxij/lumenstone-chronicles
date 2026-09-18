@@ -2246,9 +2246,6 @@ func _setup_edge_fog_banks() -> void:
 		_edge_fog_banks.append(fx)
 
 func _update_weather(delta: float) -> void:
-	# #region agent log
-	var _uw_t0: int = Time.get_ticks_msec()
-	# #endregion
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
 	if player and _rain:
 		if _inside_hall == "":
@@ -2350,11 +2347,6 @@ func _update_weather(delta: float) -> void:
 		if _weather_timer <= 0.0:
 			cycle_weather(true)
 			_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
-	# #region agent log
-	var _uw_ms: int = Time.get_ticks_msec() - _uw_t0
-	if _uw_ms >= 8 or (_weather_mode == 1 and Engine.get_frames_drawn() % 30 == 0):
-		_agent_dbg_wx("C", "world.gd:_update_weather", "weather_tick", {"mode": _weather_mode, "ms": _uw_ms, "delta": delta, "fog_on": _fog_mist != null and _fog_mist.emitting, "snow_on": _snowdust != null and _snowdust.emitting, "fps_hint": Engine.get_frames_per_second()})
-	# #endregion
 
 
 func _player_near_xz(anchor: Vector3, radius: float) -> bool:
@@ -2390,10 +2382,6 @@ func get_weather_label() -> String:
 	return _weather_label_cache
 
 func _apply_weather_visuals(announce: bool = false) -> void:
-	# #region agent log
-	var _wx_t0: int = Time.get_ticks_msec()
-	_agent_dbg_wx("C", "world.gd:_apply_weather_visuals", "weather_apply_begin", {"mode": _weather_mode, "inside": _inside_hall, "announce": announce, "time_scale": Engine.time_scale, "runId": "post-fix"})
-	# #endregion
 	var rain_on := false
 	var drip_on := false
 	match _weather_mode:
@@ -2472,9 +2460,6 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		fx.scale_amount_min = 1.25 if _weather_mode == 1 else 1.1
 		fx.scale_amount_max = 2.15 if _weather_mode == 1 else 1.9
 	weather_changed.emit(_weather_mode, _weather_label_cache)
-	# #region agent log
-	_agent_dbg_wx("C", "world.gd:_apply_weather_visuals", "weather_apply_end", {"mode": _weather_mode, "label": _weather_label_cache, "ms": Time.get_ticks_msec() - _wx_t0, "fog_emitting": _fog_mist != null and _fog_mist.emitting, "snowdust_on": _snowdust != null and _snowdust.emitting, "cloud_amt": _clouds.amount if _clouds else -1, "runId": "post-fix"})
-	# #endregion
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
 		match _weather_mode:
@@ -2503,20 +2488,6 @@ func _set_fog_mat_alpha(p: CPUParticles3D, a: float) -> void:
 	var c: Color = mat.albedo_color
 	c.a = a
 	mat.albedo_color = c
-
-
-# #region agent log
-func _agent_dbg_wx(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
-	var path := "/opt/cursor/logs/debug.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
-	f.close()
-# #endregion
 
 
 func _update_quest_desk_highlights() -> void:

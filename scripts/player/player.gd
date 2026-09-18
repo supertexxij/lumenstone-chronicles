@@ -42,9 +42,6 @@ var _foot_dust: CPUParticles3D = null
 var _talk_nudge_active: bool = false  # Wave 44: soft NPC talk camera nudge
 var _talk_nudge_zoom_saved: float = 1.0
 var _talk_nudge_yaw_saved: float = 0.0
-# #region agent log
-var _dbg_phys_i: int = 0
-# #endregion
 
 func _ready() -> void:
 	add_to_group("player")
@@ -223,16 +220,9 @@ func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
 		var safe_len2: float = safe_velocity.x * safe_velocity.x + safe_velocity.z * safe_velocity.z
 		var desire_len2: float = _desired_vel.x * _desired_vel.x + _desired_vel.z * _desired_vel.z
 		if desire_len2 > 0.25 and safe_len2 < desire_len2 * 0.04:
-			# #region agent log
-			_agent_dbg("B", "player.gd:_on_nav_velocity_computed", "rvo_near_zero_blend", {"safe_len2": safe_len2, "desire_len2": desire_len2, "safe": [safe_velocity.x, safe_velocity.z], "des": [_desired_vel.x, _desired_vel.z], "runId": "post-fix"})
-			# #endregion
 			velocity.x = _desired_vel.x
 			velocity.z = _desired_vel.z
 		else:
-			# #region agent log
-			if desire_len2 > 0.25 and safe_len2 < 0.05:
-				_agent_dbg("B", "player.gd:_on_nav_velocity_computed", "rvo_safe_near_zero", {"safe_len2": safe_len2, "desire_len2": desire_len2, "runId": "post-fix"})
-			# #endregion
 			velocity.x = safe_velocity.x
 			velocity.z = safe_velocity.z
 
@@ -407,9 +397,6 @@ func _set_move_target(pos: Vector3) -> void:
 	_stuck_timer = 0.0
 	_assist_waypoints.clear()
 	_path_idx = 0
-	# #region agent log
-	_agent_dbg("E", "player.gd:_set_move_target", "click_target_set", {"pos": [target_pos.x, target_pos.z], "ui_blocking": ui_blocking, "vel": [velocity.x, velocity.z], "time_scale": Engine.time_scale})
-	# #endregion
 	_show_click_marker(target_pos)
 	# Prefer NavigationAgent when navmesh is ready (outdoor + indoor hall regions)
 	if _nav_ready and _nav_agent:
@@ -475,16 +462,7 @@ func play_attack_swing() -> void:
 func _physics_process(delta: float) -> void:
 	if GameState.combat_target != null and not is_instance_valid(GameState.combat_target):
 		GameState.set_combat_target(null)
-	# #region agent log
-	_dbg_phys_i += 1
-	var _stuck_click := has_click_target and Vector2(velocity.x, velocity.z).length() < 0.15 and not ui_blocking
-	if ui_blocking or _stuck_click or delta > 0.1 or (_dbg_phys_i % 90 == 0):
-		_agent_dbg("A", "player.gd:_physics_process", "phys_sample", {"ui_blocking": ui_blocking, "has_click": has_click_target, "manual": _manual_move, "vel": [velocity.x, velocity.z], "des": [_desired_vel.x, _desired_vel.z], "pos": [global_position.x, global_position.z], "time_scale": Engine.time_scale, "delta": delta, "nav_ready": _nav_ready, "avoid": _nav_agent != null and _nav_agent.avoidance_enabled, "fps": Engine.get_frames_per_second()})
-	# #endregion
 	if ui_blocking:
-		# #region agent log
-		_agent_dbg("A", "player.gd:_physics_process", "ui_blocking_zero_vel", {"has_click": has_click_target})
-		# #endregion
 		velocity = Vector3.ZERO
 		_animate_walk(false, delta)
 		_animate_attack(delta)
@@ -904,22 +882,4 @@ func _animate_attack(delta: float) -> void:
 				HumanoidBuilder.style_weapon(parts, ItemDB.get_item(str(wid)))
 
 func set_ui_blocking(v: bool) -> void:
-	# #region agent log
-	if v != ui_blocking:
-		_agent_dbg("A", "player.gd:set_ui_blocking", "ui_blocking_changed", {"from": ui_blocking, "to": v})
-	# #endregion
 	ui_blocking = v
-
-
-# #region agent log
-func _agent_dbg(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
-	var path := "/opt/cursor/logs/debug.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
-	f.close()
-# #endregion
