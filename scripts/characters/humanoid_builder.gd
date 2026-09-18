@@ -183,9 +183,9 @@ static func build(root: Node3D) -> Dictionary:
 		bob,
 		"Bangs",
 		_load_png_tex("res://assets/faces/apprentice_bangs.png"),
-		Vector2(0.58, 0.34),
-		Vector3(0.0, 2.02, 0.18),
-		Vector3(-38, 0, 0),
+		Vector2(0.62, 0.36),
+		Vector3(0.0, 2.00, 0.20),
+		Vector3(-36, 0, 0),
 		9
 	)
 	# Tiny soft 3D bang accents (subtle under the painted fringe)
