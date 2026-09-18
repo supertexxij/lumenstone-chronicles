@@ -146,9 +146,11 @@ func _finish() -> void:
 	_clear_options()
 	var pct: int = GameState.mastery_percent_int(correct_count, total) if GameState.has_method("mastery_percent_int") else int(round(float(correct_count) / float(maxi(1, total)) * 100.0))
 	if attempt.get("mastered", false):
-		dialogue_lbl.text = "[b]Mastered![/b]\nYou scored %d / %d (%d%%).\nGear and XP awarded. Well done, apprentice!" % [correct_count, total, pct]
+		var next_line := GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else "Journal (J) shows what to do next."
+		dialogue_lbl.text = "[b]Mastered![/b]\nYou scored %d / %d (%d%%).\nGear and XP awarded. Well done, apprentice!\n\n%s" % [correct_count, total, pct, next_line]
 	else:
-		dialogue_lbl.text = "[b]Needs practice[/b]\nYou scored %d / %d (%d%%).\nNeed ≥80%% to master. Talk to the mentor again — grown-ups can see this under Needs Help." % [correct_count, total, pct]
+		var mentor := GameState.mentor_name(str(quest.get("guild", ""))) if GameState.has_method("mentor_name") else "the same mentor"
+		dialogue_lbl.text = "[b]Needs practice[/b]\nYou scored %d / %d (%d%%).\nNeed ≥80%% to master. Talk to %s again — grown-ups can see this under Needs Help." % [correct_count, total, pct, mentor]
 	prompt_lbl.text = ""
 	hint_lbl.text = ""
 	progress_lbl.text = ""

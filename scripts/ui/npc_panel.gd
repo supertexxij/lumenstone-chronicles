@@ -47,6 +47,7 @@ func _ready() -> void:
 	start_btn.pressed.connect(_on_start)
 	if start_btn:
 		PanelChrome.style_button(start_btn, true)
+		start_btn.text = "Start this lesson"
 	list.item_selected.connect(_on_select)
 	list.item_activated.connect(func(i): _on_select(i); _on_start())
 
@@ -55,6 +56,15 @@ func _greeting_for(npc: Node) -> String:
 	var lines: Array = GREETINGS.get(guild, ["Peace to you. Choose a lesson-quest when you are ready."])
 	var idx: int = abs(hash(str(npc.npc_id) + str(GameState.unlocked_week))) % lines.size()
 	var line: String = str(lines[idx])
+	var next: Dictionary = GameState.get_next_up() if GameState.has_method("get_next_up") else {}
+	var next_guild := str(next.get("guild", ""))
+	var next_title := str(next.get("title", ""))
+	if next_title != "" and next_guild == guild:
+		return "%s\n\nYour next lesson is “%s”. Select it, then press Start this lesson. Score 80%% or more to master." % [line, next_title]
+	if next_title != "":
+		return "%s\n\nJournal (J) says your next lesson is with %s. I still have Week %d practice if you want it. Mastery is 80%%." % [
+			line, str(next.get("mentor", "another mentor")), GameState.unlocked_week
+		]
 	return "%s\nMastery (≥80%%) unlocks the next lesson." % line
 
 func open(npc: Node) -> void:
@@ -63,19 +73,70 @@ func open(npc: Node) -> void:
 	desc_lbl.text = _greeting_for(npc)
 	list.clear()
 	selected_quest = ""
+	var next_id := ""
+	if GameState.has_method("get_next_up"):
+		next_id = str(GameState.get_next_up().get("quest_id", ""))
+	var rows: Array = []
 	for qid in npc.quest_ids:
 		var q := QuestDB.get_quest(qid)
+		rows.append({"id": qid, "q": q})
+	rows.sort_custom(func(a, b):
+		var aid: String = str(a.get("id", ""))
+		var bid: String = str(b.get("id", ""))
+		var a_next: int = 0 if aid == next_id else 1
+		var b_next: int = 0 if bid == next_id else 1
+		if a_next != b_next:
+			return a_next < b_next
+		var a_done: int = 1 if aid in GameState.completed_quests else 0
+		var b_done: int = 1 if bid in GameState.completed_quests else 0
+		if a_done != b_done:
+			return a_done < b_done
+		var a_lock: int = 0 if GameState.is_quest_unlocked(aid) else 1
+		var b_lock: int = 0 if GameState.is_quest_unlocked(bid) else 1
+		if a_lock != b_lock:
+			return a_lock < b_lock
+		var aq: Dictionary = a.get("q", {})
+		var bq: Dictionary = b.get("q", {})
+		return int(aq.get("week", 1)) < int(bq.get("week", 1))
+	)
+	var auto_idx := -1
+	var first_open := -1
+	for row in rows:
+		var qid: String = str(row.get("id", ""))
+		var q: Dictionary = row.get("q", {})
 		var week_n := int(q.get("week", 1))
+		var unlocked: bool = GameState.is_quest_unlocked(qid)
+		var done: bool = qid in GameState.completed_quests
 		var status := ""
-		if qid in GameState.completed_quests:
+		if done:
 			status = " ★"  # Wave 33: mastered star on NPC quest list
-		elif not GameState.is_quest_unlocked(qid):
+		elif not unlocked:
 			status = " (Week %d locked)" % week_n
+		elif qid == next_id:
+			status = "  ← next"
+		elif GameState.has_method("get_latest_attempt_percent"):
+			var ap: float = float(GameState.get_latest_attempt_percent(qid))
+			if ap >= 0.0:
+				var pct: int = GameState.percent_to_int(ap) if GameState.has_method("percent_to_int") else int(round(ap * 100.0))
+				status = "  · %d%% try again" % pct
 		var prefix := "W%d · " % week_n
 		list.add_item("%s%s%s" % [prefix, q.get("title", qid), status])
 		list.set_item_metadata(list.item_count - 1, qid)
-		if not GameState.is_quest_unlocked(qid):
-			list.set_item_disabled(list.item_count - 1, true)
+		var idx: int = list.item_count - 1
+		if not unlocked:
+			list.set_item_disabled(idx, true)
+		else:
+			if qid == next_id:
+				auto_idx = idx
+				list.set_item_custom_fg_color(idx, Color(1.0, 0.90, 0.42))
+			elif first_open < 0 and not done:
+				first_open = idx
+	var pick: int = auto_idx if auto_idx >= 0 else first_open
+	if pick >= 0:
+		list.select(pick)
+		_on_select(pick)
+	if start_btn:
+		start_btn.text = "Start this lesson"
 
 
 func _on_select(idx: int) -> void:

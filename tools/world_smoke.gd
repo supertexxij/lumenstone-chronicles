@@ -644,5 +644,37 @@ func _finish():
 	print("MASTERY_ROUND_SRC", "func percent_to_int" in _src("res://scripts/autoload/game_state.gd") and "func is_mastered_score" in _src("res://scripts/autoload/game_state.gd"))
 	print("FOUNTAIN_DEBOUNCE_SRC", "_fountain_rest_ms" in _src("res://scripts/autoload/game_state.gd"))
 	print("BUGS_182_TOAST_SRC", "maybe_bugs_182_toast" in _src("res://scripts/autoload/game_state.gd"))
+
+	print("VERSION_183_SRC", _ver_ge(83))
+	print("NEXT_UP_SRC", "func get_next_up" in _src("res://scripts/autoload/game_state.gd") and "NextUp" in _src("res://scripts/ui/journal_panel.gd"))
+	print("SCHOOL_DAY_SRC", "func get_school_day" in _src("res://scripts/autoload/game_state.gd") and "DailyLbl" in _src("res://scripts/ui/parent_panel.gd"))
+	print("NEEDS_HELP_SIT_SRC", "Sit with" in _src("res://scripts/autoload/game_state.gd"))
+	print("CURRICULUM_183_TOAST_SRC", "maybe_curriculum_183_toast" in _src("res://scripts/autoload/game_state.gd"))
+	if gs:
+		if gs.has_method("get_next_up"):
+			var nxt = gs.get_next_up()
+			print("NEXT_UP_ID", str(nxt.get("quest_id", "")) != "")
+			print("NEXT_UP_MENTOR", str(nxt.get("mentor", "")).find("Steward") >= 0 or str(nxt.get("mentor", "")).find("Builder") >= 0)
+		if gs.has_method("get_school_day"):
+			var day = gs.get_school_day()
+			print("SCHOOL_DAY_GOAL", int(day.get("goal", 0)) >= 1)
+		if gs.has_method("format_needs_help_row"):
+			gs.quest_attempts.append({
+				"quest_id": "w1-math-place-value",
+				"correct": 2,
+				"total": 5,
+				"percent": 0.4,
+				"mastered": false,
+				"timestamp": int(Time.get_unix_time_from_system()),
+			})
+			var help_rows: Array = gs.needs_help_quests() if gs.has_method("needs_help_quests") else []
+			var help_line := ""
+			if help_rows.size() > 0:
+				help_line = str(gs.format_needs_help_row(help_rows[0]))
+			print("HELP_SIT_LINE", "Sit with" in help_line and "WEEK" in help_line)
+			if gs.quest_attempts.size() > 0:
+				gs.quest_attempts.pop_back()
+		print("PIN_STILL_1234_W183_RT", gs.verify_pin("1234"))
+		print("MASTERY_80_W183_RT", gs.has_method("is_mastered_score") and gs.is_mastered_score(4, 5) and not gs.is_mastered_score(3, 4))
 	print("WORLD_SMOKE_OK")
 	quit(0)
