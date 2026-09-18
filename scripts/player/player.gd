@@ -42,6 +42,9 @@ var _foot_dust: CPUParticles3D = null
 var _talk_nudge_active: bool = false  # Wave 44: soft NPC talk camera nudge
 var _talk_nudge_zoom_saved: float = 1.0
 var _talk_nudge_yaw_saved: float = 0.0
+# #region agent log
+var _dbg_phys_i: int = 0
+# #endregion
 
 func _ready() -> void:
 	add_to_group("player")
@@ -65,8 +68,9 @@ func _ensure_nav_agent() -> void:
 		add_child(_nav_agent)
 	_nav_agent.path_desired_distance = 0.55
 	_nav_agent.target_desired_distance = 0.45
-	# Light RVO avoidance vs other agents / NavigationObstacle3D (NPCs, foes)
-	_nav_agent.avoidance_enabled = true
+	# Pathfinding only — RVO avoidance disabled (v1.84.3). Soft sidestep handles mentors/foes;
+	# avoidance was still collapsing velocity to zero under weather/particle load.
+	_nav_agent.avoidance_enabled = false
 	_nav_agent.radius = 0.42
 	_nav_agent.height = 1.6
 	_nav_agent.max_speed = SPEED
@@ -75,6 +79,7 @@ func _ensure_nav_agent() -> void:
 	_nav_agent.time_horizon_agents = 0.55
 	_nav_agent.time_horizon_obstacles = 0.28
 	_nav_agent.avoidance_priority = 1.0
+	# Keep callback wired in case avoidance is re-enabled later; no-op while disabled.
 	if not _nav_agent.velocity_computed.is_connected(_on_nav_velocity_computed):
 		_nav_agent.velocity_computed.connect(_on_nav_velocity_computed)
 
@@ -549,13 +554,14 @@ func _physics_process(delta: float) -> void:
 	_was_manual = _manual_move
 	velocity.y = 0
 	_desired_vel = Vector3(velocity.x, 0.0, velocity.z)
-	# Feed desired velocity into avoidance. WASD uses forced velocity so RVO does not fight keys.
-	# v1.84.2: click-to-move also forces velocity — Fog/load RVO was collapsing safe vel to 0 (rings lied).
+	# v1.84.3: always force velocity — player RVO avoidance is off; never let safe-vel zero stalls.
 	if _nav_agent and _nav_agent.avoidance_enabled:
-		if _manual_move or has_click_target:
-			_nav_agent.set_velocity_forced(_desired_vel)
-		else:
-			_nav_agent.set_velocity(_desired_vel)
+		_nav_agent.set_velocity_forced(_desired_vel)
+	# #region agent log
+	_dbg_phys_i += 1
+	if delta > 0.05 or (_dbg_phys_i % 45 == 0) or (has_click_target and Vector2(velocity.x, velocity.z).length() < 0.12):
+		_agent_dbg("H", "player.gd:_physics_process", "phys_tick", {"delta": delta, "fps": Engine.get_frames_per_second(), "vel": [velocity.x, velocity.z], "has_click": has_click_target, "manual": _manual_move, "ui_blocking": ui_blocking, "avoid": _nav_agent != null and _nav_agent.avoidance_enabled, "pos": [global_position.x, global_position.z]})
+	# #endregion
 	var pre_pos := global_position
 	move_and_slide()
 	# Slide-along + stuck detection for click-to-move against barrels/trees/fences
@@ -883,3 +889,17 @@ func _animate_attack(delta: float) -> void:
 
 func set_ui_blocking(v: bool) -> void:
 	ui_blocking = v
+
+
+# #region agent log
+func _agent_dbg(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
+	var path := "/opt/cursor/logs/debug.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
+	f.close()
+# #endregion

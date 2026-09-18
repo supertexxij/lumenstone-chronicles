@@ -1190,7 +1190,8 @@ func _defeat() -> void:
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	if GameState.combat_level > prev_cl:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
-	GameState.save_game()
+	# v1.84.3: defer save so defeat FX / dissolve never hitch the movement frame
+	GameState.call_deferred("save_game")
 	GameState.state_changed.emit()
 	_begin_kill_flash()
 	_dissolve_t = 0.0

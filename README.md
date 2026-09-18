@@ -226,6 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.3-smooth — remaining hitch / freeze hardening
+
+Disable player NavigationAgent RVO (forced velocity + soft sidestep only). Cut rain/fog/edge/snow/canopy particle budgets further; edge fog emits only in Fog weather. Occlusion culling off. World polish / foe-wake staggered more. Combat defeat save deferred.
+
 ### v1.84.2-smooth — Fog weather freeze fix
 
 Fog weather no longer freezes click-to-move: lighter mist/edge-fog particle budgets, no `CPUParticles3D.amount` rebuild thrash on weather cycle, click-to-move forces nav velocity (RVO was collapsing to zero under Fog load), and desired velocity is kept when avoidance still returns ~0.
