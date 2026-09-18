@@ -43,6 +43,10 @@ func _initialize():
 		print("SLOTS", gs.SLOT_COUNT, "HAS0", gs.has_save(0), "PIN_DEFAULT", gs.verify_pin("1234"))
 		print("PIN_SET", gs.set_parent_pin("5678"), "PIN_NEW", gs.verify_pin("5678"))
 		gs.set_parent_pin("1234")
+		if gs.has_method("is_mastered_score") and gs.has_method("mastery_percent_int"):
+			print("MASTERY_4_OF_5", gs.is_mastered_score(4, 5) and gs.mastery_percent_int(4, 5) == 80)
+			print("MASTERY_3_OF_4", (not gs.is_mastered_score(3, 4)) and gs.mastery_percent_int(3, 4) == 75)
+			print("EMPTY_NAME_NORM", str(gs.child_name).strip_edges() != "")
 	var world_ps = load("res://scenes/world/world.tscn")
 	if world_ps == null:
 		print("WORLD_PACKED_NULL")
@@ -634,5 +638,11 @@ func _finish():
 	print("HUD_COMPACT_SRC", "Pantry · Ready · V" in _src("res://scripts/ui/hud.gd") and "Year · Wk %d · %d%%" in _src("res://scripts/ui/hud.gd"))
 	print("PARENT_HERO_SRC", "_ensure_hero_row" in _src("res://scripts/ui/parent_panel.gd") and "Copy line" in _src("res://scripts/ui/parent_panel.gd"))
 	print("TITLE_START_SRC", "How to start" in _src("res://scripts/ui/title_screen.gd"))
+
+	print("VERSION_182_SRC", _ver_ge(82))
+	print("MODAL_SYNC_SRC", "_sync_ui_blocking" in _src("res://scripts/ui/main.gd") and "_close_all_overlays" in _src("res://scripts/ui/main.gd"))
+	print("MASTERY_ROUND_SRC", "func percent_to_int" in _src("res://scripts/autoload/game_state.gd") and "func is_mastered_score" in _src("res://scripts/autoload/game_state.gd"))
+	print("FOUNTAIN_DEBOUNCE_SRC", "_fountain_rest_ms" in _src("res://scripts/autoload/game_state.gd"))
+	print("BUGS_182_TOAST_SRC", "maybe_bugs_182_toast" in _src("res://scripts/autoload/game_state.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)
