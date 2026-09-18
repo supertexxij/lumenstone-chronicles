@@ -1096,8 +1096,9 @@ func _play_hit_pause() -> void:
 		return
 	_hit_pausing = true
 	var prev: float = Engine.time_scale
-	Engine.time_scale = 0.35
-	await get_tree().create_timer(0.03, true, false, true).timeout
+	# Soften hit-pause so combat does not feel like a freeze (v1.84.1)
+	Engine.time_scale = 0.55
+	await get_tree().create_timer(0.02, true, false, true).timeout
 	Engine.time_scale = prev if prev > 0.01 else 1.0
 	_hit_pausing = false
 

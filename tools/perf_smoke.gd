@@ -20,10 +20,11 @@ func _initialize() -> void:
 	print("ENEMY_COUNT", enemies.size())
 	var hidden := 0
 	var visible_n := 0
+	var nav_off := 0
+	var physics_off := 0
 	var player: Node = get_first_node_in_group("player")
 	print("PLAYER_FOUND", player != null)
 	if player:
-		# Stay at fountain; most wild foes should LOD-hide
 		print("PLAYER_POS", player.global_position)
 	for e in enemies:
 		if e == null or not is_instance_valid(e):
@@ -32,9 +33,18 @@ func _initialize() -> void:
 			hidden += 1
 		if e.visible:
 			visible_n += 1
+		var obs = e.get_node_or_null("NavObstacle")
+		if obs != null and not bool(obs.avoidance_enabled):
+			nav_off += 1
+		if not e.is_physics_processing():
+			physics_off += 1
 	print("ENEMY_LOD_HIDDEN", hidden)
 	print("ENEMY_VISIBLE", visible_n)
+	print("ENEMY_NAV_OFF", nav_off)
+	print("ENEMY_PHYSICS_OFF", physics_off)
 	print("LOD_HIDES_MOST", hidden > int(enemies.size() * 0.5))
+	print("LOD_SLEEPS_NAV", nav_off > int(enemies.size() * 0.5))
+	print("LOD_SLEEPS_PHYS", physics_off > int(enemies.size() * 0.5))
 
 	var player_src := FileAccess.get_file_as_string("res://scripts/player/player.gd")
 	print("SPEED_8_2", "const SPEED := 8.2" in player_src)

@@ -70,10 +70,10 @@ func _ensure_nav_agent() -> void:
 	_nav_agent.radius = 0.42
 	_nav_agent.height = 1.6
 	_nav_agent.max_speed = SPEED
-	_nav_agent.neighbor_distance = 2.8
-	_nav_agent.max_neighbors = 6
-	_nav_agent.time_horizon_agents = 0.7
-	_nav_agent.time_horizon_obstacles = 0.35
+	_nav_agent.neighbor_distance = 2.2
+	_nav_agent.max_neighbors = 4
+	_nav_agent.time_horizon_agents = 0.55
+	_nav_agent.time_horizon_obstacles = 0.28
 	_nav_agent.avoidance_priority = 1.0
 	if not _nav_agent.velocity_computed.is_connected(_on_nav_velocity_computed):
 		_nav_agent.velocity_computed.connect(_on_nav_velocity_computed)
@@ -211,12 +211,19 @@ func _play_food_heal_sparkle() -> void:
 
 func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
 	## Apply RVO-safe velocity. WASD prefers player intent so avoidance does not fight the stick.
+	## v1.84.1: if RVO zeroes click-move against far obstacles, keep a slice of desired velocity so we do not freeze.
 	if _manual_move:
 		velocity.x = lerpf(safe_velocity.x, _desired_vel.x, 0.78)
 		velocity.z = lerpf(safe_velocity.z, _desired_vel.z, 0.78)
 	else:
-		velocity.x = safe_velocity.x
-		velocity.z = safe_velocity.z
+		var safe_len2: float = safe_velocity.x * safe_velocity.x + safe_velocity.z * safe_velocity.z
+		var desire_len2: float = _desired_vel.x * _desired_vel.x + _desired_vel.z * _desired_vel.z
+		if desire_len2 > 0.25 and safe_len2 < desire_len2 * 0.04:
+			velocity.x = lerpf(safe_velocity.x, _desired_vel.x, 0.72)
+			velocity.z = lerpf(safe_velocity.z, _desired_vel.z, 0.72)
+		else:
+			velocity.x = safe_velocity.x
+			velocity.z = safe_velocity.z
 
 func _apply_appearance() -> void:
 	if parts.is_empty():
@@ -736,7 +743,8 @@ func _animate_walk(moving: bool, delta: float) -> void:
 		return
 	var armed: bool = weapon != null and weapon.visible
 	if moving:
-		_walk_phase += delta * 10.0
+		# Match limb cadence to travel speed so faster walk does not look like skating/lag (v1.84.1)
+		_walk_phase += delta * (10.0 * (SPEED / 6.5))
 		# v1.80 world: stronger opposite-limb swing + hip twist so the walk reads from the oblique camera.
 		var swing := sin(_walk_phase) * (0.84 if armed else 0.76)
 		var swing2 := cos(_walk_phase) * 0.22

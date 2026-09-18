@@ -172,6 +172,13 @@ func _ready() -> void:
 	_ensure_nav_obstacle()
 	if GameState.has_signal("soft_combat_cleared") and not GameState.soft_combat_cleared.is_connected(clear_soft_aggro):
 		GameState.soft_combat_cleared.connect(clear_soft_aggro)
+	call_deferred("_try_initial_lod_sleep")
+
+
+func _try_initial_lod_sleep() -> void:
+	## Sleep immediately after spawn if the apprentice is far (cuts RVO load on boot).
+	if alive and not _player_near(LOD_HIDE_DIST2):
+		_set_lod_sleep(true)
 
 func is_alive() -> bool:
 	return alive
@@ -193,6 +200,34 @@ func _ensure_nav_obstacle() -> void:
 	obs.avoidance_enabled = true
 	add_child(obs)
 
+
+func _set_lod_sleep(sleep: bool) -> void:
+	## Fully sleep far foes so they do not stall player RVO / physics (v1.84.1).
+	_lod_hidden = sleep
+	visible = (not sleep) and alive
+	var col := get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if col:
+		col.disabled = sleep or not alive
+	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
+	if obs:
+		obs.avoidance_enabled = (not sleep) and alive
+	# Keep a physics tick while dissolving or waiting to respawn; otherwise sleep fully.
+	var need_tick := (not sleep) or _dissolve_t >= 0.0 or not alive
+	set_physics_process(need_tick)
+
+
+func wake_for_player() -> void:
+	## Called by World sparse scanner when the apprentice walks near.
+	if not alive and _dissolve_t < 0.0:
+		# Dead waiting to respawn — keep a light physics tick for the timer
+		set_physics_process(true)
+		return
+	if _lod_hidden:
+		_set_lod_sleep(false)
+	elif not is_physics_processing():
+		set_physics_process(true)
+
+
 func _physics_process(delta: float) -> void:
 	if _dissolve_t >= 0.0:
 		_tick_kill_flash(delta)
@@ -203,7 +238,7 @@ func _physics_process(delta: float) -> void:
 		modulate_meshes(1.0 - u)
 		if u >= 1.0:
 			_dissolve_t = -1.0
-			visible = false
+			_set_lod_sleep(true)  # stay asleep until respawn / player near
 			mesh_root.scale = _base_scale
 			modulate_meshes(1.0)
 		return
@@ -217,21 +252,16 @@ func _physics_process(delta: float) -> void:
 	var in_combat := GameState.combat_target == self
 	var near := in_combat or _player_near(LOD_ANIM_DIST2)
 	if not near:
-		# Far foes: cheap hide + skip idle/aggro work (still respond when player walks up)
-		if not _lod_hidden and not _player_near(LOD_HIDE_DIST2):
-			_lod_hidden = true
-			visible = false
-		elif _lod_hidden and _player_near(LOD_HIDE_DIST2 * 0.85):
-			_lod_hidden = false
-			visible = true
+		# Far: fully sleep (no idle, no RVO obstacle, no physics callback)
 		_aggro_pulse = 0.0
 		_set_warning(false)
 		_was_warning = false
+		if not _player_near(LOD_HIDE_DIST2):
+			_set_lod_sleep(true)
 		return
 
 	if _lod_hidden:
-		_lod_hidden = false
-		visible = true
+		_set_lod_sleep(false)
 
 	_idle_anim(delta)
 	_update_flinch(delta)
@@ -1146,6 +1176,9 @@ func _take_hit(dmg: int) -> void:
 func _defeat() -> void:
 	alive = false
 	$CollisionShape3D.disabled = true
+	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
+	if obs:
+		obs.avoidance_enabled = false
 	GameState.set_combat_target(null)
 	var cxp: int = int(def.get("combat_xp", 5))
 	var prev_cl: int = GameState.combat_level
@@ -1293,9 +1326,7 @@ func _tick_kill_flash(delta: float) -> void:
 
 func _respawn() -> void:
 	alive = true
-	_lod_hidden = false
-	visible = true
-	$CollisionShape3D.disabled = false
+	_set_lod_sleep(false)
 	hp = max_hp
 	global_position = spawn_pos
 	mesh_root.scale = _base_scale
@@ -1304,6 +1335,9 @@ func _respawn() -> void:
 	# Restore original mesh colors after kill-flash wash (v1.14 bug fix)
 	_restore_kill_flash_colors()
 	_update_hp_bar()
+	# Immediately re-sleep if the apprentice is still far (v1.84.1)
+	if not _player_near(LOD_HIDE_DIST2):
+		_set_lod_sleep(true)
 
 func _restore_kill_flash_colors() -> void:
 	for mi in _kill_flash_base.keys():

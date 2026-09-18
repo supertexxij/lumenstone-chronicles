@@ -226,6 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.1-smooth — player freeze fix
+
+Far foes now **fully sleep** (physics off, collision off, nav avoidance off) so click-to-move no longer freezes against 263 RVO obstacles. World wakes nearby foes on a sparse timer. Walk limb cadence scales with speed; hit-pause is softer.
+
 ### v1.84.0-smooth — smoother & quicker
 
 Performance and feel pass so the village and wilds run lighter and respond faster. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON and save keys unchanged.

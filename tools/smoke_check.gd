@@ -951,6 +951,8 @@ func _initialize():
 	var player184 = _src("res://scripts/player/player.gd")
 	var gs184 = _src("res://scripts/autoload/game_state.gd")
 	print("ENEMY_LOD_184", "LOD_ANIM_DIST2" in enemy184 and "LOD_HIDE_DIST2" in enemy184 and "_player_near" in enemy184)
+	print("FOE_SLEEP_184", "_set_lod_sleep" in enemy184 and "wake_for_player" in enemy184 and "_update_foe_lod_wake" in world184)
+	print("NAV_NO_FREEZE_184", "safe_len2" in player184 and "desire_len2" in player184)
 	print("LANDMARK_FX_NEAR_184", "_player_near_xz" in world184 and "_set_landmark_fx" in world184)
 	print("PROCESS_STAGGER_184", "_process_frame" in world184 and "stagger non-critical polish" in world184)
 	print("PLAYER_SPEED_184", "const SPEED := 8.2" in player184 and "const ACCEL := 26.0" in player184)

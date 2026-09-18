@@ -41,6 +41,8 @@ var _heather_sway_nodes: Array = []  # Wave 63: soft heather sway at Heather Hea
 var _process_frame: int = 0  # v1.84 smooth: stagger non-critical polish
 var _maple_dusk_amt: int = -1  # avoid rewriting particle amount every frame
 var _minimap_halls_cache: Array = []  # static landmark/hall markers
+var _foe_wake_timer: float = 0.0  # v1.84.1: sparse wake for sleeping foes
+var _foe_wake_cursor: int = 0
 var _hall_light_dip_t: float = 0.0  # Wave 63: soft hall enter/exit light dip
 var _knoll_dusk_lights: Array = []  # Wave 59: soft amber knoll glow at dusk
 var _arch_dusk_lights: Array = []  # Wave 64: soft stone arch glow at dusk
@@ -1053,6 +1055,7 @@ func _process(delta: float) -> void:
 	_process_frame = (_process_frame + 1) % 4
 	_update_day_night(delta)
 	_update_weather(delta)
+	_update_foe_lod_wake(delta)
 	# Stagger polish that does not need every-frame updates (llvmpipe / dense village)
 	if _process_frame == 0:
 		_update_quest_desk_highlights()
@@ -1068,6 +1071,36 @@ func _process(delta: float) -> void:
 		_update_fern_sway(delta)
 		_update_heather_sway(delta)
 	_update_hall_light_dip(delta)  # Wave 63: soft hall enter/exit light dip
+
+
+func _update_foe_lod_wake(delta: float) -> void:
+	## v1.84.1: wake sleeping foes near the player in small batches (avoids hitch + frozen click-move).
+	_foe_wake_timer -= delta
+	if _foe_wake_timer > 0.0:
+		return
+	_foe_wake_timer = 0.18
+	if player == null:
+		return
+	var foes: Array = get_tree().get_nodes_in_group("enemies")
+	if foes.is_empty():
+		return
+	var n: int = foes.size()
+	var batch: int = mini(48, n)
+	var px: float = player.global_position.x
+	var pz: float = player.global_position.z
+	var wake_r2: float = 32.0 * 32.0
+	for i in batch:
+		var idx: int = (_foe_wake_cursor + i) % n
+		var e: Node = foes[idx]
+		if e == null or not is_instance_valid(e):
+			continue
+		var dx: float = e.global_position.x - px
+		var dz: float = e.global_position.z - pz
+		if dx * dx + dz * dz > wake_r2:
+			continue
+		if e.has_method("wake_for_player"):
+			e.wake_for_player()
+	_foe_wake_cursor = (_foe_wake_cursor + batch) % n
 
 
 func _landmark_zones() -> Array:
