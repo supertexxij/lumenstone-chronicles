@@ -4989,7 +4989,7 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
 		uni.rotation.y = ang + PI  # face roughly toward center
-		uni.scale = Vector3(1.15, 1.15, 1.15)
+		uni.scale = Vector3(1.0, 1.0, 1.0)
 		party.add_child(uni)
 		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
 		CreatureBuilder.colorize_party_unicorn(bob, pair[0], pair[1])
