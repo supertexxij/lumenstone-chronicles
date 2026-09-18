@@ -87,6 +87,7 @@ func _ready() -> void:
 	_ensure_landmark_chip()
 	_ensure_foe_count()
 	_ensure_fav_paces()
+	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
 	hint_lbl.text = "Click ground or WASD · I bag · J journal · T travel · F talk · V eat · H fountain · Parent for grown-ups"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
