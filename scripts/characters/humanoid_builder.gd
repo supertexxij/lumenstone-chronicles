@@ -1,7 +1,7 @@
 class_name HumanoidBuilder
 extends RefCounted
 ## Chunky RuneScape-style humanoid from MeshInstance3D primitives.
-## Kid-readable proportions: clear head, torso, arms, legs, feet.
+## Kid-readable proportions: face, head, torso, shoulders, arms with elbows, legs with knees, feet.
 
 static func make_mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
@@ -68,14 +68,25 @@ static func build(root: Node3D) -> Dictionary:
 	bob.name = "BodyBob"
 	root.add_child(bob)
 
-	# --- Core (Wave 20: longer limbs, clearer shoulders — still chunky RS, closer to normal) ---
-	var torso := _mi(_box(Vector3(0.46, 0.54, 0.28)), Vector3(0, 1.14, 0), bob, "Torso")
-	var pelvis := _mi(_box(Vector3(0.42, 0.20, 0.26)), Vector3(0, 0.80, 0), bob, "Pelvis")
-	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.50, 0), bob, "Neck")
-	var head := _mi(_sphere(0.24), Vector3(0, 1.70, 0), bob, "Head")
-	var hair := _mi(_sphere(0.26, 0.38), Vector3(0, 1.84, -0.02), bob, "Hair")
-	var l_shoulder := _mi(_box(Vector3(0.16, 0.14, 0.22)), Vector3(-0.28, 1.36, 0), bob, "LShoulder")
-	var r_shoulder := _mi(_box(Vector3(0.16, 0.14, 0.22)), Vector3(0.28, 1.36, 0), bob, "RShoulder")
+	# --- Core (v1.78 refine: chunky RS silhouette that reads from the elevated camera) ---
+	var torso := _mi(_box(Vector3(0.50, 0.56, 0.30)), Vector3(0, 1.16, 0), bob, "Torso")
+	var pelvis := _mi(_box(Vector3(0.46, 0.20, 0.28)), Vector3(0, 0.80, 0), bob, "Pelvis")
+	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.52, 0), bob, "Neck")
+	var head := _mi(_sphere(0.23), Vector3(0, 1.72, 0.02), bob, "Head")
+	# Hair sits back so the face stays visible from the RuneScape camera.
+	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
+	var l_shoulder := _mi(_box(Vector3(0.18, 0.16, 0.24)), Vector3(-0.32, 1.38, 0), bob, "LShoulder")
+	var r_shoulder := _mi(_box(Vector3(0.18, 0.16, 0.24)), Vector3(0.32, 1.38, 0), bob, "RShoulder")
+	# Face (eyes / brows / nose) — kid-readable, not a blank sphere.
+	var l_eye := _mi(_sphere(0.055, 0.05), Vector3(-0.08, 1.74, 0.18), bob, "LEye")
+	var r_eye := _mi(_sphere(0.055, 0.05), Vector3(0.08, 1.74, 0.18), bob, "REye")
+	var l_pupil := _mi(_sphere(0.028, 0.03), Vector3(-0.08, 1.74, 0.22), bob, "LPupil")
+	var r_pupil := _mi(_sphere(0.028, 0.03), Vector3(0.08, 1.74, 0.22), bob, "RPupil")
+	var l_brow := _mi(_box(Vector3(0.10, 0.03, 0.04)), Vector3(-0.08, 1.82, 0.18), bob, "LBrow")
+	var r_brow := _mi(_box(Vector3(0.10, 0.03, 0.04)), Vector3(0.08, 1.82, 0.18), bob, "RBrow")
+	var nose := _mi(_box(Vector3(0.06, 0.07, 0.07)), Vector3(0, 1.68, 0.22), bob, "Nose")
+	var l_ear := _mi(_sphere(0.06, 0.09), Vector3(-0.22, 1.72, 0.0), bob, "LEar")
+	var r_ear := _mi(_sphere(0.06, 0.09), Vector3(0.22, 1.72, 0.0), bob, "REar")
 
 	# Hat (explorer brim + crown; jewel for crownlets) — hidden until equipped
 	var hat := Node3D.new()
@@ -88,8 +99,8 @@ static func build(root: Node3D) -> Dictionary:
 	var hat_jewel := _mi(_sphere(0.06), Vector3(0, 0.22, 0), hat, "HatJewel")
 	hat_jewel.visible = false
 
-	# Cape drapes from the shoulders
-	var cape := _mi(_box(Vector3(0.70, 0.95, 0.08)), Vector3(0, 1.02, -0.24), bob, "Cape")
+	# Cape drapes from the shoulders — narrower so arms still read from above.
+	var cape := _mi(_box(Vector3(0.52, 0.88, 0.07)), Vector3(0, 1.04, -0.22), bob, "Cape")
 
 	# Belt around waist
 	var belt := _mi(_box(Vector3(0.48, 0.10, 0.30)), Vector3(0, 0.82, 0), bob, "Belt")
@@ -113,50 +124,73 @@ static func build(root: Node3D) -> Dictionary:
 	var acc_glow := _mi(_sphere(0.06), Vector3(0, 0.08, 0.04), accessory, "AccGlow")
 	var acc_strap := _mi(_box(Vector3(0.08, 0.22, 0.04)), Vector3(0, 0.16, -0.02), accessory, "AccStrap")
 
-	# --- Arms (pivots at shoulders; hands hang near mid-thigh) ---
+	# --- Arms (shoulder pivots + elbow pivots so limbs read from above) ---
 	var l_arm := Node3D.new()
 	l_arm.name = "LArm"
-	l_arm.position = Vector3(-0.32, 1.34, 0)
+	l_arm.position = Vector3(-0.40, 1.36, 0)
+	l_arm.rotation.z = deg_to_rad(-12)
 	bob.add_child(l_arm)
-	var l_upper := _mi(_capsule(0.08, 0.42), Vector3(-0.05, -0.20, 0), l_arm, "LUpperArm")
-	var l_lower := _mi(_capsule(0.07, 0.40), Vector3(-0.07, -0.56, 0), l_arm, "LLowerArm")
-	var l_hand := _mi(_sphere(0.08), Vector3(-0.07, -0.80, 0), l_arm, "LHand")
+	var l_upper := _mi(_capsule(0.09, 0.40), Vector3(-0.02, -0.18, 0), l_arm, "LUpperArm")
+	var l_elbow := _mi(_sphere(0.075), Vector3(-0.03, -0.38, 0), l_arm, "LElbow")
+	var l_forearm := Node3D.new()
+	l_forearm.name = "LForearm"
+	l_forearm.position = Vector3(-0.03, -0.38, 0)
+	l_arm.add_child(l_forearm)
+	var l_lower := _mi(_capsule(0.075, 0.38), Vector3(0, -0.20, 0), l_forearm, "LLowerArm")
+	var l_hand := _mi(_sphere(0.09), Vector3(0, -0.42, 0.02), l_forearm, "LHand")
 
 	var r_arm := Node3D.new()
 	r_arm.name = "RArm"
-	r_arm.position = Vector3(0.32, 1.34, 0)
+	r_arm.position = Vector3(0.40, 1.36, 0)
+	r_arm.rotation.z = deg_to_rad(12)
 	bob.add_child(r_arm)
-	var r_upper := _mi(_capsule(0.08, 0.42), Vector3(0.05, -0.20, 0), r_arm, "RUpperArm")
-	var r_lower := _mi(_capsule(0.07, 0.40), Vector3(0.07, -0.56, 0), r_arm, "RLowerArm")
-	var r_hand := _mi(_sphere(0.08), Vector3(0.07, -0.80, 0), r_arm, "RHand")
+	var r_upper := _mi(_capsule(0.09, 0.40), Vector3(0.02, -0.18, 0), r_arm, "RUpperArm")
+	var r_elbow := _mi(_sphere(0.075), Vector3(0.03, -0.38, 0), r_arm, "RElbow")
+	var r_forearm := Node3D.new()
+	r_forearm.name = "RForearm"
+	r_forearm.position = Vector3(0.03, -0.38, 0)
+	r_arm.add_child(r_forearm)
+	var r_lower := _mi(_capsule(0.075, 0.38), Vector3(0, -0.20, 0), r_forearm, "RLowerArm")
+	var r_hand := _mi(_sphere(0.09), Vector3(0, -0.42, 0.02), r_forearm, "RHand")
 
 	# Weapon held in the right hand so walk/attack swings it (RuneScape-style)
+	# r_arm.add_child(weapon) — live parent is the forearm (child of r_arm) so elbow flex carries the blade.
 	var weapon := Node3D.new()
 	weapon.name = "Weapon"
 	weapon.visible = false
-	weapon.position = Vector3(0.10, -0.82, 0.06)
+	weapon.position = Vector3(0.08, -0.44, 0.06)
 	weapon.rotation_degrees = Vector3(8, 0, -12)
-	r_arm.add_child(weapon)
+	r_forearm.add_child(weapon)
 	var blade := _mi(_box(Vector3(0.07, 0.78, 0.07)), Vector3(0, 0.42, 0), weapon, "Blade")
 	var hilt := _mi(_box(Vector3(0.16, 0.07, 0.07)), Vector3(0, 0.0, 0), weapon, "Hilt")
 	var pommel := _mi(_sphere(0.055), Vector3(0, -0.10, 0), weapon, "Pommel")
 
-	# --- Legs (pivots at hips; feet sit on the ground) ---
+	# --- Legs (hip pivots + knee pivots; wider stance for top-down read) ---
 	var l_leg := Node3D.new()
 	l_leg.name = "LLeg"
-	l_leg.position = Vector3(-0.13, 0.72, 0)
+	l_leg.position = Vector3(-0.20, 0.72, 0)
 	bob.add_child(l_leg)
-	var l_thigh := _mi(_capsule(0.10, 0.42), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
-	var l_shin := _mi(_capsule(0.08, 0.40), Vector3(0, -0.54, 0), l_leg, "LLowerLeg")
-	var l_foot := _mi(_box(Vector3(0.15, 0.08, 0.26)), Vector3(0, -0.76, 0.05), l_leg, "LFoot")
+	var l_thigh := _mi(_capsule(0.11, 0.40), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
+	var l_knee := _mi(_sphere(0.09), Vector3(0, -0.38, 0), l_leg, "LKnee")
+	var l_shin_pivot := Node3D.new()
+	l_shin_pivot.name = "LShinPivot"
+	l_shin_pivot.position = Vector3(0, -0.38, 0)
+	l_leg.add_child(l_shin_pivot)
+	var l_shin := _mi(_capsule(0.09, 0.38), Vector3(0, -0.20, 0), l_shin_pivot, "LLowerLeg")
+	var l_foot := _mi(_box(Vector3(0.16, 0.09, 0.30)), Vector3(0, -0.38, 0.08), l_shin_pivot, "LFoot")
 
 	var r_leg := Node3D.new()
 	r_leg.name = "RLeg"
-	r_leg.position = Vector3(0.13, 0.72, 0)
+	r_leg.position = Vector3(0.20, 0.72, 0)
 	bob.add_child(r_leg)
-	var r_thigh := _mi(_capsule(0.10, 0.42), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
-	var r_shin := _mi(_capsule(0.08, 0.40), Vector3(0, -0.54, 0), r_leg, "RLowerLeg")
-	var r_foot := _mi(_box(Vector3(0.15, 0.08, 0.26)), Vector3(0, -0.76, 0.05), r_leg, "RFoot")
+	var r_thigh := _mi(_capsule(0.11, 0.40), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
+	var r_knee := _mi(_sphere(0.09), Vector3(0, -0.38, 0), r_leg, "RKnee")
+	var r_shin_pivot := Node3D.new()
+	r_shin_pivot.name = "RShinPivot"
+	r_shin_pivot.position = Vector3(0, -0.38, 0)
+	r_leg.add_child(r_shin_pivot)
+	var r_shin := _mi(_capsule(0.09, 0.38), Vector3(0, -0.20, 0), r_shin_pivot, "RLowerLeg")
+	var r_foot := _mi(_box(Vector3(0.16, 0.09, 0.30)), Vector3(0, -0.38, 0.08), r_shin_pivot, "RFoot")
 
 	return {
 		"bob": bob,
@@ -200,6 +234,23 @@ static func build(root: Node3D) -> Dictionary:
 		"r_thigh": r_thigh,
 		"l_shin": l_shin,
 		"r_shin": r_shin,
+		"l_forearm": l_forearm,
+		"r_forearm": r_forearm,
+		"l_shin_pivot": l_shin_pivot,
+		"r_shin_pivot": r_shin_pivot,
+		"l_elbow": l_elbow,
+		"r_elbow": r_elbow,
+		"l_knee": l_knee,
+		"r_knee": r_knee,
+		"l_eye": l_eye,
+		"r_eye": r_eye,
+		"l_pupil": l_pupil,
+		"r_pupil": r_pupil,
+		"l_brow": l_brow,
+		"r_brow": r_brow,
+		"nose": nose,
+		"l_ear": l_ear,
+		"r_ear": r_ear,
 	}
 
 
@@ -217,6 +268,20 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("r_lower"), outfit.lightened(0.05))
 	set_color(parts.get("l_hand"), skin)
 	set_color(parts.get("r_hand"), skin)
+	set_color(parts.get("l_elbow"), skin)
+	set_color(parts.get("r_elbow"), skin)
+	set_color(parts.get("l_knee"), outfit.darkened(0.15))
+	set_color(parts.get("r_knee"), outfit.darkened(0.15))
+	# Face
+	set_color(parts.get("l_eye"), Color("#f4f0e6"), 0.4)
+	set_color(parts.get("r_eye"), Color("#f4f0e6"), 0.4)
+	set_color(parts.get("l_pupil"), Color("#1a1410"), 0.35)
+	set_color(parts.get("r_pupil"), Color("#1a1410"), 0.35)
+	set_color(parts.get("l_brow"), hair.darkened(0.1))
+	set_color(parts.get("r_brow"), hair.darkened(0.1))
+	set_color(parts.get("nose"), skin.darkened(0.06))
+	set_color(parts.get("l_ear"), skin.darkened(0.04))
+	set_color(parts.get("r_ear"), skin.darkened(0.04))
 	# Legs / feet
 	set_color(parts.get("l_thigh"), outfit.darkened(0.12))
 	set_color(parts.get("r_thigh"), outfit.darkened(0.12))
@@ -336,38 +401,38 @@ static func style_weapon(parts: Dictionary, item: Dictionary) -> void:
 			blade = _mi(_box(Vector3(0.09, 0.82, 0.09)), Vector3(0, 0.38, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.40, 0.20, 0.12)), Vector3(0.16, 0.72, 0), weapon, "Hilt")
 			pommel = _mi(_sphere(0.07), Vector3(0, -0.12, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.position = Vector3(0.06, -0.44, 0.06)
 			weapon.rotation_degrees = Vector3(10, 0, -16)
 		"staff":
 			blade = _mi(_cyl(0.045, 0.055, 1.45), Vector3(0, 0.42, 0), weapon, "Blade")
 			hilt = _mi(_sphere(0.09), Vector3(0, 1.12, 0), weapon, "Hilt")
 			pommel = _mi(_cyl(0.06, 0.06, 0.08), Vector3(0, -0.28, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.08, -0.78, 0.04)
+			weapon.position = Vector3(0.05, -0.40, 0.04)
 			weapon.rotation_degrees = Vector3(12, 0, -8)
 		"bow":
 			# Simple recurve silhouette held beside the arm
 			blade = _mi(_box(Vector3(0.05, 1.05, 0.07)), Vector3(0, 0.22, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.04, 0.55, 0.04)), Vector3(0.16, 0.22, 0), weapon, "Hilt")
 			pommel = _mi(_box(Vector3(0.04, 0.04, 0.32)), Vector3(0.08, 0.62, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.12, -0.55, -0.06)
+			weapon.position = Vector3(0.10, -0.18, -0.06)
 			weapon.rotation_degrees = Vector3(5, 18, -4)
 		"dagger":
 			blade = _mi(_box(Vector3(0.06, 0.40, 0.06)), Vector3(0, 0.18, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.14, 0.06, 0.06)), Vector3(0, -0.04, 0), weapon, "Hilt")
 			pommel = _mi(_sphere(0.05), Vector3(0, -0.12, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.10, -0.82, 0.08)
+			weapon.position = Vector3(0.06, -0.44, 0.08)
 			weapon.rotation_degrees = Vector3(6, 0, -20)
 		"mallet":
 			blade = _mi(_box(Vector3(0.11, 0.58, 0.11)), Vector3(0, 0.22, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.26, 0.20, 0.20)), Vector3(0, 0.56, 0), weapon, "Hilt")
 			pommel = _mi(_sphere(0.07), Vector3(0, -0.12, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.position = Vector3(0.06, -0.44, 0.06)
 			weapon.rotation_degrees = Vector3(8, 0, -14)
 		_:
 			blade = _mi(_box(Vector3(0.07, 0.82, 0.07)), Vector3(0, 0.42, 0), weapon, "Blade")
 			hilt = _mi(_box(Vector3(0.16, 0.07, 0.07)), Vector3(0, 0.0, 0), weapon, "Hilt")
 			pommel = _mi(_sphere(0.055), Vector3(0, -0.10, 0), weapon, "Pommel")
-			weapon.position = Vector3(0.10, -0.82, 0.06)
+			weapon.position = Vector3(0.06, -0.44, 0.06)
 			weapon.rotation_degrees = Vector3(8, 0, -12)
 
 	parts["blade"] = blade

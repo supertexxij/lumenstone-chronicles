@@ -87,7 +87,8 @@ func _ready() -> void:
 	_ensure_landmark_chip()
 	_ensure_foe_count()
 	_ensure_fav_paces()
-	hint_lbl.text = "Click · WASD · Zoom · Q/E · I/J/C · V food · M mute · R weather · T travel · F talk · H fountain · N glade · B ridge · G garden · L lookout · K mill · O hollow · P willow · Y reed · U cross · X arch · Z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls"
+	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
+	hint_lbl.text = "Click ground or WASD · I bag · J journal · T travel · F talk · V eat · H fountain · Parent for grown-ups"
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
@@ -152,9 +153,13 @@ func refresh() -> void:
 	else:
 		combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
 	var parts: PackedStringArray = []
+	var lumen_total := 0
 	for g in ["math","la","science","history","bible"]:
-		parts.append("%s:%d" % [GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)])
-	lumen_lbl.text = " · ".join(parts)
+		var n: int = int(GameState.lumens.get(g, 0))
+		lumen_total += n
+		parts.append("%s:%d" % [GameState.GUILDS[g]["lumen"], n])
+	lumen_lbl.text = "Lumens %d" % lumen_total
+	lumen_lbl.tooltip_text = " · ".join(parts)
 	set_hp(GameState.hp, GameState.max_hp)
 	_refresh_food_lbl()
 	_refresh_mute_label()
@@ -256,7 +261,7 @@ func _ensure_food_lbl() -> void:
 	food_lbl = Label.new()
 	food_lbl.name = "FoodLbl"
 	food_lbl.text = "Pantry —"
-	food_lbl.custom_minimum_size = Vector2(220, 0)
+	food_lbl.custom_minimum_size = Vector2(160, 0)
 	top.add_child(food_lbl)
 	# Place right after HpBar
 	var hp_i: int = hp_bar.get_index()
@@ -313,7 +318,7 @@ func _refresh_food_lbl() -> void:
 	# Wave 41: soft Ready flash when cooldown ends
 	if cd > 0.05:
 		_food_was_waiting = true
-		food_lbl.text = "Pantry %s · Wait %.1fs · next V:%s" % [stack_txt, cd, next_txt]
+		food_lbl.text = "Pantry %s · Wait %.1fs · V:%s" % [stack_txt, cd, next_txt]
 		food_lbl.modulate = Color(1.0, 0.88, 0.55, 1.0)
 	else:
 		if _food_was_waiting:
@@ -420,10 +425,10 @@ func _ensure_year_chip() -> void:
 	_year_chip_panel.name = "YearChipPanel"
 	_year_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_year_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_year_chip_panel.offset_left = -290.0
-	_year_chip_panel.offset_top = 74.0
+	_year_chip_panel.offset_left = -300.0
+	_year_chip_panel.offset_top = 84.0
 	_year_chip_panel.offset_right = -12.0
-	_year_chip_panel.offset_bottom = 108.0
+	_year_chip_panel.offset_bottom = 118.0
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.14, 0.18, 0.14, 0.72)
 	style.border_color = Color(0.78, 0.86, 0.55, 0.75)
@@ -478,9 +483,14 @@ func _refresh_year_chip() -> void:
 			wx_name = "Rain"
 	# Wave 74: Year chip shows week N of 36 beside % (PIN stays 1234; mastery ≥80%)
 	var week_show: int = clampi(int(GameState.unlocked_week), 1, 36)
-	_year_chip.text = "Year · week %d of 36 · %d%% · %s" % [week_show, pct, wx_letter]
+	var lab := str(GameState.slot_label).strip_edges()
+	var slot_n: int = int(GameState.active_slot) + 1
+	if lab != "":
+		_year_chip.text = "Year · week %d of 36 · %d%% · %s" % [week_show, pct, lab]
+	else:
+		_year_chip.text = "Year · week %d of 36 · %d%%" % [week_show, pct]
 	var ynote := GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
-	_year_chip.tooltip_text = "%s · week %d of 36 · weather %s (%s)" % [ynote, week_show, wx_letter, wx_name]
+	_year_chip.tooltip_text = "%s · week %d of 36 · weather %s (%s) · Slot %d" % [ynote, week_show, wx_letter, wx_name, slot_n]
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
 		_year_chip_flash_dur = 0.85
@@ -559,9 +569,9 @@ func _ensure_foe_count() -> void:
 	_foe_count_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_foe_count_panel.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	_foe_count_panel.offset_left = -168.0
-	_foe_count_panel.offset_top = -252.0
+	_foe_count_panel.offset_top = -248.0
 	_foe_count_panel.offset_right = -16.0
-	_foe_count_panel.offset_bottom = -224.0
+	_foe_count_panel.offset_bottom = -220.0
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.16, 0.14, 0.14, 0.72)
 	style.border_color = Color(0.78, 0.55, 0.42, 0.75)
@@ -700,6 +710,8 @@ func _ensure_save_chip() -> void:
 	_save_chip.modulate = Color(0.88, 0.94, 0.98, 1.0)
 	_save_chip_panel.add_child(_save_chip)
 	add_child(_save_chip_panel)
+	# v1.78 refine: save nickname lives on the Year chip — hide the extra plate
+	_save_chip_panel.visible = false
 
 
 func _refresh_save_chip() -> void:
@@ -715,6 +727,9 @@ func _refresh_save_chip() -> void:
 	else:
 		_save_chip.text = "Save · Slot %d" % slot_n
 		_save_chip.tooltip_text = "Slot %d — add a nickname in Saves" % slot_n
+	# v1.78 refine: keep the chip updated for pulses, but hide the extra plate
+	if _save_chip_panel:
+		_save_chip_panel.visible = false
 
 
 
@@ -762,9 +777,9 @@ func _ensure_landmark_chip() -> void:
 	_landmark_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_landmark_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_landmark_chip_panel.offset_left = -280.0
-	_landmark_chip_panel.offset_top = 150.0
+	_landmark_chip_panel.offset_top = 124.0
 	_landmark_chip_panel.offset_right = -12.0
-	_landmark_chip_panel.offset_bottom = 184.0
+	_landmark_chip_panel.offset_bottom = 158.0
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.14, 0.16, 0.14, 0.78)
 	style.border_color = Color(0.85, 0.78, 0.45, 0.8)
@@ -1049,5 +1064,9 @@ func _refresh_fav_paces() -> void:
 	else:
 		_fav_paces_lbl.text = "★ %s · ~%d paces" % [short_n, paces]  # Wave 77: ★ fav chip shows paces to fav
 	_fav_paces_lbl.tooltip_text = "Distance to your Travel ★ fav · %s (Pin ★ Fav in Travel)" % fav
+	# v1.78 refine: hide fav plate while the landmark chip already names the place
+	if _landmark_chip_panel != null and _landmark_chip_panel.visible:
+		_fav_paces_panel.visible = false
+		return
 	_fav_paces_panel.visible = true
 

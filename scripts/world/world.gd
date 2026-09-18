@@ -173,6 +173,10 @@ func _init_mats() -> void:
 	_mats["maple_leaf"] = _mat(Color("#c45a28"))
 	_mats["maple_leaf_gold"] = _mat(Color("#d4a017"))
 	_mats["maple_leaf_green"] = _mat(Color("#4a7a38"))
+	_mats["cobble"] = _mat(Color("#7a7468"))
+	_mats["cobble_light"] = _mat(Color("#9a9284"))
+	_mats["plaster"] = _mat(Color("#cfc6b4"))
+	_mats["window"] = _mat(Color("#2a3a48"), 0.25)
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -263,6 +267,19 @@ func _build_ground() -> void:
 		patch.position = Vector3(cos(ang) * 36.0, 0.015, sin(ang) * 36.0)
 		static_world.add_child(patch)
 		HeadlessGuard.guard_mesh(patch)
+	# v1.78 refine: worn grass patches inside the plaza so the yard is not one flat green
+	for i in 6:
+		var wear := MeshInstance3D.new()
+		var wm := CylinderMesh.new()
+		wm.top_radius = 3.2 + (i % 3) * 0.5
+		wm.bottom_radius = wm.top_radius
+		wm.height = 0.018
+		wear.mesh = wm
+		wear.material_override = _mats["grass_light"]
+		var wang := i * TAU / 6.0 + 0.3
+		wear.position = Vector3(cos(wang) * 8.5, 0.012, 6.0 + sin(wang) * 7.5)
+		static_world.add_child(wear)
+		HeadlessGuard.guard_mesh(wear)
 
 func _build_paths() -> void:
 	# Central plaza ring
@@ -287,6 +304,33 @@ func _build_paths() -> void:
 	trim.position = Vector3(0, 0.018, 6)
 	static_world.add_child(trim)
 	HeadlessGuard.guard_mesh(trim)
+	# v1.78 refine: cobble plaza disc + stone curb so the village green reads finished
+	var cobble := MeshInstance3D.new()
+	cobble.name = "PlazaCobble"
+	var cc := CylinderMesh.new()
+	cc.top_radius = 7.6
+	cc.bottom_radius = 7.6
+	cc.height = 0.055
+	cobble.mesh = cc
+	cobble.material_override = _mats["cobble"]
+	cobble.position = Vector3(0, 0.032, 6)
+	static_world.add_child(cobble)
+	HeadlessGuard.guard_mesh(cobble)
+	var cobble_in := MeshInstance3D.new()
+	cobble_in.name = "PlazaCobbleInner"
+	var ci := CylinderMesh.new()
+	ci.top_radius = 5.4
+	ci.bottom_radius = 5.4
+	ci.height = 0.05
+	cobble_in.mesh = ci
+	cobble_in.material_override = _mats["cobble_light"]
+	cobble_in.position = Vector3(0, 0.036, 6)
+	static_world.add_child(cobble_in)
+	HeadlessGuard.guard_mesh(cobble_in)
+	for i in 20:
+		var ang := i * TAU / 20.0
+		var curb := _mi(_box(Vector3(0.70, 0.20, 0.32)), Vector3(cos(ang) * 15.05, 0.11, 6.0 + sin(ang) * 15.05), static_world, _mats["stone"], "PlazaCurb%d" % i)
+		curb.rotation.y = -ang
 	# Spokes toward guild halls
 	var spokes := [
 		Vector3(18, 0, 2), Vector3(-18, 0, 2), Vector3(0, 0, -14),
@@ -306,6 +350,16 @@ func _build_paths() -> void:
 		plank.rotation.y = ang
 		static_world.add_child(plank)
 		HeadlessGuard.guard_mesh(plank)
+		# Stone edge trim along each spoke
+		var edge := MeshInstance3D.new()
+		var ebox := BoxMesh.new()
+		ebox.size = Vector3(2.85, 0.03, length)
+		edge.mesh = ebox
+		edge.material_override = _mats["stone"]
+		edge.position = Vector3(dx * 0.45, 0.016, 6.0 + dz * 0.45)
+		edge.rotation.y = ang
+		static_world.add_child(edge)
+		HeadlessGuard.guard_mesh(edge)
 
 func _build_buildings() -> void:
 	for b in world_data.get("buildings", []):
@@ -317,13 +371,28 @@ func _build_buildings() -> void:
 		var guild_col := _hex_color(b["color"])
 		var wall_mat := _mat(guild_col.lightened(0.08))
 		var trim_mat := _mat(guild_col.darkened(0.25))
+		# Foundation plinth so halls sit on the green (v1.78 refine)
+		_mi(_box(Vector3(w + 0.55, 0.38, d + 0.55)), Vector3(0, 0.14, 0), body, _mats["stone"], "Plinth")
 		# Main hall body
 		_mi(_box(Vector3(w, h, d)), Vector3(0, h * 0.5, 0), body, wall_mat, "Hall")
+		# Mid timber beam
+		_mi(_box(Vector3(w + 0.08, 0.18, d + 0.08)), Vector3(0, h * 0.62, 0), body, _mats["wood"], "Beam")
 		# Front porch / steps
-		_mi(_box(Vector3(w * 0.55, 0.25, 1.2)), Vector3(0, 0.12, d * 0.5 + 0.4), body, _mats["stone"], "Steps")
-		_mi(_box(Vector3(w * 0.5, 0.18, 0.9)), Vector3(0, 0.32, d * 0.5 + 0.25), body, _mats["stone_dark"], "Landing")
+		_mi(_box(Vector3(w * 0.62, 0.22, 1.55)), Vector3(0, 0.10, d * 0.5 + 0.55), body, _mats["stone"], "StepLow")
+		_mi(_box(Vector3(w * 0.55, 0.25, 1.2)), Vector3(0, 0.22, d * 0.5 + 0.4), body, _mats["stone"], "Steps")
+		_mi(_box(Vector3(w * 0.5, 0.18, 0.9)), Vector3(0, 0.38, d * 0.5 + 0.25), body, _mats["stone_dark"], "Landing")
+		# Door awning
+		_mi(_box(Vector3(1.7, 0.10, 0.85)), Vector3(0, 2.35, d * 0.5 + 0.42), body, _mats["wood"], "Awning")
 		# Door frame recess (darker panel)
 		_mi(_box(Vector3(1.1, 2.0, 0.12)), Vector3(0, 1.1, d * 0.5 + 0.02), body, trim_mat, "Door")
+		# Front windows
+		_mi(_box(Vector3(0.85, 0.80, 0.10)), Vector3(-w * 0.28, h * 0.55, d * 0.5 + 0.04), body, _mats["window"], "WinL")
+		_mi(_box(Vector3(0.85, 0.80, 0.10)), Vector3(w * 0.28, h * 0.55, d * 0.5 + 0.04), body, _mats["window"], "WinR")
+		_mi(_box(Vector3(0.95, 0.08, 0.12)), Vector3(-w * 0.28, h * 0.55 + 0.46, d * 0.5 + 0.05), body, _mats["wood"], "SillL")
+		_mi(_box(Vector3(0.95, 0.08, 0.12)), Vector3(w * 0.28, h * 0.55 + 0.46, d * 0.5 + 0.05), body, _mats["wood"], "SillR")
+		# Side windows
+		_mi(_box(Vector3(0.10, 0.70, 0.70)), Vector3(-w * 0.5 - 0.04, h * 0.52, 0), body, _mats["window"], "WinSideL")
+		_mi(_box(Vector3(0.10, 0.70, 0.70)), Vector3(w * 0.5 + 0.04, h * 0.52, 0), body, _mats["window"], "WinSideR")
 		# Side buttress pillars
 		_mi(_cyl(0.28, 0.32, h * 0.85), Vector3(-w * 0.5 - 0.15, h * 0.42, d * 0.35), body, _mats["stone"], "PillarL")
 		_mi(_cyl(0.28, 0.32, h * 0.85), Vector3(w * 0.5 + 0.15, h * 0.42, d * 0.35), body, _mats["stone"], "PillarR")
@@ -566,6 +635,9 @@ func _build_fountain() -> void:
 	root.name = "Fountain"
 	root.position = Vector3(f["x"], 0, f["z"])
 	_fountain_root = root
+	# v1.78 refine: cobble apron under the fountain
+	_mi(_cyl(3.6, 3.6, 0.06), Vector3(0, 0.03, 0), root, _mats["cobble"], "FountainApron")
+	_mi(_cyl(3.15, 3.15, 0.05), Vector3(0, 0.04, 0), root, _mats["cobble_light"], "FountainApronIn")
 	_mi(_cyl(2.35, 2.55, 0.4), Vector3(0, 0.2, 0), root, _mats["stone"], "Base")
 	_mi(_cyl(1.65, 1.65, 0.15), Vector3(0, 0.35, 0), root, _mats["water"], "Water")
 	_water_positions.append(root.position)  # Wave 38: brook murmur near fountain
@@ -660,6 +732,14 @@ func _build_village_props() -> void:
 	_add_crate(Vector3(15.5, 0, 5.5))
 	_add_crate(Vector3(16.3, 0, 5.0))
 	_add_crate(Vector3(-15.2, 0, 5.2))
+	# v1.78 refine: plaza planters + a simple market stall so the green feels lived-in
+	_add_planter(Vector3(7.2, 0, 6.5))
+	_add_planter(Vector3(-7.2, 0, 6.5))
+	_add_planter(Vector3(3.4, 0, 13.2))
+	_add_planter(Vector3(-3.4, 0, 13.2))
+	_add_market_stall(Vector3(9.5, 0, 3.2), -0.4)
+	_add_market_stall(Vector3(-9.5, 0, 3.2), 0.4)
+	_add_bench(Vector3(0.0, 0, 15.6), PI)
 
 func _fence_arc(origin: Vector3, posts: int, yaw: float) -> void:
 	var root := Node3D.new()
@@ -739,6 +819,32 @@ func _add_crate(pos: Vector3) -> void:
 	var root := Node3D.new()
 	root.position = pos
 	_mi(_box(Vector3(0.7, 0.55, 0.7)), Vector3(0, 0.28, 0), root, _mats["wood_light"], "Crate")
+	static_world.add_child(root)
+
+func _add_planter(pos: Vector3) -> void:
+	## v1.78 refine: chunky stone planter with flowers for the plaza yard.
+	var root := Node3D.new()
+	root.name = "Planter"
+	root.position = pos
+	_mi(_box(Vector3(1.15, 0.42, 1.15)), Vector3(0, 0.21, 0), root, _mats["stone"], "Box")
+	_mi(_box(Vector3(0.95, 0.12, 0.95)), Vector3(0, 0.44, 0), root, _mats["bush"], "Soil")
+	_mi(_sphere(0.16, 0.22), Vector3(-0.22, 0.62, 0.1), root, _mats["flower"], "BloomA")
+	_mi(_sphere(0.14, 0.20), Vector3(0.2, 0.60, -0.12), root, _mats["flower_y"], "BloomB")
+	_mi(_sphere(0.12, 0.18), Vector3(0.05, 0.58, 0.22), root, _mats["flower"], "BloomC")
+	static_world.add_child(root)
+
+func _add_market_stall(pos: Vector3, yaw: float) -> void:
+	## v1.78 refine: simple awning stall so the plaza feels like a village, not empty grass.
+	var root := Node3D.new()
+	root.name = "MarketStall"
+	root.position = pos
+	root.rotation.y = yaw
+	_mi(_box(Vector3(2.1, 0.18, 1.15)), Vector3(0, 0.55, 0), root, _mats["wood"], "Counter")
+	_mi(_box(Vector3(0.14, 1.15, 0.14)), Vector3(-0.95, 0.95, -0.45), root, _mats["wood_light"], "PostL")
+	_mi(_box(Vector3(0.14, 1.15, 0.14)), Vector3(0.95, 0.95, -0.45), root, _mats["wood_light"], "PostR")
+	_mi(_box(Vector3(2.3, 0.08, 1.4)), Vector3(0, 1.55, -0.1), root, _mats["roof"], "Awning")
+	_mi(_box(Vector3(0.45, 0.35, 0.45)), Vector3(-0.45, 0.82, 0.05), root, _mats["barrel"], "GoodsA")
+	_mi(_box(Vector3(0.38, 0.28, 0.38)), Vector3(0.4, 0.78, 0.1), root, _mats["wood_light"], "GoodsB")
 	static_world.add_child(root)
 
 func _spawn_npcs() -> void:
@@ -1682,6 +1788,11 @@ func _build_lantern_glade() -> void:
 	for i in 8:
 		var z := -14.0 - float(i) * 4.5
 		_mi(_box(Vector3(3.6, 0.02, 0.32)), Vector3(0.5, 0.03, z), root, _mats["dirt_trim"], "GladeTrim")
+	# v1.78 refine: stone curb along the glade path so the wilds corridor looks finished
+	for i in 10:
+		var z2 := -13.0 - float(i) * 3.6
+		_mi(_box(Vector3(0.28, 0.16, 0.85)), Vector3(-1.3, 0.09, z2), root, _mats["stone"], "GladeCurbL")
+		_mi(_box(Vector3(0.28, 0.16, 0.85)), Vector3(2.3, 0.09, z2), root, _mats["stone"], "GladeCurbR")
 	# Stepping stones across a tiny brook + foam highlights
 	_mi(_cyl(2.8, 2.8, 0.08), Vector3(0.5, 0.02, -42), root, _mats["water"], "Brook")
 	_water_positions.append(Vector3(0.5, 0, -42))  # Wave 38: brook murmur

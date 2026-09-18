@@ -77,6 +77,7 @@ var seen_wave_74_toast: bool = false  # Wave 74: once-per-save polish tip toast 
 var seen_wave_75_toast: bool = false  # Wave 75: once-per-save polish tip toast on load
 var seen_wave_76_toast: bool = false  # Wave 76: once-per-save polish tip toast on load
 var seen_wave_77_toast: bool = false  # Wave 77: once-per-save polish tip toast on load
+var seen_refine_178_toast: bool = false  # v1.78 refine: once-per-save look/HUD/Parent tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -181,6 +182,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_75_toast = false
 	seen_wave_76_toast = false
 	seen_wave_77_toast = false
+	seen_refine_178_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -393,6 +395,7 @@ func save_game() -> void:
 		"seen_wave_75_toast": seen_wave_75_toast,
 		"seen_wave_76_toast": seen_wave_76_toast,
 		"seen_wave_77_toast": seen_wave_77_toast,
+		"seen_refine_178_toast": seen_refine_178_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -481,6 +484,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_75_toast = bool(data.get("seen_wave_75_toast", false))
 	seen_wave_76_toast = bool(data.get("seen_wave_76_toast", false))
 	seen_wave_77_toast = bool(data.get("seen_wave_77_toast", false))
+	seen_refine_178_toast = bool(data.get("seen_refine_178_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -1039,6 +1043,16 @@ func maybe_wave_77_toast() -> bool:
 		return false
 	seen_wave_77_toast = true
 	toast.emit("Wave 77 polish · denser Birch Rest fireflies at dusk + Soft Travel arrival · ★ fav paces · Honeydew Hamster in the wilds.")
+	save_game()
+	return true
+
+
+func maybe_refine_178_toast() -> bool:
+	## v1.78 refine: once-per-save look / HUD / Parent tip (PIN stays 1234; mastery ≥80%).
+	if seen_refine_178_toast:
+		return false
+	seen_refine_178_toast = true
+	toast.emit("Village look, HUD, and Parent screen refined — clearer people, plaza, and a quieter dashboard.")
 	save_game()
 	return true
 

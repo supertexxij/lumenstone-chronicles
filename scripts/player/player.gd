@@ -7,7 +7,7 @@ signal clicked_ground(pos: Vector3)
 
 const SPEED := 6.5
 const ACCEL := 18.0
-const CAM_BASE := Vector3(0, 14, 12)
+const CAM_BASE := Vector3(0, 11.2, 13.5)
 const CAM_ZOOM_MIN := 0.55
 const CAM_ZOOM_MAX := 1.55
 
@@ -722,6 +722,10 @@ func _animate_walk(moving: bool, delta: float) -> void:
 	var r_arm: Node3D = parts.get("r_arm")
 	var l_leg: Node3D = parts.get("l_leg")
 	var r_leg: Node3D = parts.get("r_leg")
+	var l_forearm: Node3D = parts.get("l_forearm")
+	var r_forearm: Node3D = parts.get("r_forearm")
+	var l_shin_p: Node3D = parts.get("l_shin_pivot")
+	var r_shin_p: Node3D = parts.get("r_shin_pivot")
 	var cape: MeshInstance3D = parts.get("cape")
 	var weapon: Node3D = parts.get("weapon")
 	if bob == null:
@@ -729,20 +733,28 @@ func _animate_walk(moving: bool, delta: float) -> void:
 	var armed: bool = weapon != null and weapon.visible
 	if moving:
 		_walk_phase += delta * 10.0
-		# Chunky RS walk: bigger arm/leg arcs; armed right arm keeps a ready cant so the held weapon reads clearly.
-		var swing := sin(_walk_phase) * (0.62 if armed else 0.55)
+		# Chunky RS walk: shoulder swing + elbow/knee flex so limbs read from the elevated camera.
+		var swing := sin(_walk_phase) * (0.70 if armed else 0.62)
 		var swing2 := cos(_walk_phase) * 0.18
 		if l_arm:
 			l_arm.rotation.x = swing
-			l_arm.rotation.z = deg_to_rad(-8) + swing2 * 0.22
+			l_arm.rotation.z = deg_to_rad(-12) + swing2 * 0.22
 		if r_arm:
 			var ready := -0.22 if armed else 0.0
 			r_arm.rotation.x = ready - swing * (0.72 if armed else 1.0)
-			r_arm.rotation.z = deg_to_rad(10 if armed else 8) - swing2 * 0.22
+			r_arm.rotation.z = deg_to_rad(14 if armed else 12) - swing2 * 0.22
+		if l_forearm:
+			l_forearm.rotation.x = maxf(0.12, absf(swing) * 0.55)
+		if r_forearm:
+			r_forearm.rotation.x = maxf(0.12, absf(swing) * 0.50)
 		if l_leg:
-			l_leg.rotation.x = -swing * 0.92
+			l_leg.rotation.x = -swing * 0.95
 		if r_leg:
-			r_leg.rotation.x = swing * 0.92
+			r_leg.rotation.x = swing * 0.95
+		if l_shin_p:
+			l_shin_p.rotation.x = maxf(0.05, swing) * 0.85
+		if r_shin_p:
+			r_shin_p.rotation.x = maxf(0.05, -swing) * 0.85
 		bob.position.y = abs(sin(_walk_phase * 2.0)) * 0.06
 		bob.rotation.z = sin(_walk_phase) * 0.03
 		# Soft cape sway + weapon tip bob so equipped gear is obvious while walking.
@@ -763,11 +775,15 @@ func _animate_walk(moving: bool, delta: float) -> void:
 		if not _attacking:
 			if l_arm:
 				l_arm.rotation.x = move_toward(l_arm.rotation.x, 0.0, delta * 6.0)
-				l_arm.rotation.z = move_toward(l_arm.rotation.z, deg_to_rad(-6), delta * 6.0)
+				l_arm.rotation.z = move_toward(l_arm.rotation.z, deg_to_rad(-12), delta * 6.0)
 			if r_arm:
 				var idle_x := -0.18 if armed else 0.0
 				r_arm.rotation.x = move_toward(r_arm.rotation.x, idle_x, delta * 6.0)
-				r_arm.rotation.z = move_toward(r_arm.rotation.z, deg_to_rad(8 if armed else 6), delta * 6.0)
+				r_arm.rotation.z = move_toward(r_arm.rotation.z, deg_to_rad(14 if armed else 12), delta * 6.0)
+			if l_forearm:
+				l_forearm.rotation.x = move_toward(l_forearm.rotation.x, 0.18, delta * 6.0)
+			if r_forearm:
+				r_forearm.rotation.x = move_toward(r_forearm.rotation.x, 0.22 if armed else 0.18, delta * 6.0)
 			if cape and cape.visible:
 				cape.rotation.y = move_toward(cape.rotation.y, 0.0, delta * 4.0)
 				cape.rotation.x = move_toward(cape.rotation.x, deg_to_rad(-4), delta * 4.0)
@@ -780,6 +796,10 @@ func _animate_walk(moving: bool, delta: float) -> void:
 			l_leg.rotation.x = move_toward(l_leg.rotation.x, 0.0, delta * 6.0)
 		if r_leg:
 			r_leg.rotation.x = move_toward(r_leg.rotation.x, 0.0, delta * 6.0)
+		if l_shin_p:
+			l_shin_p.rotation.x = move_toward(l_shin_p.rotation.x, 0.08, delta * 6.0)
+		if r_shin_p:
+			r_shin_p.rotation.x = move_toward(r_shin_p.rotation.x, 0.08, delta * 6.0)
 		bob.position.y = sin(Time.get_ticks_msec() * 0.002) * 0.015
 		bob.rotation.z = move_toward(bob.rotation.z, 0.0, delta * 4.0)
 

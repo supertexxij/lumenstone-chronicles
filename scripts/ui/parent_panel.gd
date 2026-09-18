@@ -17,6 +17,9 @@ var _reset_edit: LineEdit
 var _reset_btn: Button
 var _reset_armed: bool = false
 var _hint_lbl: Label
+var _pin_error: Label
+var _pin_change_toggle: Button
+var _pin_change_open: bool = false
 var _campaign_tabs: TabContainer
 var _campaign_week_roots: Array = []  # VBoxContainer per campaign tab
 var _expanded_weeks: Dictionary = {}  # week int -> bool
@@ -36,6 +39,8 @@ func _ready() -> void:
 	if change_pin_btn:
 		change_pin_btn.pressed.connect(_change_pin)
 	_ensure_recovery_ui()
+	_ensure_pin_error()
+	_ensure_pin_change_toggle()
 	_ensure_campaign_tabs()
 
 func open() -> void:
@@ -43,6 +48,9 @@ func open() -> void:
 	content.visible = false
 	pin_edit.visible = true
 	unlock_btn.visible = true
+	if _pin_error:
+		_pin_error.visible = false
+		_pin_error.text = ""
 	if new_pin_edit:
 		new_pin_edit.text = ""
 	if confirm_pin_edit:
@@ -59,26 +67,34 @@ func open() -> void:
 	if _reset_btn:
 		_reset_btn.visible = true
 		_reset_btn.text = "Reset PIN"
+	_set_pin_change_visible(false)
 	pin_edit.grab_focus()
 
 func _try_pin() -> void:
 	if not GameState.verify_pin(pin_edit.text.strip_edges()):
 		# Wave 54: clearer PIN wrong toast (default stays 1234; mastery ≥80% unchanged)
+		# v1.78 refine: do NOT open the dashboard on a wrong PIN
+		if _pin_error:
+			_pin_error.text = "That PIN didn't match — try again (default is 1234 until you change it)."
+			_pin_error.visible = true
 		summary.text = "That PIN didn't match — try again (default is 1234 until you change it)."
 		GameState.toast.emit("Wrong PIN — try again (default 1234 unless you changed it).")
 		pin_edit.text = ""
 		pin_edit.grab_focus()
-		content.visible = true
+		content.visible = false
 		return
 	content.visible = true
 	pin_edit.visible = false
 	unlock_btn.visible = false
+	if _pin_error:
+		_pin_error.visible = false
 	if _hint_lbl:
 		_hint_lbl.visible = false
 	if _reset_edit:
 		_reset_edit.visible = false
 	if _reset_btn:
 		_reset_btn.visible = false
+	_set_pin_change_visible(false)
 	_refresh()
 
 
@@ -134,16 +150,17 @@ func _refresh() -> void:
 	# Wave 58: show year % next to child name line (PIN stays 1234; mastery ≥80% unchanged)
 	var year_pct_chip: int = GameState.get_year_progress_percent() if GameState.has_method("get_year_progress_percent") else mastery_pct
 	var child_line: String = "%s · Year %d%%" % [GameState.child_name, year_pct_chip]
-	var lines: String = "[b]Parent Dashboard[/b] · %s\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b] · [b]%d★[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+	var lumen_bits: PackedStringArray = []
+	for g in ["math","la","science","history","bible"]:
+		lumen_bits.append("%s %d" % [GameState.GUILDS[g]["lumen"], int(GameState.lumens.get(g, 0))])
+	var lines: String = "[b]Parent Dashboard[/b] · %s\n[b]%s[/b] · Slot %d · %s\nXP %d · Level %d · Combat Lv %d\n\n[b]Copy line[/b]\n[code]%s[/code]\n\n[b]Week unlock[/b]  Week [b]%d[/b] / 36 · %s\n%s\nNext: %s\n\n[b]Quest mastery[/b]  [b]%d[/b] / %d ([b]%d%%[/b] · [b]%d★[/b])\n%s\n%s\n\nLumens: %s\nUse the campaign tabs — click a week to expand (✓ mastered · open · – locked)." % [
 		help_bit, child_line, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
 		uw, camp, week_bar, next_gate,
-		mastered, total_q, mastery_pct, mastered, mastery_bar, year_note
+		mastered, total_q, mastery_pct, mastered, mastery_bar, year_note,
+		" · ".join(lumen_bits)
 	]
-	for g in ["math","la","science","history","bible"]:
-		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]
-	lines += "\nUse the [b]campaign tabs[/b] below — click a week row to expand skills (✓ mastered · open · – locked)."
 	summary.text = lines
 	_refresh_campaign_tabs(uw)
 	help_list.clear()
@@ -194,11 +211,11 @@ func _ensure_campaign_tabs() -> void:
 	content.move_child(title, summary.get_index() + 1)
 	_campaign_tabs = TabContainer.new()
 	_campaign_tabs.name = "CampaignTabs"
-	_campaign_tabs.custom_minimum_size = Vector2(0, 220)
+	_campaign_tabs.custom_minimum_size = Vector2(0, 260)
 	_campaign_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(_campaign_tabs)
 	content.move_child(_campaign_tabs, title.get_index() + 1)
-	summary.custom_minimum_size = Vector2(0, 140)
+	summary.custom_minimum_size = Vector2(0, 96)
 	_campaign_week_roots.clear()
 	for camp in CAMPAIGN_RANGES:
 		var scroll := ScrollContainer.new()
@@ -444,6 +461,56 @@ func _next_week_gate(uw: int) -> String:
 		return "Week %d raid done — week unlock should advance soon." % uw
 	return "Master Week %d Friday raid: %s (or 4+ quests that week)." % [uw, title]
 
+func _ensure_pin_error() -> void:
+	## v1.78 refine: wrong-PIN message lives outside Content so the dashboard stays locked.
+	var vbox: VBoxContainer = $Panel/VBox
+	if vbox.get_node_or_null("PinError") != null:
+		_pin_error = vbox.get_node("PinError")
+		return
+	_pin_error = Label.new()
+	_pin_error.name = "PinError"
+	_pin_error.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_pin_error.add_theme_color_override("font_color", Color(0.92, 0.55, 0.28))
+	_pin_error.visible = false
+	vbox.add_child(_pin_error)
+	vbox.move_child(_pin_error, unlock_btn.get_index() + 1)
+
+func _ensure_pin_change_toggle() -> void:
+	## v1.78 refine: PIN change fields stay collapsed until a parent asks.
+	if content.get_node_or_null("PinChangeToggle") != null:
+		_pin_change_toggle = content.get_node("PinChangeToggle")
+		_set_pin_change_visible(_pin_change_open)
+		return
+	_pin_change_toggle = Button.new()
+	_pin_change_toggle.name = "PinChangeToggle"
+	_pin_change_toggle.text = "Change PIN…"
+	_pin_change_toggle.pressed.connect(func():
+		_set_pin_change_visible(not _pin_change_open)
+	)
+	var title_n: Node = content.get_node_or_null("PinChangeTitle")
+	if title_n:
+		content.add_child(_pin_change_toggle)
+		content.move_child(_pin_change_toggle, title_n.get_index())
+	else:
+		content.add_child(_pin_change_toggle)
+	_set_pin_change_visible(false)
+
+func _set_pin_change_visible(on: bool) -> void:
+	_pin_change_open = on
+	if _pin_change_toggle:
+		_pin_change_toggle.text = "Hide PIN change" if on else "Change PIN…"
+	var title_n = content.get_node_or_null("PinChangeTitle")
+	if title_n:
+		title_n.visible = on
+	if new_pin_edit:
+		new_pin_edit.visible = on
+	if confirm_pin_edit:
+		confirm_pin_edit.visible = on
+	if change_pin_btn:
+		change_pin_btn.visible = on
+	if pin_status:
+		pin_status.visible = on
+
 func _ensure_recovery_ui() -> void:
 	var vbox: VBoxContainer = $Panel/VBox
 	if vbox.get_node_or_null("ResetHint") != null:
@@ -472,14 +539,20 @@ func _ensure_recovery_ui() -> void:
 func _try_pin_reset() -> void:
 	var typed: String = _reset_edit.text.strip_edges().to_upper() if _reset_edit else ""
 	if typed != "RESET":
+		if _pin_error:
+			_pin_error.text = "Type RESET exactly to recover the parent PIN."
+			_pin_error.visible = true
 		summary.text = "Type RESET exactly to recover the parent PIN."
-		content.visible = true
+		content.visible = false
 		_reset_armed = false
 		return
 	if not _reset_armed:
 		_reset_armed = true
+		if _pin_error:
+			_pin_error.text = "Confirm: type RESET again and press Reset PIN once more."
+			_pin_error.visible = true
 		summary.text = "Confirm: type RESET again and press Reset PIN once more."
-		content.visible = true
+		content.visible = false
 		if _reset_btn:
 			_reset_btn.text = "Confirm RESET"
 		if _reset_edit:
@@ -487,8 +560,11 @@ func _try_pin_reset() -> void:
 		return
 	GameState.reset_parent_pin_to_default()
 	_reset_armed = false
+	if _pin_error:
+		_pin_error.text = "Parent PIN restored to 1234. Save slots were not changed."
+		_pin_error.visible = true
 	summary.text = "Parent PIN restored to 1234. Save slots were not changed."
-	content.visible = true
+	content.visible = false
 	if _reset_btn:
 		_reset_btn.text = "Reset PIN"
 	if _reset_edit:

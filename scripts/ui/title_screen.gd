@@ -102,7 +102,7 @@ func _ensure_rename_row() -> void:
 	var box := VBoxContainer.new()
 	box.name = "RenameRows"
 	var hint := Label.new()
-	hint.text = "Type a nickname per slot (optional), then Set. Helps tell saves apart. Parent PIN stays 1234 unless changed."
+	hint.text = "Optional nickname per slot, then Set. Helps tell siblings' saves apart."
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(hint)
 	for i in GameState.SLOT_COUNT:
