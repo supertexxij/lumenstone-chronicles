@@ -5,6 +5,9 @@ export_presets.cfg.bak
 *.tmp
 *~
 
+# Local Godot editor binary used for smoke / playtest (not part of the game)
+tools/godot/
+
 # Exported binaries — prefer GitHub Releases over git LFS/push pain
 builds/linux/*
 builds/windows/*

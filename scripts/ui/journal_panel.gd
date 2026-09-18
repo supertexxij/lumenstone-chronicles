@@ -261,7 +261,7 @@ func _unlock_progress_text(uw: int) -> String:
 			sticky_raid = "📌 Next raid: “%s” · Week %d ★" % [rtitle, next_w]
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
-	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
+	var year_line: String = GameState.get_year_progress_note()
 	if year_line != "":
 		lines.insert(0, year_line)
 	if sticky_raid != "":

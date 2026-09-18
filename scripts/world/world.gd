@@ -949,41 +949,7 @@ func _landmark_zones() -> Array:
 
 func _landmark_display_name(lid: String) -> String:
 	## Wave 46: plain landmark names for HUD near-chip.
-	match lid:
-		"glade":
-			return "Lantern Glade"
-		"ridge":
-			return "Pine Ridge"
-		"garden":
-			return "Prayer Garden"
-		"lookout":
-			return "Lookout Rock"
-		"mill":
-			return "Mill Bridge"
-		"hollow":
-			return "Cedar Hollow"
-		"willow":
-			return "Willow Bend"
-		"reed":
-			return "Reed Pool"
-		"cross":
-			return "Quiet Cross"
-		"arch":
-			return "Stone Arch"
-		"knoll":
-			return "Amber Knoll"
-		"birch":
-			return "Birch Rest"
-		"fern":
-			return "Fern Dell"
-		"heather":
-			return "Heather Heath"
-		"thistle":
-			return "Thistle Rise"
-		"maple":
-			return "Maple Copse"
-		_:
-			return lid.capitalize()
+	return LandmarkCatalog.display_name(lid)
 
 func _update_landmark_approach() -> void:
 	if player == null or not is_instance_valid(player):
@@ -1366,60 +1332,28 @@ func _update_village_dusk_lamps(dayness: float) -> void:
 func _update_knoll_dusk_glow(dayness: float) -> void:
 	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
 	## Wave 73: soft Amber Knoll amber-glow polish at dusk — warmer honey energy + gentler pulse (RuneScape-chunky, wholesome).
-	if _knoll_dusk_lights.is_empty():
-		return
-	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
-	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.88 + 0.12 * abs(sin(t_ms * 0.0017))
-	var energy: float = dusk * 2.35 * pulse
-	var i: int = 0
-	for light in _knoll_dusk_lights:
-		if light == null or not is_instance_valid(light):
-			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.017 + float(i) * 1.1)
-		var e: float = energy * clampf(phase, 0.88, 1.12)
-		# Rim light a touch softer than crest
-		if "Rim" in str(light.name):
-			e *= 0.55
-		light.light_energy = e
-		light.visible = e > 0.04
-		i += 1
-
+	_pulse_dusk_lights(_knoll_dusk_lights, dayness, 2.35, 0.0017, 0.017, 1.1)
 
 func _update_arch_dusk_glow(dayness: float) -> void:
 	## Wave 64: soft stone arch glow at dusk — cool limestone OmniLight on Stone Arch gateway (RuneScape-chunky, wholesome).
-	if _arch_dusk_lights.is_empty():
-		return
-	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
-	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0018))
-	var energy: float = dusk * 1.70 * pulse
-	var i: int = 0
-	for light in _arch_dusk_lights:
-		if light == null or not is_instance_valid(light):
-			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.015 + float(i) * 1.2)
-		var e: float = energy * clampf(phase, 0.88, 1.12)
-		if "Rim" in str(light.name):
-			e *= 0.55
-		light.light_energy = e
-		light.visible = e > 0.04
-		i += 1
-
+	_pulse_dusk_lights(_arch_dusk_lights, dayness, 1.70, 0.0018, 0.015, 1.2)
 
 func _update_cross_dusk_glow(dayness: float) -> void:
 	## Wave 65: soft quiet cross lantern at dusk — warm honey OmniLight on Quiet Cross knoll (RuneScape-chunky, wholesome).
-	if _cross_dusk_lights.is_empty():
+	_pulse_dusk_lights(_cross_dusk_lights, dayness, 1.80, 0.0021, 0.016, 1.15)
+
+func _pulse_dusk_lights(lights: Array, dayness: float, energy_scale: float, pulse_rate: float, phase_rate: float, phase_step: float) -> void:
+	if lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0021))
-	var energy: float = dusk * 1.80 * pulse
+	var pulse: float = 0.88 + 0.12 * abs(sin(t_ms * pulse_rate))
+	var energy: float = dusk * energy_scale * pulse
 	var i: int = 0
-	for light in _cross_dusk_lights:
+	for light in lights:
 		if light == null or not is_instance_valid(light):
 			continue
-		var phase: float = 1.0 + 0.04 * sin(t_ms * 0.016 + float(i) * 1.15)
+		var phase: float = 1.0 + 0.04 * sin(t_ms * phase_rate + float(i) * phase_step)
 		var e: float = energy * clampf(phase, 0.88, 1.12)
 		if "Rim" in str(light.name):
 			e *= 0.55

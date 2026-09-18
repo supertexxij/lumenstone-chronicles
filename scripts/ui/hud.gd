@@ -454,11 +454,7 @@ func _refresh_year_chip() -> void:
 	_ensure_year_chip()
 	if _year_chip == null:
 		return
-	var pct := 0
-	if GameState.has_method("get_year_progress_percent"):
-		pct = int(GameState.get_year_progress_percent())
-	elif GameState.has_method("get_quest_mastery_progress"):
-		pct = int(GameState.get_quest_mastery_progress().get("percent", 0))
+	var pct := int(GameState.get_year_progress_percent())
 	# Wave 32: clearer wording so the chip reads at a glance
 	# Wave 63: clearer Year chip when quest mastery % — mastery word reads at a glance
 	# Wave 65: weather icon letter beside Year chip (C/F/R for Clear/Fog/Rain)
@@ -489,7 +485,7 @@ func _refresh_year_chip() -> void:
 		_year_chip.text = "Year · week %d of 36 · %d%% · %s" % [week_show, pct, lab]
 	else:
 		_year_chip.text = "Year · week %d of 36 · %d%%" % [week_show, pct]
-	var ynote := GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
+	var ynote := GameState.get_year_progress_note()
 	_year_chip.tooltip_text = "%s · week %d of 36 · weather %s (%s) · Slot %d" % [ynote, week_show, wx_letter, wx_name, slot_n]
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
@@ -501,9 +497,7 @@ func _refresh_year_chip() -> void:
 			if _world != null and _world.has_method("play_festival_decade_sparkle"):
 				_world.play_festival_decade_sparkle()
 	# Wave 68: Year chip briefly flashes gold on mastery bump (RuneScape-chunky, wholesome)
-	var mastery_pct := pct
-	if GameState.has_method("get_quest_mastery_progress"):
-		mastery_pct = int(GameState.get_quest_mastery_progress().get("percent", pct))
+	var mastery_pct := int(GameState.get_quest_mastery_progress().get("percent", pct))
 	if _year_chip_last_mastery >= 0 and mastery_pct > _year_chip_last_mastery:
 		_year_chip_flash_dur = 1.05
 		_year_chip_flash_t = 1.05
@@ -967,85 +961,21 @@ func _ensure_fav_paces() -> void:
 
 
 func _fav_landmark_short(full: String) -> String:
-	## Wave 64: compact landmark short name for ★ fav chip (RuneScape-chunky, wholesome).
-	var n := full.strip_edges()
-	var map := {
-		"Fountain": "Fountain",
-		"Lantern Glade": "Glade",
-		"Pine Ridge": "Ridge",
-		"Prayer Garden": "Garden",
-		"Lookout Rock": "Lookout",
-		"Mill Bridge": "Mill",
-		"Cedar Hollow": "Hollow",
-		"Willow Bend": "Willow",
-		"Reed Pool": "Reed",
-		"Quiet Cross": "Cross",
-		"Stone Arch": "Arch",
-		"Amber Knoll": "Knoll",
-		"Birch Rest": "Birch",
-		"Fern Dell": "Fern",
-		"Heather Heath": "Heath",
-		"Thistle Rise": "Thistle",
-		"Maple Copse": "Maple",
-		"Lantern Glade center": "Glade",
-		"Pine Ridge stand": "Ridge",
-		"Builder's Hall (door)": "Builder",
-		"Scribe's Hall (door)": "Scribe",
-		"Creation Hall (door)": "Creation",
-		"Chronicle Hall (door)": "Chronicle",
-		"Worship Hall (door)": "Worship",
-	}
-	if n in map:
-		return str(map[n])
-	# Fallback: last word of multi-word name
-	var parts := n.split(" ")
-	if parts.size() >= 2:
-		return str(parts[-1]).replace("(door)", "").strip_edges()
-	return n
+	## Wave 64: ★ fav chip shows landmark short name
+	return LandmarkCatalog.short_name(full)
 
 
 func _fav_landmark_pos(label: String) -> Vector3:
 	## Match Travel (T) destination labels to world positions for ★ fav paces.
-	var lab := label.strip_edges()
-	var table := {
-		"Village Fountain": Vector3(0, 0, 12),
-		"Lantern Glade": Vector3(0.5, 0, -46),
-		"Pine Ridge": Vector3(-20, 0, -50),
-		"Prayer Garden": Vector3(30, 0, 18),
-		"Lookout Rock": Vector3(40, 0, 34),
-		"Mill Bridge": Vector3(-36, 0, 30),
-		"Cedar Hollow": Vector3(38, 0, -36),
-		"Willow Bend": Vector3(-38, 0, -34),
-		"Reed Pool": Vector3(-20, 0, 48),
-		"Quiet Cross": Vector3(48, 0, 8),
-		"Stone Arch": Vector3(-48, 0, 8),
-		"Amber Knoll": Vector3(48, 0, -22),
-		"Birch Rest": Vector3(-42, 0, -20),
-		"Fern Dell": Vector3(22, 0, 48),
-		"Heather Heath": Vector3(-48, 0, 42),
-		"Thistle Rise": Vector3(48, 0, 42),
-		"Maple Copse": Vector3(-48, 0, -48),
-		"Lantern Glade center": Vector3(0.5, 0, -48),
-		"Pine Ridge stand": Vector3(-24, 0, -54),
-		"Builder's Hall (door)": Vector3(22, 0, 2.5),
-		"Scribe's Hall (door)": Vector3(-22, 0, 2.5),
-		"Creation Hall (door)": Vector3(0, 0, -18),
-		"Chronicle Hall (door)": Vector3(0, 0, 28),
-		"Worship Hall (door)": Vector3(0, 0, -2),
-	}
-	if lab in table:
-		return table[lab]
-	return Vector3(1.0e30, 1.0e30, 1.0e30)
+	return LandmarkCatalog.position_for(label)
 
 
 func _refresh_fav_paces() -> void:
-	## Wave 59/77: ★ fav chip shows paces to fav on HUD (PIN stays 1234; mastery ≥80%).
+	## Wave 77: ★ fav chip shows paces to fav (Wave 59/77; PIN stays 1234; mastery ≥80%).
 	_ensure_fav_paces()
 	if _fav_paces_lbl == null or _fav_paces_panel == null:
 		return
-	var fav := ""
-	if "favorite_landmark" in GameState:
-		fav = str(GameState.favorite_landmark).strip_edges()
+	var fav := str(GameState.favorite_landmark).strip_edges()
 	if fav == "":
 		_fav_paces_panel.visible = false
 		return

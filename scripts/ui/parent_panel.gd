@@ -131,8 +131,8 @@ func _refresh() -> void:
 	var uw: int = GameState.unlocked_week
 	var camp: String = _campaign_name(uw)
 	var next_gate: String = _next_week_gate(uw)
-	var week_prog: Dictionary = GameState.get_week_unlock_progress() if GameState.has_method("get_week_unlock_progress") else {"current": uw, "total": 36, "percent": int(round(float(uw) / 36.0 * 100.0))}
-	var quest_prog: Dictionary = GameState.get_quest_mastery_progress() if GameState.has_method("get_quest_mastery_progress") else {"current": GameState.completed_quests.size(), "total": QuestDB.quests.size(), "percent": 0}
+	var week_prog: Dictionary = GameState.get_week_unlock_progress()
+	var quest_prog: Dictionary = GameState.get_quest_mastery_progress()
 	var mastered: int = int(quest_prog.get("current", GameState.completed_quests.size()))
 	var total_q: int = int(quest_prog.get("total", QuestDB.quests.size()))
 	var mastery_pct: int = int(quest_prog.get("percent", 0))
@@ -140,15 +140,15 @@ func _refresh() -> void:
 	var week_bar: String = _week_progress_bar(uw, 36)
 	# Wave 70: mastery year bar shows ★ count beside % (PIN 1234; mastery ≥80% unchanged)
 	var mastery_bar: String = _mastery_progress_bar(mastered, maxi(1, total_q))
-	var year_note: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year: week unlock %d%% · quests mastered %d%%" % [week_pct, mastery_pct]
+	var year_note: String = GameState.get_year_progress_note()
 	var help_preview: Array = GameState.needs_help_quests()
 	var help_n: int = help_preview.size()
 	var last_sess: String = _format_last_session()
-	var export_line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else "Week unlock %d/36 (%d%%) · Year mastery %d%%" % [uw, week_pct, mastery_pct]
+	var export_line: String = GameState.get_parent_export_line()
 	# Wave 49: highlight needs-help count when >0 (warm amber; PIN stays 1234; mastery ≥80%)
 	var help_bit: String = ("Needs help: [color=#e8a030][b]%d[/b][/color]" % help_n) if help_n > 0 else ("Needs help: [b]%d[/b]" % help_n)
 	# Wave 58: show year % next to child name line (PIN stays 1234; mastery ≥80% unchanged)
-	var year_pct_chip: int = GameState.get_year_progress_percent() if GameState.has_method("get_year_progress_percent") else mastery_pct
+	var year_pct_chip: int = GameState.get_year_progress_percent()
 	var child_line: String = "%s · Year %d%%" % [GameState.child_name, year_pct_chip]
 	var lumen_bits: PackedStringArray = []
 	for g in ["math","la","science","history","bible"]:
@@ -407,21 +407,13 @@ func _campaign_name(week: int) -> String:
 
 func _week_progress_bar(cur: int, mx: int) -> String:
 	## Wave 24: clearer year/week bars — quarter ticks + fraction so parents can skim progress.
-	var filled: int = clampi(int(round(float(cur) / float(maxi(1, mx)) * 20.0)), 0, 20)
-	var chars: PackedStringArray = []
-	for i in 20:
-		if i < filled:
-			chars.append("█")
-		elif i % 5 == 0:
-			chars.append("¦")
-		else:
-			chars.append("·")
-	var pct: int = int(round(float(cur) / float(maxi(1, mx)) * 100.0))
-	return "[%s] %d/%d (%d%%)" % ["".join(chars), cur, mx, pct]
-
+	return _progress_bar_text(cur, mx, false)
 
 func _mastery_progress_bar(cur: int, mx: int) -> String:
 	## Wave 70: parent year/mastery bar shows ★ count beside % (PIN 1234; mastery ≥80% unchanged).
+	return _progress_bar_text(cur, mx, true)
+
+func _progress_bar_text(cur: int, mx: int, with_stars: bool) -> String:
 	var filled: int = clampi(int(round(float(cur) / float(maxi(1, mx)) * 20.0)), 0, 20)
 	var chars: PackedStringArray = []
 	for i in 20:
@@ -432,27 +424,15 @@ func _mastery_progress_bar(cur: int, mx: int) -> String:
 		else:
 			chars.append("·")
 	var pct: int = int(round(float(cur) / float(maxi(1, mx)) * 100.0))
-	return "[%s] %d/%d (%d%% · %d★)" % ["".join(chars), cur, mx, pct, cur]
+	if with_stars:
+		return "[%s] %d/%d (%d%% · %d★)" % ["".join(chars), cur, mx, pct, cur]
+	return "[%s] %d/%d (%d%%)" % ["".join(chars), cur, mx, pct]
 
 
 func _next_week_gate(uw: int) -> String:
 	if uw >= 36:
 		return "Year complete — Festival of Lumens!"
-	var raid_gate := {
-		1: "w1-raid-review", 2: "w2-raid-review", 3: "w3-raid-review", 4: "w4-raid-review",
-		5: "w5-raid-review", 6: "w6-raid-review", 7: "w7-raid-review", 8: "w8-raid-review",
-		9: "w9-raid-feast",
-		10: "w10-raid-review", 11: "w11-raid-review", 12: "w12-raid-review", 13: "w13-raid-review",
-		14: "w14-raid-review", 15: "w15-raid-review", 16: "w16-raid-review", 17: "w17-raid-review",
-		18: "w18-raid-feast",
-		19: "w19-raid-review", 20: "w20-raid-review", 21: "w21-raid-review", 22: "w22-raid-review",
-		23: "w23-raid-review", 24: "w24-raid-review", 25: "w25-raid-review", 26: "w26-raid-review",
-		27: "w27-raid-feast",
-		28: "w28-raid-review", 29: "w29-raid-review", 30: "w30-raid-review", 31: "w31-raid-review",
-		32: "w32-raid-review", 33: "w33-raid-review", 34: "w34-raid-review",
-		35: "w35-raid-supreme", 36: "w36-raid-feast",
-	}
-	var rid: String = str(raid_gate.get(uw, ""))
+	var rid: String = str(GameState.RAID_GATE.get(uw, ""))
 	if rid == "":
 		return "Master more Week %d quests (or the Friday raid)." % uw
 	var q: Dictionary = QuestDB.get_quest(rid)

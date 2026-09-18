@@ -226,6 +226,18 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.78.1 — code cleanup
+
+Housekeeping pass after v1.78.0-refine. Same game, less copy-paste:
+
+- Shared `LandmarkCatalog` for short names / travel positions / HUD ids
+- Wave 50–77 polish toasts share one emit/save helper; load-time calls go through one list
+- Friday raid week gates live in one `GameState.RAID_GATE` table
+- Smoke scripts cache file reads and treat 1.78.x as satisfying older version checks
+- Dead empty combat callback removed; dusk-glow loops share one helper
+
+PIN stays **1234**; mastery still ≥80%; no Day Cash; no new wilds foe; quest JSON untouched.
+
 ### v1.78.0-refine — looks, HUD / Parent, bugs
 
 Refinement pass (not another foe or FX micro-wave). Player feedback after v1.77: the world and people felt unfinished, and HUD / Parent were cluttered.

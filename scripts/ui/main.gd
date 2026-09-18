@@ -31,6 +31,18 @@ var _travel_fade: ColorRect = null
 var _travel_fade_label: Label = null  # Wave 62: landmark name during soft-travel fade
 var _travel_near_idx: int = -1  # Wave 74: soft mint pulse on nearest Travel row
 
+## Literal method names so smoke still finds maybe_wave_50_toast … maybe_wave_77_toast here.
+const WAVE_TOAST_METHODS := [
+	"maybe_wave_50_toast", "maybe_wave_51_toast", "maybe_wave_52_toast", "maybe_wave_53_toast",
+	"maybe_wave_54_toast", "maybe_wave_55_toast", "maybe_wave_56_toast", "maybe_wave_57_toast",
+	"maybe_wave_58_toast", "maybe_wave_59_toast", "maybe_wave_60_toast", "maybe_wave_61_toast",
+	"maybe_wave_62_toast", "maybe_wave_63_toast", "maybe_wave_64_toast", "maybe_wave_65_toast",
+	"maybe_wave_66_toast", "maybe_wave_67_toast", "maybe_wave_68_toast", "maybe_wave_69_toast",
+	"maybe_wave_70_toast", "maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
+	"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast", "maybe_wave_77_toast",
+	"maybe_refine_178_toast",
+]
+
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
 	if GameState.has_signal("hurt") and not GameState.hurt.is_connected(_on_player_hurt):
@@ -432,33 +444,7 @@ func _tick_travel_near_pulse() -> void:
 
 func _travel_landmark_short(full: String) -> String:
 	## Wave 66: compact short name for landmark arrival toast (RuneScape-chunky, wholesome).
-	var n := full.strip_edges()
-	var map := {
-		"Village Fountain": "Fountain",
-		"Fountain": "Fountain",
-		"Lantern Glade": "Glade",
-		"Pine Ridge": "Ridge",
-		"Prayer Garden": "Garden",
-		"Lookout Rock": "Lookout",
-		"Mill Bridge": "Mill",
-		"Cedar Hollow": "Hollow",
-		"Willow Bend": "Willow",
-		"Reed Pool": "Reed",
-		"Quiet Cross": "Cross",
-		"Stone Arch": "Arch",
-		"Amber Knoll": "Knoll",
-		"Birch Rest": "Birch",
-		"Fern Dell": "Fern",
-		"Heather Heath": "Heath",
-		"Thistle Rise": "Thistle",
-		"Maple Copse": "Maple",
-	}
-	if n in map:
-		return str(map[n])
-	var parts := n.split(" ")
-	if parts.size() >= 2:
-		return str(parts[-1]).replace("(door)", "").strip_edges()
-	return n
+	return LandmarkCatalog.short_name(full)
 
 
 func _travel_distance_label(pos: Vector3) -> String:
@@ -770,95 +756,18 @@ func _enter_world() -> void:
 	if not GameState.hp_changed.is_connected(hud.set_hp):
 		GameState.hp_changed.connect(hud.set_hp)
 	AudioBus.start_ambient()
+	_play_load_toasts()
+
+
+func _play_load_toasts() -> void:
 	if GameState.has_method("maybe_daily_checkpoint_reminder"):
 		GameState.maybe_daily_checkpoint_reminder()
-	# Wave 50: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_50_toast"):
-		GameState.maybe_wave_50_toast()
-	# Wave 51: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_51_toast"):
-		GameState.maybe_wave_51_toast()
-	# Wave 52: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_52_toast"):
-		GameState.maybe_wave_52_toast()
-	# Wave 53: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_53_toast"):
-		GameState.maybe_wave_53_toast()
-	# Wave 54: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_54_toast"):
-		GameState.maybe_wave_54_toast()
-	# Wave 55: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_55_toast"):
-		GameState.maybe_wave_55_toast()
-	# Wave 56: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_56_toast"):
-		GameState.maybe_wave_56_toast()
-	# Wave 57: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_57_toast"):
-		GameState.maybe_wave_57_toast()
-	# Wave 58: once-per-save polish tip toast (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_58_toast"):
-		GameState.maybe_wave_58_toast()
-	if GameState.has_method("maybe_wave_59_toast"):
-		GameState.maybe_wave_59_toast()
-	# Wave 60: once-per-save polish tip + soft festival confetti (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_60_toast"):
-		var fresh60: bool = bool(GameState.maybe_wave_60_toast())
-		if fresh60 and world_scene != null and world_scene.has_method("play_wave60_festival_confetti"):
+	for method_name in WAVE_TOAST_METHODS:
+		if not GameState.has_method(method_name):
+			continue
+		var fresh = GameState.call(method_name)
+		if method_name == "maybe_wave_60_toast" and fresh and world_scene != null and world_scene.has_method("play_wave60_festival_confetti"):
 			world_scene.play_wave60_festival_confetti()
-	# Wave 61: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_61_toast"):
-		GameState.maybe_wave_61_toast()
-	# Wave 62: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_62_toast"):
-		GameState.maybe_wave_62_toast()
-	# Wave 63: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_63_toast"):
-		GameState.maybe_wave_63_toast()
-	# Wave 64: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_64_toast"):
-		GameState.maybe_wave_64_toast()
-	# Wave 65: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_65_toast"):
-		GameState.maybe_wave_65_toast()
-	# Wave 66: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_66_toast"):
-		GameState.maybe_wave_66_toast()
-	# Wave 67: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_67_toast"):
-		GameState.maybe_wave_67_toast()
-	# Wave 68: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_68_toast"):
-		GameState.maybe_wave_68_toast()
-	if GameState.has_method("maybe_wave_69_toast"):
-		GameState.maybe_wave_69_toast()
-	# Wave 70: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_70_toast"):
-		GameState.maybe_wave_70_toast()
-	# Wave 71: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_71_toast"):
-		GameState.maybe_wave_71_toast()
-	# Wave 72: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_72_toast"):
-		GameState.maybe_wave_72_toast()
-	# Wave 73: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_73_toast"):
-		GameState.maybe_wave_73_toast()
-	# Wave 74: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_74_toast"):
-		GameState.maybe_wave_74_toast()
-	# Wave 75: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_75_toast"):
-		GameState.maybe_wave_75_toast()
-	# Wave 76: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_76_toast"):
-		GameState.maybe_wave_76_toast()
-	# Wave 77: once-per-save polish tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_wave_77_toast"):
-		GameState.maybe_wave_77_toast()
-	# v1.78 refine: once-per-save look / HUD / Parent tip (PIN 1234; mastery ≥80%)
-	if GameState.has_method("maybe_refine_178_toast"):
-		GameState.maybe_refine_178_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

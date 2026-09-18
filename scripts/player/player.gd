@@ -48,8 +48,7 @@ func _ready() -> void:
 	parts = HumanoidBuilder.build(mesh_root)
 	GameState.state_changed.connect(_on_state_changed)
 	GameState.soft_defeated.connect(soft_respawn)
-	GameState.combat_target_changed.connect(_on_combat_target)
-	if GameState.has_signal("heal_tick") and not GameState.heal_tick.is_connected(_on_heal_tick):
+	if not GameState.heal_tick.is_connected(_on_heal_tick):
 		GameState.heal_tick.connect(_on_heal_tick)
 	_ensure_nav_agent()
 	_apply_appearance()
@@ -84,9 +83,6 @@ func set_navigation_ready(ok: bool) -> void:
 
 func _on_state_changed() -> void:
 	_apply_appearance()
-
-func _on_combat_target(_e: Node) -> void:
-	pass
 
 func _leave_combat_soft() -> void:
 	## Wave 45: walk-away / click-away leave — soft cream sparkle (no cheesy combat labels).
@@ -360,9 +356,8 @@ func _handle_click() -> void:
 	if not hit.is_empty():
 		var collider = hit.collider
 		if collider and collider.is_in_group("enemies"):
-			if collider.has_method("is_alive") and not collider.is_alive():
-				pass
-			else:
+			var alive: bool = not collider.has_method("is_alive") or collider.is_alive()
+			if alive:
 				GameState.set_combat_target(collider)
 				GameState.mark_combat_tutorial()
 				_set_move_target(collider.global_position)

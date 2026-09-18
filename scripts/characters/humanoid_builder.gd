@@ -327,8 +327,6 @@ static func style_accessory(parts: Dictionary, item: Dictionary) -> void:
 	set_color(strap, col.darkened(0.25))
 	if "lantern" in iid or "lantern" in name:
 		root.position = Vector3(0.36, 0.88, 0.12)
-		if body and body.mesh is SphereMesh:
-			pass
 		# Swap to box-ish lantern look via scale
 		if body:
 			body.scale = Vector3(0.7, 1.1, 0.7)
