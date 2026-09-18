@@ -267,8 +267,8 @@ func _open_travel() -> void:
 	if travel_panel == null:
 		return
 	if world_scene and world_scene.player and world_scene.player.get("ui_blocking"):
-		# Allow opening travel only if no other panel owns the block — if travel already open, ignore
-		pass
+		# v1.78 refine: do not steal focus from another open panel (inventory, journal, Parent, quest)
+		return
 	# Wave 64: travel search remembers last query until close (PIN 1234; mastery ≥80%)
 	if _travel_search:
 		_travel_search.text = _travel_last_query
@@ -856,6 +856,9 @@ func _enter_world() -> void:
 	# Wave 77: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_77_toast"):
 		GameState.maybe_wave_77_toast()
+	# v1.78 refine: once-per-save look / HUD / Parent tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_refine_178_toast"):
+		GameState.maybe_refine_178_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

@@ -169,7 +169,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 - Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
-- Character customize (skin / hair / cape / outfit) with **humanoid** player mesh (clearer arms/legs + visible equipped gear)
+- Character customize (skin / hair / cape / outfit) with **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
 - Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + held weapon + cloak/armor overlays** when equipped
 - **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
@@ -192,7 +192,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - **Quest-desk highlight** pulse when standing nearby (F still talks to mentor)
 - **Quiet rain audio loop** during rain weather when unmuted (respects **M**)
 - **Procedural audio** (footstep, hit/miss, swing, UI, quest complete, ambient drone + short original village music loop) + **mute toggle (M)** — no copyrighted music
-- Parent dashboard (PIN default **1234**, changeable) with progress, week unlock, skills-by-week, **Needs Help** list
+- Parent dashboard (PIN default **1234**, changeable) with a locked PIN gate, compact progress, week unlock, skills-by-week, **Needs Help** list
 - **3 save slots** on title screen (legacy `lumenstone_save_v1.json` migrates into Slot 1)
 - Soft **Travel (T)** menu + landmark keys (Fountain / Glade / Ridge / Prayer Garden / Lookout / Mill / Hollow / Willow / Reed / Quiet Cross / Stone Arch / Amber Knoll / Birch Rest / Fern Dell / Heather Heath / Thistle Rise / Maple Copse / halls)
 - Clearer wilds corridors (wider dirt paths, thinner tree collision, corridor keep-outs)
@@ -225,6 +225,18 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.78.0-refine — looks, HUD / Parent, bugs
+
+Refinement pass (not another foe or FX micro-wave). Player feedback after v1.77: the world and people felt unfinished, and HUD / Parent were cluttered.
+
+- **Humanoids:** faces (eyes, brows, nose, ears), elbow and knee pivots, wider stance, arms that stick out from the torso, knee/elbow flex on walk, slightly lower RuneScape camera so limbs read
+- **Plaza / halls / wilds:** cobble plaza disc and stone curb, fountain apron, guild-hall plinths / windows / awnings / timber beams, planters and market stalls, stone curb along the Lantern Glade path
+- **HUD / menus:** shorter control hint, lumens compacted, Year chip absorbs save nickname, landmark/fav no longer stack, Travel hint shortened
+- **Parent PIN dashboard:** wrong PIN no longer opens the dashboard; RESET recovery stays on the lock screen; PIN change collapsed until asked; denser summary so campaign tabs have room
+- **Bugs / confusion:** Travel (T) no longer opens over Inventory / Journal / quests; title blurb names Parent PIN 1234; Unlock Dashboard wording
+- PIN stays **1234**; mastery still ≥80%; no Day Cash; no new wilds foe; quest JSON untouched
+- Re-export Linux + Windows when shipping a build
 
 ### Wave 11 overnight (v1.11.0-overnight)
 - Later-tier combat food: **Hearty Stew** (+36 HP, ×2) — unlock Week 21 Friday Raid **or** Combat Lv 7; fountain refill
@@ -770,7 +782,7 @@ World layout: `data/world.json`. Scenes under `scenes/`; scripts under `scripts/
 
 ## Limitations
 
-- Chunky low-poly **humanoid** characters (head, torso, shoulders, arms, legs, feet) — RuneScape-adjacent, not photoreal
+- Chunky low-poly **humanoid** characters (face, head, torso, shoulders, arms with elbows, legs with knees, feet) — RuneScape-adjacent, not photoreal
 - Equipped hat / crown / cape or tunic / weapon held in the right hand / belt / **accessory** / cloak armor plate show on the player model; NPCs share the same humanoid base
 - Enemies have limb-aware creature meshes (boar legs, moth wings, golem arms/legs, badger, stag antlers, fox, hare, squirrel; wisp stays simple)
 - Procedural walk / attack poses (no skeletal AnimationPlayer clips yet)
