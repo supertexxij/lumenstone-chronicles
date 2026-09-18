@@ -124,7 +124,7 @@ func _ensure_character_preview() -> void:
 	preview_viewport.own_world_3d = true
 	preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	preview_viewport.transparent_bg = false
-	preview_viewport.size = Vector2i(260, 340)
+	# Size is owned by SubViewportContainer.stretch — do not set size manually.
 
 	var world_env := WorldEnvironment.new()
 	var env := Environment.new()
@@ -171,10 +171,9 @@ func _ensure_character_preview() -> void:
 	var cam := Camera3D.new()
 	cam.name = "PreviewCam"
 	# Elevated oblique — same family as the in-world RuneScape camera
-	cam.position = Vector3(0.95, 2.15, 2.55)
-	cam.look_at(Vector3(0, 1.05, 0))
 	cam.fov = 38.0
 	preview_viewport.add_child(cam)
+	cam.look_at_from_position(Vector3(0.95, 2.15, 2.55), Vector3(0, 1.05, 0))
 	cam.current = true
 
 	if preview_host:
