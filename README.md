@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 77 overnight (v1.77.0-overnight)
+- Soft **Birch Rest firefly denser wink at dusk** — more warm gold-green motes among pale birch trunks (RuneScape-chunky, wholesome)
+- Soft **campfire smoke/glow polish** — warmer plaza hearth glow + denser soft smoke wisps (RuneScape-chunky, wholesome)
+- Clearer **Soft Travel arrival toast** — `Arrived · Soft travel · Birch` / first-discovery / Fountain resting (no cheesy combat labels)
+- New wilds foe **Honeydew Hamster** — plump round body, full cheek pouches, small rounded ears, stubby tail, soft paws, cheek blush, gentle “nestled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda / Coconut Crab / Lime Llama / Melon Moose / Quince Quokka / Watermelon Wallaby)
+- Travel QoL: **★ fav chip shows paces to fav** (always on when pinned; `here` when close) — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 76 overnight (v1.76.0-overnight)
 - Soft **Quiet Cross lantern moths at dusk** — warm cream moths flutter around the knoll lanterns (RuneScape-chunky, wholesome)
 - Soft **night cricket hush polish** — warmer outdoor night bed + slightly richer sparse chirps (RuneScape-chunky, wholesome)

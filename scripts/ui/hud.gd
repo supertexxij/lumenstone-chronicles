@@ -911,7 +911,7 @@ func _update_landmark_tick(yaw: float) -> void:
 
 
 func _ensure_fav_paces() -> void:
-	## Wave 59: show paces to ★ fav on HUD when far (PIN stays 1234; mastery ≥80%).
+	## Wave 59/77: ★ fav chip shows paces to fav on HUD (PIN stays 1234; mastery ≥80%).
 	if _fav_paces_lbl != null and is_instance_valid(_fav_paces_lbl):
 		return
 	if has_node("FavPacesPanel"):
@@ -1024,7 +1024,7 @@ func _fav_landmark_pos(label: String) -> Vector3:
 
 
 func _refresh_fav_paces() -> void:
-	## Wave 59: paces to ★ fav on HUD when far (PIN stays 1234; mastery ≥80%).
+	## Wave 59/77: ★ fav chip shows paces to fav on HUD (PIN stays 1234; mastery ≥80%).
 	_ensure_fav_paces()
 	if _fav_paces_lbl == null or _fav_paces_panel == null:
 		return
@@ -1042,13 +1042,12 @@ func _refresh_fav_paces() -> void:
 	var pz: float = float(_map_data.get("player", {}).get("z", 0))
 	var dist: float = Vector2(pos.x - px, pos.z - pz).length()
 	var paces: int = maxi(1, int(round(dist / 1.15)))
-	# Show when far (~25+ paces); hide when already close
-	if paces < 25:
-		_fav_paces_panel.visible = false
-		return
-	# Wave 64: ★ fav chip shows landmark short name (PIN stays 1234; mastery ≥80%)
+	# Wave 64/77: ★ fav chip shows landmark short name + paces (PIN stays 1234; mastery ≥80%)
 	var short_n: String = _fav_landmark_short(fav)
-	_fav_paces_lbl.text = "★ %s · ~%d paces" % [short_n, paces]
+	if paces <= 8:
+		_fav_paces_lbl.text = "★ %s · here" % short_n
+	else:
+		_fav_paces_lbl.text = "★ %s · ~%d paces" % [short_n, paces]  # Wave 77: ★ fav chip shows paces to fav
 	_fav_paces_lbl.tooltip_text = "Distance to your Travel ★ fav · %s (Pin ★ Fav in Travel)" % fav
 	_fav_paces_panel.visible = true
 

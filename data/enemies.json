@@ -675,6 +675,19 @@
       "combat_xp": 312,
       "respawn_sec": 120.0,
       "description": "A gentle wallaby of the watermelon wilds \u2014 bound with it kindly on a careful hop!"
+    },
+    "honeydew_hamster": {
+      "kind": "honeydew_hamster",
+      "name": "Honeydew Hamster",
+      "defeat_verb": "nestled",
+      "color": "#8fbf7a",
+      "accent": "#f5f0d0",
+      "max_hp": 332,
+      "damage": 55,
+      "accuracy": 0.16,
+      "combat_xp": 318,
+      "respawn_sec": 122.0,
+      "description": "A gentle hamster of the honeydew wilds \u2014 nestle with it kindly on a careful tuck!"
     }
   },
   "spawns": [
@@ -2225,6 +2238,36 @@
       "kind": "watermelon_wallaby",
       "x": 200,
       "z": -40
+    },
+    {
+      "id": "e259",
+      "kind": "honeydew_hamster",
+      "x": 170,
+      "z": -140
+    },
+    {
+      "id": "e260",
+      "kind": "honeydew_hamster",
+      "x": -175,
+      "z": 120
+    },
+    {
+      "id": "e261",
+      "kind": "honeydew_hamster",
+      "x": 125,
+      "z": 180
+    },
+    {
+      "id": "e262",
+      "kind": "honeydew_hamster",
+      "x": -140,
+      "z": -180
+    },
+    {
+      "id": "e263",
+      "kind": "honeydew_hamster",
+      "x": 190,
+      "z": 50
     }
   ],
   "base_combat": {

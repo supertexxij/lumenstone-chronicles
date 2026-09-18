@@ -1034,7 +1034,7 @@ func _update_day_night(delta: float) -> void:
 
 
 func _build_plaza_campfire() -> void:
-	## Wave 31/32/33/45: soft campfire glow + ember sparks + soft smoke wisps + crackle near the village plaza (RuneScape-chunky, wholesome).
+	## Wave 31/32/33/45/77: soft campfire glow + ember sparks + soft smoke wisps + crackle near the village plaza (RuneScape-chunky, wholesome).
 	var root := Node3D.new()
 	root.name = "PlazaCampfire"
 	# East of fountain keep-clear, near benches — warm hearth feel
@@ -1046,10 +1046,10 @@ func _build_plaza_campfire() -> void:
 	_mi(_sphere(0.18, 0.32), Vector3(0, 0.42, 0), root, _mats["lantern_glow"], "Flame")
 	var light := OmniLight3D.new()
 	light.name = "CampfireGlow"
-	light.light_color = Color(1.0, 0.72, 0.38)
-	light.light_energy = 1.1
-	light.omni_range = 7.5
-	light.omni_attenuation = 1.15
+	light.light_color = Color(1.0, 0.74, 0.40)  # Wave 77: soft campfire glow polish
+	light.light_energy = 1.22
+	light.omni_range = 8.2
+	light.omni_attenuation = 1.1
 	light.shadow_enabled = false
 	light.position = Vector3(0, 0.55, 0)
 	root.add_child(light)
@@ -1112,19 +1112,19 @@ func _build_plaza_campfire() -> void:
 	var smoke := CPUParticles3D.new()
 	smoke.name = "CampfireSmoke"
 	smoke.emitting = true
-	smoke.amount = 18  # Wave 67: denser soft smoke wisps polish
-	smoke.lifetime = 3.8
-	smoke.preprocess = 1.4
+	smoke.amount = 24  # Wave 77: soft campfire smoke wisps polish
+	smoke.lifetime = 4.1
+	smoke.preprocess = 1.5
 	smoke.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	smoke.emission_sphere_radius = 0.22
+	smoke.emission_sphere_radius = 0.24
 	smoke.direction = Vector3(0, 1, 0)
-	smoke.spread = 26.0
-	smoke.initial_velocity_min = 0.22
-	smoke.initial_velocity_max = 0.62
-	smoke.gravity = Vector3(0.04, 0.1, 0.02)
-	smoke.scale_amount_min = 0.2
-	smoke.scale_amount_max = 0.68
-	smoke.color = Color(0.55, 0.52, 0.48, 0.32)  # Wave 67: softer campfire smoke wisps polish
+	smoke.spread = 28.0
+	smoke.initial_velocity_min = 0.20
+	smoke.initial_velocity_max = 0.68
+	smoke.gravity = Vector3(0.035, 0.11, 0.02)
+	smoke.scale_amount_min = 0.22
+	smoke.scale_amount_max = 0.74
+	smoke.color = Color(0.56, 0.53, 0.49, 0.34)  # Wave 77: soft campfire smoke/glow polish
 	var smoke_ramp := Gradient.new()
 	smoke_ramp.colors = PackedColorArray([
 		Color(0.65, 0.62, 0.58, 0.28),
@@ -3678,40 +3678,41 @@ func _setup_garden_fireflies() -> void:
 
 
 func _setup_birch_fireflies() -> void:
-	## Wave 66: soft birch-rest firefly wink at dusk — warm gold-green motes among pale trunks (RuneScape-chunky, wholesome).
+	## Wave 66/77: soft birch-rest firefly denser wink at dusk — warm gold-green motes among pale trunks (RuneScape-chunky, wholesome).
 	_birch_fireflies = CPUParticles3D.new()
 	_birch_fireflies.name = "BirchRestFireflies"
 	_birch_fireflies.emitting = false
-	_birch_fireflies.amount = 38
-	_birch_fireflies.lifetime = 3.6
-	_birch_fireflies.preprocess = 1.1
+	_birch_fireflies.amount = 58  # Wave 77: denser birch-rest firefly wink
+	_birch_fireflies.lifetime = 3.9
+	_birch_fireflies.preprocess = 1.3
 	_birch_fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_birch_fireflies.emission_box_extents = Vector3(5.2, 1.5, 5.2)
-	_birch_fireflies.direction = Vector3(0, 0.32, 0)
-	_birch_fireflies.spread = 150.0
-	_birch_fireflies.initial_velocity_min = 0.05
-	_birch_fireflies.initial_velocity_max = 0.34
-	_birch_fireflies.gravity = Vector3(0, 0.01, 0)
-	_birch_fireflies.angular_velocity_min = -16.0
-	_birch_fireflies.angular_velocity_max = 16.0
-	_birch_fireflies.scale_amount_min = 0.42
-	_birch_fireflies.scale_amount_max = 1.0
+	_birch_fireflies.emission_box_extents = Vector3(5.6, 1.7, 5.6)
+	_birch_fireflies.direction = Vector3(0, 0.34, 0)
+	_birch_fireflies.spread = 155.0
+	_birch_fireflies.initial_velocity_min = 0.04
+	_birch_fireflies.initial_velocity_max = 0.38
+	_birch_fireflies.gravity = Vector3(0, 0.012, 0)
+	_birch_fireflies.angular_velocity_min = -22.0
+	_birch_fireflies.angular_velocity_max = 22.0
+	_birch_fireflies.scale_amount_min = 0.38
+	_birch_fireflies.scale_amount_max = 1.08
 	var fm := SphereMesh.new()
-	fm.radius = 0.035
-	fm.height = 0.07
+	fm.radius = 0.036
+	fm.height = 0.072
 	_birch_fireflies.mesh = fm
 	var fmat := StandardMaterial3D.new()
 	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	fmat.albedo_color = Color(0.96, 0.94, 0.55, 0.78)
+	fmat.albedo_color = Color(0.96, 0.94, 0.55, 0.82)
 	fmat.emission_enabled = true
 	fmat.emission = Color(0.92, 0.96, 0.42)
-	fmat.emission_energy_multiplier = 1.55
+	fmat.emission_energy_multiplier = 1.85  # Wave 77: denser wink glow
 	_birch_fireflies.material_override = fmat
 	var ramp := Gradient.new()
 	ramp.colors = PackedColorArray([
 		Color(0.9, 0.95, 0.4, 0.0),
-		Color(1.0, 0.98, 0.62, 0.88),
+		Color(1.0, 0.98, 0.62, 0.92),
+		Color(0.95, 0.98, 0.55, 0.55),
 		Color(0.88, 0.92, 0.38, 0.0),
 	])
 	_birch_fireflies.color_ramp = ramp

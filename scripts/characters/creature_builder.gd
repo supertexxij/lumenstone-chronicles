@@ -175,6 +175,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_quokka(bob)
 		"watermelon_wallaby":
 			_build_wallaby(bob)
+		"honeydew_hamster":
+			_build_hamster(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -2024,4 +2026,47 @@ static func _build_wallaby(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.045, 0.02, 0.36), Vector3(0, 0.30, -0.28), bob, "Tail")
 	tail.rotation_degrees = Vector3(40, 0, 0)
 	_mi(_sphere(0.03, 0.035), Vector3(0, 0.18, -0.48), bob, "TailTip")
+
+static func _build_hamster(bob: Node3D) -> void:
+	## Soft honeydew-wilds hamster — plump round body, full cheek pouches, small rounded ears, stubby tail, soft paws, cheek blush (distinct from Maple Mouse / Lemon Lemming / Cherry Chinchilla / Palm Pika / Blueberry Bunny / Quince Quokka / Watermelon Wallaby).
+	# Plump round body + soft cream belly (honeydew flesh hint)
+	_mi(_sphere(0.17, 0.18), Vector3(0, 0.32, 0.0), bob, "Body")
+	_mi(_sphere(0.10, 0.09), Vector3(0, 0.26, 0.06), bob, "Belly")
+	# Round head + small rounded ears (hamster signature — not oversized chinchilla ears)
+	_mi(_sphere(0.12), Vector3(0, 0.48, 0.06), bob, "Head")
+	_mi(_sphere(0.045, 0.02), Vector3(-0.09, 0.58, -0.01), bob, "EarL")
+	_mi(_sphere(0.045, 0.02), Vector3(0.09, 0.58, -0.01), bob, "EarR")
+	_mi(_sphere(0.022, 0.01), Vector3(-0.09, 0.58, 0.01), bob, "EarInnerL")
+	_mi(_sphere(0.022, 0.01), Vector3(0.09, 0.58, 0.01), bob, "EarInnerR")
+	# Soft eyes
+	_mi(_sphere(0.022), Vector3(-0.04, 0.50, 0.15), bob, "EyeL")
+	_mi(_sphere(0.022), Vector3(0.04, 0.50, 0.15), bob, "EyeR")
+	_mi(_sphere(0.009), Vector3(-0.04, 0.505, 0.165), bob, "PupilL")
+	_mi(_sphere(0.009), Vector3(0.04, 0.505, 0.165), bob, "PupilR")
+	# Short blunt snout
+	_mi(_sphere(0.035, 0.028), Vector3(0, 0.44, 0.16), bob, "Snout")
+	_mi(_sphere(0.012, 0.01), Vector3(0, 0.445, 0.19), bob, "Nose")
+	# Full cheek pouches (hamster signature)
+	_mi(_sphere(0.055, 0.048), Vector3(-0.11, 0.44, 0.08), bob, "CheekL")
+	_mi(_sphere(0.055, 0.048), Vector3(0.11, 0.44, 0.08), bob, "CheekR")
+	# Soft honeydew cheek blush
+	_mi(_sphere(0.028, 0.022), Vector3(-0.10, 0.40, 0.12), bob, "BlushL")
+	_mi(_sphere(0.028, 0.022), Vector3(0.10, 0.40, 0.12), bob, "BlushR")
+	# Soft stubby paws
+	for info in [
+		["FL", Vector3(-0.07, 0.14, 0.07)],
+		["FR", Vector3(0.07, 0.14, 0.07)],
+		["BL", Vector3(-0.07, 0.14, -0.05)],
+		["BR", Vector3(0.07, 0.14, -0.05)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.016, 0.018, 0.09), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.034, 0.012, 0.038)), Vector3(0, -0.065, 0.01), leg, "Foot")
+	# Stubby hamster tail (signature — short, not bushy / not long wallaby)
+	var tail := _mi(_cyl(0.025, 0.012, 0.08), Vector3(0, 0.28, -0.14), bob, "Tail")
+	tail.rotation_degrees = Vector3(55, 0, 0)
+	_mi(_sphere(0.02), Vector3(0, 0.22, -0.20), bob, "TailTip")
 

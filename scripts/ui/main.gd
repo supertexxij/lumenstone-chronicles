@@ -616,17 +616,17 @@ func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
 	if world_scene.has_method("note_soft_travel_arrival"):
 		first_discover = bool(world_scene.note_soft_travel_arrival(pos))
 	var short_n: String = _travel_landmark_short(label)
-	# Wave 66: clearer landmark arrival toast with short name (RuneScape-chunky, wholesome)
+	# Wave 66/77: clearer Soft Travel arrival toast with short name (RuneScape-chunky, wholesome)
 	if "Fountain" in label:
 		if GameState.has_method("rest_at_fountain"):
 			GameState.rest_at_fountain(true)
 		elif GameState.has_method("refill_pantry"):
 			GameState.refill_pantry(true)
-		GameState.toast.emit("Arrived · %s — resting." % short_n)
+		GameState.toast.emit("Arrived · Soft travel · %s — resting." % short_n)
 	elif first_discover:
-		GameState.toast.emit("✦ First discovery · %s — welcome!" % short_n)  # Wave 75: clearer first-discovery landmark toast
+		GameState.toast.emit("✦ First discovery · Soft travel · %s — welcome!" % short_n)  # Wave 75/77: clearer Soft Travel first-discovery
 	else:
-		GameState.toast.emit("Arrived · %s" % short_n)
+		GameState.toast.emit("Arrived · Soft travel · %s" % short_n)  # Wave 77: clearer Soft Travel arrival toast
 	_play_soft_travel_landing_puff()
 	AudioBus.play_ui()
 
@@ -853,6 +853,9 @@ func _enter_world() -> void:
 	# Wave 76: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_76_toast"):
 		GameState.maybe_wave_76_toast()
+	# Wave 77: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_77_toast"):
+		GameState.maybe_wave_77_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

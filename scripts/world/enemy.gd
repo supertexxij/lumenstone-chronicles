@@ -155,6 +155,9 @@ func _ready() -> void:
 		"watermelon_wallaby":
 			if label: label.position.y = 1.55
 			hp_bar.position.y = 1.3
+		"honeydew_hamster":
+			if label: label.position.y = 1.35
+			hp_bar.position.y = 1.1
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -994,6 +997,30 @@ func _idle_anim(delta: float) -> void:
 				wleg_bl.rotation.x = sin(t * 1.05) * 0.08
 			if wleg_br:
 				wleg_br.rotation.x = -sin(t * 1.05) * 0.08
+		"honeydew_hamster":
+			# Soft nestle-bob — cheek pouches breathe, tiny ears twitch, stubby tail sway (Wave 77)
+			creature_bob.position.y = abs(sin(t * 0.95)) * 0.03
+			creature_bob.rotation.y = sin(t * 0.35) * 0.09
+			var heal := creature_bob.get_node_or_null("EarL")
+			var hear := creature_bob.get_node_or_null("EarR")
+			if heal:
+				heal.rotation.z = sin(t * 1.25) * 0.08
+			if hear:
+				hear.rotation.z = -sin(t * 1.25 + 0.2) * 0.08
+			var hcheek_l := creature_bob.get_node_or_null("CheekL")
+			var hcheek_r := creature_bob.get_node_or_null("CheekR")
+			if hcheek_l:
+				hcheek_l.scale = Vector3.ONE * (1.0 + sin(t * 1.4) * 0.04)
+			if hcheek_r:
+				hcheek_r.scale = Vector3.ONE * (1.0 + sin(t * 1.4 + 0.3) * 0.04)
+			var htail := creature_bob.get_node_or_null("Tail")
+			if htail:
+				htail.rotation.y = sin(t * 1.0) * 0.12
+				htail.rotation.x = deg_to_rad(55) + sin(t * 0.75) * 0.05
+			var hhead := creature_bob.get_node_or_null("Head")
+			if hhead:
+				hhead.rotation.y = sin(t * 0.65) * 0.06
+				hhead.rotation.x = sin(t * 0.5) * 0.035
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
