@@ -226,6 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.5-smooth — combat chase retarget throttle
+
+Combat chase no longer calls `_set_move_target` every physics frame (that rebuilt nav + spam-spawned the yellow click ring and snapped the camera onto the foe). Soft chase now repaths only on drift / 0.35s cooldown and skips the click marker; soft sidestep around mentors/foes is unchanged. Keeps v1.84.4 Compatibility cuts.
+
 ### v1.84.4-smooth — stop freezes on family PCs
 
 Renderer switched to **GL Compatibility** (was Forward+). Removed Engine.time_scale hit-pause (felt like freezing). Dropped FogMist / edge-fog / snowdust particle banks (env fog still reads as Fog). Directional sun shadows off. Enemy and mentor NavigationObstacle RVO disabled. Much lighter rain/cloud/campfire/landmark particle budgets. Thinner foe wake batches. Keeps v1.84.3 RVO-off / weather budget cuts.

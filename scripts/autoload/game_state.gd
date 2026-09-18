@@ -1268,19 +1268,6 @@ func get_year_progress_percent() -> int:
 
 
 func set_combat_target(enemy: Node) -> void:
-	# #region agent log
-	var path := "/opt/cursor/logs/debug.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f:
-		f.seek_end()
-		var kind := ""
-		if enemy != null and is_instance_valid(enemy):
-			kind = str(enemy.get("kind"))
-		f.store_line(JSON.stringify({"hypothesisId": "E6", "location": "game_state.gd:set_combat_target", "message": "combat_target", "data": {"kind": kind, "had": combat_target != null, "fps": Engine.get_frames_per_second()}, "timestamp": Time.get_ticks_msec()}))
-		f.close()
-	# #endregion
 	combat_target = enemy
 	combat_target_changed.emit(enemy)
 

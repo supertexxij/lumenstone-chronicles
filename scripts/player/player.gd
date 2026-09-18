@@ -42,10 +42,7 @@ var _foot_dust: CPUParticles3D = null
 var _talk_nudge_active: bool = false  # Wave 44: soft NPC talk camera nudge
 var _talk_nudge_zoom_saved: float = 1.0
 var _talk_nudge_yaw_saved: float = 0.0
-# #region agent log
-var _dbg_phys_i: int = 0
-var _dbg_combat_chase_n: int = 0
-# #endregion
+var _combat_chase_retarget_cd: float = 0.0  # v1.84.5: throttle combat chase repath
 
 func _ready() -> void:
 	add_to_group("player")
@@ -398,12 +395,6 @@ func _handle_click() -> void:
 			_set_move_target(from + dir * t)
 
 func _set_move_target(pos: Vector3) -> void:
-	# #region agent log
-	# Avoid flooding NDJSON during combat chase (that repath loop is itself a hitch suspect).
-	var _from_combat := GameState.combat_target != null and is_instance_valid(GameState.combat_target)
-	if not _from_combat:
-		_agent_dbg("E5", "player.gd:_set_move_target", "move_target", {"pos": [pos.x, pos.z], "has_click_was": has_click_target, "nav_ready": _nav_ready})
-	# #endregion
 	target_pos = Vector3(pos.x, 0, pos.z)
 	has_click_target = true
 	_stuck_timer = 0.0
@@ -421,6 +412,33 @@ func _set_move_target(pos: Vector3) -> void:
 	if GameState.combat_target and is_instance_valid(GameState.combat_target):
 		if target_pos.distance_to(GameState.combat_target.global_position) > float(EnemyDB.base_combat.get("escape_range", 8)):
 			_leave_combat_soft()
+
+
+func _combat_chase_toward(pos: Vector3, delta: float) -> void:
+	## Soft chase the combat target without per-frame nav rebuild / yellow-ring spam (v1.84.5).
+	## Soft sidestep still applies via the normal has_click_target steer path.
+	_combat_chase_retarget_cd = maxf(0.0, _combat_chase_retarget_cd - delta)
+	var goal := Vector3(pos.x, 0.0, pos.z)
+	var need_repath := not has_click_target
+	if has_click_target:
+		var drift: float = Vector2(goal.x - target_pos.x, goal.z - target_pos.z).length()
+		if drift > 0.85:
+			need_repath = true
+	if (not need_repath) and _combat_chase_retarget_cd > 0.0:
+		return
+	_combat_chase_retarget_cd = 0.35
+	target_pos = goal
+	has_click_target = true
+	_stuck_timer = 0.0
+	_assist_waypoints.clear()
+	_path_idx = 0
+	# No click marker during combat chase — rings were thrashing every retarget.
+	if _nav_ready and _nav_agent:
+		_nav_agent.target_position = target_pos
+		if _nav_agent.is_navigation_finished() or not _nav_agent.is_target_reachable():
+			_build_assist_waypoints(target_pos)
+	else:
+		_build_assist_waypoints(target_pos)
 
 func _build_assist_waypoints(goal: Vector3) -> void:
 	## Raycast lookahead around props when no navmesh path is available.
@@ -474,13 +492,6 @@ func play_attack_swing() -> void:
 func _physics_process(delta: float) -> void:
 	if GameState.combat_target != null and not is_instance_valid(GameState.combat_target):
 		GameState.set_combat_target(null)
-	# #region agent log
-	_dbg_phys_i += 1
-	if delta > 0.05 or _dbg_phys_i % 30 == 0:
-		var _ct := GameState.combat_target
-		_agent_dbg("H", "player.gd:_physics_process", "phys", {"delta": delta, "fps": Engine.get_frames_per_second(), "vel": [velocity.x, velocity.z], "pos": [global_position.x, global_position.z], "has_click": has_click_target, "combat": _ct != null and is_instance_valid(_ct), "chase_n": _dbg_combat_chase_n, "ui_blocking": ui_blocking})
-		_dbg_combat_chase_n = 0
-	# #endregion
 	if ui_blocking:
 		velocity = Vector3.ZERO
 		_animate_walk(false, delta)
@@ -613,10 +624,7 @@ func _physics_process(delta: float) -> void:
 		if dist > float(EnemyDB.base_combat.get("escape_range", 9.5)):
 			_leave_combat_soft()
 		elif dist > float(EnemyDB.base_combat.get("attack_range", 3.2)):
-			# #region agent log
-			_dbg_combat_chase_n += 1
-			# #endregion
-			_set_move_target(GameState.combat_target.global_position)
+			_combat_chase_toward(GameState.combat_target.global_position, delta)
 		else:
 			# Face the foe while in range
 			var to_e: Vector3 = GameState.combat_target.global_position - global_position
@@ -901,17 +909,3 @@ func _animate_attack(delta: float) -> void:
 
 func set_ui_blocking(v: bool) -> void:
 	ui_blocking = v
-
-
-# #region agent log
-func _agent_dbg(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
-	var path := "/opt/cursor/logs/debug.log"
-	var f := FileAccess.open(path, FileAccess.READ_WRITE)
-	if f == null:
-		f = FileAccess.open(path, FileAccess.WRITE)
-	if f == null:
-		return
-	f.seek_end()
-	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
-	f.close()
-# #endregion
