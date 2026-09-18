@@ -22,6 +22,7 @@ var _travel_search: LineEdit = null
 var _travel_last_query: String = ""  # Wave 64: remember last travel search until close
 var _confirm_dialog: ConfirmationDialog
 var _save_panel: Control
+var _minigames_panel: Control
 var _pending_clear_slot: int = -1
 var _pending_overwrite_slot: int = -1
 var _reset_confirm_armed: bool = false
@@ -58,6 +59,8 @@ func _ready() -> void:
 	hud.weather_pressed.connect(_cycle_weather)
 	if hud.has_signal("travel_pressed"):
 		hud.travel_pressed.connect(_toggle_travel)
+	if hud.has_signal("games_pressed"):
+		hud.games_pressed.connect(_toggle_minigames)
 	hud.parent_pressed.connect(_open_parent)
 	inventory_panel.closed.connect(func(): inventory_panel.visible = false; _sync_ui_blocking())
 	quest_panel.closed.connect(func(): quest_panel.visible = false; _sync_ui_blocking())
@@ -81,6 +84,7 @@ func _ready() -> void:
 	_setup_travel_panel()
 	_setup_confirm_dialog()
 	_setup_save_panel()
+	_setup_minigames_panel()
 	if hud.has_signal("saves_pressed"):
 		hud.saves_pressed.connect(_open_save_panel)
 
@@ -156,7 +160,7 @@ func _process(delta: float) -> void:
 func _overlay_nodes() -> Array:
 	return [
 		quest_panel, npc_panel, parent_panel, _save_panel, travel_panel,
-		inventory_panel, journal_panel, customize_screen,
+		_minigames_panel, inventory_panel, journal_panel, customize_screen,
 	]
 
 
@@ -192,7 +196,7 @@ func _sync_ui_blocking() -> void:
 
 
 func _close_kid_menus(keep: Control = null) -> void:
-	## Close bag / journal / travel / wardrobe / saves so panels never stack.
+	## Close bag / journal / travel / wardrobe / saves / games so panels never stack.
 	if inventory_panel != keep:
 		inventory_panel.visible = false
 	if journal_panel != keep:
@@ -201,6 +205,8 @@ func _close_kid_menus(keep: Control = null) -> void:
 		_hide_travel(false)
 	if _save_panel != keep and _save_panel != null:
 		_save_panel.visible = false
+	if _minigames_panel != keep and _minigames_panel != null:
+		_minigames_panel.visible = false
 	if customize_screen != keep and GameState.in_world:
 		customize_screen.visible = false
 	_sync_ui_blocking()
@@ -237,6 +243,8 @@ func _close_all_overlays() -> void:
 	parent_panel.visible = false
 	if _save_panel:
 		_save_panel.visible = false
+	if _minigames_panel:
+		_minigames_panel.visible = false
 	if GameState.in_world:
 		customize_screen.visible = false
 	_release_gui_focus()
@@ -244,7 +252,7 @@ func _close_all_overlays() -> void:
 
 
 func _close_top_overlay() -> bool:
-	## Esc closes the topmost menu (quest → talk → Parent → saves → travel → looks → bag → journal).
+	## Esc closes the topmost menu (quest → talk → Parent → saves → games → travel → looks → bag → journal).
 	if _confirm_dialog != null and _confirm_dialog.visible:
 		return false
 	if _panel_is_open(quest_panel):
@@ -259,6 +267,13 @@ func _close_top_overlay() -> bool:
 	if _panel_is_open(_save_panel):
 		_save_panel.visible = false
 		_sync_ui_blocking()
+		return true
+	if _panel_is_open(_minigames_panel):
+		if _minigames_panel.has_signal("closed"):
+			_minigames_panel.closed.emit()
+		else:
+			_minigames_panel.visible = false
+			_sync_ui_blocking()
 		return true
 	if _panel_is_open(travel_panel):
 		_close_travel()
@@ -306,6 +321,47 @@ func _toggle_travel() -> void:
 		_close_travel()
 		return
 	_open_travel()
+
+
+func _toggle_minigames() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	if _panel_is_open(_minigames_panel):
+		if _minigames_panel.has_signal("closed"):
+			_minigames_panel.closed.emit()
+		else:
+			_minigames_panel.visible = false
+			_sync_ui_blocking()
+		return
+	_open_minigames()
+
+
+func _open_minigames() -> void:
+	if _minigames_panel == null:
+		_setup_minigames_panel()
+	if _is_busy_overlay() or _travel_fading:
+		return
+	_close_kid_menus(_minigames_panel)
+	if _minigames_panel.has_method("open"):
+		_minigames_panel.open()
+	else:
+		_minigames_panel.visible = true
+	_sync_ui_blocking()
+
+
+func _setup_minigames_panel() -> void:
+	if _minigames_panel != null and is_instance_valid(_minigames_panel):
+		return
+	var script: Script = load("res://scripts/ui/minigames_panel.gd")
+	_minigames_panel = Control.new()
+	_minigames_panel.set_script(script)
+	_minigames_panel.name = "MinigamesPanel"
+	$UI.add_child(_minigames_panel)
+	if _minigames_panel.has_signal("closed"):
+		_minigames_panel.closed.connect(func():
+			_minigames_panel.visible = false
+			_sync_ui_blocking()
+		)
 
 
 func _open_wardrobe() -> void:
@@ -363,7 +419,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("mute_toggle"):
 		AudioBus.toggle_mute()
 		return
-	if _is_busy_overlay() or _panel_is_open(_save_panel) or (_panel_is_open(customize_screen) and GameState.in_world):
+	if _is_busy_overlay() or _panel_is_open(_save_panel) or _panel_is_open(_minigames_panel) or (_panel_is_open(customize_screen) and GameState.in_world):
 		return
 	if event.is_action_pressed("weather_cycle"):
 		if _any_overlay_visible():
@@ -1020,13 +1076,15 @@ func _play_load_toasts() -> void:
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
-		"maybe_bugs_182_toast", "maybe_curriculum_183_toast",
+		"maybe_bugs_182_toast", "maybe_curriculum_183_toast", "maybe_minigames_184_toast",
 	])
 	var early: bool = GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save()
 	if early and GameState.has_method("quiet_legacy_polish_toasts"):
 		GameState.quiet_legacy_polish_toasts()
 		if GameState.has_method("maybe_curriculum_183_toast"):
 			GameState.maybe_curriculum_183_toast()
+		if GameState.has_method("maybe_minigames_184_toast"):
+			GameState.maybe_minigames_184_toast()
 		return
 	for m in methods:
 		if not GameState.has_method(m):

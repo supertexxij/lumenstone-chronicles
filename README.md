@@ -90,6 +90,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Mute audio | **M** or HUD button |
 | Enter guild hall | Walk into glowing **Enter** door · exit via blue glow indoors |
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **U** Quiet Cross · **X** Stone Arch · **Z** Amber Knoll · **6** Birch Rest · **7** Fern Dell · **8** Heather Heath · **9** Thistle Rise · **0** Maple Copse · **1–5** halls (outdoors only) |
+| Village Games | **Games** on HUD — Lantern Catch, Virtue Match, Fact Dash (recess between lessons) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
 | Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
@@ -225,6 +226,19 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.84.0-minigames — Village Games recess
+
+Wholesome recess mini games between lessons. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, and tick combat unchanged.
+
+- **Games** HUD button opens **Village Games**: Lantern Catch, Virtue Match, Fact Dash
+- **Lantern Catch** — move the basket (A/D / arrows / mouse) to catch warm lanterns for 40s
+- **Virtue Match** — flip and pair Wonder, Thanks, Courage, Diligence, Kindness, Joy
+- **Fact Dash** — timed math facts that scale with unlocked week (add → easy × → full tables)
+- Best scores save per slot; a new personal best awards **+2 XP** (soft daily cap of 6 XP from games)
+- Once-per-save tip toast; Esc closes Games like other kid menus
+- Headless smoke: `tools/minigames_smoke.gd`
+- Re-export Linux + Windows when shipping a build
 
 ### v1.83.0-curriculum — school-day feel
 
