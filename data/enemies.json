@@ -571,6 +571,19 @@
       "combat_xp": 264,
       "respawn_sec": 104.0,
       "description": "A gentle goat of the guava wilds \u2014 nuzzle it kindly with a careful step!"
+    },
+    "kiwi_koala": {
+      "kind": "kiwi_koala",
+      "name": "Kiwi Koala",
+      "defeat_verb": "cuddled",
+      "color": "#6a7858",
+      "accent": "#d8e0a8",
+      "max_hp": 284,
+      "damage": 47,
+      "accuracy": 0.17,
+      "combat_xp": 270,
+      "respawn_sec": 106.0,
+      "description": "A soft koala of the kiwi wilds \u2014 cuddle it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1881,6 +1894,36 @@
       "kind": "guava_goat",
       "x": 175,
       "z": -90
+    },
+    {
+      "id": "e219",
+      "kind": "kiwi_koala",
+      "x": -155,
+      "z": 55
+    },
+    {
+      "id": "e220",
+      "kind": "kiwi_koala",
+      "x": 155,
+      "z": -55
+    },
+    {
+      "id": "e221",
+      "kind": "kiwi_koala",
+      "x": -60,
+      "z": -165
+    },
+    {
+      "id": "e222",
+      "kind": "kiwi_koala",
+      "x": 85,
+      "z": 165
+    },
+    {
+      "id": "e223",
+      "kind": "kiwi_koala",
+      "x": -175,
+      "z": -85
     }
   ],
   "base_combat": {

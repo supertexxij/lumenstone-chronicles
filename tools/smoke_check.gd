@@ -659,7 +659,7 @@ func _initialize():
 	print("NO_DAY_CASH_W65", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
-	print("VERSION_166", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_166", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("STRAWBERRY_STOAT", '"strawberry_stoat"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_stoat" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e208"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("BIRCH_FIREFLIES_W66", "BirchRestFireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_birch_fireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("ARRIVAL_SHORT_W66", "_travel_landmark_short" in FileAccess.get_file_as_string("res://scripts/ui/main.gd") and "Arrived · %s" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
@@ -675,7 +675,7 @@ func _initialize():
 
 
 
-	print("VERSION_167", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_167", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("BLACKBERRY_BEAR", '"blackberry_bear"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_bear" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e213"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("REED_POOL_GLEAM_W67", "ReedPoolRippleGleam" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_reed_pool_gleam" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("LOW_HP_TOAST_W67", "_maybe_low_hp_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "HP low · press V to eat" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
@@ -691,7 +691,7 @@ func _initialize():
 
 
 
-	print("VERSION_168", 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_168", 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("GUAVA_GOAT", '"guava_goat"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_goat" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e218"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("WILLOW_LEAVES_W68", "WillowBendLeafDrift" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_willow_leaves" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("NEAR_MISS_TITLE_W68", "Near miss ·" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "short_title" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
@@ -703,6 +703,22 @@ func _initialize():
 	print("PIN_STILL_1234_W68", "const DEFAULT_PIN := \"1234\"" in gs68 or 'DEFAULT_PIN := "1234"' in gs68)
 	print("MASTERY_80_W68", "MASTERY_PCT := 0.8" in gs68 or "0.8" in gs68)
 	print("NO_DAY_CASH_W68", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
+
+	print("VERSION_169", 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("KIWI_KOALA", '"kiwi_koala"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_koala" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e223"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FERN_FRONDS_W69", "FernDellFrondDrift" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_fern_fronds" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("LANDMARK_PACES_CHIP_W69", "✦ %s · ~%d paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "landmark_dist" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("CANOPY_DRIP_POLISH_W69", "Wave 69: soft rain-canopy drip polish" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MASTERED_FILTER_COUNT_W69", "Mastered ★ · %d" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd") and ' _filter == "completed"' in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("SAVE_CHIP_PULSE_W69", "_on_game_saved_pulse" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "signal game_saved" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("WAVE69_TOAST", "maybe_wave_69_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_69_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs69 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W69", "const DEFAULT_PIN := \"1234\"" in gs69 or 'DEFAULT_PIN := "1234"' in gs69)
+	print("MASTERY_80_W69", "MASTERY_PCT := 0.8" in gs69 or "0.8" in gs69)
+	print("NO_DAY_CASH_W69", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
 	print("CHECK_OK")

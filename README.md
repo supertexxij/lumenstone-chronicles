@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 69 overnight (v1.69.0-overnight)
+- Soft **Fern Dell fern-frond drift at dusk** — pale mint fronds drift over the SSE hollow; frond sway reads stronger at dusk (RuneScape-chunky, wholesome)
+- Clearer **landmark ✦ chip with paces** — HUD near-chip reads `✦ Name · ~N paces`
+- Soft **rain-canopy drip polish** — denser motes + softer fade under tree canopies in rain
+- New wilds foe **Kiwi Koala** — plump round body, oversized round ears, large soft nose, stubby limbs, rump tuft, cheek blush, gentle “cuddled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat)
+- Journal/HUD QoL: **Mastered ★ filter shows count in header**; **nickname chip briefly pulses on save** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 68 overnight (v1.68.0-overnight)
 - Soft **Willow Bend willow-leaf drift at dusk** — pale green leaves drift over the quiet NW brook (RuneScape-chunky, wholesome)
 - Clearer **quest near-miss toast with quest short title** — `Near miss · <title> · mastery N% (need ≥80%). Retry anytime!`

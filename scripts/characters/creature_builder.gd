@@ -159,6 +159,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_bear(bob)
 		"guava_goat":
 			_build_goat(bob)
+		"kiwi_koala":
+			_build_koala(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1676,4 +1678,38 @@ static func _build_goat(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.03, 0.02, 0.12), Vector3(0, 0.42, -0.22), bob, "Tail")
 	tail.rotation_degrees = Vector3(-35, 0, 0)
 	_mi(_sphere(0.045, 0.05), Vector3(0, 0.50, -0.28), bob, "TailFluff")
+
+static func _build_koala(bob: Node3D) -> void:
+	## Soft kiwi-wilds koala — round plump body, big round ears, large soft nose, stubby limbs, cheek blush (distinct from Guava Goat / Blackberry Bear / Blueberry Bunny).
+	# Plump round body + soft cream belly
+	_mi(_sphere(0.22, 0.28), Vector3(0, 0.38, 0.0), bob, "Body")
+	_mi(_sphere(0.12, 0.14), Vector3(0, 0.28, 0.06), bob, "Belly")
+	# Round head + oversized round ears (koala signature)
+	_mi(_sphere(0.14, 0.15), Vector3(0, 0.62, 0.12), bob, "Head")
+	_mi(_sphere(0.07, 0.08), Vector3(-0.12, 0.74, 0.10), bob, "EarL")
+	_mi(_sphere(0.07, 0.08), Vector3(0.12, 0.74, 0.10), bob, "EarR")
+	_mi(_sphere(0.04, 0.045), Vector3(-0.12, 0.74, 0.12), bob, "EarInL")
+	_mi(_sphere(0.04, 0.045), Vector3(0.12, 0.74, 0.12), bob, "EarInR")
+	# Large soft nose (koala signature)
+	_mi(_sphere(0.055, 0.045), Vector3(0, 0.58, 0.26), bob, "Nose")
+	_mi(_sphere(0.022), Vector3(-0.045, 0.66, 0.22), bob, "EyeL")
+	_mi(_sphere(0.022), Vector3(0.045, 0.66, 0.22), bob, "EyeR")
+	# Soft kiwi cheek blush
+	_mi(_sphere(0.04, 0.03), Vector3(-0.12, 0.56, 0.14), bob, "BlushL")
+	_mi(_sphere(0.04, 0.03), Vector3(0.12, 0.56, 0.14), bob, "BlushR")
+	# Stubby limbs
+	for info in [
+		["FL", Vector3(-0.10, 0.16, 0.10)],
+		["FR", Vector3(0.10, 0.16, 0.10)],
+		["BL", Vector3(-0.10, 0.16, -0.10)],
+		["BR", Vector3(0.10, 0.16, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.028, 0.032, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.06, 0.018, 0.07)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Soft fluff rump tuft (no long tail)
+	_mi(_sphere(0.08, 0.09), Vector3(0, 0.36, -0.22), bob, "RumpTuft")
 

@@ -542,7 +542,7 @@ func _finish():
 	print("JOURNAL_OPEN_STICKY_SRC", "Open only · %d quests still open" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
 	print("TRAVEL_NEAREST_SRC", "Wave 66: highlight nearest landmark" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
 	print("WAVE66_TOAST_SRC", "maybe_wave_66_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_166_SRC", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_166_SRC", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("BLACKBERRY_BEAR_SRC", '"blackberry_bear"' in FileAccess.get_file_as_string("res://data/enemies.json"))
@@ -551,7 +551,7 @@ func _finish():
 	print("FOES_PULSE_SRC", "_update_foe_pulse" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("NEEDS_HELP_DAYS_SRC", "_days_since_attempt" in FileAccess.get_file_as_string("res://scripts/ui/parent_panel.gd"))
 	print("WAVE67_TOAST_SRC", "maybe_wave_67_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_167_SRC", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_167_SRC", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 
 	print("GUAVA_GOAT_SRC", '"guava_goat"' in FileAccess.get_file_as_string("res://data/enemies.json"))
@@ -561,7 +561,17 @@ func _finish():
 	print("UNEQUIP_COUNT_SRC", "Confirm? · %d" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd"))
 	print("YEAR_MASTERY_GOLD_SRC", "_year_chip_last_mastery" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 	print("WAVE68_TOAST_SRC", "maybe_wave_68_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
-	print("VERSION_168_SRC", 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_168_SRC", 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
+
+
+	print("KIWI_KOALA_SRC", '"kiwi_koala"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("FERN_FRONDS_SRC", "FernDellFrondDrift" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("LANDMARK_PACES_CHIP_SRC", "landmark_dist" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "✦ %s · ~%d paces" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("CANOPY_DRIP_POLISH_SRC", "Wave 69: soft rain-canopy drip polish" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("MASTERED_FILTER_COUNT_SRC", "Mastered ★ · %d" in FileAccess.get_file_as_string("res://scripts/ui/journal_panel.gd"))
+	print("SAVE_CHIP_PULSE_SRC", "_on_game_saved_pulse" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE69_TOAST_SRC", "maybe_wave_69_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("VERSION_169_SRC", 'config/version="1.69.0"' in FileAccess.get_file_as_string("res://project.godot"))
 
 	print("WORLD_SMOKE_OK")
 	quit(0)

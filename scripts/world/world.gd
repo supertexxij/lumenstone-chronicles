@@ -47,6 +47,8 @@ var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer G
 var _birch_fireflies: CPUParticles3D  # Wave 66: soft birch-rest firefly wink at dusk
 var _reed_pool_gleam: CPUParticles3D  # Wave 67: soft Reed Pool ripple gleam at dusk
 var _willow_leaves: CPUParticles3D  # Wave 68: soft Willow Bend willow-leaf drift at dusk
+var _fern_fronds: CPUParticles3D  # Wave 69: soft Fern Dell fern-frond drift at dusk
+var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
@@ -877,6 +879,7 @@ func _update_landmark_approach() -> void:
 		if _landmark_here != "":
 			GameState.clear_landmark_greeted(_landmark_here)
 			_landmark_here = ""
+		_landmark_dist = 9999.0
 		return
 	var ppos: Vector3 = player.global_position
 	var best_id := ""
@@ -896,7 +899,9 @@ func _update_landmark_approach() -> void:
 		if _landmark_here != "":
 			GameState.clear_landmark_greeted(_landmark_here)
 			_landmark_here = ""
+		_landmark_dist = 9999.0
 		return
+	_landmark_dist = best_d  # Wave 69: paces for ✦ landmark chip
 	if best_id != _landmark_here:
 		if _landmark_here != "" and _landmark_here != best_id:
 			GameState.clear_landmark_greeted(_landmark_here)
@@ -1777,6 +1782,7 @@ func _setup_weather() -> void:
 	_setup_birch_fireflies()
 	_setup_reed_pool_gleam()
 	_setup_willow_leaves()
+	_setup_fern_fronds()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2007,6 +2013,10 @@ func _update_weather(delta: float) -> void:
 		var willow_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_willow_leaves.emitting = willow_dusk
 		_willow_leaves.visible = willow_dusk
+	if _fern_fronds:
+		var fern_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_fern_fronds.emitting = fern_dusk
+		_fern_fronds.visible = fern_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2471,6 +2481,7 @@ func get_minimap_markers() -> Dictionary:
 		"day": _day_phase,
 		"weather": _weather_label_cache,
 		"landmark_name": landmark_name,
+		"landmark_dist": _landmark_dist,  # Wave 69: paces for ✦ chip
 	}
 
 func _build_mill_bridge() -> void:
@@ -2799,14 +2810,16 @@ func _update_willow_sway(_delta: float) -> void:
 
 func _update_fern_sway(_delta: float) -> void:
 	## Wave 62: soft fern sway at Fern Dell — gentle frond lean (RuneScape-chunky, wholesome).
+	## Wave 69: soft fern-frond sway reads stronger at dusk (RuneScape-chunky, wholesome).
 	if _fern_sway_nodes.is_empty():
 		return
 	var t := Time.get_ticks_msec() * 0.001
+	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
 	for frond in _fern_sway_nodes:
 		if frond == null or not is_instance_valid(frond):
 			continue
 		var phase := float(frond.get_meta("sway_phase", 0.0))
-		var amp := float(frond.get_meta("sway_amp", 0.045))
+		var amp := float(frond.get_meta("sway_amp", 0.045)) * dusk_boost
 		var lean := sin(t * 1.08 + phase) * amp
 		frond.rotation.z = lean
 		frond.rotation.x = cos(t * 0.92 + phase * 0.65) * amp * 0.55
@@ -3727,6 +3740,47 @@ func _setup_willow_leaves() -> void:
 
 
 
+
+
+func _setup_fern_fronds() -> void:
+	## Wave 69: soft Fern Dell fern-frond drift at dusk — pale mint fronds drift over the SSE hollow (RuneScape-chunky, wholesome).
+	_fern_fronds = CPUParticles3D.new()
+	_fern_fronds.name = "FernDellFrondDrift"
+	_fern_fronds.emitting = false
+	_fern_fronds.amount = 36
+	_fern_fronds.lifetime = 4.8
+	_fern_fronds.preprocess = 1.4
+	_fern_fronds.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_fern_fronds.emission_box_extents = Vector3(6.5, 2.4, 6.5)
+	_fern_fronds.direction = Vector3(0.18, -0.38, 0.10)
+	_fern_fronds.spread = 48.0
+	_fern_fronds.initial_velocity_min = 0.14
+	_fern_fronds.initial_velocity_max = 0.62
+	_fern_fronds.gravity = Vector3(0, -0.36, 0)
+	_fern_fronds.angular_velocity_min = -35.0
+	_fern_fronds.angular_velocity_max = 35.0
+	_fern_fronds.scale_amount_min = 0.32
+	_fern_fronds.scale_amount_max = 0.85
+	var fm := BoxMesh.new()
+	fm.size = Vector3(0.20, 0.022, 0.08)
+	_fern_fronds.mesh = fm
+	var fmat := StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.48, 0.72, 0.46, 0.76)
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_fern_fronds.material_override = fmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.52, 0.76, 0.48, 0.0),
+		Color(0.48, 0.72, 0.46, 0.80),
+		Color(0.42, 0.64, 0.40, 0.0),
+	])
+	_fern_fronds.color_ramp = ramp
+	# Fern Dell landmark at (22, 0, 48)
+	_fern_fronds.position = Vector3(22.0, 2.8, 48.0)
+	add_child(_fern_fronds)
+	HeadlessGuard.guard_particles(_fern_fronds)
+
 func _setup_brook_sparkle() -> void:
 	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).
 	_brook_sparkle = CPUParticles3D.new()
@@ -3889,27 +3943,35 @@ func _setup_canopy_drip() -> void:
 	_canopy_drip = CPUParticles3D.new()
 	_canopy_drip.name = "RainCanopyDrip"
 	_canopy_drip.emitting = false
-	_canopy_drip.amount = 28
-	_canopy_drip.lifetime = 1.6
-	_canopy_drip.preprocess = 0.4
+	# Wave 69: soft rain-canopy drip polish — denser motes, softer fade (RuneScape-chunky, wholesome)
+	_canopy_drip.amount = 44
+	_canopy_drip.lifetime = 1.85
+	_canopy_drip.preprocess = 0.55
 	_canopy_drip.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_canopy_drip.emission_box_extents = Vector3(2.2, 0.15, 2.2)
+	_canopy_drip.emission_box_extents = Vector3(2.5, 0.18, 2.5)
 	_canopy_drip.direction = Vector3(0.02, -1, 0.01)
-	_canopy_drip.spread = 8.0
-	_canopy_drip.initial_velocity_min = 1.2
-	_canopy_drip.initial_velocity_max = 2.4
-	_canopy_drip.gravity = Vector3(0, -4.5, 0)
-	_canopy_drip.scale_amount_min = 0.18
-	_canopy_drip.scale_amount_max = 0.38
+	_canopy_drip.spread = 10.0
+	_canopy_drip.initial_velocity_min = 1.05
+	_canopy_drip.initial_velocity_max = 2.2
+	_canopy_drip.gravity = Vector3(0, -4.2, 0)
+	_canopy_drip.scale_amount_min = 0.16
+	_canopy_drip.scale_amount_max = 0.42
 	var dm := SphereMesh.new()
-	dm.radius = 0.035
-	dm.height = 0.07
+	dm.radius = 0.032
+	dm.height = 0.064
 	_canopy_drip.mesh = dm
 	var dmat := StandardMaterial3D.new()
-	dmat.albedo_color = Color(0.72, 0.84, 0.95, 0.78)
+	dmat.albedo_color = Color(0.74, 0.86, 0.96, 0.70)
 	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_canopy_drip.material_override = dmat
+	var drip_ramp := Gradient.new()
+	drip_ramp.colors = PackedColorArray([
+		Color(0.7, 0.84, 0.95, 0.0),
+		Color(0.78, 0.90, 0.98, 0.78),
+		Color(0.68, 0.80, 0.92, 0.0),
+	])
+	_canopy_drip.color_ramp = drip_ramp
 	_canopy_drip.position = Vector3(0, 3.2, 0)
 	_canopy_drip.visible = false
 	add_child(_canopy_drip)

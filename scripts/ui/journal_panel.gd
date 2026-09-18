@@ -99,7 +99,12 @@ func refresh() -> void:
 	# Wave 52: show locked week count (PIN 1234; mastery ≥80% unchanged)
 	var locked_weeks: int = maxi(0, 36 - uw)
 	var locked_tag := (" · 🔒 %d weeks locked" % locked_weeks) if locked_weeks > 0 else " · Full year open"
-	week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
+	# Wave 69: Mastered ★ filter shows count in header (PIN 1234; mastery ≥80% unchanged)
+	if _filter == "completed":
+		var mastered_total: int = GameState.completed_quests.size()
+		week_lbl.text = "Mastered ★ · %d · %s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [mastered_total, _campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
+	else:
+		week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
 	# Wave 57: show Open only count in toggle label (PIN 1234; mastery ≥80% unchanged)
 	_ensure_open_only_toggle()
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):

@@ -45,6 +45,8 @@ var _year_chip_flash_t: float = 0.0
 var _year_chip_style: StyleBoxFlat = null
 var _save_chip: Label = null
 var _save_chip_panel: PanelContainer = null  # Wave 38: slot nickname chip
+var _save_chip_pulse_t: float = 0.0  # Wave 69: nickname chip briefly pulses on save
+var _save_chip_style: StyleBoxFlat = null
 var _landmark_chip: Label = null
 var _landmark_chip_panel: PanelContainer = null  # Wave 46: near-landmark name chip
 var _foe_count_lbl: Label = null  # Wave 50: compact foe count near minimap
@@ -90,6 +92,8 @@ func _ready() -> void:
 		AudioBus.mute_changed.connect(_on_mute)
 	if GameState.has_signal("hurt") and not GameState.hurt.is_connected(_on_hurt_def_flash):
 		GameState.hurt.connect(_on_hurt_def_flash)
+	if GameState.has_signal("game_saved") and not GameState.game_saved.is_connected(_on_game_saved_pulse):
+		GameState.game_saved.connect(_on_game_saved_pulse)
 	_ensure_landmark_tick()
 	_ensure_clear_compass_n()  # Wave 39: clearer compass N marker
 	set_process(true)
@@ -188,6 +192,9 @@ func _process(delta: float) -> void:
 	if _year_chip_flash_t > 0.0:
 		_year_chip_flash_t = maxf(0.0, _year_chip_flash_t - delta)
 		_apply_year_chip_flash()
+	if _save_chip_pulse_t > 0.0:
+		_save_chip_pulse_t = maxf(0.0, _save_chip_pulse_t - delta)
+		_apply_save_chip_pulse()
 	if _def_flash_t > 0.0:
 		_def_flash_t -= delta
 		if _def_flash_t <= 0.0 and _def_flash_active:
@@ -682,6 +689,37 @@ func _refresh_save_chip() -> void:
 		_save_chip.tooltip_text = "Slot %d — add a nickname in Saves" % slot_n
 
 
+
+func _on_game_saved_pulse() -> void:
+	## Wave 69: nickname chip briefly pulses on save (PIN stays 1234; mastery ≥80%).
+	_ensure_save_chip()
+	_save_chip_pulse_t = 0.9
+	_apply_save_chip_pulse()
+
+
+func _apply_save_chip_pulse() -> void:
+	## Wave 69: soft cream pulse on save-slot nickname chip.
+	if _save_chip == null or _save_chip_panel == null:
+		return
+	if _save_chip_style == null:
+		var st := _save_chip_panel.get_theme_stylebox("panel")
+		if st is StyleBoxFlat:
+			_save_chip_style = (st as StyleBoxFlat).duplicate()
+			_save_chip_panel.add_theme_stylebox_override("panel", _save_chip_style)
+	if _save_chip_pulse_t > 0.0:
+		var u := clampf(_save_chip_pulse_t / 0.9, 0.0, 1.0)
+		var pulse := sin(u * PI)
+		_save_chip.modulate = Color(1.0, 0.98, 0.82, 1.0).lerp(Color(0.88, 0.94, 0.98, 1.0), 1.0 - pulse)
+		if _save_chip_style:
+			_save_chip_style.border_color = Color(0.95, 0.90, 0.55, 0.95).lerp(Color(0.70, 0.82, 0.90, 0.75), 1.0 - pulse)
+			_save_chip_style.bg_color = Color(0.22, 0.20, 0.14, 0.85).lerp(Color(0.14, 0.16, 0.18, 0.72), 1.0 - pulse)
+	else:
+		_save_chip.modulate = Color(0.88, 0.94, 0.98, 1.0)
+		if _save_chip_style:
+			_save_chip_style.border_color = Color(0.70, 0.82, 0.90, 0.75)
+			_save_chip_style.bg_color = Color(0.14, 0.16, 0.18, 0.72)
+
+
 func _ensure_landmark_chip() -> void:
 	## Wave 46: compact landmark name chip when near a wilds place (PIN stays 1234; mastery ≥80%).
 	if _landmark_chip != null and is_instance_valid(_landmark_chip):
@@ -695,7 +733,7 @@ func _ensure_landmark_chip() -> void:
 	_landmark_chip_panel.name = "LandmarkChipPanel"
 	_landmark_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_landmark_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_landmark_chip_panel.offset_left = -220.0
+	_landmark_chip_panel.offset_left = -280.0
 	_landmark_chip_panel.offset_top = 150.0
 	_landmark_chip_panel.offset_right = -12.0
 	_landmark_chip_panel.offset_bottom = 184.0
@@ -729,8 +767,11 @@ func _refresh_landmark_chip() -> void:
 	if nm == "":
 		_landmark_chip_panel.visible = false
 		return
-	_landmark_chip.text = "✦ %s" % nm
-	_landmark_chip.tooltip_text = "Near %s" % nm
+	# Wave 69: clearer landmark ✦ chip with paces (RuneScape-chunky, wholesome)
+	var dist := float(_map_data.get("landmark_dist", 9999.0))
+	var paces: int = maxi(1, int(round(dist / 1.15))) if dist < 9000.0 else 1
+	_landmark_chip.text = "✦ %s · ~%d paces" % [nm, paces]
+	_landmark_chip.tooltip_text = "Near %s · ~%d paces" % [nm, paces]
 	_landmark_chip_panel.visible = true
 
 
