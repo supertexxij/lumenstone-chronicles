@@ -21,6 +21,34 @@ const SLOT_COUNT := 3
 const DEFAULT_PIN := "1234"
 const MASTERY_PCT := 0.8
 
+## Friday raid quest ids that gate week N+1. Shared with the Parent dashboard.
+const RAID_GATE := {
+	1: "w1-raid-review", 2: "w2-raid-review", 3: "w3-raid-review", 4: "w4-raid-review",
+	5: "w5-raid-review", 6: "w6-raid-review", 7: "w7-raid-review", 8: "w8-raid-review",
+	9: "w9-raid-feast",
+	10: "w10-raid-review", 11: "w11-raid-review", 12: "w12-raid-review", 13: "w13-raid-review",
+	14: "w14-raid-review", 15: "w15-raid-review", 16: "w16-raid-review", 17: "w17-raid-review",
+	18: "w18-raid-feast",
+	19: "w19-raid-review", 20: "w20-raid-review", 21: "w21-raid-review", 22: "w22-raid-review",
+	23: "w23-raid-review", 24: "w24-raid-review", 25: "w25-raid-review", 26: "w26-raid-review",
+	27: "w27-raid-feast",
+	28: "w28-raid-review", 29: "w29-raid-review", 30: "w30-raid-review", 31: "w31-raid-review",
+	32: "w32-raid-review", 33: "w33-raid-review", 34: "w34-raid-review",
+	35: "w35-raid-supreme", 36: "w36-raid-feast",
+}
+
+## Save-flag names for once-per-save polish toasts (keep var names for older saves).
+const WAVE_TOAST_KEYS := [
+	"seen_wave_50_toast", "seen_wave_51_toast", "seen_wave_52_toast", "seen_wave_53_toast",
+	"seen_wave_54_toast", "seen_wave_55_toast", "seen_wave_56_toast", "seen_wave_57_toast",
+	"seen_wave_58_toast", "seen_wave_59_toast", "seen_wave_60_toast", "seen_wave_61_toast",
+	"seen_wave_62_toast", "seen_wave_63_toast", "seen_wave_64_toast", "seen_wave_65_toast",
+	"seen_wave_66_toast", "seen_wave_67_toast", "seen_wave_68_toast", "seen_wave_69_toast",
+	"seen_wave_70_toast", "seen_wave_71_toast", "seen_wave_72_toast", "seen_wave_73_toast",
+	"seen_wave_74_toast", "seen_wave_75_toast", "seen_wave_76_toast", "seen_wave_77_toast",
+	"seen_refine_178_toast",
+]
+
 const GUILDS := {
 	"math": {"name": "Builder's Guild", "short": "Math", "color": Color("#d4a017"), "lumen": "Gold"},
 	"la": {"name": "Scribe's Guild", "short": "LA", "color": Color("#3a6ea5"), "lumen": "Blue"},
@@ -154,35 +182,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	unlocked_week = 1
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
-	seen_wave_50_toast = false
-	seen_wave_51_toast = false
-	seen_wave_52_toast = false
-	seen_wave_53_toast = false
-	seen_wave_54_toast = false
-	seen_wave_55_toast = false
-	seen_wave_56_toast = false
-	seen_wave_57_toast = false
-	seen_wave_58_toast = false
-	seen_wave_59_toast = false
-	seen_wave_60_toast = false
-	seen_wave_61_toast = false
-	seen_wave_62_toast = false
-	seen_wave_63_toast = false
-	seen_wave_64_toast = false
-	seen_wave_65_toast = false
-	seen_wave_66_toast = false
-	seen_wave_67_toast = false
-	seen_wave_68_toast = false
-	seen_wave_69_toast = false
-	seen_wave_70_toast = false
-	seen_wave_71_toast = false
-	seen_wave_72_toast = false
-	seen_wave_73_toast = false
-	seen_wave_74_toast = false
-	seen_wave_75_toast = false
-	seen_wave_76_toast = false
-	seen_wave_77_toast = false
-	seen_refine_178_toast = false
+	_reset_wave_toasts()
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -367,35 +367,6 @@ func save_game() -> void:
 		"muted": muted,
 		"seen_aggro_tutorial": seen_aggro_tutorial,
 		"seen_combat_tutorial": seen_combat_tutorial,
-		"seen_wave_50_toast": seen_wave_50_toast,
-		"seen_wave_51_toast": seen_wave_51_toast,
-		"seen_wave_52_toast": seen_wave_52_toast,
-		"seen_wave_53_toast": seen_wave_53_toast,
-		"seen_wave_54_toast": seen_wave_54_toast,
-		"seen_wave_55_toast": seen_wave_55_toast,
-		"seen_wave_56_toast": seen_wave_56_toast,
-		"seen_wave_57_toast": seen_wave_57_toast,
-		"seen_wave_58_toast": seen_wave_58_toast,
-		"seen_wave_59_toast": seen_wave_59_toast,
-		"seen_wave_60_toast": seen_wave_60_toast,
-		"seen_wave_61_toast": seen_wave_61_toast,
-		"seen_wave_62_toast": seen_wave_62_toast,
-		"seen_wave_63_toast": seen_wave_63_toast,
-		"seen_wave_64_toast": seen_wave_64_toast,
-		"seen_wave_65_toast": seen_wave_65_toast,
-		"seen_wave_66_toast": seen_wave_66_toast,
-		"seen_wave_67_toast": seen_wave_67_toast,
-		"seen_wave_68_toast": seen_wave_68_toast,
-		"seen_wave_69_toast": seen_wave_69_toast,
-		"seen_wave_70_toast": seen_wave_70_toast,
-		"seen_wave_71_toast": seen_wave_71_toast,
-		"seen_wave_72_toast": seen_wave_72_toast,
-		"seen_wave_73_toast": seen_wave_73_toast,
-		"seen_wave_74_toast": seen_wave_74_toast,
-		"seen_wave_75_toast": seen_wave_75_toast,
-		"seen_wave_76_toast": seen_wave_76_toast,
-		"seen_wave_77_toast": seen_wave_77_toast,
-		"seen_refine_178_toast": seen_refine_178_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -412,6 +383,7 @@ func save_game() -> void:
 		"consumable_charges": consumable_charges,
 		"save_version": 3,
 	}
+	_write_wave_toasts(data)
 	var path := slot_path(active_slot)
 	var f: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if f:
@@ -456,35 +428,7 @@ func load_game(slot: int = -1) -> bool:
 	muted = bool(data.get("muted", false))
 	seen_aggro_tutorial = bool(data.get("seen_aggro_tutorial", false))
 	seen_combat_tutorial = bool(data.get("seen_combat_tutorial", false))
-	seen_wave_50_toast = bool(data.get("seen_wave_50_toast", false))
-	seen_wave_51_toast = bool(data.get("seen_wave_51_toast", false))
-	seen_wave_52_toast = bool(data.get("seen_wave_52_toast", false))
-	seen_wave_53_toast = bool(data.get("seen_wave_53_toast", false))
-	seen_wave_54_toast = bool(data.get("seen_wave_54_toast", false))
-	seen_wave_55_toast = bool(data.get("seen_wave_55_toast", false))
-	seen_wave_56_toast = bool(data.get("seen_wave_56_toast", false))
-	seen_wave_57_toast = bool(data.get("seen_wave_57_toast", false))
-	seen_wave_58_toast = bool(data.get("seen_wave_58_toast", false))
-	seen_wave_59_toast = bool(data.get("seen_wave_59_toast", false))
-	seen_wave_60_toast = bool(data.get("seen_wave_60_toast", false))
-	seen_wave_61_toast = bool(data.get("seen_wave_61_toast", false))
-	seen_wave_62_toast = bool(data.get("seen_wave_62_toast", false))
-	seen_wave_63_toast = bool(data.get("seen_wave_63_toast", false))
-	seen_wave_64_toast = bool(data.get("seen_wave_64_toast", false))
-	seen_wave_65_toast = bool(data.get("seen_wave_65_toast", false))
-	seen_wave_66_toast = bool(data.get("seen_wave_66_toast", false))
-	seen_wave_67_toast = bool(data.get("seen_wave_67_toast", false))
-	seen_wave_68_toast = bool(data.get("seen_wave_68_toast", false))
-	seen_wave_69_toast = bool(data.get("seen_wave_69_toast", false))
-	seen_wave_70_toast = bool(data.get("seen_wave_70_toast", false))
-	seen_wave_71_toast = bool(data.get("seen_wave_71_toast", false))
-	seen_wave_72_toast = bool(data.get("seen_wave_72_toast", false))
-	seen_wave_73_toast = bool(data.get("seen_wave_73_toast", false))
-	seen_wave_74_toast = bool(data.get("seen_wave_74_toast", false))
-	seen_wave_75_toast = bool(data.get("seen_wave_75_toast", false))
-	seen_wave_76_toast = bool(data.get("seen_wave_76_toast", false))
-	seen_wave_77_toast = bool(data.get("seen_wave_77_toast", false))
-	seen_refine_178_toast = bool(data.get("seen_refine_178_toast", false))
+	_read_wave_toasts(data)
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -773,288 +717,143 @@ func get_parent_export_line() -> String:
 
 
 
+func _reset_wave_toasts() -> void:
+	for k in WAVE_TOAST_KEYS:
+		set(k, false)
+
+func _write_wave_toasts(data: Dictionary) -> void:
+	for k in WAVE_TOAST_KEYS:
+		data[k] = get(k)
+
+func _read_wave_toasts(data: Dictionary) -> void:
+	for k in WAVE_TOAST_KEYS:
+		set(k, bool(data.get(k, false)))
+
+func _emit_once_toast(flag: String, message: String) -> bool:
+	if bool(get(flag)):
+		return false
+	set(flag, true)
+	toast.emit(message)
+	save_game()
+	return true
+
+
 func maybe_wave_50_toast() -> void:
 	## Wave 50: once-per-save toast celebrating polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_50_toast:
-		return
-	seen_wave_50_toast = true
-	toast.emit("Wave 50 polish · soft-aggro names show a countdown · fountain mist + decade festival sparkles · Foes near the minimap.")
-	save_game()
-
+	_emit_once_toast("seen_wave_50_toast", "Wave 50 polish · soft-aggro names show a countdown · fountain mist + decade festival sparkles · Foes near the minimap.")
 
 func maybe_wave_51_toast() -> void:
 	## Wave 51: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_51_toast:
-		return
-	seen_wave_51_toast = true
-	toast.emit("Wave 51 polish · pin a Travel ★ fav · rain soft-splashes on hall eaves · journal opens with a flourish · XP floats bloom by size.")
-	save_game()
-
+	_emit_once_toast("seen_wave_51_toast", "Wave 51 polish · pin a Travel ★ fav · rain soft-splashes on hall eaves · journal opens with a flourish · XP floats bloom by size.")
 
 func maybe_wave_52_toast() -> void:
 	## Wave 52: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_52_toast:
-		return
-	seen_wave_52_toast = true
-	toast.emit("Wave 52 polish · soft wind chimes by the halls · soft-defeat camera settles gently · wardrobe colors pulse · journal Open-only + locked weeks.")
-	save_game()
-
-
+	_emit_once_toast("seen_wave_52_toast", "Wave 52 polish · soft wind chimes by the halls · soft-defeat camera settles gently · wardrobe colors pulse · journal Open-only + locked weeks.")
 
 func maybe_wave_53_toast() -> void:
 	## Wave 53: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_53_toast:
-		return
-	seen_wave_53_toast = true
-	toast.emit("Wave 53 polish · denser fireflies at the Prayer Garden · mute plate soft-pulses · soft-pull ring warms as it nears · bag shows Def · Magnolia Beaver in the wilds.")
-	save_game()
-
-
-
+	_emit_once_toast("seen_wave_53_toast", "Wave 53 polish · denser fireflies at the Prayer Garden · mute plate soft-pulses · soft-pull ring warms as it nears · bag shows Def · Magnolia Beaver in the wilds.")
 
 func maybe_wave_54_toast() -> void:
 	## Wave 54: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_54_toast:
-		return
-	seen_wave_54_toast = true
-	toast.emit("Wave 54 polish · soft brook sparkles by the water · Travel opens with a flourish · near-miss chime is softer · clearer wrong-PIN toast · Olive Owl in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_54_toast", "Wave 54 polish · soft brook sparkles by the water · Travel opens with a flourish · near-miss chime is softer · clearer wrong-PIN toast · Olive Owl in the wilds.")
 
 func maybe_wave_55_toast() -> void:
 	## Wave 55: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_55_toast:
-		return
-	seen_wave_55_toast = true
-	toast.emit("Wave 55 polish · soft campfire ember pops · Year chip brightens on week unlock · soft-defeat mist lingers · save slot # beside nickname · Palm Pika in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_55_toast", "Wave 55 polish · soft campfire ember pops · Year chip brightens on week unlock · soft-defeat mist lingers · save slot # beside nickname · Palm Pika in the wilds.")
 
 func maybe_wave_56_toast() -> void:
 	## Wave 56: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_56_toast:
-		return
-	seen_wave_56_toast = true
-	toast.emit("Wave 56 polish · denser maple leaf fall at Maple Copse · compass tick pulses near landmarks · mastery toasts name the week · ★ fav sits atop Travel · Lemon Lemming in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_56_toast", "Wave 56 polish · denser maple leaf fall at Maple Copse · compass tick pulses near landmarks · mastery toasts name the week · ★ fav sits atop Travel · Lemon Lemming in the wilds.")
 
 func maybe_wave_57_toast() -> void:
 	## Wave 57: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_57_toast:
-		return
-	seen_wave_57_toast = true
-	toast.emit("Wave 57 polish · reeds sway soft at Reed Pool · clearer Ready mint-gold flash · soft-defeat names Fountain · Open-only count in journal · Cherry Chinchilla in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_57_toast", "Wave 57 polish · reeds sway soft at Reed Pool · clearer Ready mint-gold flash · soft-defeat names Fountain · Open-only count in journal · Cherry Chinchilla in the wilds.")
 
 func maybe_wave_58_toast() -> void:
 	## Wave 58: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_58_toast:
-		return
-	seen_wave_58_toast = true
-	toast.emit("Wave 58 polish · thistles sway soft at Thistle Rise · clearer soft-aggro mid toast · stronger wardrobe equip sparkle · Parent year % on child line · Plum Porcupine in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_58_toast", "Wave 58 polish · thistles sway soft at Thistle Rise · clearer soft-aggro mid toast · stronger wardrobe equip sparkle · Parent year % on child line · Plum Porcupine in the wilds.")
 
 func maybe_wave_59_toast() -> void:
 	## Wave 59: once-per-save toast (PIN stays 1234; mastery ≥80%).
-	if seen_wave_59_toast:
-		return
-	seen_wave_59_toast = true
-	toast.emit("Wave 59 polish · amber knoll glows soft at dusk · mute notes the weather · XP floats stack on multi-foe · ★ fav paces on HUD when far · Peach Puffin in the wilds.")
-	save_game()
-
+	_emit_once_toast("seen_wave_59_toast", "Wave 59 polish · amber knoll glows soft at dusk · mute notes the weather · XP floats stack on multi-foe · ★ fav paces on HUD when far · Peach Puffin in the wilds.")
 
 func maybe_wave_60_toast() -> bool:
 	## Wave 60: once-per-save toast + soft festival confetti cue (PIN stays 1234; mastery ≥80%).
 	## Returns true when newly shown so callers can play one-shot confetti.
-	if seen_wave_60_toast:
-		return false
-	seen_wave_60_toast = true
-	toast.emit("Wave 60 polish · soft festival confetti on load · landmark approach names paces · journal shows total ★ · Fig Finch in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_60_toast", "Wave 60 polish · soft festival confetti on load · landmark approach names paces · journal shows total ★ · Fig Finch in the wilds.")
 
 func maybe_wave_61_toast() -> bool:
 	## Wave 61: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_61_toast:
-		return false
-	seen_wave_61_toast = true
-	toast.emit("Wave 61 polish · willows weep-sway at Willow Bend · clearer empty pantry H hint · Unequip all confirm · Grape Gecko in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_61_toast", "Wave 61 polish · willows weep-sway at Willow Bend · clearer empty pantry H hint · Unequip all confirm · Grape Gecko in the wilds.")
 
 func maybe_wave_62_toast() -> bool:
 	## Wave 62: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_62_toast:
-		return false
-	seen_wave_62_toast = true
-	toast.emit("Wave 62 polish · ferns sway soft at Fern Dell · clearer soft-travel fade names the landmark · denser pull-back sparkle · Open-only remembers · Apricot Armadillo in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_62_toast", "Wave 62 polish · ferns sway soft at Fern Dell · clearer soft-travel fade names the landmark · denser pull-back sparkle · Open-only remembers · Apricot Armadillo in the wilds.")
 
 func maybe_wave_63_toast() -> bool:
 	## Wave 63: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_63_toast:
-		return false
-	seen_wave_63_toast = true
-	toast.emit("Wave 63 polish · heather sways soft at Heather Heath · clearer Year chip shows mastery % · soft hall light dip · PIN last-4 hint · Blueberry Bunny in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_63_toast", "Wave 63 polish · heather sways soft at Heather Heath · clearer Year chip shows mastery % · soft hall light dip · PIN last-4 hint · Blueberry Bunny in the wilds.")
 
 func maybe_wave_64_toast() -> bool:
 	## Wave 64: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_64_toast:
-		return false
-	seen_wave_64_toast = true
-	toast.emit("Wave 64 polish · Stone Arch glows soft at dusk · clearer soft-aggro ring when Def high · ★ fav chip short names · travel search remembers · Cranberry Capybara in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_64_toast", "Wave 64 polish · Stone Arch glows soft at dusk · clearer soft-aggro ring when Def high · ★ fav chip short names · travel search remembers · Cranberry Capybara in the wilds.")
 
 func maybe_wave_65_toast() -> bool:
 	## Wave 65: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_65_toast:
-		return false
-	seen_wave_65_toast = true
-	toast.emit("Wave 65 polish · Quiet Cross lantern glows soft at dusk · clearer first-fight tip names the foe · Year chip shows weather letter · pantry Ready chimes · Raspberry Ram in the wilds.")
-	save_game()
-	return true
-
-
+	return _emit_once_toast("seen_wave_65_toast", "Wave 65 polish · Quiet Cross lantern glows soft at dusk · clearer first-fight tip names the foe · Year chip shows weather letter · pantry Ready chimes · Raspberry Ram in the wilds.")
 
 func maybe_wave_66_toast() -> bool:
 	## Wave 66: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_66_toast:
-		return false
-	seen_wave_66_toast = true
-	toast.emit("Wave 66 polish · Birch Rest fireflies wink at dusk · clearer arrival toast with short name · softer victory sparkle · Open-only sticky shows count · Travel marks nearest · Strawberry Stoat in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_66_toast", "Wave 66 polish · Birch Rest fireflies wink at dusk · clearer arrival toast with short name · softer victory sparkle · Open-only sticky shows count · Travel marks nearest · Strawberry Stoat in the wilds.")
 
 func maybe_wave_67_toast() -> bool:
 	## Wave 67: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_67_toast:
-		return false
-	seen_wave_67_toast = true
-	toast.emit("Wave 67 polish · Reed Pool ripple gleam at dusk · clearer low-HP toast · softer campfire smoke · Foes chip pulses when count rises · Needs Help shows days since last try · Blackberry Bear in the wilds.")
-	save_game()
-	return true
+	return _emit_once_toast("seen_wave_67_toast", "Wave 67 polish · Reed Pool ripple gleam at dusk · clearer low-HP toast · softer campfire smoke · Foes chip pulses when count rises · Needs Help shows days since last try · Blackberry Bear in the wilds.")
 
 func maybe_wave_68_toast() -> bool:
 	## Wave 68: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_68_toast:
-		return false
-	seen_wave_68_toast = true
-	toast.emit("Wave 68 polish · Willow Bend leaf drift at dusk · clearer near-miss toast with quest title · soft fountain-rest chime · Unequip-all confirm shows piece count · Year chip gold flash on mastery bump · Guava Goat in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_68_toast", "Wave 68 polish · Willow Bend leaf drift at dusk · clearer near-miss toast with quest title · soft fountain-rest chime · Unequip-all confirm shows piece count · Year chip gold flash on mastery bump · Guava Goat in the wilds.")
 
 func maybe_wave_69_toast() -> bool:
 	## Wave 69: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_69_toast:
-		return false
-	seen_wave_69_toast = true
-	toast.emit("Wave 69 polish · Fern Dell frond drift at dusk · clearer ✦ landmark chip with paces · softer rain-canopy drip · Mastered ★ filter shows count · nickname chip pulses on save · Kiwi Koala in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_69_toast", "Wave 69 polish · Fern Dell frond drift at dusk · clearer ✦ landmark chip with paces · softer rain-canopy drip · Mastered ★ filter shows count · nickname chip pulses on save · Kiwi Koala in the wilds.")
 
 func maybe_wave_70_toast() -> bool:
 	## Wave 70: once-per-save polish tip (PIN stays 1234; mastery ≥80%). Milestone wave.
-	if seen_wave_70_toast:
-		return false
-	seen_wave_70_toast = true
-	toast.emit("Wave 70 milestone · Heather Heath bloom drift + stronger dusk sway · Parent mastery bar shows ★ beside % · Mango Mongoose in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_70_toast", "Wave 70 milestone · Heather Heath bloom drift + stronger dusk sway · Parent mastery bar shows ★ beside % · Mango Mongoose in the wilds.")
 
 func maybe_wave_71_toast() -> bool:
 	## Wave 71: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_71_toast:
-		return false
-	seen_wave_71_toast = true
-	toast.emit("Wave 71 polish · Thistle Rise bloom drift + stronger dusk sway · clearer daily checkpoint reminder · pantry Bread flashes when low · Papaya Panda in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_71_toast", "Wave 71 polish · Thistle Rise bloom drift + stronger dusk sway · clearer daily checkpoint reminder · pantry Bread flashes when low · Papaya Panda in the wilds.")
 
 func maybe_wave_72_toast() -> bool:
 	## Wave 72: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_72_toast:
-		return false
-	seen_wave_72_toast = true
-	toast.emit("Wave 72 polish · Maple Copse leaf drift at dusk + softer edge fog · clearer Fountain rest toast · Open-only sticky shows weeks · Coconut Crab in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_72_toast", "Wave 72 polish · Maple Copse leaf drift at dusk + softer edge fog · clearer Fountain rest toast · Open-only sticky shows weeks · Coconut Crab in the wilds.")
 
 func maybe_wave_73_toast() -> bool:
 	## Wave 73: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_73_toast:
-		return false
-	seen_wave_73_toast = true
-	toast.emit("Wave 73 polish · Amber Knoll amber-glow at dusk + brook/puddle hush · clearer quest complete toast · Parent empty-week warmer · Lime Llama in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_73_toast", "Wave 73 polish · Amber Knoll amber-glow at dusk + brook/puddle hush · clearer quest complete toast · Parent empty-week warmer · Lime Llama in the wilds.")
 
 func maybe_wave_74_toast() -> bool:
 	## Wave 74: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_74_toast:
-		return false
-	seen_wave_74_toast = true
-	toast.emit("Wave 74 polish · Cedar Hollow needle drift at dusk + plaza lantern sync · clearer foe-fall sparkle · Year chip week of 36 · Melon Moose in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_74_toast", "Wave 74 polish · Cedar Hollow needle drift at dusk + plaza lantern sync · clearer foe-fall sparkle · Year chip week of 36 · Melon Moose in the wilds.")
 
 func maybe_wave_75_toast() -> bool:
 	## Wave 75: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_75_toast:
-		return false
-	seen_wave_75_toast = true
-	toast.emit("Wave 75 polish · Stone Arch limestone dust at dusk + clearer first-discovery toast · soft wind leaf polish · Parent Needs Help oldest-first · Quince Quokka in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_75_toast", "Wave 75 polish · Stone Arch limestone dust at dusk + clearer first-discovery toast · soft wind leaf polish · Parent Needs Help oldest-first · Quince Quokka in the wilds.")
 
 func maybe_wave_76_toast() -> bool:
 	## Wave 76: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_76_toast:
-		return false
-	seen_wave_76_toast = true
-	toast.emit("Wave 76 polish · Quiet Cross lantern moths at dusk + soft night cricket hush · Def flash on new armor · Foes chip ↑ · Watermelon Wallaby in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_76_toast", "Wave 76 polish · Quiet Cross lantern moths at dusk + soft night cricket hush · Def flash on new armor · Foes chip ↑ · Watermelon Wallaby in the wilds.")
 
 func maybe_wave_77_toast() -> bool:
 	## Wave 77: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
-	if seen_wave_77_toast:
-		return false
-	seen_wave_77_toast = true
-	toast.emit("Wave 77 polish · denser Birch Rest fireflies at dusk + Soft Travel arrival · ★ fav paces · Honeydew Hamster in the wilds.")
-	save_game()
-	return true
-
+	return _emit_once_toast("seen_wave_77_toast", "Wave 77 polish · denser Birch Rest fireflies at dusk + Soft Travel arrival · ★ fav paces · Honeydew Hamster in the wilds.")
 
 func maybe_refine_178_toast() -> bool:
 	## v1.78 refine: once-per-save look / HUD / Parent tip (PIN stays 1234; mastery ≥80%).
-	if seen_refine_178_toast:
-		return false
-	seen_refine_178_toast = true
-	toast.emit("Village look, HUD, and Parent screen refined — clearer people, plaza, and a quieter dashboard.")
-	save_game()
-	return true
+	return _emit_once_toast("seen_refine_178_toast", "Village look, HUD, and Parent screen refined — clearer people, plaza, and a quieter dashboard.")
 
 
 func set_favorite_landmark(label: String) -> void:
@@ -1099,11 +898,10 @@ func maybe_daily_checkpoint_reminder() -> void:
 
 func get_year_progress_percent() -> int:
 	## Compact HUD chip: prefer quest mastery %, fall back to week unlock %.
-	var q: Dictionary = get_quest_mastery_progress() if has_method("get_quest_mastery_progress") else {}
+	var q: Dictionary = get_quest_mastery_progress()
 	if int(q.get("total", 0)) > 0:
 		return int(q.get("percent", 0))
-	var w: Dictionary = get_week_unlock_progress() if has_method("get_week_unlock_progress") else {}
-	return int(w.get("percent", 0))
+	return int(get_week_unlock_progress().get("percent", 0))
 
 
 
@@ -1432,22 +1230,8 @@ func _recalc_unlocked_week() -> void:
 	## Full year Campaigns I–IV span weeks 1–36; clamp max unlock at 36.
 	var week: int = 1
 	var max_week: int = 36
-	var raid_gate := {
-		1: "w1-raid-review", 2: "w2-raid-review", 3: "w3-raid-review", 4: "w4-raid-review",
-		5: "w5-raid-review", 6: "w6-raid-review", 7: "w7-raid-review", 8: "w8-raid-review",
-		9: "w9-raid-feast",
-		10: "w10-raid-review", 11: "w11-raid-review", 12: "w12-raid-review", 13: "w13-raid-review",
-		14: "w14-raid-review", 15: "w15-raid-review", 16: "w16-raid-review", 17: "w17-raid-review",
-		18: "w18-raid-feast",
-		19: "w19-raid-review", 20: "w20-raid-review", 21: "w21-raid-review", 22: "w22-raid-review",
-		23: "w23-raid-review", 24: "w24-raid-review", 25: "w25-raid-review", 26: "w26-raid-review",
-		27: "w27-raid-feast",
-		28: "w28-raid-review", 29: "w29-raid-review", 30: "w30-raid-review", 31: "w31-raid-review",
-		32: "w32-raid-review", 33: "w33-raid-review", 34: "w34-raid-review",
-		35: "w35-raid-supreme", 36: "w36-raid-feast",
-	}
 	for w in range(1, max_week + 1):
-		var raid_id: String = str(raid_gate.get(w, ""))
+		var raid_id: String = str(RAID_GATE.get(w, ""))
 		if raid_id != "" and raid_id in completed_quests:
 			week = maxi(week, mini(w + 1, max_week))
 		else:
