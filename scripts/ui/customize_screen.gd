@@ -19,7 +19,7 @@ var _preview_row: HBoxContainer = null
 var _preview_pulse_tw: Tween = null  # Wave 52: wardrobe color preview pulse
 var _preview_parts: Dictionary = {}
 var _preview_root: Node3D = null
-var _preview_yaw: float = 0.35  # gentle turn so cape + face both read
+var _preview_spin_t: float = 0.0  # oscillate so face stays readable while cape peeks
 
 var _swatches: Dictionary = {}  # key -> ColorRect
 
@@ -67,11 +67,11 @@ func _ready() -> void:
 	_ensure_preview_row()
 
 func _process(delta: float) -> void:
-	## Slow idle turn so kids can see cape + face while picking colors.
+	## Gentle yaw sway — face stays kid-readable; cape still peeks on the turn.
 	if not visible or _preview_root == null or not is_instance_valid(_preview_root):
 		return
-	_preview_yaw += delta * 0.55
-	_preview_root.rotation.y = _preview_yaw
+	_preview_spin_t += delta * 0.85
+	_preview_root.rotation.y = 0.15 + sin(_preview_spin_t) * 0.55
 
 func _fill(opt: OptionButton, keys: Array) -> void:
 	opt.clear()
@@ -173,7 +173,7 @@ func _ensure_character_preview() -> void:
 	# Elevated oblique — same family as the in-world RuneScape camera
 	cam.fov = 38.0
 	preview_viewport.add_child(cam)
-	cam.look_at_from_position(Vector3(0.95, 2.15, 2.55), Vector3(0, 1.05, 0))
+	cam.look_at_from_position(Vector3(0.55, 1.95, 2.85), Vector3(0, 1.15, 0))
 	cam.current = true
 
 	if preview_host:
