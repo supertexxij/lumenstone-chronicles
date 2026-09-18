@@ -48,6 +48,7 @@ var _birch_fireflies: CPUParticles3D  # Wave 66: soft birch-rest firefly wink at
 var _reed_pool_gleam: CPUParticles3D  # Wave 67: soft Reed Pool ripple gleam at dusk
 var _willow_leaves: CPUParticles3D  # Wave 68: soft Willow Bend willow-leaf drift at dusk
 var _fern_fronds: CPUParticles3D  # Wave 69: soft Fern Dell fern-frond drift at dusk
+var _heather_blooms: CPUParticles3D  # Wave 70: soft Heather Heath heather-bloom drift at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1783,6 +1784,7 @@ func _setup_weather() -> void:
 	_setup_reed_pool_gleam()
 	_setup_willow_leaves()
 	_setup_fern_fronds()
+	_setup_heather_blooms()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2017,6 +2019,10 @@ func _update_weather(delta: float) -> void:
 		var fern_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_fern_fronds.emitting = fern_dusk
 		_fern_fronds.visible = fern_dusk
+	if _heather_blooms:
+		var heather_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_heather_blooms.emitting = heather_dusk
+		_heather_blooms.visible = heather_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2827,14 +2833,16 @@ func _update_fern_sway(_delta: float) -> void:
 
 func _update_heather_sway(_delta: float) -> void:
 	## Wave 63: soft heather sway at Heather Heath — gentle tuft lean (RuneScape-chunky, wholesome).
+	## Wave 70: soft heather sway reads stronger at dusk (RuneScape-chunky, wholesome).
 	if _heather_sway_nodes.is_empty():
 		return
 	var t := Time.get_ticks_msec() * 0.001
+	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
 	for tuft in _heather_sway_nodes:
 		if tuft == null or not is_instance_valid(tuft):
 			continue
 		var phase := float(tuft.get_meta("sway_phase", 0.0))
-		var amp := float(tuft.get_meta("sway_amp", 0.04))
+		var amp := float(tuft.get_meta("sway_amp", 0.04)) * dusk_boost
 		var lean := sin(t * 0.95 + phase) * amp
 		tuft.rotation.z = lean
 		tuft.rotation.x = cos(t * 0.78 + phase * 0.6) * amp * 0.5
@@ -3780,6 +3788,47 @@ func _setup_fern_fronds() -> void:
 	_fern_fronds.position = Vector3(22.0, 2.8, 48.0)
 	add_child(_fern_fronds)
 	HeadlessGuard.guard_particles(_fern_fronds)
+
+
+func _setup_heather_blooms() -> void:
+	## Wave 70: soft Heather Heath heather-bloom drift at dusk — pale purple blooms drift over the WSW rise (RuneScape-chunky, wholesome).
+	_heather_blooms = CPUParticles3D.new()
+	_heather_blooms.name = "HeatherHeathBloomDrift"
+	_heather_blooms.emitting = false
+	_heather_blooms.amount = 34
+	_heather_blooms.lifetime = 4.6
+	_heather_blooms.preprocess = 1.3
+	_heather_blooms.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_heather_blooms.emission_box_extents = Vector3(6.2, 2.2, 6.2)
+	_heather_blooms.direction = Vector3(0.14, -0.36, 0.12)
+	_heather_blooms.spread = 46.0
+	_heather_blooms.initial_velocity_min = 0.12
+	_heather_blooms.initial_velocity_max = 0.58
+	_heather_blooms.gravity = Vector3(0, -0.34, 0)
+	_heather_blooms.angular_velocity_min = -32.0
+	_heather_blooms.angular_velocity_max = 32.0
+	_heather_blooms.scale_amount_min = 0.30
+	_heather_blooms.scale_amount_max = 0.82
+	var hm := SphereMesh.new()
+	hm.radius = 0.045
+	hm.height = 0.09
+	_heather_blooms.mesh = hm
+	var hmat := StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.62, 0.42, 0.62, 0.78)
+	hmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_heather_blooms.material_override = hmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.68, 0.48, 0.68, 0.0),
+		Color(0.62, 0.42, 0.62, 0.82),
+		Color(0.52, 0.34, 0.52, 0.0),
+	])
+	_heather_blooms.color_ramp = ramp
+	# Heather Heath landmark at (-48, 0, 42)
+	_heather_blooms.position = Vector3(-48.0, 2.6, 42.0)
+	add_child(_heather_blooms)
+	HeadlessGuard.guard_particles(_heather_blooms)
 
 func _setup_brook_sparkle() -> void:
 	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).

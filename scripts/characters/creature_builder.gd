@@ -161,6 +161,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_goat(bob)
 		"kiwi_koala":
 			_build_koala(bob)
+		"mango_mongoose":
+			_build_mongoose(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1712,4 +1714,39 @@ static func _build_koala(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.06, 0.018, 0.07)), Vector3(0, -0.09, 0.01), leg, "Foot")
 	# Soft fluff rump tuft (no long tail)
 	_mi(_sphere(0.08, 0.09), Vector3(0, 0.36, -0.22), bob, "RumpTuft")
+
+static func _build_mongoose(bob: Node3D) -> void:
+	## Soft mango-wilds mongoose — long lean body, pointed snout, small rounded ears, long bushy tail, cheek blush (distinct from Kiwi Koala / Guava Goat / Strawberry Stoat / Walnut Weasel / Pine Fox).
+	# Long lean body + soft cream belly
+	_mi(_sphere(0.14, 0.32), Vector3(0, 0.34, 0.0), bob, "Body")
+	_mi(_sphere(0.09, 0.12), Vector3(0, 0.28, 0.04), bob, "Belly")
+	# Small head + pointed snout (mongoose signature)
+	_mi(_sphere(0.10, 0.11), Vector3(0, 0.48, 0.22), bob, "Head")
+	_mi(_sphere(0.05, 0.08), Vector3(0, 0.44, 0.34), bob, "Snout")
+	_mi(_sphere(0.025, 0.02), Vector3(0, 0.44, 0.42), bob, "Nose")
+	# Small rounded ears
+	_mi(_sphere(0.035, 0.04), Vector3(-0.08, 0.56, 0.20), bob, "EarL")
+	_mi(_sphere(0.035, 0.04), Vector3(0.08, 0.56, 0.20), bob, "EarR")
+	_mi(_sphere(0.018), Vector3(-0.035, 0.52, 0.30), bob, "EyeL")
+	_mi(_sphere(0.018), Vector3(0.035, 0.52, 0.30), bob, "EyeR")
+	# Soft mango cheek blush
+	_mi(_sphere(0.03, 0.025), Vector3(-0.09, 0.44, 0.24), bob, "BlushL")
+	_mi(_sphere(0.03, 0.025), Vector3(0.09, 0.44, 0.24), bob, "BlushR")
+	# Short sturdy legs
+	for info in [
+		["FL", Vector3(-0.08, 0.14, 0.12)],
+		["FR", Vector3(0.08, 0.14, 0.12)],
+		["BL", Vector3(-0.08, 0.14, -0.12)],
+		["BR", Vector3(0.08, 0.14, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.02, 0.024, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.045, 0.014, 0.055)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Long bushy tail (mongoose signature)
+	var tail := _mi(_cyl(0.035, 0.018, 0.28), Vector3(0, 0.38, -0.28), bob, "Tail")
+	tail.rotation_degrees = Vector3(55, 0, 0)
+	_mi(_sphere(0.06, 0.07), Vector3(0, 0.52, -0.48), bob, "TailFluff")
 

@@ -69,6 +69,7 @@ var seen_wave_66_toast: bool = false  # Wave 66: once-per-save polish tip toast 
 var seen_wave_67_toast: bool = false  # Wave 67: once-per-save polish tip toast on load
 var seen_wave_68_toast: bool = false  # Wave 68: once-per-save polish tip toast on load
 var seen_wave_69_toast: bool = false  # Wave 69: once-per-save polish tip toast on load
+var seen_wave_70_toast: bool = false  # Wave 70: once-per-save polish tip toast on load
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -165,6 +166,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_67_toast = false
 	seen_wave_68_toast = false
 	seen_wave_69_toast = false
+	seen_wave_70_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -369,6 +371,7 @@ func save_game() -> void:
 		"seen_wave_67_toast": seen_wave_67_toast,
 		"seen_wave_68_toast": seen_wave_68_toast,
 		"seen_wave_69_toast": seen_wave_69_toast,
+		"seen_wave_70_toast": seen_wave_70_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -449,6 +452,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_67_toast = bool(data.get("seen_wave_67_toast", false))
 	seen_wave_68_toast = bool(data.get("seen_wave_68_toast", false))
 	seen_wave_69_toast = bool(data.get("seen_wave_69_toast", false))
+	seen_wave_70_toast = bool(data.get("seen_wave_70_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -927,6 +931,16 @@ func maybe_wave_69_toast() -> bool:
 		return false
 	seen_wave_69_toast = true
 	toast.emit("Wave 69 polish · Fern Dell frond drift at dusk · clearer ✦ landmark chip with paces · softer rain-canopy drip · Mastered ★ filter shows count · nickname chip pulses on save · Kiwi Koala in the wilds.")
+	save_game()
+	return true
+
+
+func maybe_wave_70_toast() -> bool:
+	## Wave 70: once-per-save polish tip (PIN stays 1234; mastery ≥80%). Milestone wave.
+	if seen_wave_70_toast:
+		return false
+	seen_wave_70_toast = true
+	toast.emit("Wave 70 milestone · Heather Heath bloom drift + stronger dusk sway · Parent mastery bar shows ★ beside % · Mango Mongoose in the wilds.")
 	save_game()
 	return true
 

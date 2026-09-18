@@ -584,6 +584,19 @@
       "combat_xp": 270,
       "respawn_sec": 106.0,
       "description": "A soft koala of the kiwi wilds \u2014 cuddle it gently with a careful step!"
+    },
+    "mango_mongoose": {
+      "kind": "mango_mongoose",
+      "name": "Mango Mongoose",
+      "defeat_verb": "petted",
+      "color": "#c87838",
+      "accent": "#f0e0b0",
+      "max_hp": 290,
+      "damage": 48,
+      "accuracy": 0.17,
+      "combat_xp": 276,
+      "respawn_sec": 108.0,
+      "description": "A curious mongoose of the mango wilds \u2014 pet it gently with a careful step!"
     }
   },
   "spawns": [
@@ -1924,6 +1937,36 @@
       "kind": "kiwi_koala",
       "x": -175,
       "z": -85
+    },
+    {
+      "id": "e224",
+      "kind": "mango_mongoose",
+      "x": -148,
+      "z": 80
+    },
+    {
+      "id": "e225",
+      "kind": "mango_mongoose",
+      "x": 148,
+      "z": -80
+    },
+    {
+      "id": "e226",
+      "kind": "mango_mongoose",
+      "x": -70,
+      "z": -158
+    },
+    {
+      "id": "e227",
+      "kind": "mango_mongoose",
+      "x": 95,
+      "z": 155
+    },
+    {
+      "id": "e228",
+      "kind": "mango_mongoose",
+      "x": -180,
+      "z": -40
     }
   ],
   "base_combat": {

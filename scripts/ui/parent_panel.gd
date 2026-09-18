@@ -122,7 +122,8 @@ func _refresh() -> void:
 	var mastery_pct: int = int(quest_prog.get("percent", 0))
 	var week_pct: int = int(week_prog.get("percent", 0))
 	var week_bar: String = _week_progress_bar(uw, 36)
-	var mastery_bar: String = _week_progress_bar(mastered, maxi(1, total_q))
+	# Wave 70: mastery year bar shows ★ count beside % (PIN 1234; mastery ≥80% unchanged)
+	var mastery_bar: String = _mastery_progress_bar(mastered, maxi(1, total_q))
 	var year_note: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year: week unlock %d%% · quests mastered %d%%" % [week_pct, mastery_pct]
 	var help_preview: Array = GameState.needs_help_quests()
 	var help_n: int = help_preview.size()
@@ -133,12 +134,12 @@ func _refresh() -> void:
 	# Wave 58: show year % next to child name line (PIN stays 1234; mastery ≥80% unchanged)
 	var year_pct_chip: int = GameState.get_year_progress_percent() if GameState.has_method("get_year_progress_percent") else mastery_pct
 	var child_line: String = "%s · Year %d%%" % [GameState.child_name, year_pct_chip]
-	var lines: String = "[b]Parent Dashboard[/b] · %s\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
+	var lines: String = "[b]Parent Dashboard[/b] · %s\nChild: %s\nSave slot: %d\n%s\nXP: %d · Level: %d · Combat Lv: %d\n\n[b]Copy line[/b] (week + year % + needs help)\n[code]%s[/code]\n\n[b]Week unlock progress[/b]\nWeek [b]%d[/b] / 36 unlocked · %s\n%s\nNext gate: %s\n\n[b]Year progress / quest mastery[/b]\nQuests mastered: [b]%d[/b] / %d ([b]%d%%[/b] · [b]%d★[/b])\n%s\n%s\n\n[b]Lumens[/b]\n" % [
 		help_bit, child_line, GameState.active_slot + 1, last_sess,
 		GameState.xp, GameState.level, GameState.combat_level,
 		export_line,
 		uw, camp, week_bar, next_gate,
-		mastered, total_q, mastery_pct, mastery_bar, year_note
+		mastered, total_q, mastery_pct, mastered, mastery_bar, year_note
 	]
 	for g in ["math","la","science","history","bible"]:
 		lines += "%s (%s): %d\n" % [GameState.GUILDS[g]["name"], GameState.GUILDS[g]["lumen"], GameState.lumens.get(g, 0)]
@@ -400,6 +401,22 @@ func _week_progress_bar(cur: int, mx: int) -> String:
 			chars.append("·")
 	var pct: int = int(round(float(cur) / float(maxi(1, mx)) * 100.0))
 	return "[%s] %d/%d (%d%%)" % ["".join(chars), cur, mx, pct]
+
+
+func _mastery_progress_bar(cur: int, mx: int) -> String:
+	## Wave 70: parent year/mastery bar shows ★ count beside % (PIN 1234; mastery ≥80% unchanged).
+	var filled: int = clampi(int(round(float(cur) / float(maxi(1, mx)) * 20.0)), 0, 20)
+	var chars: PackedStringArray = []
+	for i in 20:
+		if i < filled:
+			chars.append("█")
+		elif i % 5 == 0:
+			chars.append("¦")
+		else:
+			chars.append("·")
+	var pct: int = int(round(float(cur) / float(maxi(1, mx)) * 100.0))
+	return "[%s] %d/%d (%d%% · %d★)" % ["".join(chars), cur, mx, pct, cur]
+
 
 func _next_week_gate(uw: int) -> String:
 	if uw >= 36:
