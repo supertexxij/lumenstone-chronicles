@@ -226,6 +226,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.80.0-world — looks / world refine
+
+Presentation pass so the village and wilds feel finished (RuneScape-chunky Christian fantasy, not AAA). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save/load unchanged.
+
+- **Village / plaza:** warmer ground and cobble, flagstone tiles, lawn ring, timber-framed halls with gardens, hedges, extra stall, and a yard cart
+- **Wilds / landmarks:** multi-lobe tree canopies, denser bushes, meadow patches, and landmark yard discs (visual only) so places read from the path
+- **Humanoids:** collar, tunic hem, cuffs, boots, bangs, and mouth; wider stance; clearer opposite-limb walk from the oblique camera
+- **Lighting / materials:** warmer day sun + fill light, sandstone/terracotta palette instead of muddy gray
+- Large HUD / Parent redesign is still the next priority — this pass stays in the world
+
 ### v1.79.0-cleanup — maintainability pass
 
 Code cleanup only (no gameplay features). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes/landmarks/FX waves; quest JSON and combat wording unchanged.

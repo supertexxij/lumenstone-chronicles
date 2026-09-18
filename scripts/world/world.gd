@@ -118,6 +118,7 @@ func _ready() -> void:
 	_build_heather_heath()
 	_build_thistle_rise()
 	_build_maple_copse()
+	_dress_world_finish()
 	_build_ambient_life()
 	_setup_day_night()
 	_setup_weather()
@@ -131,52 +132,54 @@ func _ready() -> void:
 		GameState.quest_mastered.connect(_play_quest_victory_sparkle)
 
 func _init_mats() -> void:
-	_mats["grass"] = _mat(Color("#3d6b3d"))
-	_mats["grass_dark"] = _mat(Color("#2a4a2a"))
-	_mats["grass_light"] = _mat(Color("#4a7c4a"))
-	_mats["dirt"] = _mat(Color("#8b7355"))
-	_mats["dirt_trim"] = _mat(Color("#a08a6a"))
-	_mats["stone"] = _mat(Color("#8a8a9a"))
-	_mats["stone_dark"] = _mat(Color("#6a6a78"))
-	_mats["wood"] = _mat(Color("#5c4033"))
-	_mats["wood_light"] = _mat(Color("#7a5a40"))
-	_mats["roof"] = _mat(Color("#4a3728"))
+	## v1.80 world: warmer earth tones so the map reads as a finished village, not muddy gray.
+	_mats["grass"] = _mat(Color("#4d8a3e"))
+	_mats["grass_dark"] = _mat(Color("#356b32"))
+	_mats["grass_light"] = _mat(Color("#6aaa4c"))
+	_mats["dirt"] = _mat(Color("#c4a06a"))
+	_mats["dirt_trim"] = _mat(Color("#d8b888"))
+	_mats["stone"] = _mat(Color("#c8b49a"))
+	_mats["stone_dark"] = _mat(Color("#9a8468"))
+	_mats["wood"] = _mat(Color("#6e4428"))
+	_mats["wood_light"] = _mat(Color("#8e5c34"))
+	_mats["roof"] = _mat(Color("#8c4030"))
 	_mats["water"] = _mat(Color("#4a90c8"), 0.2)
-	_mats["leaf"] = _mat(Color("#2d6a4f"))
-	_mats["leaf_alt"] = _mat(Color("#3d7a3f"))
-	_mats["leaf_autumn"] = _mat(Color("#8a6a30"))
-	_mats["barrel"] = _mat(Color("#6b4f2a"))
-	_mats["iron"] = _mat(Color("#5a5a62"), 0.45)
+	_mats["leaf"] = _mat(Color("#3d8a44"))
+	_mats["leaf_alt"] = _mat(Color("#5aaa3a"))
+	_mats["leaf_autumn"] = _mat(Color("#c47a28"))
+	_mats["barrel"] = _mat(Color("#7a5528"))
+	_mats["iron"] = _mat(Color("#6a5a4a"), 0.45)
 	_mats["lantern"] = _mat(Color("#f4a261"), 0.35)
 	_mats["lantern_glow"] = _mat(Color("#ffe08a"), 0.25)
-	_mats["fence"] = _mat(Color("#6e5238"))
-	_mats["bench"] = _mat(Color("#7a5c3a"))
-	_mats["flower"] = _mat(Color("#c76b8a"))
-	_mats["flower_y"] = _mat(Color("#d4a017"))
-	_mats["rock"] = _mat(Color("#7a7a70"))
-	_mats["leaf_cedar"] = _mat(Color("#1e4a32"))
-	_mats["leaf_willow"] = _mat(Color("#4a7a48"))
-	_mats["bush"] = _mat(Color("#356b45"))
-	_mats["amber"] = _mat(Color("#c9a227"))
-	_mats["amber_dark"] = _mat(Color("#8a6a20"))
-	_mats["birch"] = _mat(Color("#e8e0d0"))
-	_mats["birch_dark"] = _mat(Color("#c4b8a0"))
-	_mats["leaf_birch"] = _mat(Color("#6a9a4a"))
-	_mats["heather"] = _mat(Color("#9a6a9a"))
-	_mats["fern"] = _mat(Color("#3d7a3a"))
-	_mats["fern_light"] = _mat(Color("#5a9a48"))
-	_mats["fern_dark"] = _mat(Color("#2a5a2a"))
-	_mats["thistle"] = _mat(Color("#6a5a8a"))
-	_mats["thistle_leaf"] = _mat(Color("#4a7a48"))
-	_mats["thistle_bloom"] = _mat(Color("#7a4a9a"))
-	_mats["maple"] = _mat(Color("#8a3a28"))
-	_mats["maple_leaf"] = _mat(Color("#c45a28"))
-	_mats["maple_leaf_gold"] = _mat(Color("#d4a017"))
-	_mats["maple_leaf_green"] = _mat(Color("#4a7a38"))
-	_mats["cobble"] = _mat(Color("#7a7468"))
-	_mats["cobble_light"] = _mat(Color("#9a9284"))
-	_mats["plaster"] = _mat(Color("#cfc6b4"))
-	_mats["window"] = _mat(Color("#2a3a48"), 0.25)
+	_mats["fence"] = _mat(Color("#7a5838"))
+	_mats["bench"] = _mat(Color("#8a6238"))
+	_mats["flower"] = _mat(Color("#d46a8a"))
+	_mats["flower_y"] = _mat(Color("#e0b020"))
+	_mats["rock"] = _mat(Color("#9a8a70"))
+	_mats["leaf_cedar"] = _mat(Color("#246848"))
+	_mats["leaf_willow"] = _mat(Color("#5a9a48"))
+	_mats["bush"] = _mat(Color("#3d7a42"))
+	_mats["hedge"] = _mat(Color("#2f6a36"))
+	_mats["amber"] = _mat(Color("#d4ae32"))
+	_mats["amber_dark"] = _mat(Color("#9a7220"))
+	_mats["birch"] = _mat(Color("#eee6d2"))
+	_mats["birch_dark"] = _mat(Color("#c8bca0"))
+	_mats["leaf_birch"] = _mat(Color("#72aa48"))
+	_mats["heather"] = _mat(Color("#aa6aaa"))
+	_mats["fern"] = _mat(Color("#4a8a3a"))
+	_mats["fern_light"] = _mat(Color("#64aa48"))
+	_mats["fern_dark"] = _mat(Color("#2f6230"))
+	_mats["thistle"] = _mat(Color("#7a5a92"))
+	_mats["thistle_leaf"] = _mat(Color("#4a8a46"))
+	_mats["thistle_bloom"] = _mat(Color("#8a4aaa"))
+	_mats["maple"] = _mat(Color("#9a3e26"))
+	_mats["maple_leaf"] = _mat(Color("#d45a28"))
+	_mats["maple_leaf_gold"] = _mat(Color("#e0b020"))
+	_mats["maple_leaf_green"] = _mat(Color("#5a8a38"))
+	_mats["cobble"] = _mat(Color("#b8a888"))
+	_mats["cobble_light"] = _mat(Color("#d6c8a8"))
+	_mats["plaster"] = _mat(Color("#eadcc4"))
+	_mats["window"] = _mat(Color("#3a5470"), 0.25)
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -254,17 +257,18 @@ func _build_ground() -> void:
 	floor_col.position = Vector3(0, -0.1, 0)
 	floor_body.add_child(floor_col)
 	static_world.add_child(floor_body)
-	# Soft wild tint edges
-	for i in 10:
+	# Soft wild tint edges + mid-ring meadow patches (v1.80 world: break the flat green slab)
+	for i in 14:
 		var patch := MeshInstance3D.new()
 		var pm := CylinderMesh.new()
-		pm.top_radius = 5.5 + (i % 3) * 0.8
+		pm.top_radius = 5.2 + (i % 4) * 0.85
 		pm.bottom_radius = pm.top_radius
 		pm.height = 0.02
 		patch.mesh = pm
 		patch.material_override = _mats["grass_dark"] if i % 2 == 0 else _mats["grass_light"]
-		var ang := i * TAU / 10.0
-		patch.position = Vector3(cos(ang) * 36.0, 0.015, sin(ang) * 36.0)
+		var ang := i * TAU / 14.0
+		var rad := 34.0 if i % 2 == 0 else 22.0
+		patch.position = Vector3(cos(ang) * rad, 0.015, sin(ang) * rad)
 		static_world.add_child(patch)
 		HeadlessGuard.guard_mesh(patch)
 	# v1.78 refine: worn grass patches inside the plaza so the yard is not one flat green
@@ -280,6 +284,17 @@ func _build_ground() -> void:
 		wear.position = Vector3(cos(wang) * 8.5, 0.012, 6.0 + sin(wang) * 7.5)
 		static_world.add_child(wear)
 		HeadlessGuard.guard_mesh(wear)
+	# v1.80 world: village lawn ring just outside the cobble so the green meets the plaza
+	var lawn := MeshInstance3D.new()
+	var lm := CylinderMesh.new()
+	lm.top_radius = 17.6
+	lm.bottom_radius = 17.6
+	lm.height = 0.016
+	lawn.mesh = lm
+	lawn.material_override = _mats["grass_light"]
+	lawn.position = Vector3(0, 0.01, 6)
+	static_world.add_child(lawn)
+	HeadlessGuard.guard_mesh(lawn)
 
 func _build_paths() -> void:
 	# Central plaza ring
@@ -331,6 +346,16 @@ func _build_paths() -> void:
 		var ang := i * TAU / 20.0
 		var curb := _mi(_box(Vector3(0.70, 0.20, 0.32)), Vector3(cos(ang) * 15.05, 0.11, 6.0 + sin(ang) * 15.05), static_world, _mats["stone"], "PlazaCurb%d" % i)
 		curb.rotation.y = -ang
+	# v1.80 world: flagstone tiles so the plaza reads as cobble, not two flat discs
+	for i in 24:
+		var fang := i * TAU / 24.0 + 0.07
+		var fr := 6.15 if i % 2 == 0 else 6.95
+		var flag := _mi(_box(Vector3(0.88, 0.045, 0.56)), Vector3(cos(fang) * fr, 0.052, 6.0 + sin(fang) * fr), static_world, _mats["cobble_light"] if i % 3 else _mats["stone"], "PlazaFlag%d" % i)
+		flag.rotation.y = -fang
+	for i in 12:
+		var iang := i * TAU / 12.0 + 0.2
+		var inner := _mi(_box(Vector3(0.62, 0.04, 0.42)), Vector3(cos(iang) * 4.55, 0.05, 6.0 + sin(iang) * 4.55), static_world, _mats["stone"] if i % 2 else _mats["cobble"], "PlazaFlagIn%d" % i)
+		inner.rotation.y = -iang
 	# Spokes toward guild halls
 	var spokes := [
 		Vector3(18, 0, 2), Vector3(-18, 0, 2), Vector3(0, 0, -14),
@@ -409,6 +434,21 @@ func _build_buildings() -> void:
 		HeadlessGuard.guard_mesh(roof)
 		# Chimney
 		_mi(_box(Vector3(0.55, 1.4, 0.55)), Vector3(w * 0.28, h + 1.4, -d * 0.15), body, _mats["stone_dark"], "Chimney")
+		# v1.80 world: timber corners, ridge, chimney pot, garden beds — halls read as buildings
+		_mi(_box(Vector3(0.22, h + 0.18, 0.22)), Vector3(-w * 0.5, (h + 0.18) * 0.5, -d * 0.5), body, _mats["wood"], "CornerSW")
+		_mi(_box(Vector3(0.22, h + 0.18, 0.22)), Vector3(w * 0.5, (h + 0.18) * 0.5, -d * 0.5), body, _mats["wood"], "CornerSE")
+		_mi(_box(Vector3(0.22, h + 0.18, 0.22)), Vector3(-w * 0.5, (h + 0.18) * 0.5, d * 0.5), body, _mats["wood"], "CornerNW")
+		_mi(_box(Vector3(0.22, h + 0.18, 0.22)), Vector3(w * 0.5, (h + 0.18) * 0.5, d * 0.5), body, _mats["wood"], "CornerNE")
+		_mi(_box(Vector3(0.12, 0.16, d * 0.78)), Vector3(-w * 0.5 - 0.06, h * 0.36, 0), body, _mats["wood"], "StudL")
+		_mi(_box(Vector3(0.12, 0.16, d * 0.78)), Vector3(w * 0.5 + 0.06, h * 0.36, 0), body, _mats["wood"], "StudR")
+		_mi(_box(Vector3(w + 0.72, 0.16, 0.22)), Vector3(0, h + 1.58, 0), body, _mats["wood"], "Ridge")
+		_mi(_cyl(0.16, 0.18, 0.30), Vector3(w * 0.28, h + 2.22, -d * 0.15), body, _mats["stone_dark"], "ChimneyPot")
+		_mi(_box(Vector3(1.02, 0.10, 0.10)), Vector3(-w * 0.28, h * 0.55 - 0.46, d * 0.5 + 0.05), body, _mats["wood"], "SillLoL")
+		_mi(_box(Vector3(1.02, 0.10, 0.10)), Vector3(w * 0.28, h * 0.55 - 0.46, d * 0.5 + 0.05), body, _mats["wood"], "SillLoR")
+		_mi(_box(Vector3(0.95, 0.28, 0.95)), Vector3(-w * 0.42, 0.16, d * 0.5 + 1.35), body, _mats["hedge"], "GardenL")
+		_mi(_box(Vector3(0.95, 0.28, 0.95)), Vector3(w * 0.42, 0.16, d * 0.5 + 1.35), body, _mats["hedge"], "GardenR")
+		_mi(_sphere(0.16, 0.22), Vector3(-w * 0.42, 0.42, d * 0.5 + 1.35), body, _mats["flower"], "GardenBloomL")
+		_mi(_sphere(0.16, 0.22), Vector3(w * 0.42, 0.42, d * 0.5 + 1.35), body, _mats["flower_y"], "GardenBloomR")
 		# Collision for main box only
 		var col := CollisionShape3D.new()
 		var shape := BoxShape3D.new()
@@ -439,7 +479,7 @@ func _build_wilds() -> void:
 	rng.seed = 42
 	var placed := 0
 	var attempts := 0
-	while placed < 22 and attempts < 80:
+	while placed < 36 and attempts < 120:
 		attempts += 1
 		var ang := rng.randf() * TAU
 		var rad := rng.randf_range(30.0, 44.0)
@@ -591,6 +631,10 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 	else:
 		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
 		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
+		# v1.80 world: extra canopy lobes so trees read as foliage, not one green blob
+		_mi(_sphere(0.62, 1.15), Vector3(-0.42, trunk_h + 0.28, 0.18), body, _mats["leaf_alt"], "LeavesL")
+		_mi(_sphere(0.58, 1.05), Vector3(0.38, trunk_h + 0.22, -0.16), body, leaf_mat, "LeavesR")
+		_mi(_cyl(0.95, 0.95, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
 		if style == 1:
 			_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
 	var col := CollisionShape3D.new()
@@ -627,6 +671,7 @@ func _add_bush(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	var root := Node3D.new()
 	root.position = pos
 	_mi(_sphere(rng.randf_range(0.45, 0.7), rng.randf_range(0.7, 1.1)), Vector3(0, 0.35, 0), root, _mats["bush"], "Bush")
+	_mi(_sphere(rng.randf_range(0.28, 0.42), rng.randf_range(0.45, 0.7)), Vector3(rng.randf_range(-0.28, 0.28), 0.28, rng.randf_range(-0.22, 0.22)), root, _mats["leaf_alt"], "BushLobe")
 	static_world.add_child(root)
 
 func _build_fountain() -> void:
@@ -739,7 +784,19 @@ func _build_village_props() -> void:
 	_add_planter(Vector3(-3.4, 0, 13.2))
 	_add_market_stall(Vector3(9.5, 0, 3.2), -0.4)
 	_add_market_stall(Vector3(-9.5, 0, 3.2), 0.4)
+	_add_market_stall(Vector3(11.2, 0, 8.4), -1.1)
 	_add_bench(Vector3(0.0, 0, 15.6), PI)
+	# v1.80 world: plaza hedges + yard cart so the green feels lived-in (visual only, no extra collision)
+	_add_hedge(Vector3(13.2, 0, 10.6), 0.35, 2.1)
+	_add_hedge(Vector3(-13.2, 0, 10.6), -0.35, 2.1)
+	_add_hedge(Vector3(13.4, 0, 1.4), -0.2, 1.9)
+	_add_hedge(Vector3(-13.4, 0, 1.4), 0.2, 1.9)
+	_add_hedge(Vector3(7.6, 0, -4.2), 0.15, 1.8)
+	_add_hedge(Vector3(-7.6, 0, -4.2), -0.15, 1.8)
+	_add_yard_cart(Vector3(11.0, 0, 6.2), -0.55)
+	_add_planter(Vector3(0.0, 0, -1.8))
+	_add_planter(Vector3(5.8, 0, 16.4))
+	_add_planter(Vector3(-5.8, 0, 16.4))
 
 func _fence_arc(origin: Vector3, posts: int, yaw: float) -> void:
 	var root := Node3D.new()
@@ -775,6 +832,7 @@ func _add_barrel(pos: Vector3, yaw: float) -> void:
 func _add_lantern_post(pos: Vector3, village_dusk: bool = false) -> void:
 	var root := Node3D.new()
 	root.position = pos
+	_mi(_cyl(0.16, 0.20, 0.16), Vector3(0, 0.08, 0), root, _mats["stone"], "Base")
 	_mi(_cyl(0.08, 0.1, 2.2), Vector3(0, 1.1, 0), root, _mats["wood"], "Post")
 	_add_lantern(root, Vector3(0.25, 2.0, 0))
 	# Wave 28: village lamp posts glow softly at dusk (RuneScape-chunky, wholesome)
@@ -845,7 +903,68 @@ func _add_market_stall(pos: Vector3, yaw: float) -> void:
 	_mi(_box(Vector3(2.3, 0.08, 1.4)), Vector3(0, 1.55, -0.1), root, _mats["roof"], "Awning")
 	_mi(_box(Vector3(0.45, 0.35, 0.45)), Vector3(-0.45, 0.82, 0.05), root, _mats["barrel"], "GoodsA")
 	_mi(_box(Vector3(0.38, 0.28, 0.38)), Vector3(0.4, 0.78, 0.1), root, _mats["wood_light"], "GoodsB")
+	_mi(_sphere(0.16, 0.18), Vector3(0.05, 0.78, 0.22), root, _mats["flower_y"], "GoodsC")
 	static_world.add_child(root)
+
+
+func _add_hedge(pos: Vector3, yaw: float = 0.0, length: float = 1.8) -> void:
+	## v1.80 world: low village hedge (visual only — navmesh / corridors stay open).
+	var root := Node3D.new()
+	root.name = "Hedge"
+	root.position = pos
+	root.rotation.y = yaw
+	_mi(_box(Vector3(length, 0.78, 0.40)), Vector3(0, 0.39, 0), root, _mats["hedge"], "Body")
+	_mi(_sphere(0.26, 0.34), Vector3(-length * 0.28, 0.78, 0.02), root, _mats["leaf"], "TopA")
+	_mi(_sphere(0.22, 0.30), Vector3(length * 0.24, 0.74, -0.04), root, _mats["leaf_alt"], "TopB")
+	static_world.add_child(root)
+
+
+func _add_yard_cart(pos: Vector3, yaw: float) -> void:
+	## v1.80 world: chunky market cart so the plaza has a readable village silhouette.
+	var root := Node3D.new()
+	root.name = "YardCart"
+	root.position = pos
+	root.rotation.y = yaw
+	_mi(_box(Vector3(1.75, 0.16, 0.98)), Vector3(0, 0.58, 0), root, _mats["wood"], "Bed")
+	_mi(_box(Vector3(1.60, 0.30, 0.08)), Vector3(0, 0.76, 0.46), root, _mats["wood_light"], "SideN")
+	_mi(_box(Vector3(1.60, 0.30, 0.08)), Vector3(0, 0.76, -0.46), root, _mats["wood_light"], "SideS")
+	_mi(_cyl(0.22, 0.22, 0.12), Vector3(-0.55, 0.28, 0.52), root, _mats["wood"], "WheelFL")
+	_mi(_cyl(0.22, 0.22, 0.12), Vector3(-0.55, 0.28, -0.52), root, _mats["wood"], "WheelFR")
+	_mi(_cyl(0.22, 0.22, 0.12), Vector3(0.55, 0.28, 0.52), root, _mats["wood"], "WheelBL")
+	_mi(_cyl(0.22, 0.22, 0.12), Vector3(0.55, 0.28, -0.52), root, _mats["wood"], "WheelBR")
+	_mi(_box(Vector3(0.12, 0.12, 0.95)), Vector3(1.00, 0.58, 0), root, _mats["wood"], "Tongue")
+	_mi(_box(Vector3(0.42, 0.32, 0.38)), Vector3(-0.25, 0.82, 0.05), root, _mats["barrel"], "LoadA")
+	_mi(_box(Vector3(0.34, 0.26, 0.32)), Vector3(0.35, 0.78, -0.08), root, _mats["wood_light"], "LoadB")
+	static_world.add_child(root)
+
+
+func _add_landmark_plaza(pos: Vector3, radius: float, plaza_name: String) -> void:
+	## v1.80 world: visual yard disc + curb so wilds landmarks have presence (no collision).
+	var root := Node3D.new()
+	root.name = plaza_name
+	root.position = pos
+	_mi(_cyl(radius, radius, 0.05), Vector3(0, 0.02, 0), root, _mats["dirt"], "Yard")
+	_mi(_cyl(radius * 0.62, radius * 0.62, 0.042), Vector3(0, 0.028, 0), root, _mats["grass_light"], "Inner")
+	for i in 10:
+		var ang := i * TAU / 10.0
+		var curb := _mi(_box(Vector3(0.58, 0.16, 0.26)), Vector3(cos(ang) * radius * 0.96, 0.09, sin(ang) * radius * 0.96), root, _mats["stone"], "Curb%d" % i)
+		curb.rotation.y = -ang
+	static_world.add_child(root)
+
+
+func _dress_world_finish() -> void:
+	## v1.80 world: landmark yards on dry clearings (skip mill/reed/lookout water-or-rock).
+	_add_landmark_plaza(Vector3(0.5, 0, -48), 4.6, "LandmarkPlazaGlade")
+	_add_landmark_plaza(Vector3(-24, 0, -54), 4.2, "LandmarkPlazaRidge")
+	_add_landmark_plaza(Vector3(38, 0, -36), 4.4, "LandmarkPlazaHollow")
+	_add_landmark_plaza(Vector3(-38, 0, -34), 3.8, "LandmarkPlazaWillow")
+	_add_landmark_plaza(Vector3(48, 0, 8), 4.0, "LandmarkPlazaCross")
+	_add_landmark_plaza(Vector3(-48, 0, 8), 4.0, "LandmarkPlazaArch")
+	_add_landmark_plaza(Vector3(48, 0, -22), 4.2, "LandmarkPlazaKnoll")
+	_add_landmark_plaza(Vector3(-42, 0, -20), 4.0, "LandmarkPlazaBirch")
+	_add_landmark_plaza(Vector3(22, 0, 48), 4.0, "LandmarkPlazaFern")
+	_add_landmark_plaza(Vector3(-48, 0, 42), 4.0, "LandmarkPlazaHeather")
+	_add_landmark_plaza(Vector3(48, 0, 42), 4.0, "LandmarkPlazaThistle")
 
 func _spawn_npcs() -> void:
 	for n in world_data.get("npcs", []):
@@ -1075,6 +1194,15 @@ func _setup_day_night() -> void:
 	var we := get_node_or_null("WorldEnvironment") as WorldEnvironment
 	if we:
 		_env = we.environment
+	# v1.80 world: warm fill so midday shadows stay readable, not muddy gray
+	if get_node_or_null("DayFill") == null:
+		var fill := DirectionalLight3D.new()
+		fill.name = "DayFill"
+		fill.light_color = Color(1.0, 0.90, 0.74)
+		fill.light_energy = 0.32
+		fill.shadow_enabled = false
+		fill.rotation_degrees = Vector3(-28, 210, 0)
+		add_child(fill)
 	_update_day_night(0.0)
 
 func _update_day_night(delta: float) -> void:
@@ -1085,18 +1213,21 @@ func _update_day_night(delta: float) -> void:
 	if _inside_hall != "":
 		dayness = 0.75  # indoor lamps feel steady
 	if _sun:
-		_sun.light_energy = lerpf(0.35, 1.2, dayness)
-		var warm := Color(1.0, 0.92, 0.78)
-		var cool := Color(0.75, 0.82, 1.0)
+		_sun.light_energy = lerpf(0.38, 1.28, dayness)
+		var warm := Color(1.0, 0.93, 0.70)
+		var cool := Color(0.80, 0.86, 1.0)
 		_sun.light_color = warm.lerp(cool, 1.0 - dayness)
 		# Orbit sun a bit
-		var elev := lerpf(18.0, 55.0, dayness)
+		var elev := lerpf(20.0, 58.0, dayness)
 		var az := _day_phase * 360.0
 		_sun.rotation_degrees = Vector3(-elev, az, 0)
+	var fill_n := get_node_or_null("DayFill") as DirectionalLight3D
+	if fill_n:
+		fill_n.light_energy = 0.0 if _inside_hall != "" else lerpf(0.12, 0.34, dayness)
 	if _env:
-		var day_sky := Color(0.45, 0.70, 0.90)
-		var dusk_sky := Color(0.55, 0.40, 0.55)
-		var night_sky := Color(0.12, 0.16, 0.28)
+		var day_sky := Color(0.55, 0.76, 0.94)
+		var dusk_sky := Color(0.72, 0.48, 0.42)
+		var night_sky := Color(0.14, 0.18, 0.30)
 		var sky: Color
 		if dayness > 0.65:
 			sky = day_sky
@@ -1105,9 +1236,9 @@ func _update_day_night(delta: float) -> void:
 		else:
 			sky = dusk_sky.lerp(night_sky, (0.4 - dayness) / 0.4)
 		_env.background_color = sky
-		_env.ambient_light_color = Color(0.85, 0.88, 0.95).lerp(Color(0.45, 0.55, 0.75), 1.0 - dayness)
-		_env.ambient_light_energy = lerpf(0.35, 0.6, dayness)
-		_env.fog_light_color = sky.lightened(0.1)
+		_env.ambient_light_color = Color(1.0, 0.94, 0.82).lerp(Color(0.50, 0.58, 0.78), 1.0 - dayness)
+		_env.ambient_light_energy = lerpf(0.42, 0.74, dayness)
+		_env.fog_light_color = sky.lightened(0.16)
 		var base_fog := lerpf(0.0022, 0.0012, dayness)
 		if _inside_hall != "":
 			_env.fog_density = 0.0004
@@ -2394,7 +2525,7 @@ func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	body.position = pos
 	var trunk_h := rng.randf_range(1.6, 2.2)
 	_mi(_cyl(0.14, 0.22, trunk_h), Vector3(0, trunk_h * 0.5, 0), body, _mats["wood"], "Trunk")
-	var pine := _mat(Color("#1f4d32"))
+	var pine := _mat(Color("#2a6a40"))
 	for j in 3:
 		var y := trunk_h * 0.45 + float(j) * 0.55
 		var r := 0.95 - float(j) * 0.22
@@ -2403,6 +2534,7 @@ func _add_pine(pos: Vector3, rng: RandomNumberGenerator) -> void:
 		cone.bottom_radius = r
 		cone.height = 0.85
 		_mi(cone, Vector3(0, y, 0), body, pine, "Pine%d" % j)
+	_mi(_cyl(0.85, 0.85, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
 	shape.radius = 0.28
