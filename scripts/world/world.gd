@@ -4921,17 +4921,17 @@ func _spawn_firework_burst(anchor: Node3D, local_pos: Vector3, col: Color, play_
 	burst.emitting = true
 	burst.one_shot = true
 	burst.explosiveness = 0.96
-	burst.amount = 22
-	burst.lifetime = 0.85
+	burst.amount = 28
+	burst.lifetime = 1.0
 	burst.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
-	burst.emission_sphere_radius = 0.08
+	burst.emission_sphere_radius = 0.1
 	burst.direction = Vector3(0, 1, 0)
 	burst.spread = 180.0
-	burst.initial_velocity_min = 1.6
-	burst.initial_velocity_max = 3.4
-	burst.gravity = Vector3(0, -3.2, 0)
-	burst.scale_amount_min = 0.08
-	burst.scale_amount_max = 0.22
+	burst.initial_velocity_min = 1.8
+	burst.initial_velocity_max = 3.8
+	burst.gravity = Vector3(0, -3.4, 0)
+	burst.scale_amount_min = 0.1
+	burst.scale_amount_max = 0.28
 	burst.color = col
 	HeadlessGuard.guard_particles(burst)
 	anchor.add_child(burst)
@@ -5039,37 +5039,39 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	party.add_child(party_glow)
 	if AudioBus.has_method("play_unicorn_party"):
 		AudioBus.play_unicorn_party()
-	# Dance ~7s then soft fade/poof
+	# Dance ~7s then soft scale-out + poof
 	var fade_tw := create_tween()
 	fade_tw.tween_interval(6.5)
 	fade_tw.tween_property(party_glow, "light_energy", 0.05, 0.8)
-	get_tree().create_timer(7.4).timeout.connect(func():
-		if is_instance_valid(party):
-			# Soft exit sparkle
-			var poof := CPUParticles3D.new()
-			poof.name = "PartyPoof"
-			poof.emitting = true
-			poof.one_shot = true
-			poof.explosiveness = 0.9
-			poof.amount = 48
-			poof.lifetime = 0.9
-			poof.direction = Vector3(0, 1, 0)
-			poof.spread = 80.0
-			poof.initial_velocity_min = 1.0
-			poof.initial_velocity_max = 2.8
-			poof.gravity = Vector3(0, -1.0, 0)
-			poof.scale_amount_min = 0.1
-			poof.scale_amount_max = 0.3
-			poof.color = Color(1.0, 0.9, 1.0, 0.9)
-			HeadlessGuard.guard_particles(poof)
-			party.add_child(poof)
-			for c in party.get_children():
-				if c is Node3D and str(c.name).begins_with("PartyUnicorn"):
-					c.visible = false
-			get_tree().create_timer(1.0).timeout.connect(func():
-				if is_instance_valid(party):
-					party.queue_free()
-			)
+	get_tree().create_timer(7.0).timeout.connect(func():
+		if not is_instance_valid(party):
+			return
+		var poof := CPUParticles3D.new()
+		poof.name = "PartyPoof"
+		poof.emitting = true
+		poof.one_shot = true
+		poof.explosiveness = 0.9
+		poof.amount = 56
+		poof.lifetime = 1.0
+		poof.direction = Vector3(0, 1, 0)
+		poof.spread = 80.0
+		poof.initial_velocity_min = 1.0
+		poof.initial_velocity_max = 3.0
+		poof.gravity = Vector3(0, -1.0, 0)
+		poof.scale_amount_min = 0.1
+		poof.scale_amount_max = 0.34
+		poof.color = Color(1.0, 0.9, 1.0, 0.9)
+		HeadlessGuard.guard_particles(poof)
+		party.add_child(poof)
+		var exit_tw := create_tween()
+		exit_tw.set_parallel(true)
+		for c in party.get_children():
+			if c is Node3D and str(c.name).begins_with("PartyUnicorn"):
+				exit_tw.tween_property(c, "scale", Vector3(0.05, 0.05, 0.05), 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		get_tree().create_timer(1.1).timeout.connect(func():
+			if is_instance_valid(party):
+				party.queue_free()
+		)
 	)
 
 
