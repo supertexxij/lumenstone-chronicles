@@ -652,8 +652,9 @@ func _finish():
 	print("CURRICULUM_183_TOAST_SRC", "maybe_curriculum_183_toast" in _src("res://scripts/autoload/game_state.gd"))
 
 	print("VERSION_184_SRC", _ver_ge(84))
-	print("CARTOON_HUMANOID_SRC", "Soft cartoon humanoid" in _src("res://scripts/characters/humanoid_builder.gd") and "DIFFUSE_TOON" in _src("res://scripts/characters/humanoid_builder.gd") and "v1.84 cartoon" in _src("res://scripts/characters/humanoid_builder.gd"))
+	print("CARTOON_HUMANOID_SRC", "Soft cartoon humanoid" in _src("res://scripts/characters/humanoid_builder.gd") and "DIFFUSE_TOON" in _src("res://scripts/characters/humanoid_builder.gd") and "set_face_color" in _src("res://scripts/characters/humanoid_builder.gd") and "v1.84 cartoon" in _src("res://scripts/characters/humanoid_builder.gd"))
 	print("CARTOON_CREATURE_SRC", "soft cartoon, not blocky" in _src("res://scripts/characters/creature_builder.gd") and "DIFFUSE_TOON" in _src("res://scripts/characters/creature_builder.gd"))
+	print("CARTOON_FACE_PRETTY_SRC", "FaceDecal" in _src("res://scripts/characters/humanoid_builder.gd") and "apprentice_face.png" in _src("res://scripts/characters/humanoid_builder.gd") and "LIris" in _src("res://scripts/characters/humanoid_builder.gd"))
 	if gs:
 		if gs.has_method("get_next_up"):
 			var nxt = gs.get_next_up()

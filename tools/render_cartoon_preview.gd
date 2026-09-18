@@ -89,18 +89,21 @@ func _run() -> void:
 		print("RENDER_FAIL null image")
 		quit(1)
 		return
-	var out_path := "/opt/cursor/artifacts/cartoon_characters_final.png"
+	var out_path := "/opt/cursor/artifacts/friendly_faces_pair.png"
 	DirAccess.make_dir_recursive_absolute("/opt/cursor/artifacts")
 	var err := img.save_png(out_path)
 	print("RENDER_PNG ", out_path, " ", err == OK, " torso=", p_parts["torso"].mesh.get_class(), " head=", p_parts["head"].mesh.get_class(), " foot=", p_parts["l_foot"].mesh.get_class())
-	# Also save a second closer crop angle
-	cam.position = Vector3(1.1, 2.1, 2.2)
-	cam.look_at(Vector3(-0.2, 1.45, 0), Vector3.UP)
+	# Face-forward close-up so eyes / smile are easy to judge
+	player_root.rotation_degrees.y = 8
+	npc_root.position = Vector3(1.05, 0, 0.15)
+	npc_root.rotation_degrees.y = -8
+	cam.position = Vector3(0.5, 1.95, 1.85)
+	cam.look_at(Vector3(0.2, 1.82, 0.15), Vector3.UP)
 	await process_frame
 	await process_frame
 	await process_frame
 	var img2: Image = vp.get_texture().get_image()
-	var out2 := "/opt/cursor/artifacts/cartoon_character_face_final.png"
+	var out2 := "/opt/cursor/artifacts/friendly_faces_closeup.png"
 	img2.save_png(out2)
 	print("RENDER_CLOSE ", out2)
 	print("RENDER_OK")

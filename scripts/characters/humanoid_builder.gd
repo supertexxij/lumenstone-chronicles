@@ -3,7 +3,7 @@ extends RefCounted
 ## Soft cartoon humanoid from MeshInstance3D primitives (storybook toon, not Roblox boxes).
 ## Kid-readable proportions: big head, big eyes on the face, rounded torso, pudgy feet.
 
-static func make_mat(c: Color, roughness: float = 0.72) -> StandardMaterial3D:
+static func make_mat(c: Color, roughness: float = 0.72, outlined: bool = true) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = c
 	mat.roughness = roughness
@@ -11,21 +11,60 @@ static func make_mat(c: Color, roughness: float = 0.72) -> StandardMaterial3D:
 	# Flat cartoon bands instead of shiny plastic / Roblox lighting.
 	mat.diffuse_mode = BaseMaterial3D.DIFFUSE_TOON
 	mat.specular_mode = BaseMaterial3D.SPECULAR_TOON
-	# Soft ink outline (front-cull grow) so silhouettes read as storybook cartoon.
-	var outline := StandardMaterial3D.new()
-	outline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	outline.albedo_color = Color(0.14, 0.10, 0.12)
-	outline.cull_mode = BaseMaterial3D.CULL_FRONT
-	outline.grow = true
-	outline.grow_amount = 0.028
-	mat.next_pass = outline
+	if outlined:
+		# Soft ink outline on body silhouette — skip on tiny face parts (looks chunky).
+		var outline := StandardMaterial3D.new()
+		outline.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		outline.albedo_color = Color(0.14, 0.10, 0.12)
+		outline.cull_mode = BaseMaterial3D.CULL_FRONT
+		outline.grow = true
+		outline.grow_amount = 0.024
+		mat.next_pass = outline
 	return mat
 
 
-static func set_color(mi: MeshInstance3D, c: Color, roughness: float = 0.72) -> void:
+static func set_color(mi: MeshInstance3D, c: Color, roughness: float = 0.72, outlined: bool = true) -> void:
 	if mi == null:
 		return
-	mi.material_override = make_mat(c, roughness)
+	mi.material_override = make_mat(c, roughness, outlined)
+
+
+static func set_face_color(mi: MeshInstance3D, c: Color, roughness: float = 0.48) -> void:
+	## Face features stay soft and clean — no ink grow outline.
+	set_color(mi, c, roughness, false)
+
+
+static func _load_face_tex() -> Texture2D:
+	var path := ProjectSettings.globalize_path("res://assets/faces/apprentice_face.png")
+	var img := Image.new()
+	var err := img.load(path)
+	if err != OK:
+		push_warning("HumanoidBuilder: could not load face texture (%s)" % err)
+		return null
+	return ImageTexture.create_from_image(img)
+
+
+static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
+	## Painted storybook face card — much cleaner than stacked primitive blobs.
+	var mi := MeshInstance3D.new()
+	mi.name = "FaceDecal"
+	var q := QuadMesh.new()
+	q.size = Vector2(0.46, 0.46)
+	mi.mesh = q
+	mi.position = Vector3(0, 1.82, 0.352)
+	parent.add_child(mi)
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var tex := _load_face_tex()
+	if tex:
+		mat.albedo_texture = tex
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.roughness = 1.0
+	mi.material_override = mat
+	HeadlessGuard.guard_mesh(mi)
+	return mi
 
 
 static func _mi(mesh: Mesh, pos: Vector3, parent: Node3D, name: String) -> MeshInstance3D:
@@ -89,26 +128,51 @@ static func build(root: Node3D) -> Dictionary:
 	var collar := _mi(_sphere(0.20, 0.12), Vector3(0, 1.36, 0.03), bob, "Collar")
 	# Big storybook head — face features sit on the front surface (not buried inside).
 	var head := _mi(_sphere(0.32), Vector3(0, 1.78, 0.04), bob, "Head")
-	# Hair: soft back mound + forehead fringe (reads as hair, not a beanie/cap).
-	var hair := _mi(_sphere(0.33, 0.26), Vector3(0, 2.04, -0.14), bob, "Hair")
-	var bangs := _mi(_sphere(0.28, 0.11), Vector3(0, 1.98, 0.24), bob, "Bangs")
+	# Hair: soft back/top volume only (no forehead pancake — that looked like a beanie/blob).
+	var hair := _mi(_sphere(0.33, 0.36), Vector3(0, 1.98, -0.18), bob, "Hair")
+	hair.scale = Vector3(1.05, 0.9, 1.15)
+	# Keep bangs for wardrobe coloring, tucked into the hair crown (not on the face).
+	var bangs := _mi(_sphere(0.14, 0.10), Vector3(0, 2.05, -0.06), bob, "Bangs")
 	var l_shoulder := _mi(_sphere(0.15), Vector3(-0.36, 1.32, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_sphere(0.15), Vector3(0.36, 1.32, 0), bob, "RShoulder")
-	# Face — oversized eyes with shine dots, blush cheeks, round nose/smile.
-	var l_eye := _mi(_sphere(0.095, 0.090), Vector3(-0.11, 1.82, 0.30), bob, "LEye")
-	var r_eye := _mi(_sphere(0.095, 0.090), Vector3(0.11, 1.82, 0.30), bob, "REye")
-	var l_pupil := _mi(_sphere(0.048, 0.050), Vector3(-0.11, 1.82, 0.37), bob, "LPupil")
-	var r_pupil := _mi(_sphere(0.048, 0.050), Vector3(0.11, 1.82, 0.37), bob, "RPupil")
-	var l_shine := _mi(_sphere(0.020), Vector3(-0.08, 1.86, 0.40), bob, "LShine")
-	var r_shine := _mi(_sphere(0.020), Vector3(0.14, 1.86, 0.40), bob, "RShine")
-	var l_brow := _mi(_sphere(0.07, 0.028), Vector3(-0.11, 1.94, 0.30), bob, "LBrow")
-	var r_brow := _mi(_sphere(0.07, 0.028), Vector3(0.11, 1.94, 0.30), bob, "RBrow")
-	var nose := _mi(_sphere(0.05), Vector3(0, 1.74, 0.36), bob, "Nose")
-	var mouth := _mi(_sphere(0.08, 0.032), Vector3(0, 1.64, 0.34), bob, "Mouth")
-	var l_cheek := _mi(_sphere(0.05, 0.035), Vector3(-0.20, 1.70, 0.28), bob, "LCheek")
-	var r_cheek := _mi(_sphere(0.05, 0.035), Vector3(0.20, 1.70, 0.28), bob, "RCheek")
-	var l_ear := _mi(_sphere(0.08, 0.11), Vector3(-0.30, 1.78, 0.02), bob, "LEar")
-	var r_ear := _mi(_sphere(0.08, 0.11), Vector3(0.30, 1.78, 0.02), bob, "REar")
+	# Face — big friendly eyes on the head surface + warm iris + curved smile.
+	# Pupils sit high in the whites so the elevated camera doesn't make them look sleepy.
+	var l_eye := _mi(_sphere(0.090, 0.102), Vector3(-0.125, 1.855, 0.335), bob, "LEye")
+	l_eye.scale = Vector3(1.18, 1.12, 0.88)
+	var r_eye := _mi(_sphere(0.090, 0.102), Vector3(0.125, 1.855, 0.335), bob, "REye")
+	r_eye.scale = Vector3(1.18, 1.12, 0.88)
+	var l_iris := _mi(_sphere(0.052, 0.056), Vector3(-0.125, 1.862, 0.388), bob, "LIris")
+	var r_iris := _mi(_sphere(0.052, 0.056), Vector3(0.125, 1.862, 0.388), bob, "RIris")
+	var l_pupil := _mi(_sphere(0.026, 0.028), Vector3(-0.125, 1.864, 0.422), bob, "LPupil")
+	var r_pupil := _mi(_sphere(0.026, 0.028), Vector3(0.125, 1.864, 0.422), bob, "RPupil")
+	var l_shine := _mi(_sphere(0.017), Vector3(-0.108, 1.885, 0.440), bob, "LShine")
+	var r_shine := _mi(_sphere(0.017), Vector3(0.142, 1.885, 0.440), bob, "RShine")
+	# Soft arched brows (thin, angled, clear gap — never a unibrow).
+	var l_brow := _mi(_sphere(0.034, 0.011), Vector3(-0.130, 1.950, 0.318), bob, "LBrow")
+	l_brow.scale = Vector3(1.15, 0.65, 0.5)
+	l_brow.rotation_degrees.z = -16
+	var r_brow := _mi(_sphere(0.034, 0.011), Vector3(0.130, 1.950, 0.318), bob, "RBrow")
+	r_brow.scale = Vector3(1.15, 0.65, 0.5)
+	r_brow.rotation_degrees.z = 16
+	# Nearly invisible nose.
+	var nose := _mi(_sphere(0.018), Vector3(0, 1.790, 0.370), bob, "Nose")
+	# Clear curved smile: center low, corners lifted.
+	var mouth := _mi(_sphere(0.032, 0.013), Vector3(0, 1.640, 0.352), bob, "Mouth")
+	mouth.scale = Vector3(1.15, 0.5, 0.5)
+	var mouth_l := _mi(_sphere(0.028, 0.018), Vector3(-0.078, 1.682, 0.338), bob, "MouthL")
+	var mouth_r := _mi(_sphere(0.028, 0.018), Vector3(0.078, 1.682, 0.338), bob, "MouthR")
+	# Soft blush — subtle, close to skin.
+	var l_cheek := _mi(_sphere(0.038, 0.022), Vector3(-0.175, 1.725, 0.308), bob, "LCheek")
+	var r_cheek := _mi(_sphere(0.038, 0.022), Vector3(0.175, 1.725, 0.308), bob, "RCheek")
+	# Side locks stay behind the ears so ears read as skin, not brown lumps.
+	var l_lock := _mi(_sphere(0.075, 0.20), Vector3(-0.30, 1.74, -0.04), bob, "LLock")
+	var r_lock := _mi(_sphere(0.075, 0.20), Vector3(0.30, 1.74, -0.04), bob, "RLock")
+	var l_ear := _mi(_sphere(0.065, 0.085), Vector3(-0.305, 1.78, 0.04), bob, "LEar")
+	var r_ear := _mi(_sphere(0.065, 0.085), Vector3(0.305, 1.78, 0.04), bob, "REar")
+	# Painted face card (visible). Keep primitive face parts for API/smoke but hide the ugly blobs.
+	var face_decal := _make_face_decal(bob)
+	for n in [l_eye, r_eye, l_iris, r_iris, l_pupil, r_pupil, l_shine, r_shine, l_brow, r_brow, nose, mouth, mouth_l, mouth_r, l_cheek, r_cheek]:
+		n.visible = false
 
 	# Hat (explorer brim + crown; jewel for crownlets) — hidden until equipped
 	var hat := Node3D.new()
@@ -284,6 +348,8 @@ static func build(root: Node3D) -> Dictionary:
 		"r_knee": r_knee,
 		"l_eye": l_eye,
 		"r_eye": r_eye,
+		"l_iris": l_iris,
+		"r_iris": r_iris,
 		"l_pupil": l_pupil,
 		"r_pupil": r_pupil,
 		"l_shine": l_shine,
@@ -292,10 +358,15 @@ static func build(root: Node3D) -> Dictionary:
 		"r_brow": r_brow,
 		"nose": nose,
 		"mouth": mouth,
+		"mouth_l": mouth_l,
+		"mouth_r": mouth_r,
 		"l_cheek": l_cheek,
 		"r_cheek": r_cheek,
+		"l_lock": l_lock,
+		"r_lock": r_lock,
 		"l_ear": l_ear,
 		"r_ear": r_ear,
+		"face_decal": face_decal,
 	}
 
 
@@ -304,7 +375,10 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("head"), skin)
 	set_color(parts.get("neck"), skin)
 	set_color(parts.get("hair"), hair)
-	set_color(parts.get("bangs"), hair.darkened(0.06))
+	# Bangs / locks skip ink grow so forehead doesn't get a dark halo bar.
+	set_color(parts.get("bangs"), hair.lightened(0.04), 0.72, false)
+	set_color(parts.get("l_lock"), hair.darkened(0.04), 0.72, false)
+	set_color(parts.get("r_lock"), hair.darkened(0.04), 0.72, false)
 	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
 	set_color(parts.get("pelvis"), pants)
@@ -328,19 +402,23 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("r_elbow"), skin)
 	set_color(parts.get("l_knee"), pants.darkened(0.08))
 	set_color(parts.get("r_knee"), pants.darkened(0.08))
-	# Face — bright cartoon eyes + blush (toon materials)
-	set_color(parts.get("l_eye"), Color("#fff8ef"), 0.35)
-	set_color(parts.get("r_eye"), Color("#fff8ef"), 0.35)
-	set_color(parts.get("l_pupil"), Color("#1a1410"), 0.4)
-	set_color(parts.get("r_pupil"), Color("#1a1410"), 0.4)
-	set_color(parts.get("l_shine"), Color("#ffffff"), 0.15)
-	set_color(parts.get("r_shine"), Color("#ffffff"), 0.15)
-	set_color(parts.get("l_brow"), hair.darkened(0.1))
-	set_color(parts.get("r_brow"), hair.darkened(0.1))
-	set_color(parts.get("nose"), skin.darkened(0.06))
-	set_color(parts.get("mouth"), Color("#c45c6a"), 0.55)
-	set_color(parts.get("l_cheek"), Color("#f0a0a8"), 0.6)
-	set_color(parts.get("r_cheek"), Color("#f0a0a8"), 0.6)
+	# Face — clean features without chunky ink outlines
+	set_face_color(parts.get("l_eye"), Color("#fffdf8"), 0.28)
+	set_face_color(parts.get("r_eye"), Color("#fffdf8"), 0.28)
+	set_face_color(parts.get("l_iris"), Color("#6b4528"), 0.42)
+	set_face_color(parts.get("r_iris"), Color("#6b4528"), 0.42)
+	set_face_color(parts.get("l_pupil"), Color("#1a100c"), 0.38)
+	set_face_color(parts.get("r_pupil"), Color("#1a100c"), 0.38)
+	set_face_color(parts.get("l_shine"), Color("#ffffff"), 0.1)
+	set_face_color(parts.get("r_shine"), Color("#ffffff"), 0.1)
+	set_face_color(parts.get("l_brow"), hair.darkened(0.18), 0.7)
+	set_face_color(parts.get("r_brow"), hair.darkened(0.18), 0.7)
+	set_face_color(parts.get("nose"), skin, 0.55)
+	set_face_color(parts.get("mouth"), Color("#c46870"), 0.48)
+	set_face_color(parts.get("mouth_l"), Color("#c46870"), 0.48)
+	set_face_color(parts.get("mouth_r"), Color("#c46870"), 0.48)
+	set_face_color(parts.get("l_cheek"), skin.lerp(Color("#f2b0b6"), 0.28), 0.8)
+	set_face_color(parts.get("r_cheek"), skin.lerp(Color("#f2b0b6"), 0.28), 0.8)
 	set_color(parts.get("l_ear"), skin.darkened(0.04))
 	set_color(parts.get("r_ear"), skin.darkened(0.04))
 	# Legs / feet
@@ -362,7 +440,8 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 
 static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Color("#c68642")) -> void:
 	var outfit := accent
-	var hair := accent.darkened(0.35)
+	# Keep NPC hair a natural brown/auburn so accent color doesn't read as a weird hat.
+	var hair := Color("#5c4033").lerp(accent.darkened(0.45), 0.25)
 	apply_human_colors(parts, skin, hair, outfit, accent.darkened(0.2))
 	# NPCs show a small cape stub in accent; no player armor overlays
 	var cape: MeshInstance3D = parts.get("cape")

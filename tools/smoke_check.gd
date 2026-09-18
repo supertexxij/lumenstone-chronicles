@@ -956,6 +956,7 @@ func _initialize():
 	print("CARTOON_MAT_184", "DIFFUSE_TOON" in hb184 and "roughness: float = 0.72" in hb184)
 	print("CARTOON_OUTLINE_184", "CULL_FRONT" in hb184 and "grow_amount" in hb184 and "next_pass" in hb184)
 	print("CARTOON_FACE_184", parts.has("l_shine") and parts.has("l_cheek") and parts.has("r_shine") and parts.has("r_cheek"))
+	print("CARTOON_FACE_PRETTY_184", parts.has("l_iris") and parts.has("r_iris") and parts.has("l_lock") and parts.has("r_lock") and parts.has("face_decal") and "set_face_color" in hb184 and "FaceDecal" in hb184 and "apprentice_face.png" in hb184)
 	var gs184 = _src("res://scripts/autoload/game_state.gd")
 	print("PIN_STILL_1234_W184", "const DEFAULT_PIN := \"1234\"" in gs184 or 'DEFAULT_PIN := "1234"' in gs184)
 	print("MASTERY_80_W184", "MASTERY_PCT := 0.8" in gs184 or "0.8" in gs184)
