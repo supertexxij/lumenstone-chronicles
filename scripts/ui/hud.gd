@@ -38,6 +38,7 @@ var _hurt_vignette: Control = null
 var _year_chip: Label = null
 var _year_chip_panel: PanelContainer = null  # Wave 32: clearer chip plate
 var _year_chip_last_pct: int = -1  # Wave 46: flash when year % changes
+var _year_chip_last_mastery: int = -1  # Wave 68: gold flash when mastery % bumps
 var _year_chip_last_week: int = -1  # Wave 55: clearer flash when week unlocks
 var _year_chip_flash_dur: float = 0.85  # Wave 55: longer on week unlock
 var _year_chip_flash_t: float = 0.0
@@ -467,6 +468,21 @@ func _refresh_year_chip() -> void:
 		if GameState.has_method("maybe_festival_decade") and GameState.maybe_festival_decade(pct):
 			if _world != null and _world.has_method("play_festival_decade_sparkle"):
 				_world.play_festival_decade_sparkle()
+	# Wave 68: Year chip briefly flashes gold on mastery bump (RuneScape-chunky, wholesome)
+	var mastery_pct := pct
+	if GameState.has_method("get_quest_mastery_progress"):
+		mastery_pct = int(GameState.get_quest_mastery_progress().get("percent", pct))
+	if _year_chip_last_mastery >= 0 and mastery_pct > _year_chip_last_mastery:
+		_year_chip_flash_dur = 1.05
+		_year_chip_flash_t = 1.05
+		_apply_year_chip_flash()
+		# Richer gold pulse on mastery bump
+		if _year_chip != null:
+			_year_chip.modulate = Color(1.0, 0.92, 0.45, 1.0)
+		if _year_chip_style != null:
+			_year_chip_style.border_color = Color(1.0, 0.85, 0.28, 1.0)
+			_year_chip_style.bg_color = Color(0.28, 0.24, 0.10, 0.88)
+	_year_chip_last_mastery = mastery_pct
 	# Wave 55: clearer Year chip when week unlocks — longer cream-gold flash (RuneScape-chunky, wholesome)
 	var week_n: int = int(GameState.unlocked_week)
 	if _year_chip_last_week >= 0 and week_n > _year_chip_last_week:

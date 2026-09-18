@@ -558,6 +558,19 @@
       "combat_xp": 258,
       "respawn_sec": 102.0,
       "description": "A plump cub of the blackberry wilds \u2014 snuggle it gently with a careful step!"
+    },
+    "guava_goat": {
+      "kind": "guava_goat",
+      "name": "Guava Goat",
+      "defeat_verb": "nuzzled",
+      "color": "#6a8a48",
+      "accent": "#e8d8a0",
+      "max_hp": 278,
+      "damage": 46,
+      "accuracy": 0.17,
+      "combat_xp": 264,
+      "respawn_sec": 104.0,
+      "description": "A gentle goat of the guava wilds \u2014 nuzzle it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -1838,6 +1851,36 @@
       "kind": "blackberry_bear",
       "x": -45,
       "z": 182
+    },
+    {
+      "id": "e214",
+      "kind": "guava_goat",
+      "x": -160,
+      "z": -50
+    },
+    {
+      "id": "e215",
+      "kind": "guava_goat",
+      "x": 160,
+      "z": 40
+    },
+    {
+      "id": "e216",
+      "kind": "guava_goat",
+      "x": -90,
+      "z": 160
+    },
+    {
+      "id": "e217",
+      "kind": "guava_goat",
+      "x": 70,
+      "z": -170
+    },
+    {
+      "id": "e218",
+      "kind": "guava_goat",
+      "x": 175,
+      "z": -90
     }
   ],
   "base_combat": {

@@ -601,7 +601,7 @@ func _initialize():
 
 
 
-	print("VERSION_162", 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.63.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_162", 'config/version="1.62.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.63.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("APRICOT_ARMADILLO", '"apricot_armadillo"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_armadillo" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e188"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("FERN_SWAY_W62", "_update_fern_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 62: soft fern sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("TRAVEL_FADE_NAME_W62", "SoftTravelFadeLabel" in FileAccess.get_file_as_string("res://scripts/ui/main.gd") and "Wave 62: clearer soft-travel fade with landmark name" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
@@ -617,7 +617,7 @@ func _initialize():
 
 
 
-	print("VERSION_163", 'config/version="1.63.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_163", 'config/version="1.63.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("BLUEBERRY_BUNNY", '"blueberry_bunny"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_bunny" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e193"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("HEATHER_SWAY_W63", "_update_heather_sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 63: soft heather sway" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("YEAR_CHIP_MASTERY_W63", "Year · mastery" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
@@ -632,7 +632,7 @@ func _initialize():
 
 
 
-	print("VERSION_164", 'config/version="1.64.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_164", 'config/version="1.64.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("CRANBERRY_CAPYBARA", '"cranberry_capybara"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_capybara" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e198"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("ARCH_DUSK_GLOW_W64", "_update_arch_dusk_glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 64: soft stone arch glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("AGGRO_DEF_RING_W64", "Wave 64: clearer soft-aggro ring when armor Def high" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd") and "def_boost" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
@@ -646,7 +646,7 @@ func _initialize():
 
 
 
-	print("VERSION_165", 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_165", 'config/version="1.65.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("RASPBERRY_RAM", '"raspberry_ram"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_ram" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e203"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("CROSS_DUSK_GLOW_W65", "_update_cross_dusk_glow" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "Wave 65: soft quiet cross lantern" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("FIRST_FIGHT_FOE_W65", "Wave 65: clearer first-fight tip with foe name" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd") and "First fight · %s" in FileAccess.get_file_as_string("res://scripts/world/enemy.gd"))
@@ -659,7 +659,7 @@ func _initialize():
 	print("NO_DAY_CASH_W65", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
-	print("VERSION_166", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_166", 'config/version="1.66.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("STRAWBERRY_STOAT", '"strawberry_stoat"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_stoat" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e208"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("BIRCH_FIREFLIES_W66", "BirchRestFireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_birch_fireflies" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("ARRIVAL_SHORT_W66", "_travel_landmark_short" in FileAccess.get_file_as_string("res://scripts/ui/main.gd") and "Arrived · %s" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
@@ -675,7 +675,7 @@ func _initialize():
 
 
 
-	print("VERSION_167", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("VERSION_167", 'config/version="1.67.0"' in FileAccess.get_file_as_string("res://project.godot") or 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
 	print("BLACKBERRY_BEAR", '"blackberry_bear"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_bear" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e213"' in FileAccess.get_file_as_string("res://data/enemies.json"))
 	print("REED_POOL_GLEAM_W67", "ReedPoolRippleGleam" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_reed_pool_gleam" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
 	print("LOW_HP_TOAST_W67", "_maybe_low_hp_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "HP low · press V to eat" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
@@ -687,6 +687,22 @@ func _initialize():
 	print("PIN_STILL_1234_W67", "const DEFAULT_PIN := \"1234\"" in gs67 or 'DEFAULT_PIN := "1234"' in gs67)
 	print("MASTERY_80_W67", "MASTERY_PCT := 0.8" in gs67 or "0.8" in gs67)
 	print("NO_DAY_CASH_W67", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+
+
+
+
+	print("VERSION_168", 'config/version="1.68.0"' in FileAccess.get_file_as_string("res://project.godot"))
+	print("GUAVA_GOAT", '"guava_goat"' in FileAccess.get_file_as_string("res://data/enemies.json") and "static func _build_goat" in FileAccess.get_file_as_string("res://scripts/characters/creature_builder.gd") and '"id": "e218"' in FileAccess.get_file_as_string("res://data/enemies.json"))
+	print("WILLOW_LEAVES_W68", "WillowBendLeafDrift" in FileAccess.get_file_as_string("res://scripts/world/world.gd") and "_setup_willow_leaves" in FileAccess.get_file_as_string("res://scripts/world/world.gd"))
+	print("NEAR_MISS_TITLE_W68", "Near miss ·" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "short_title" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("FOUNTAIN_CHIME_W68", "play_fountain_rest_chime" in FileAccess.get_file_as_string("res://scripts/autoload/audio_bus.gd") and "play_fountain_rest_chime" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("UNEQUIP_COUNT_W68", "Confirm? · %d" in FileAccess.get_file_as_string("res://scripts/ui/inventory_panel.gd") and "count_worn_gear" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd"))
+	print("YEAR_MASTERY_GOLD_W68", "_year_chip_last_mastery" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd") and "Wave 68: Year chip briefly flashes gold on mastery bump" in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
+	print("WAVE68_TOAST", "maybe_wave_68_toast" in FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd") and "maybe_wave_68_toast" in FileAccess.get_file_as_string("res://scripts/ui/main.gd"))
+	var gs68 = FileAccess.get_file_as_string("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W68", "const DEFAULT_PIN := \"1234\"" in gs68 or 'DEFAULT_PIN := "1234"' in gs68)
+	print("MASTERY_80_W68", "MASTERY_PCT := 0.8" in gs68 or "0.8" in gs68)
+	print("NO_DAY_CASH_W68", "day_cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in FileAccess.get_file_as_string("res://scripts/ui/hud.gd"))
 
 
 	print("CHECK_OK")

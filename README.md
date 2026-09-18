@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 68 overnight (v1.68.0-overnight)
+- Soft **Willow Bend willow-leaf drift at dusk** — pale green leaves drift over the quiet NW brook (RuneScape-chunky, wholesome)
+- Clearer **quest near-miss toast with quest short title** — `Near miss · <title> · mastery N% (need ≥80%). Retry anytime!`
+- Soft **fountain-rest chime** — warm blip when resting at the fountain (H / plaza rest; respects mute)
+- New wilds foe **Guava Goat** — lean body, upswept horns, chin beard tuft, short upright tail fluff, cheek blush, gentle “nuzzled” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear)
+- Inventory/HUD QoL: **Unequip-all confirm shows piece count**; **Year chip briefly flashes gold on mastery bump** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 67 overnight (v1.67.0-overnight)
 - Soft **Reed Pool ripple gleam at dusk** — cool mint-silver rings on the quiet south pool (RuneScape-chunky, wholesome)
 - Clearer **low-HP toast** — plain wording `HP low · press V to eat · or H for Fountain rest` (re-arms after recovery)

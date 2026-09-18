@@ -376,14 +376,21 @@ func _on_unequip() -> void:
 
 
 func _on_unequip_all() -> void:
-	## Wave 61: Unequip all confirmation — first press arms, second confirms (PIN 1234; mastery ≥80%).
+	## Wave 61/68: Unequip all confirmation — first press arms (shows piece count), second confirms (PIN 1234; mastery ≥80%).
 	AudioBus.play_ui()
 	if not _unequip_all_armed:
+		# Wave 68: confirm shows worn piece count (PIN 1234; mastery ≥80% unchanged)
+		var pieces := 0
+		if GameState.has_method("count_worn_gear"):
+			pieces = int(GameState.count_worn_gear())
+		if pieces <= 0:
+			GameState.toast.emit("Nothing to unequip — Travel Cape already on.")
+			return
 		_unequip_all_armed = true
 		_unequip_all_arm_t = 4.0
 		if unequip_all_btn:
-			unequip_all_btn.text = "Confirm?"
-		GameState.toast.emit("Unequip all worn gear? Press Confirm? again — or wait to cancel.")
+			unequip_all_btn.text = "Confirm? · %d" % pieces
+		GameState.toast.emit("Unequip all · %d piece(s)? Press Confirm? again — or wait to cancel." % pieces)
 		return
 	_unequip_all_armed = false
 	_unequip_all_arm_t = 0.0

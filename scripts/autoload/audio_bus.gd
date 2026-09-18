@@ -41,7 +41,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop", "ready_chime"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop", "ready_chime", "fountain_rest_chime"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -295,6 +295,11 @@ func play_ember_pop() -> void:
 func play_ready_chime() -> void:
 	## Wave 65: tiny pantry Ready chime — soft high blip when food cooldown ends (RuneScape-chunky, wholesome; respects mute).
 	_play("ready_chime", -12.0)
+
+func play_fountain_rest_chime() -> void:
+	## Wave 68: soft fountain-rest chime — warm low-high blip when resting at the fountain (RuneScape-chunky, wholesome; respects mute).
+	_play("fountain_rest_chime", -11.0)
+
 
 func play_footstep() -> void:
 	if _foot_cooldown > 0.0:

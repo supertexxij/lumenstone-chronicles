@@ -157,6 +157,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_stoat(bob)
 		"blackberry_bear":
 			_build_bear(bob)
+		"guava_goat":
+			_build_goat(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1633,4 +1635,45 @@ static func _build_bear(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.06, 0.018, 0.07)), Vector3(0, -0.09, 0.01), leg, "Foot")
 	# Stubby fluff tail
 	_mi(_sphere(0.07, 0.08), Vector3(0, 0.34, -0.26), bob, "Tail")
+
+static func _build_goat(bob: Node3D) -> void:
+	## Soft guava-wilds goat — lean body, upswept horns, chin beard tuft, short upright tail fluff (distinct from Raspberry Ram / Blackberry Bear / Strawberry Stoat / Cranberry Capybara).
+	# Lean body + soft cream belly
+	_mi(_sphere(0.18, 0.26), Vector3(0, 0.40, 0.0), bob, "Body")
+	_mi(_sphere(0.10, 0.14), Vector3(0, 0.30, 0.05), bob, "Belly")
+	# Longish head + soft ears + blunt muzzle
+	_mi(_sphere(0.11, 0.13), Vector3(0, 0.58, 0.22), bob, "Head")
+	_mi(_sphere(0.035, 0.05), Vector3(-0.08, 0.68, 0.18), bob, "EarL")
+	_mi(_sphere(0.035, 0.05), Vector3(0.08, 0.68, 0.18), bob, "EarR")
+	_mi(_box(Vector3(0.06, 0.05, 0.10)), Vector3(0, 0.52, 0.36), bob, "Snout")
+	_mi(_sphere(0.025), Vector3(0, 0.51, 0.42), bob, "Nose")
+	_mi(_sphere(0.024), Vector3(-0.04, 0.62, 0.30), bob, "EyeL")
+	_mi(_sphere(0.024), Vector3(0.04, 0.62, 0.30), bob, "EyeR")
+	# Upswept horns (straight-ish — not ram spirals)
+	var horn_l := _mi(_cyl(0.018, 0.012, 0.16), Vector3(-0.06, 0.74, 0.16), bob, "HornL")
+	horn_l.rotation_degrees = Vector3(18, 0, -22)
+	var horn_r := _mi(_cyl(0.018, 0.012, 0.16), Vector3(0.06, 0.74, 0.16), bob, "HornR")
+	horn_r.rotation_degrees = Vector3(18, 0, 22)
+	# Chin beard tuft (goat signature)
+	_mi(_sphere(0.04, 0.06), Vector3(0, 0.44, 0.34), bob, "Beard")
+	# Soft guava cheek blush
+	_mi(_sphere(0.035, 0.03), Vector3(-0.11, 0.54, 0.18), bob, "BlushL")
+	_mi(_sphere(0.035, 0.03), Vector3(0.11, 0.54, 0.18), bob, "BlushR")
+	# Short sturdy legs
+	for info in [
+		["FL", Vector3(-0.09, 0.18, 0.12)],
+		["FR", Vector3(0.09, 0.18, 0.12)],
+		["BL", Vector3(-0.09, 0.18, -0.10)],
+		["BR", Vector3(0.09, 0.18, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.022, 0.026, 0.14), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.05, 0.016, 0.06)), Vector3(0, -0.10, 0.01), leg, "Foot")
+	# Short upright fluff tail
+	var tail := _mi(_cyl(0.03, 0.02, 0.12), Vector3(0, 0.42, -0.22), bob, "Tail")
+	tail.rotation_degrees = Vector3(-35, 0, 0)
+	_mi(_sphere(0.045, 0.05), Vector3(0, 0.50, -0.28), bob, "TailFluff")
 

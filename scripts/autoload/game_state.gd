@@ -66,6 +66,7 @@ var seen_wave_64_toast: bool = false  # Wave 64: once-per-save polish tip toast 
 var seen_wave_65_toast: bool = false  # Wave 65: once-per-save polish tip toast on load
 var seen_wave_66_toast: bool = false  # Wave 66: once-per-save polish tip toast on load
 var seen_wave_67_toast: bool = false  # Wave 67: once-per-save polish tip toast on load
+var seen_wave_68_toast: bool = false  # Wave 68: once-per-save polish tip toast on load
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -160,6 +161,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_65_toast = false
 	seen_wave_66_toast = false
 	seen_wave_67_toast = false
+	seen_wave_68_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -362,6 +364,7 @@ func save_game() -> void:
 		"seen_wave_65_toast": seen_wave_65_toast,
 		"seen_wave_66_toast": seen_wave_66_toast,
 		"seen_wave_67_toast": seen_wave_67_toast,
+		"seen_wave_68_toast": seen_wave_68_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -438,6 +441,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_65_toast = bool(data.get("seen_wave_65_toast", false))
 	seen_wave_66_toast = bool(data.get("seen_wave_66_toast", false))
 	seen_wave_67_toast = bool(data.get("seen_wave_67_toast", false))
+	seen_wave_68_toast = bool(data.get("seen_wave_68_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -586,6 +590,18 @@ func unequip_all_slots() -> void:
 		toast.emit("Unequipped all · %d item(s) · Travel Cape restored." % cleared.size())
 	state_changed.emit()
 	save_game()
+
+func count_worn_gear() -> int:
+	## Wave 68: count worn pieces for unequip-all confirm (Travel Cape default does not count). PIN 1234; mastery ≥80% unchanged.
+	var n := 0
+	for slot in ["head", "cape", "accessory", "weapon", "belt"]:
+		var cur = equipped.get(slot)
+		if cur == null or str(cur) == "":
+			continue
+		if slot == "cape" and str(cur) == "default_cape":
+			continue
+		n += 1
+	return n
 
 func get_weapon_stats() -> Dictionary:
 	var wid = equipped.get("weapon")
@@ -888,6 +904,15 @@ func maybe_wave_67_toast() -> bool:
 	save_game()
 	return true
 
+func maybe_wave_68_toast() -> bool:
+	## Wave 68: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_68_toast:
+		return false
+	seen_wave_68_toast = true
+	toast.emit("Wave 68 polish · Willow Bend leaf drift at dusk · clearer near-miss toast with quest title · soft fountain-rest chime · Unequip-all confirm shows piece count · Year chip gold flash on mastery bump · Guava Goat in the wilds.")
+	save_game()
+	return true
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -1127,6 +1152,9 @@ func rest_at_fountain(announce: bool = true) -> void:
 	## Soft rest: clear combat status, refill pantry, brief HP regen ticks.
 	clear_soft_combat(false)
 	refill_pantry(announce)
+	# Wave 68: soft fountain-rest chime (RuneScape-chunky, wholesome; respects mute)
+	if AudioBus.has_method("play_fountain_rest_chime"):
+		AudioBus.play_fountain_rest_chime()
 	if hp < max_hp:
 		_fountain_regen_left = 3
 		_fountain_regen_timer = 0.05
@@ -1210,7 +1238,11 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		AudioBus.play_quest_complete()
 		_recalc_unlocked_week()
 	else:
-		toast.emit("Near miss — mastery %d%% (need ≥80%%). Retry anytime!" % int(pct * 100))  # Wave 33
+		# Wave 68: clearer near-miss toast with quest short title (RuneScape-chunky, wholesome)
+		var short_title := str(quest.get("title", quest_id)).strip_edges()
+		if short_title.length() > 28:
+			short_title = short_title.substr(0, 26) + "…"
+		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Retry anytime!" % [short_title, int(pct * 100)])
 		if AudioBus.has_method("play_quest_near_miss"):
 			AudioBus.play_quest_near_miss()  # Wave 54: softer than mastery chime
 	save_game()

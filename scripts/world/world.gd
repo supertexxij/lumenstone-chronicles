@@ -46,6 +46,7 @@ var _dusk_fireflies: CPUParticles3D  # Wave 39: soft firefly sparkles at dusk ou
 var _garden_fireflies: CPUParticles3D  # Wave 53: denser fireflies near Prayer Garden at dusk
 var _birch_fireflies: CPUParticles3D  # Wave 66: soft birch-rest firefly wink at dusk
 var _reed_pool_gleam: CPUParticles3D  # Wave 67: soft Reed Pool ripple gleam at dusk
+var _willow_leaves: CPUParticles3D  # Wave 68: soft Willow Bend willow-leaf drift at dusk
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
 var _snowdust: CPUParticles3D  # Wave 47: soft snowdust particles in cold fog outdoors
@@ -1775,6 +1776,7 @@ func _setup_weather() -> void:
 	_setup_garden_fireflies()
 	_setup_birch_fireflies()
 	_setup_reed_pool_gleam()
+	_setup_willow_leaves()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2000,6 +2002,11 @@ func _update_weather(delta: float) -> void:
 		var reed_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_reed_pool_gleam.emitting = reed_dusk
 		_reed_pool_gleam.visible = reed_dusk
+	# Wave 68: soft Willow Bend willow-leaf drift at dusk (RuneScape-chunky, wholesome)
+	if _willow_leaves:
+		var willow_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_willow_leaves.emitting = willow_dusk
+		_willow_leaves.visible = willow_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3677,6 +3684,47 @@ func _setup_reed_pool_gleam() -> void:
 	_reed_pool_gleam.position = Vector3(-20.0, 0.06, 48.0)
 	add_child(_reed_pool_gleam)
 	HeadlessGuard.guard_particles(_reed_pool_gleam)
+
+
+func _setup_willow_leaves() -> void:
+	## Wave 68: soft Willow Bend willow-leaf drift at dusk — pale green leaves drift over the quiet NW brook (RuneScape-chunky, wholesome).
+	_willow_leaves = CPUParticles3D.new()
+	_willow_leaves.name = "WillowBendLeafDrift"
+	_willow_leaves.emitting = false
+	_willow_leaves.amount = 42
+	_willow_leaves.lifetime = 5.2
+	_willow_leaves.preprocess = 1.6
+	_willow_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_willow_leaves.emission_box_extents = Vector3(7.5, 2.8, 7.5)
+	_willow_leaves.direction = Vector3(0.22, -0.45, 0.12)
+	_willow_leaves.spread = 42.0
+	_willow_leaves.initial_velocity_min = 0.18
+	_willow_leaves.initial_velocity_max = 0.72
+	_willow_leaves.gravity = Vector3(0, -0.42, 0)
+	_willow_leaves.angular_velocity_min = -40.0
+	_willow_leaves.angular_velocity_max = 40.0
+	_willow_leaves.scale_amount_min = 0.35
+	_willow_leaves.scale_amount_max = 0.9
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.22, 0.028, 0.10)
+	_willow_leaves.mesh = lm
+	var lmat := StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.55, 0.72, 0.42, 0.78)
+	lmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_willow_leaves.material_override = lmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.6, 0.78, 0.45, 0.0),
+		Color(0.55, 0.72, 0.42, 0.82),
+		Color(0.5, 0.65, 0.38, 0.0),
+	])
+	_willow_leaves.color_ramp = ramp
+	# Willow Bend landmark at (-38, 0, -34)
+	_willow_leaves.position = Vector3(-38.0, 3.0, -34.0)
+	add_child(_willow_leaves)
+	HeadlessGuard.guard_particles(_willow_leaves)
+
 
 
 func _setup_brook_sparkle() -> void:
