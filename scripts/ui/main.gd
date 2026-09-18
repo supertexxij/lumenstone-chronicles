@@ -83,6 +83,20 @@ func _ready() -> void:
 	_setup_save_panel()
 	if hud.has_signal("saves_pressed"):
 		hud.saves_pressed.connect(_open_save_panel)
+	# Cloud / agent demo: skip title when LUMEN_AUTO_CONTINUE=1 and a save exists
+	if str(OS.get_environment("LUMEN_AUTO_CONTINUE")).strip_edges() in ["1", "true", "yes"]:
+		call_deferred("_auto_continue_demo")
+
+
+func _auto_continue_demo() -> void:
+	## Soft boot into the village for headless/GUI demos (does not change default play).
+	if GameState.in_world:
+		return
+	var slot := 0
+	if GameState.has_save(slot):
+		_on_continue(slot)
+	else:
+		_on_new_game(slot)
 
 func _setup_travel_panel() -> void:
 	if travel_panel == null:

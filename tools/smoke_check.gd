@@ -956,6 +956,7 @@ func _initialize():
 	print("PLAYER_SPEED_184", "const SPEED := 8.2" in player184 and "const ACCEL := 26.0" in player184)
 	print("TICK_055_184", '"tick_sec": 0.55' in _src("res://data/enemies.json") or '"tick_sec":0.55' in _src("res://data/enemies.json"))
 	print("SMOOTH_184_TOAST", "maybe_smooth_184_toast" in gs184 and "maybe_smooth_184_toast" in _src("res://scripts/ui/main.gd"))
+	print("AUTO_CONTINUE_184", "LUMEN_AUTO_CONTINUE" in _src("res://scripts/ui/main.gd") and "_auto_continue_demo" in _src("res://scripts/ui/main.gd"))
 	print("MSAA_OFF_184", "anti_aliasing/quality/msaa_3d=0" in _src("res://project.godot"))
 	print("PIN_STILL_1234_W184", "const DEFAULT_PIN := \"1234\"" in gs184 or 'DEFAULT_PIN := "1234"' in gs184)
 	print("MASTERY_80_W184", "MASTERY_PCT := 0.8" in gs184 or "0.8" in gs184)
