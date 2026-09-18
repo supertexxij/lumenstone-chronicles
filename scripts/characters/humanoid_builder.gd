@@ -72,12 +72,24 @@ static func build(root: Node3D) -> Dictionary:
 	var torso := _mi(_box(Vector3(0.54, 0.58, 0.32)), Vector3(0, 1.16, 0), bob, "Torso")
 	var pelvis := _mi(_box(Vector3(0.50, 0.20, 0.30)), Vector3(0, 0.80, 0), bob, "Pelvis")
 	var hem := _mi(_box(Vector3(0.64, 0.18, 0.38)), Vector3(0, 0.74, 0.02), bob, "Hem")
+	# Soft skirt overlay for girl silhouette — hidden until apply_gender("girl").
+	var skirt := _mi(_cyl(0.28, 0.42, 0.36), Vector3(0, 0.58, 0.02), bob, "Skirt")
+	skirt.visible = false
 	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.52, 0), bob, "Neck")
 	var collar := _mi(_cyl(0.16, 0.18, 0.08), Vector3(0, 1.46, 0.02), bob, "Collar")
 	var head := _mi(_sphere(0.23), Vector3(0, 1.72, 0.02), bob, "Head")
 	# Hair sits back so the face stays visible from the RuneScape camera.
 	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
 	var bangs := _mi(_box(Vector3(0.30, 0.10, 0.08)), Vector3(0, 1.88, 0.14), bob, "Bangs")
+	# Gender hair extras (toggled by apply_gender) — longer back + side locks for girl look.
+	var hair_long := _mi(_sphere(0.22, 0.48), Vector3(0, 1.62, -0.14), bob, "HairLong")
+	hair_long.visible = false
+	var hair_l_lock := _mi(_capsule(0.05, 0.28), Vector3(-0.18, 1.58, 0.06), bob, "HairLLock")
+	hair_l_lock.rotation_degrees = Vector3(12, 0, 18)
+	hair_l_lock.visible = false
+	var hair_r_lock := _mi(_capsule(0.05, 0.28), Vector3(0.18, 1.58, 0.06), bob, "HairRLock")
+	hair_r_lock.rotation_degrees = Vector3(12, 0, -18)
+	hair_r_lock.visible = false
 	var l_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(-0.34, 1.38, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(0.34, 1.38, 0), bob, "RShoulder")
 	# Face (eyes / brows / nose / mouth) — kid-readable, not a blank sphere.
@@ -206,11 +218,15 @@ static func build(root: Node3D) -> Dictionary:
 		"torso": torso,
 		"pelvis": pelvis,
 		"hem": hem,
+		"skirt": skirt,
 		"collar": collar,
 		"neck": neck,
 		"head": head,
 		"hair": hair,
 		"bangs": bangs,
+		"hair_long": hair_long,
+		"hair_l_lock": hair_l_lock,
+		"hair_r_lock": hair_r_lock,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -327,6 +343,54 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("chest_plate"), outfit.darkened(0.12))
 	set_color(parts.get("l_pad"), outfit.darkened(0.18))
 	set_color(parts.get("r_pad"), outfit.darkened(0.18))
+	# Gender extras share hair / outfit palette when visible
+	set_color(parts.get("hair_long"), hair.darkened(0.04))
+	set_color(parts.get("hair_l_lock"), hair.darkened(0.02))
+	set_color(parts.get("hair_r_lock"), hair.darkened(0.02))
+	set_color(parts.get("skirt"), outfit.darkened(0.08))
+
+
+## Boy / girl silhouette: hair length + skirt hem (RuneScape-chunky, kid-readable).
+## Safe to call after apply_human_colors; missing parts are no-ops for older meshes.
+static func apply_gender(parts: Dictionary, gender: String) -> void:
+	var is_girl := str(gender).to_lower() == "girl"
+	for key in ["hair_long", "hair_l_lock", "hair_r_lock", "skirt"]:
+		var n: Node = parts.get(key)
+		if n:
+			n.visible = is_girl
+	var hair_n: MeshInstance3D = parts.get("hair")
+	var bangs_n: MeshInstance3D = parts.get("bangs")
+	var hem_n: MeshInstance3D = parts.get("hem")
+	var l_sh: MeshInstance3D = parts.get("l_shoulder")
+	var r_sh: MeshInstance3D = parts.get("r_shoulder")
+	if is_girl:
+		if hair_n:
+			hair_n.scale = Vector3(1.08, 1.12, 1.1)
+			hair_n.position = Vector3(0, 1.88, -0.05)
+		if bangs_n:
+			bangs_n.scale = Vector3(1.15, 1.0, 1.0)
+			bangs_n.position = Vector3(0, 1.88, 0.15)
+		if hem_n:
+			hem_n.scale = Vector3(1.12, 1.35, 1.15)
+			hem_n.position = Vector3(0, 0.68, 0.02)
+		if l_sh:
+			l_sh.scale = Vector3(0.92, 0.95, 0.95)
+		if r_sh:
+			r_sh.scale = Vector3(0.92, 0.95, 0.95)
+	else:
+		if hair_n:
+			hair_n.scale = Vector3.ONE
+			hair_n.position = Vector3(0, 1.86, -0.06)
+		if bangs_n:
+			bangs_n.scale = Vector3.ONE
+			bangs_n.position = Vector3(0, 1.88, 0.14)
+		if hem_n:
+			hem_n.scale = Vector3.ONE
+			hem_n.position = Vector3(0, 0.74, 0.02)
+		if l_sh:
+			l_sh.scale = Vector3.ONE
+		if r_sh:
+			r_sh.scale = Vector3.ONE
 
 
 static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Color("#c68642")) -> void:
@@ -337,7 +401,7 @@ static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Col
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
-	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory"]:
+	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory", "hair_long", "hair_l_lock", "hair_r_lock", "skirt"]:
 		var n: Node = parts.get(key)
 		if n:
 			n.visible = false

@@ -169,7 +169,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 - Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
-- Character customize (skin / hair / cape / outfit) with **live 3D apprentice preview** beside the pickers + **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
+- Character customize (**boy/girl**, skin / hair / cape / outfit) with **live 3D apprentice preview** beside the pickers + **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
 - Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + held weapon + cloak/armor overlays** when equipped
 - **Quest journal (J)** — available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
@@ -225,6 +225,11 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.82.0 — gender choice
+
+- **Look / Wardrobe** adds **Boy or girl** — longer hair + skirt silhouette for girl, classic tunic for boy; live preview updates beside the pickers
+- Old saves without gender default to boy (PIN stays **1234**; mastery still ≥80%)
 
 ### v1.81.0 — wardrobe character preview
 

@@ -4,6 +4,7 @@ signal confirmed(p_name: String, appearance: Dictionary)
 signal cancelled
 
 @onready var name_edit: LineEdit = $Panel/MainRow/ControlsCol/NameEdit
+@onready var gender_opt: OptionButton = $Panel/MainRow/ControlsCol/GenderOpt
 @onready var skin_opt: OptionButton = $Panel/MainRow/ControlsCol/SkinOpt
 @onready var hair_opt: OptionButton = $Panel/MainRow/ControlsCol/HairOpt
 @onready var cape_opt: OptionButton = $Panel/MainRow/ControlsCol/CapeOpt
@@ -53,12 +54,14 @@ const OUTFIT_COLORS := {
 }
 
 func _ready() -> void:
+	_fill(gender_opt, ["boy", "girl"])
 	_fill(skin_opt, ["fair","light","medium","tan","deep"])
 	_fill(hair_opt, ["brown","black","blonde","auburn","gray"])
 	_fill(cape_opt, ["crimson","azure","emerald","gold","violet"])
 	_fill(outfit_opt, ["cream","sky","forest","sand","rose"])
 	ok_btn.pressed.connect(_on_ok)
 	cancel_btn.pressed.connect(_on_cancel)
+	gender_opt.item_selected.connect(func(_i): _refresh_preview())
 	skin_opt.item_selected.connect(func(_i): _refresh_preview())
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
@@ -85,6 +88,7 @@ func open_new() -> void:
 	name_edit.text = ""
 	name_edit.editable = true
 	ok_btn.text = "Begin"
+	_select(gender_opt, "boy")
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
 	_select(cape_opt, "crimson")
@@ -97,6 +101,7 @@ func open_wardrobe() -> void:
 	name_edit.text = GameState.child_name
 	name_edit.editable = true
 	ok_btn.text = "Wear This Look"
+	_select(gender_opt, GameState.appearance.get("gender", "boy"))
 	_select(skin_opt, GameState.appearance.get("skin", "medium"))
 	_select(hair_opt, GameState.appearance.get("hair", "brown"))
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
@@ -235,13 +240,15 @@ func _refresh_preview() -> void:
 	_swatches["hair"].color = hair_c
 	_swatches["cape"].color = cape_c
 	_swatches["outfit"].color = outfit_c
-	_apply_preview_appearance(skin_c, hair_c, outfit_c, cape_c)
+	var gender_k: String = str(gender_opt.get_selected_metadata())
+	_apply_preview_appearance(skin_c, hair_c, outfit_c, cape_c, gender_k)
 	_play_wardrobe_preview_pulse()  # Wave 52: color preview pulse
 
-func _apply_preview_appearance(skin: Color, hair: Color, outfit: Color, cape_col: Color) -> void:
+func _apply_preview_appearance(skin: Color, hair: Color, outfit: Color, cape_col: Color, gender: String = "boy") -> void:
 	if _preview_parts.is_empty():
 		return
 	HumanoidBuilder.apply_human_colors(_preview_parts, skin, hair, outfit, cape_col)
+	HumanoidBuilder.apply_gender(_preview_parts, gender)
 	var cape_mesh: MeshInstance3D = _preview_parts.get("cape")
 	if cape_mesh:
 		cape_mesh.visible = true
@@ -329,6 +336,7 @@ func _play_wardrobe_preview_pulse() -> void:
 
 func _on_ok() -> void:
 	var app := {
+		"gender": gender_opt.get_selected_metadata(),
 		"skin": skin_opt.get_selected_metadata(),
 		"hair": hair_opt.get_selected_metadata(),
 		"cape_color": cape_opt.get_selected_metadata(),

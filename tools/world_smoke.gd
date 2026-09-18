@@ -632,5 +632,8 @@ func _finish():
 
 	print("VERSION_181_SRC", _ver_ge(81))
 	print("WARDROBE_CHAR_PREVIEW_181_SRC", "_ensure_character_preview" in _src("res://scripts/ui/customize_screen.gd") and "PreviewHost" in _src("res://scenes/main.tscn"))
+
+	print("VERSION_182_SRC", _ver_ge(82))
+	print("GENDER_OPT_182_SRC", "GenderOpt" in _src("res://scenes/main.tscn") and "apply_gender" in _src("res://scripts/characters/humanoid_builder.gd") and "HairLong" in _src("res://scripts/characters/humanoid_builder.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

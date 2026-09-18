@@ -226,6 +226,7 @@ func _apply_appearance() -> void:
 	var outfit: Color = Color(str(GameState.OUTFIT_HEX.get(GameState.appearance.get("outfit", "cream"), "#f4e4bc")))
 	var cape_col: Color = Color(str(GameState.CAPE_HEX.get(GameState.appearance.get("cape_color", "crimson"), "#c1121f")))
 	HumanoidBuilder.apply_human_colors(parts, skin, hair, outfit, cape_col)
+	HumanoidBuilder.apply_gender(parts, str(GameState.appearance.get("gender", "boy")))
 
 	var cape_id = GameState.equipped.get("cape")
 	if cape_id != null:
