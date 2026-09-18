@@ -226,6 +226,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.0-cartoon — soft character looks
+
+Characters read as **storybook cartoon** instead of blocky Roblox-style boxes. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save keys unchanged.
+
+- **Humanoids:** rounded bodies + painted face card + **soft fluffy short hair** (crown volume, painted bangs/back cards, side locks, tiny tuft)
+- **Gear:** weapons and armor overlays use cylinders/spheres so equipped looks stay soft
+- **Creatures:** matching toon materials so wild foes fit the cartoon look
+- Re-export Linux + Windows when shipping a build
+
 ### v1.83.0-curriculum — school-day feel
 
 Curriculum-feel pass so a Grade 3 player and a glancing parent can see **what to do next**. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; 36-week quest JSON is not rewritten (tiny Week 1 first-lesson hook only); navmesh, tick combat, and save keys unchanged (`checkpoint_checks` / `checkpoint_date` now drive the school-day loop).
