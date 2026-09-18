@@ -49,9 +49,9 @@ static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = "FaceDecal"
 	var q := QuadMesh.new()
-	q.size = Vector2(0.46, 0.46)
+	q.size = Vector2(0.50, 0.50)
 	mi.mesh = q
-	mi.position = Vector3(0, 1.82, 0.352)
+	mi.position = Vector3(0, 1.82, 0.385)
 	parent.add_child(mi)
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -62,6 +62,9 @@ static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.roughness = 1.0
+	# Keep the painted card in front of the head sphere so no “clown nose” poke-through.
+	mat.no_depth_test = false
+	mat.render_priority = 1
 	mi.material_override = mat
 	HeadlessGuard.guard_mesh(mi)
 	return mi
