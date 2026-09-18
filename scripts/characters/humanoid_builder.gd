@@ -71,7 +71,7 @@ static func build(root: Node3D) -> Dictionary:
 	# --- Core (v1.80 world: chunky RS clothing silhouette that reads from the elevated camera) ---
 	var torso := _mi(_box(Vector3(0.54, 0.58, 0.32)), Vector3(0, 1.16, 0), bob, "Torso")
 	var pelvis := _mi(_box(Vector3(0.50, 0.20, 0.30)), Vector3(0, 0.80, 0), bob, "Pelvis")
-	var hem := _mi(_box(Vector3(0.58, 0.16, 0.36)), Vector3(0, 0.76, 0.02), bob, "Hem")
+	var hem := _mi(_box(Vector3(0.64, 0.18, 0.38)), Vector3(0, 0.74, 0.02), bob, "Hem")
 	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.52, 0), bob, "Neck")
 	var collar := _mi(_cyl(0.16, 0.18, 0.08), Vector3(0, 1.46, 0.02), bob, "Collar")
 	var head := _mi(_sphere(0.23), Vector3(0, 1.72, 0.02), bob, "Head")
@@ -106,9 +106,10 @@ static func build(root: Node3D) -> Dictionary:
 	# Cape drapes from the shoulders — narrower so arms still read from above.
 	var cape := _mi(_box(Vector3(0.52, 0.88, 0.07)), Vector3(0, 1.04, -0.22), bob, "Cape")
 
-	# Belt around waist
-	var belt := _mi(_box(Vector3(0.48, 0.10, 0.30)), Vector3(0, 0.82, 0), bob, "Belt")
-	belt.visible = false
+	# Belt around waist — leather cord always on so the tunic/pants break reads from the camera
+	var belt := _mi(_box(Vector3(0.52, 0.10, 0.32)), Vector3(0, 0.84, 0), bob, "Belt")
+	belt.visible = true
+	var buckle := _mi(_box(Vector3(0.10, 0.10, 0.08)), Vector3(0, 0.84, 0.18), bob, "Buckle")
 
 	# Soft armor overlays (chest + pads) — hidden until a defensive cloak is worn
 	var chest_plate := _mi(_box(Vector3(0.42, 0.34, 0.10)), Vector3(0, 1.16, 0.16), bob, "ChestPlate")
@@ -218,6 +219,7 @@ static func build(root: Node3D) -> Dictionary:
 		"hat_jewel": hat_jewel,
 		"cape": cape,
 		"belt": belt,
+		"buckle": buckle,
 		"chest_plate": chest_plate,
 		"l_pad": l_pad,
 		"r_pad": r_pad,
@@ -276,10 +278,16 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("neck"), skin)
 	set_color(parts.get("hair"), hair)
 	set_color(parts.get("bangs"), hair.darkened(0.06))
+	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
-	set_color(parts.get("pelvis"), outfit.darkened(0.08))
-	set_color(parts.get("hem"), outfit.darkened(0.14))
-	set_color(parts.get("collar"), outfit.lightened(0.08))
+	set_color(parts.get("pelvis"), pants)
+	set_color(parts.get("hem"), outfit.darkened(0.16))
+	set_color(parts.get("collar"), outfit.lightened(0.10))
+	set_color(parts.get("belt"), Color("#5c3d24"))
+	set_color(parts.get("buckle"), Color("#c9a227"), 0.4)
+	var belt_n: MeshInstance3D = parts.get("belt")
+	if belt_n:
+		belt_n.visible = true
 	set_color(parts.get("l_cuff"), outfit.darkened(0.12))
 	set_color(parts.get("r_cuff"), outfit.darkened(0.12))
 	# Arms: sleeves (outfit) + hands (skin)
@@ -291,8 +299,8 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("r_hand"), skin)
 	set_color(parts.get("l_elbow"), skin)
 	set_color(parts.get("r_elbow"), skin)
-	set_color(parts.get("l_knee"), outfit.darkened(0.15))
-	set_color(parts.get("r_knee"), outfit.darkened(0.15))
+	set_color(parts.get("l_knee"), pants.darkened(0.08))
+	set_color(parts.get("r_knee"), pants.darkened(0.08))
 	# Face
 	set_color(parts.get("l_eye"), Color("#f4f0e6"), 0.4)
 	set_color(parts.get("r_eye"), Color("#f4f0e6"), 0.4)
@@ -305,10 +313,10 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("l_ear"), skin.darkened(0.04))
 	set_color(parts.get("r_ear"), skin.darkened(0.04))
 	# Legs / feet
-	set_color(parts.get("l_thigh"), outfit.darkened(0.12))
-	set_color(parts.get("r_thigh"), outfit.darkened(0.12))
-	set_color(parts.get("l_shin"), outfit.darkened(0.18))
-	set_color(parts.get("r_shin"), outfit.darkened(0.18))
+	set_color(parts.get("l_thigh"), pants)
+	set_color(parts.get("r_thigh"), pants)
+	set_color(parts.get("l_shin"), pants.darkened(0.10))
+	set_color(parts.get("r_shin"), pants.darkened(0.10))
 	set_color(parts.get("l_foot"), shoe)
 	set_color(parts.get("r_foot"), shoe)
 	set_color(parts.get("l_boot"), shoe.lightened(0.08))
@@ -329,10 +337,13 @@ static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Col
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
-	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "belt", "accessory"]:
+	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory"]:
 		var n: Node = parts.get(key)
 		if n:
 			n.visible = false
+	var belt_n: MeshInstance3D = parts.get("belt")
+	if belt_n:
+		belt_n.visible = true
 
 
 ## Style accessory mesh from item id/name heuristics (lantern, pin, beads, pouch, scroll…).

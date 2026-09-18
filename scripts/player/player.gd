@@ -276,10 +276,12 @@ func _apply_appearance() -> void:
 	var belt_mesh: MeshInstance3D = parts.get("belt")
 	var bid = GameState.equipped.get("belt")
 	if belt_mesh:
-		belt_mesh.visible = bid != null
+		belt_mesh.visible = true
 		if bid != null:
 			var bitem: Dictionary = ItemDB.get_item(str(bid))
 			HumanoidBuilder.set_color(belt_mesh, Color(bitem.get("color", "#d4a017")))
+		else:
+			HumanoidBuilder.set_color(belt_mesh, Color("#5c3d24"))
 
 	# Accessory 3D attach
 	var acc_root: Node3D = parts.get("accessory")

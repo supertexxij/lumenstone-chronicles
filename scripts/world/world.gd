@@ -178,8 +178,10 @@ func _init_mats() -> void:
 	_mats["maple_leaf_green"] = _mat(Color("#5a8a38"))
 	_mats["cobble"] = _mat(Color("#b8a888"))
 	_mats["cobble_light"] = _mat(Color("#d6c8a8"))
+	_mats["cobble_dark"] = _mat(Color("#8e7a62"))
 	_mats["plaster"] = _mat(Color("#eadcc4"))
 	_mats["window"] = _mat(Color("#3a5470"), 0.25)
+	_mats["leather"] = _mat(Color("#5c3d24"))
 
 func _mat(c: Color, roughness: float = 0.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -356,6 +358,17 @@ func _build_paths() -> void:
 		var iang := i * TAU / 12.0 + 0.2
 		var inner := _mi(_box(Vector3(0.62, 0.04, 0.42)), Vector3(cos(iang) * 4.55, 0.05, 6.0 + sin(iang) * 4.55), static_world, _mats["stone"] if i % 2 else _mats["cobble"], "PlazaFlagIn%d" % i)
 		inner.rotation.y = -iang
+	# v1.80 world: checker flagstones across the whole disc so the plaza is not a flat sand plate
+	var tile_i := 0
+	for ix in range(-7, 8):
+		for iz in range(-7, 8):
+			var px := float(ix) * 1.02
+			var pz := 6.0 + float(iz) * 1.02
+			if Vector2(px, pz - 6.0).length() > 7.15:
+				continue
+			var tmat: Material = _mats["cobble_light"] if (ix + iz) % 2 == 0 else _mats["cobble_dark"]
+			_mi(_box(Vector3(0.94, 0.028, 0.94)), Vector3(px, 0.054, pz), static_world, tmat, "PlazaTile%d" % tile_i)
+			tile_i += 1
 	# Spokes toward guild halls
 	var spokes := [
 		Vector3(18, 0, 2), Vector3(-18, 0, 2), Vector3(0, 0, -14),
@@ -423,6 +436,12 @@ func _build_buildings() -> void:
 		_mi(_cyl(0.28, 0.32, h * 0.85), Vector3(w * 0.5 + 0.15, h * 0.42, d * 0.35), body, _mats["stone"], "PillarR")
 		# Banner strip under eaves
 		_mi(_box(Vector3(w * 0.7, 0.35, 0.08)), Vector3(0, h - 0.4, d * 0.5 + 0.06), body, trim_mat, "Banner")
+		# v1.80 world: front half-timber so halls read as buildings, not painted boxes
+		_mi(_box(Vector3(0.12, h * 0.78, 0.10)), Vector3(-w * 0.18, h * 0.50, d * 0.5 + 0.06), body, _mats["wood"], "HallTimberL")
+		_mi(_box(Vector3(0.12, h * 0.78, 0.10)), Vector3(w * 0.18, h * 0.50, d * 0.5 + 0.06), body, _mats["wood"], "HallTimberR")
+		_mi(_box(Vector3(w * 0.78, 0.12, 0.10)), Vector3(0, h * 0.36, d * 0.5 + 0.06), body, _mats["wood"], "HallTimberLo")
+		_mi(_box(Vector3(w * 0.78, 0.12, 0.10)), Vector3(0, h * 0.72, d * 0.5 + 0.06), body, _mats["wood"], "HallTimberHi")
+		_mi(_box(Vector3(1.28, 2.18, 0.10)), Vector3(0, 1.12, d * 0.5 + 0.03), body, _mats["wood"], "DoorFrame")
 		# Roof prism
 		var roof := MeshInstance3D.new()
 		var rmesh := PrismMesh.new()
@@ -634,7 +653,9 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		# v1.80 world: extra canopy lobes so trees read as foliage, not one green blob
 		_mi(_sphere(0.62, 1.15), Vector3(-0.42, trunk_h + 0.28, 0.18), body, _mats["leaf_alt"], "LeavesL")
 		_mi(_sphere(0.58, 1.05), Vector3(0.38, trunk_h + 0.22, -0.16), body, leaf_mat, "LeavesR")
-		_mi(_cyl(0.95, 0.95, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
+		_mi(_sphere(0.48, 0.82), Vector3(0.08, trunk_h + 1.05, 0.22), body, _mats["leaf_alt"], "LeavesTop")
+		_mi(_sphere(0.72, 0.70), Vector3(0.0, trunk_h + 0.08, 0.0), body, _mats["grass_dark"], "LeavesUnder")
+		_mi(_cyl(1.15, 1.15, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
 		if style == 1:
 			_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
 	var col := CollisionShape3D.new()
@@ -684,11 +705,13 @@ func _build_fountain() -> void:
 	_mi(_cyl(3.6, 3.6, 0.06), Vector3(0, 0.03, 0), root, _mats["cobble"], "FountainApron")
 	_mi(_cyl(3.15, 3.15, 0.05), Vector3(0, 0.04, 0), root, _mats["cobble_light"], "FountainApronIn")
 	_mi(_cyl(2.35, 2.55, 0.4), Vector3(0, 0.2, 0), root, _mats["stone"], "Base")
+	_mi(_cyl(2.48, 2.55, 0.12), Vector3(0, 0.42, 0), root, _mats["stone_dark"], "Rim")
 	_mi(_cyl(1.65, 1.65, 0.15), Vector3(0, 0.35, 0), root, _mats["water"], "Water")
 	_water_positions.append(root.position)  # Wave 38: brook murmur near fountain
 	_mi(_cyl(0.28, 0.38, 1.6), Vector3(0, 1.0, 0), root, _mats["stone"], "Pillar")
 	_mi(_cyl(0.9, 0.95, 0.2), Vector3(0, 1.75, 0), root, _mats["stone_dark"], "Bowl")
 	_mi(_cyl(0.55, 0.55, 0.08), Vector3(0, 1.82, 0), root, _mats["water"], "UpperWater")
+	_mi(_sphere(0.16), Vector3(0, 2.02, 0), root, _mats["amber"], "Gem")
 	# Ring of low posts
 	for i in 6:
 		var ang := i * TAU / 6.0
@@ -943,13 +966,28 @@ func _add_landmark_plaza(pos: Vector3, radius: float, plaza_name: String) -> voi
 	var root := Node3D.new()
 	root.name = plaza_name
 	root.position = pos
-	_mi(_cyl(radius, radius, 0.05), Vector3(0, 0.02, 0), root, _mats["dirt"], "Yard")
-	_mi(_cyl(radius * 0.62, radius * 0.62, 0.042), Vector3(0, 0.028, 0), root, _mats["grass_light"], "Inner")
+	_mi(_cyl(radius, radius, 0.05), Vector3(0, 0.02, 0), root, _mats["cobble"], "Yard")
+	_mi(_cyl(radius * 0.62, radius * 0.62, 0.042), Vector3(0, 0.028, 0), root, _mats["cobble_light"], "Inner")
 	for i in 10:
 		var ang := i * TAU / 10.0
 		var curb := _mi(_box(Vector3(0.58, 0.16, 0.26)), Vector3(cos(ang) * radius * 0.96, 0.09, sin(ang) * radius * 0.96), root, _mats["stone"], "Curb%d" % i)
 		curb.rotation.y = -ang
 	static_world.add_child(root)
+
+
+func _dress_landmark_ring(center: Vector3, radius: float) -> void:
+	## Visual foliage ring just outside the yard (skips travel corridors).
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(abs(center.x * 17.0 + center.z * 13.0)) + 11
+	for i in 8:
+		var ang := i * TAU / 8.0 + 0.18
+		var p := center + Vector3(cos(ang) * radius, 0, sin(ang) * radius)
+		if _in_travel_corridor(p):
+			continue
+		if i % 2 == 0:
+			_add_bush(p, rng)
+		else:
+			_add_flowers(p, rng)
 
 
 func _dress_world_finish() -> void:
@@ -965,6 +1003,17 @@ func _dress_world_finish() -> void:
 	_add_landmark_plaza(Vector3(22, 0, 48), 4.0, "LandmarkPlazaFern")
 	_add_landmark_plaza(Vector3(-48, 0, 42), 4.0, "LandmarkPlazaHeather")
 	_add_landmark_plaza(Vector3(48, 0, 42), 4.0, "LandmarkPlazaThistle")
+	_dress_landmark_ring(Vector3(0.5, 0, -48), 7.4)
+	_dress_landmark_ring(Vector3(-24, 0, -54), 6.8)
+	_dress_landmark_ring(Vector3(38, 0, -36), 7.0)
+	_dress_landmark_ring(Vector3(-38, 0, -34), 6.6)
+	_dress_landmark_ring(Vector3(48, 0, 8), 6.6)
+	_dress_landmark_ring(Vector3(-48, 0, 8), 6.6)
+	_dress_landmark_ring(Vector3(48, 0, -22), 6.8)
+	_dress_landmark_ring(Vector3(-42, 0, -20), 6.6)
+	_dress_landmark_ring(Vector3(22, 0, 48), 6.6)
+	_dress_landmark_ring(Vector3(-48, 0, 42), 6.6)
+	_dress_landmark_ring(Vector3(48, 0, 42), 6.6)
 
 func _spawn_npcs() -> void:
 	for n in world_data.get("npcs", []):
