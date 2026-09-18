@@ -622,5 +622,11 @@ func _finish():
 
 	print("VERSION_179_SRC", _ver_ge(79))
 	print("CLEANUP_179_SRC", "_maybe_once_toast" in _src("res://scripts/autoload/game_state.gd"))
+
+	print("VERSION_180_SRC", _ver_ge(80))
+	print("PLAZA_FLAG_SRC", "PlazaFlag" in _src("res://scripts/world/world.gd") and "YardCart" in _src("res://scripts/world/world.gd") and "PlazaTile" in _src("res://scripts/world/world.gd") and "HallTimberL" in _src("res://scripts/world/world.gd"))
+	print("LANDMARK_PLAZA_SRC", "LandmarkPlazaGlade" in _src("res://scripts/world/world.gd") and "_dress_world_finish" in _src("res://scripts/world/world.gd") and "_dress_landmark_ring" in _src("res://scripts/world/world.gd"))
+	print("DAY_FILL_SRC", "DayFill" in _src("res://scripts/world/world.gd"))
+	print("HUMANOID_CLOTHES_SRC", "Collar" in _src("res://scripts/characters/humanoid_builder.gd") and "Hem" in _src("res://scripts/characters/humanoid_builder.gd") and "Buckle" in _src("res://scripts/characters/humanoid_builder.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

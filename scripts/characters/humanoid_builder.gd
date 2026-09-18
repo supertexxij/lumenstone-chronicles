@@ -68,16 +68,19 @@ static func build(root: Node3D) -> Dictionary:
 	bob.name = "BodyBob"
 	root.add_child(bob)
 
-	# --- Core (v1.78 refine: chunky RS silhouette that reads from the elevated camera) ---
-	var torso := _mi(_box(Vector3(0.50, 0.56, 0.30)), Vector3(0, 1.16, 0), bob, "Torso")
-	var pelvis := _mi(_box(Vector3(0.46, 0.20, 0.28)), Vector3(0, 0.80, 0), bob, "Pelvis")
+	# --- Core (v1.80 world: chunky RS clothing silhouette that reads from the elevated camera) ---
+	var torso := _mi(_box(Vector3(0.54, 0.58, 0.32)), Vector3(0, 1.16, 0), bob, "Torso")
+	var pelvis := _mi(_box(Vector3(0.50, 0.20, 0.30)), Vector3(0, 0.80, 0), bob, "Pelvis")
+	var hem := _mi(_box(Vector3(0.64, 0.18, 0.38)), Vector3(0, 0.74, 0.02), bob, "Hem")
 	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.52, 0), bob, "Neck")
+	var collar := _mi(_cyl(0.16, 0.18, 0.08), Vector3(0, 1.46, 0.02), bob, "Collar")
 	var head := _mi(_sphere(0.23), Vector3(0, 1.72, 0.02), bob, "Head")
 	# Hair sits back so the face stays visible from the RuneScape camera.
 	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
-	var l_shoulder := _mi(_box(Vector3(0.18, 0.16, 0.24)), Vector3(-0.32, 1.38, 0), bob, "LShoulder")
-	var r_shoulder := _mi(_box(Vector3(0.18, 0.16, 0.24)), Vector3(0.32, 1.38, 0), bob, "RShoulder")
-	# Face (eyes / brows / nose) — kid-readable, not a blank sphere.
+	var bangs := _mi(_box(Vector3(0.30, 0.10, 0.08)), Vector3(0, 1.88, 0.14), bob, "Bangs")
+	var l_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(-0.34, 1.38, 0), bob, "LShoulder")
+	var r_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(0.34, 1.38, 0), bob, "RShoulder")
+	# Face (eyes / brows / nose / mouth) — kid-readable, not a blank sphere.
 	var l_eye := _mi(_sphere(0.055, 0.05), Vector3(-0.08, 1.74, 0.18), bob, "LEye")
 	var r_eye := _mi(_sphere(0.055, 0.05), Vector3(0.08, 1.74, 0.18), bob, "REye")
 	var l_pupil := _mi(_sphere(0.028, 0.03), Vector3(-0.08, 1.74, 0.22), bob, "LPupil")
@@ -85,6 +88,7 @@ static func build(root: Node3D) -> Dictionary:
 	var l_brow := _mi(_box(Vector3(0.10, 0.03, 0.04)), Vector3(-0.08, 1.82, 0.18), bob, "LBrow")
 	var r_brow := _mi(_box(Vector3(0.10, 0.03, 0.04)), Vector3(0.08, 1.82, 0.18), bob, "RBrow")
 	var nose := _mi(_box(Vector3(0.06, 0.07, 0.07)), Vector3(0, 1.68, 0.22), bob, "Nose")
+	var mouth := _mi(_box(Vector3(0.10, 0.03, 0.04)), Vector3(0, 1.62, 0.21), bob, "Mouth")
 	var l_ear := _mi(_sphere(0.06, 0.09), Vector3(-0.22, 1.72, 0.0), bob, "LEar")
 	var r_ear := _mi(_sphere(0.06, 0.09), Vector3(0.22, 1.72, 0.0), bob, "REar")
 
@@ -102,9 +106,10 @@ static func build(root: Node3D) -> Dictionary:
 	# Cape drapes from the shoulders — narrower so arms still read from above.
 	var cape := _mi(_box(Vector3(0.52, 0.88, 0.07)), Vector3(0, 1.04, -0.22), bob, "Cape")
 
-	# Belt around waist
-	var belt := _mi(_box(Vector3(0.48, 0.10, 0.30)), Vector3(0, 0.82, 0), bob, "Belt")
-	belt.visible = false
+	# Belt around waist — leather cord always on so the tunic/pants break reads from the camera
+	var belt := _mi(_box(Vector3(0.52, 0.10, 0.32)), Vector3(0, 0.84, 0), bob, "Belt")
+	belt.visible = true
+	var buckle := _mi(_box(Vector3(0.10, 0.10, 0.08)), Vector3(0, 0.84, 0.18), bob, "Buckle")
 
 	# Soft armor overlays (chest + pads) — hidden until a defensive cloak is worn
 	var chest_plate := _mi(_box(Vector3(0.42, 0.34, 0.10)), Vector3(0, 1.16, 0.16), bob, "ChestPlate")
@@ -127,8 +132,8 @@ static func build(root: Node3D) -> Dictionary:
 	# --- Arms (shoulder pivots + elbow pivots so limbs read from above) ---
 	var l_arm := Node3D.new()
 	l_arm.name = "LArm"
-	l_arm.position = Vector3(-0.40, 1.36, 0)
-	l_arm.rotation.z = deg_to_rad(-12)
+	l_arm.position = Vector3(-0.42, 1.36, 0)
+	l_arm.rotation.z = deg_to_rad(-16)
 	bob.add_child(l_arm)
 	var l_upper := _mi(_capsule(0.09, 0.40), Vector3(-0.02, -0.18, 0), l_arm, "LUpperArm")
 	var l_elbow := _mi(_sphere(0.075), Vector3(-0.03, -0.38, 0), l_arm, "LElbow")
@@ -137,12 +142,13 @@ static func build(root: Node3D) -> Dictionary:
 	l_forearm.position = Vector3(-0.03, -0.38, 0)
 	l_arm.add_child(l_forearm)
 	var l_lower := _mi(_capsule(0.075, 0.38), Vector3(0, -0.20, 0), l_forearm, "LLowerArm")
+	var l_cuff := _mi(_cyl(0.085, 0.088, 0.08), Vector3(0, -0.36, 0), l_forearm, "LCuff")
 	var l_hand := _mi(_sphere(0.09), Vector3(0, -0.42, 0.02), l_forearm, "LHand")
 
 	var r_arm := Node3D.new()
 	r_arm.name = "RArm"
-	r_arm.position = Vector3(0.40, 1.36, 0)
-	r_arm.rotation.z = deg_to_rad(12)
+	r_arm.position = Vector3(0.42, 1.36, 0)
+	r_arm.rotation.z = deg_to_rad(16)
 	bob.add_child(r_arm)
 	var r_upper := _mi(_capsule(0.09, 0.40), Vector3(0.02, -0.18, 0), r_arm, "RUpperArm")
 	var r_elbow := _mi(_sphere(0.075), Vector3(0.03, -0.38, 0), r_arm, "RElbow")
@@ -151,6 +157,7 @@ static func build(root: Node3D) -> Dictionary:
 	r_forearm.position = Vector3(0.03, -0.38, 0)
 	r_arm.add_child(r_forearm)
 	var r_lower := _mi(_capsule(0.075, 0.38), Vector3(0, -0.20, 0), r_forearm, "RLowerArm")
+	var r_cuff := _mi(_cyl(0.085, 0.088, 0.08), Vector3(0, -0.36, 0), r_forearm, "RCuff")
 	var r_hand := _mi(_sphere(0.09), Vector3(0, -0.42, 0.02), r_forearm, "RHand")
 
 	# Weapon held in the right hand so walk/attack swings it (RuneScape-style)
@@ -168,7 +175,7 @@ static func build(root: Node3D) -> Dictionary:
 	# --- Legs (hip pivots + knee pivots; wider stance for top-down read) ---
 	var l_leg := Node3D.new()
 	l_leg.name = "LLeg"
-	l_leg.position = Vector3(-0.20, 0.72, 0)
+	l_leg.position = Vector3(-0.22, 0.72, 0)
 	bob.add_child(l_leg)
 	var l_thigh := _mi(_capsule(0.11, 0.40), Vector3(0, -0.18, 0), l_leg, "LUpperLeg")
 	var l_knee := _mi(_sphere(0.09), Vector3(0, -0.38, 0), l_leg, "LKnee")
@@ -177,11 +184,12 @@ static func build(root: Node3D) -> Dictionary:
 	l_shin_pivot.position = Vector3(0, -0.38, 0)
 	l_leg.add_child(l_shin_pivot)
 	var l_shin := _mi(_capsule(0.09, 0.38), Vector3(0, -0.20, 0), l_shin_pivot, "LLowerLeg")
-	var l_foot := _mi(_box(Vector3(0.16, 0.09, 0.30)), Vector3(0, -0.38, 0.08), l_shin_pivot, "LFoot")
+	var l_boot := _mi(_cyl(0.095, 0.10, 0.16), Vector3(0, -0.28, 0), l_shin_pivot, "LBoot")
+	var l_foot := _mi(_box(Vector3(0.17, 0.13, 0.32)), Vector3(0, -0.38, 0.09), l_shin_pivot, "LFoot")
 
 	var r_leg := Node3D.new()
 	r_leg.name = "RLeg"
-	r_leg.position = Vector3(0.20, 0.72, 0)
+	r_leg.position = Vector3(0.22, 0.72, 0)
 	bob.add_child(r_leg)
 	var r_thigh := _mi(_capsule(0.11, 0.40), Vector3(0, -0.18, 0), r_leg, "RUpperLeg")
 	var r_knee := _mi(_sphere(0.09), Vector3(0, -0.38, 0), r_leg, "RKnee")
@@ -190,15 +198,19 @@ static func build(root: Node3D) -> Dictionary:
 	r_shin_pivot.position = Vector3(0, -0.38, 0)
 	r_leg.add_child(r_shin_pivot)
 	var r_shin := _mi(_capsule(0.09, 0.38), Vector3(0, -0.20, 0), r_shin_pivot, "RLowerLeg")
-	var r_foot := _mi(_box(Vector3(0.16, 0.09, 0.30)), Vector3(0, -0.38, 0.08), r_shin_pivot, "RFoot")
+	var r_boot := _mi(_cyl(0.095, 0.10, 0.16), Vector3(0, -0.28, 0), r_shin_pivot, "RBoot")
+	var r_foot := _mi(_box(Vector3(0.17, 0.13, 0.32)), Vector3(0, -0.38, 0.09), r_shin_pivot, "RFoot")
 
 	return {
 		"bob": bob,
 		"torso": torso,
 		"pelvis": pelvis,
+		"hem": hem,
+		"collar": collar,
 		"neck": neck,
 		"head": head,
 		"hair": hair,
+		"bangs": bangs,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -207,6 +219,7 @@ static func build(root: Node3D) -> Dictionary:
 		"hat_jewel": hat_jewel,
 		"cape": cape,
 		"belt": belt,
+		"buckle": buckle,
 		"chest_plate": chest_plate,
 		"l_pad": l_pad,
 		"r_pad": r_pad,
@@ -226,6 +239,10 @@ static func build(root: Node3D) -> Dictionary:
 		"r_hand": r_hand,
 		"l_foot": l_foot,
 		"r_foot": r_foot,
+		"l_boot": l_boot,
+		"r_boot": r_boot,
+		"l_cuff": l_cuff,
+		"r_cuff": r_cuff,
 		"l_upper": l_upper,
 		"r_upper": r_upper,
 		"l_lower": l_lower,
@@ -249,6 +266,7 @@ static func build(root: Node3D) -> Dictionary:
 		"l_brow": l_brow,
 		"r_brow": r_brow,
 		"nose": nose,
+		"mouth": mouth,
 		"l_ear": l_ear,
 		"r_ear": r_ear,
 	}
@@ -259,8 +277,19 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("head"), skin)
 	set_color(parts.get("neck"), skin)
 	set_color(parts.get("hair"), hair)
+	set_color(parts.get("bangs"), hair.darkened(0.06))
+	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
-	set_color(parts.get("pelvis"), outfit.darkened(0.08))
+	set_color(parts.get("pelvis"), pants)
+	set_color(parts.get("hem"), outfit.darkened(0.16))
+	set_color(parts.get("collar"), outfit.lightened(0.10))
+	set_color(parts.get("belt"), Color("#5c3d24"))
+	set_color(parts.get("buckle"), Color("#c9a227"), 0.4)
+	var belt_n: MeshInstance3D = parts.get("belt")
+	if belt_n:
+		belt_n.visible = true
+	set_color(parts.get("l_cuff"), outfit.darkened(0.12))
+	set_color(parts.get("r_cuff"), outfit.darkened(0.12))
 	# Arms: sleeves (outfit) + hands (skin)
 	set_color(parts.get("l_upper"), outfit)
 	set_color(parts.get("r_upper"), outfit)
@@ -270,8 +299,8 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("r_hand"), skin)
 	set_color(parts.get("l_elbow"), skin)
 	set_color(parts.get("r_elbow"), skin)
-	set_color(parts.get("l_knee"), outfit.darkened(0.15))
-	set_color(parts.get("r_knee"), outfit.darkened(0.15))
+	set_color(parts.get("l_knee"), pants.darkened(0.08))
+	set_color(parts.get("r_knee"), pants.darkened(0.08))
 	# Face
 	set_color(parts.get("l_eye"), Color("#f4f0e6"), 0.4)
 	set_color(parts.get("r_eye"), Color("#f4f0e6"), 0.4)
@@ -280,15 +309,18 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("l_brow"), hair.darkened(0.1))
 	set_color(parts.get("r_brow"), hair.darkened(0.1))
 	set_color(parts.get("nose"), skin.darkened(0.06))
+	set_color(parts.get("mouth"), skin.darkened(0.18))
 	set_color(parts.get("l_ear"), skin.darkened(0.04))
 	set_color(parts.get("r_ear"), skin.darkened(0.04))
 	# Legs / feet
-	set_color(parts.get("l_thigh"), outfit.darkened(0.12))
-	set_color(parts.get("r_thigh"), outfit.darkened(0.12))
-	set_color(parts.get("l_shin"), outfit.darkened(0.18))
-	set_color(parts.get("r_shin"), outfit.darkened(0.18))
+	set_color(parts.get("l_thigh"), pants)
+	set_color(parts.get("r_thigh"), pants)
+	set_color(parts.get("l_shin"), pants.darkened(0.10))
+	set_color(parts.get("r_shin"), pants.darkened(0.10))
 	set_color(parts.get("l_foot"), shoe)
 	set_color(parts.get("r_foot"), shoe)
+	set_color(parts.get("l_boot"), shoe.lightened(0.08))
+	set_color(parts.get("r_boot"), shoe.lightened(0.08))
 	set_color(parts.get("cape"), cape_col)
 	set_color(parts.get("l_shoulder"), outfit)
 	set_color(parts.get("r_shoulder"), outfit)
@@ -305,10 +337,13 @@ static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Col
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
-	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "belt", "accessory"]:
+	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory"]:
 		var n: Node = parts.get(key)
 		if n:
 			n.visible = false
+	var belt_n: MeshInstance3D = parts.get("belt")
+	if belt_n:
+		belt_n.visible = true
 
 
 ## Style accessory mesh from item id/name heuristics (lantern, pin, beads, pouch, scroll…).
@@ -508,6 +543,8 @@ static func style_cloak(parts: Dictionary, item: Dictionary) -> void:
 				cape.scale = Vector3.ONE
 	if is_tunic:
 		set_color(parts.get("torso"), col)
+		set_color(parts.get("hem"), col.darkened(0.12))
+		set_color(parts.get("collar"), col.lightened(0.08))
 		set_color(parts.get("l_upper"), col)
 		set_color(parts.get("r_upper"), col)
 		set_color(parts.get("l_shoulder"), col)

@@ -884,5 +884,17 @@ func _initialize():
 
 	print("VERSION_179", _ver_ge(79))
 	print("CLEANUP_179", "_maybe_once_toast" in _src("res://scripts/autoload/game_state.gd") and "_play_load_toasts" in _src("res://scripts/ui/main.gd"))
+
+	print("VERSION_180", _ver_ge(80))
+	print("PLAZA_FLAG_180", "PlazaFlag" in _src("res://scripts/world/world.gd") and "_add_hedge" in _src("res://scripts/world/world.gd") and "YardCart" in _src("res://scripts/world/world.gd") and "PlazaTile" in _src("res://scripts/world/world.gd") and "HallTimberL" in _src("res://scripts/world/world.gd"))
+	print("LANDMARK_PLAZA_180", "_dress_world_finish" in _src("res://scripts/world/world.gd") and "LandmarkPlazaGlade" in _src("res://scripts/world/world.gd") and "_dress_landmark_ring" in _src("res://scripts/world/world.gd"))
+	print("HUMANOID_CLOTHES_180", parts.has("collar") and parts.has("hem") and parts.has("mouth") and parts.has("bangs") and parts.has("l_boot") and parts.has("buckle"))
+	print("DAY_FILL_180", "DayFill" in _src("res://scripts/world/world.gd") and "v1.80 world" in _src("res://scripts/world/world.gd"))
+	print("WALK_HIP_180", "bob.rotation.y = sin(_walk_phase)" in _src("res://scripts/player/player.gd"))
+	var gs180 = _src("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W180", "const DEFAULT_PIN := \"1234\"" in gs180 or 'DEFAULT_PIN := "1234"' in gs180)
+	print("MASTERY_80_W180", "MASTERY_PCT := 0.8" in gs180 or "0.8" in gs180)
+	print("NO_DAY_CASH_W180", "day_cash" not in _src("res://scripts/ui/hud.gd").to_lower() and "Day Cash" not in _src("res://scripts/ui/hud.gd"))
+	print("NO_NEW_FOE_180", '"honeydew_hamster"' in _src("res://data/enemies.json"))
 	print("CHECK_OK")
 	quit(0)
