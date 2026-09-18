@@ -5109,42 +5109,32 @@ func _party_unicorn_sheet() -> Texture2D:
 
 
 func _make_party_unicorn_sprite(parent: Node3D, _frames: SpriteFrames, tint: Color, idx: float) -> MeshInstance3D:
-	## Solid cutout quad — fragment discard so bodies never alpha-blend/ghost.
+	## Upright Y-billboard cutout — stays vertical under the overhead camera.
 	if not _party_unicorn_frames_loaded():
 		return null
-	var sh := Shader.new()
-	sh.code = """
-shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_opaque, specular_disabled;
-uniform sampler2D unicorn_tex : source_color, filter_linear;
-uniform vec4 tint_color : source_color = vec4(1.0);
-void fragment() {
-	vec4 c = texture(unicorn_tex, UV) * tint_color;
-	if (c.a < 0.5) {
-		discard;
-	}
-	ALBEDO = c.rgb;
-}
-"""
-	var mat := ShaderMaterial.new()
-	mat.shader = sh
-	mat.set_shader_parameter("unicorn_tex", _party_unicorn_frame_tex[int(idx) % 6])
-	mat.set_shader_parameter("tint_color", Color(tint.r, tint.g, tint.b, 1.0))
-	# Billboard via GeometryInstance3D flag on the mesh instance
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.4
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# FIXED_Y keeps the art upright (full BILLBOARD flattens toward the top-down camera).
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
+	mat.billboard_keep_scale = true
+	mat.albedo_color = Color(tint.r, tint.g, tint.b, 1.0)
+	mat.albedo_texture = _party_unicorn_frame_tex[int(idx) % 6] as Texture2D
+	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
 	var quad := QuadMesh.new()
-	quad.size = Vector2(1.5, 2.1)
+	quad.size = Vector2(1.55, 2.15)
 	var mi := MeshInstance3D.new()
 	mi.name = "Art"
 	mi.mesh = quad
 	mi.material_override = mat
-	mi.position = Vector3(0, 1.2, 0)
+	mi.position = Vector3(0, 1.25, 0)
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	# Godot 4 billboard on GeometryInstance3D
-	mi.extra_cull_margin = 1.0
 	mi.set_meta("mat", mat)
 	mi.set_meta("frame_i", int(idx) % 6)
 	parent.add_child(mi)
-	# Face camera each frame in the dance tween (don't rely on material billboard).
 	return mi
 
 
@@ -5153,20 +5143,19 @@ func _set_party_unicorn_frame(spr: MeshInstance3D, frame_i: int) -> void:
 		return
 	if not _party_unicorn_frames_loaded():
 		return
-	var mat: ShaderMaterial = spr.get_meta("mat") as ShaderMaterial
+	var mat: StandardMaterial3D = spr.get_meta("mat") as StandardMaterial3D
 	if mat == null:
 		return
 	var fi: int = posmod(frame_i, 6)
-	mat.set_shader_parameter("unicorn_tex", _party_unicorn_frame_tex[fi])
+	mat.albedo_texture = _party_unicorn_frame_tex[fi] as Texture2D
 	spr.set_meta("frame_i", fi)
 
 
 func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, idx: float) -> void:
-	## Orbit + hop + prance-frame dance for one party unicorn (~7.5s).
+	## Orbit + hop + prance-frame dance for one party unicorn (~8s).
 	if uni == null or not is_instance_valid(uni):
 		return
-	var hop_h: float = 0.75 + (idx * 0.06)
-	var cam: Camera3D = get_viewport().get_camera_3d()
+	var hop_h: float = 0.7 + (idx * 0.05)
 	var orbit := uni.create_tween()
 	orbit.set_loops(16)
 	orbit.tween_method(func(t: float):
@@ -5178,14 +5167,10 @@ func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, i
 		if spr != null and is_instance_valid(spr) and spr is MeshInstance3D:
 			var mi: MeshInstance3D = spr as MeshInstance3D
 			_set_party_unicorn_frame(mi, int(floor(t * 18.0 + idx * 2.0)))
-			# Billboard: face active camera so the art stays upright and readable
-			if cam != null and is_instance_valid(cam):
-				mi.look_at(cam.global_position, Vector3.UP)
-				mi.rotate_object_local(Vector3.UP, PI)  # QuadMesh faces -Z after look_at
 			var flip: float = -1.0 if (-sin(a) > 0.0) else 1.0
-			var squash: float = 1.0 + absf(sin(t * TAU * 2.5)) * 0.16
+			var squash: float = 1.0 + absf(sin(t * TAU * 2.5)) * 0.14
 			mi.scale = Vector3(flip * (2.0 - squash), squash, 1.0)
-			mi.position.y = 1.2 + absf(sin(t * TAU * 5.0)) * 0.14
+			mi.position.y = 1.25 + absf(sin(t * TAU * 5.0)) * 0.12
 	, 0.0, 1.0, 0.5).set_trans(Tween.TRANS_LINEAR)
 
 
