@@ -4988,7 +4988,9 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		uni.name = "PartyUnicorn%d" % i
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
-		uni.rotation.y = ang + PI  # face roughly toward center
+		# Face party center (+Z forward on the mesh). ang+PI was 90° off and made
+		# the slim nose→tail barrel read as sideways-wide in the orbit.
+		uni.rotation.y = atan2(-cos(ang), -sin(ang))
 		uni.scale = Vector3(1.0, 1.0, 1.0)
 		party.add_child(uni)
 		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
