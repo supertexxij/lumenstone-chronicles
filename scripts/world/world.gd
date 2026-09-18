@@ -49,6 +49,7 @@ var _reed_pool_gleam: CPUParticles3D  # Wave 67: soft Reed Pool ripple gleam at 
 var _willow_leaves: CPUParticles3D  # Wave 68: soft Willow Bend willow-leaf drift at dusk
 var _fern_fronds: CPUParticles3D  # Wave 69: soft Fern Dell fern-frond drift at dusk
 var _heather_blooms: CPUParticles3D  # Wave 70: soft Heather Heath heather-bloom drift at dusk
+var _thistle_blooms: CPUParticles3D  # Wave 71: soft Thistle Rise thistle-bloom drift at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1785,6 +1786,7 @@ func _setup_weather() -> void:
 	_setup_willow_leaves()
 	_setup_fern_fronds()
 	_setup_heather_blooms()
+	_setup_thistle_blooms()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2023,6 +2025,10 @@ func _update_weather(delta: float) -> void:
 		var heather_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_heather_blooms.emitting = heather_dusk
 		_heather_blooms.visible = heather_dusk
+	if _thistle_blooms:
+		var thistle_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_thistle_blooms.emitting = thistle_dusk
+		_thistle_blooms.visible = thistle_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2786,14 +2792,16 @@ func _update_reed_sway(_delta: float) -> void:
 
 func _update_thistle_sway(_delta: float) -> void:
 	## Wave 58: soft thistle sway at Thistle Rise — gentle wind lean (RuneScape-chunky, wholesome).
+	## Wave 71: soft thistle sway reads stronger at dusk (RuneScape-chunky, wholesome).
 	if _thistle_sway_nodes.is_empty():
 		return
 	var t := Time.get_ticks_msec() * 0.001
+	var dusk_boost := 1.55 if (_inside_hall == "" and _is_dusk_firefly_time()) else 1.0
 	for thistle in _thistle_sway_nodes:
 		if thistle == null or not is_instance_valid(thistle):
 			continue
 		var phase := float(thistle.get_meta("sway_phase", 0.0))
-		var amp := float(thistle.get_meta("sway_amp", 0.05))
+		var amp := float(thistle.get_meta("sway_amp", 0.05)) * dusk_boost
 		var lean := sin(t * 1.05 + phase) * amp
 		thistle.rotation.z = lean
 		thistle.rotation.x = cos(t * 0.88 + phase * 0.65) * amp * 0.5
@@ -3829,6 +3837,47 @@ func _setup_heather_blooms() -> void:
 	_heather_blooms.position = Vector3(-48.0, 2.6, 42.0)
 	add_child(_heather_blooms)
 	HeadlessGuard.guard_particles(_heather_blooms)
+
+func _setup_thistle_blooms() -> void:
+	## Wave 71: soft Thistle Rise thistle-bloom drift at dusk — pale purple thistle tufts drift over the ESE rise (RuneScape-chunky, wholesome).
+	_thistle_blooms = CPUParticles3D.new()
+	_thistle_blooms.name = "ThistleRiseBloomDrift"
+	_thistle_blooms.emitting = false
+	_thistle_blooms.amount = 34
+	_thistle_blooms.lifetime = 4.6
+	_thistle_blooms.preprocess = 1.3
+	_thistle_blooms.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_thistle_blooms.emission_box_extents = Vector3(6.2, 2.2, 6.2)
+	_thistle_blooms.direction = Vector3(-0.14, -0.36, 0.12)
+	_thistle_blooms.spread = 46.0
+	_thistle_blooms.initial_velocity_min = 0.12
+	_thistle_blooms.initial_velocity_max = 0.58
+	_thistle_blooms.gravity = Vector3(0, -0.34, 0)
+	_thistle_blooms.angular_velocity_min = -32.0
+	_thistle_blooms.angular_velocity_max = 32.0
+	_thistle_blooms.scale_amount_min = 0.30
+	_thistle_blooms.scale_amount_max = 0.82
+	var tm := SphereMesh.new()
+	tm.radius = 0.045
+	tm.height = 0.09
+	_thistle_blooms.mesh = tm
+	var tmat := StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.52, 0.38, 0.68, 0.78)
+	tmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_thistle_blooms.material_override = tmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.58, 0.42, 0.72, 0.0),
+		Color(0.52, 0.38, 0.68, 0.82),
+		Color(0.42, 0.30, 0.58, 0.0),
+	])
+	_thistle_blooms.color_ramp = ramp
+	# Thistle Rise landmark at (48, 0, 42)
+	_thistle_blooms.position = Vector3(48.0, 2.6, 42.0)
+	add_child(_thistle_blooms)
+	HeadlessGuard.guard_particles(_thistle_blooms)
+
 
 func _setup_brook_sparkle() -> void:
 	## Wave 54: soft cream-cyan brook sparkle near water (RuneScape-chunky, wholesome).

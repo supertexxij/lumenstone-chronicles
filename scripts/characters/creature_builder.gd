@@ -163,6 +163,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_koala(bob)
 		"mango_mongoose":
 			_build_mongoose(bob)
+		"papaya_panda":
+			_build_panda(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1749,4 +1751,40 @@ static func _build_mongoose(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.035, 0.018, 0.28), Vector3(0, 0.38, -0.28), bob, "Tail")
 	tail.rotation_degrees = Vector3(55, 0, 0)
 	_mi(_sphere(0.06, 0.07), Vector3(0, 0.52, -0.48), bob, "TailFluff")
+
+static func _build_panda(bob: Node3D) -> void:
+	## Soft papaya-wilds panda — plump round body, round ears, dark eye patches, short blunt snout, stubby limbs, cheek blush (distinct from Kiwi Koala / Blackberry Bear / Mango Mongoose / Cranberry Capybara).
+	# Plump round body + soft cream belly
+	_mi(_sphere(0.20, 0.26), Vector3(0, 0.36, 0.0), bob, "Body")
+	_mi(_sphere(0.11, 0.13), Vector3(0, 0.26, 0.05), bob, "Belly")
+	# Round head + medium round ears (panda signature — not oversized like koala)
+	_mi(_sphere(0.13, 0.14), Vector3(0, 0.58, 0.10), bob, "Head")
+	_mi(_sphere(0.055, 0.06), Vector3(-0.11, 0.70, 0.08), bob, "EarL")
+	_mi(_sphere(0.055, 0.06), Vector3(0.11, 0.70, 0.08), bob, "EarR")
+	# Dark eye patches (panda signature)
+	_mi(_sphere(0.045, 0.035), Vector3(-0.055, 0.60, 0.20), bob, "PatchL")
+	_mi(_sphere(0.045, 0.035), Vector3(0.055, 0.60, 0.20), bob, "PatchR")
+	_mi(_sphere(0.020), Vector3(-0.05, 0.61, 0.24), bob, "EyeL")
+	_mi(_sphere(0.020), Vector3(0.05, 0.61, 0.24), bob, "EyeR")
+	# Short blunt snout
+	_mi(_sphere(0.05, 0.045), Vector3(0, 0.52, 0.22), bob, "Snout")
+	_mi(_sphere(0.022, 0.018), Vector3(0, 0.52, 0.28), bob, "Nose")
+	# Soft papaya cheek blush
+	_mi(_sphere(0.035, 0.028), Vector3(-0.11, 0.52, 0.12), bob, "BlushL")
+	_mi(_sphere(0.035, 0.028), Vector3(0.11, 0.52, 0.12), bob, "BlushR")
+	# Stubby limbs
+	for info in [
+		["FL", Vector3(-0.10, 0.15, 0.10)],
+		["FR", Vector3(0.10, 0.15, 0.10)],
+		["BL", Vector3(-0.10, 0.15, -0.10)],
+		["BR", Vector3(0.10, 0.15, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.026, 0.030, 0.11), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.055, 0.016, 0.065)), Vector3(0, -0.085, 0.01), leg, "Foot")
+	# Soft fluff rump tuft
+	_mi(_sphere(0.07, 0.08), Vector3(0, 0.34, -0.20), bob, "RumpTuft")
 

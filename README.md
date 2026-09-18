@@ -258,6 +258,13 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 71 overnight (v1.71.0-overnight)
+- Soft **Thistle Rise thistle-bloom drift at dusk** — pale purple thistle tufts drift over the ESE rise; thistle sway reads stronger at dusk (RuneScape-chunky, wholesome)
+- Clearer **daily checkpoint reminder toast** — `Daily checkpoint · open Parent · today’s short check (PIN 1234). Takes about a minute.`
+- New wilds foe **Papaya Panda** — plump round body, round ears, dark eye patches, short blunt snout, stubby limbs, cheek blush, gentle “hugged” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose)
+- Inventory QoL: **pantry Bread N/M flashes when low** — soft amber pulse when Bread ≤1/3 of max — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 70 overnight (v1.70.0-overnight) — milestone
 - Soft **Heather Heath heather-bloom drift at dusk** — pale purple blooms drift over the WSW rise; heather sway reads stronger at dusk (RuneScape-chunky, wholesome)
 - New wilds foe **Mango Mongoose** — long lean body, pointed snout, small rounded ears, long bushy tail, cheek blush, gentle “petted” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala)

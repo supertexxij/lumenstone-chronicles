@@ -16,6 +16,7 @@ signal saves_pressed
 var food_lbl: Label
 var _food_was_waiting: bool = false  # Wave 41: Ready flash after cooldown
 var _food_ready_flash_t: float = 0.0
+var _food_bread_low: bool = false  # Wave 71: pantry Bread N/M flashes when low
 @onready var lumen_lbl: Label = $TopBar/LumenLbl
 @onready var inv_btn: Button = $BottomBar/InvBtn
 @onready var look_btn: Button = $BottomBar/LookBtn
@@ -270,11 +271,17 @@ func _refresh_food_lbl() -> void:
 	var stacks: Array = info.get("stacks", [])
 	var bits: PackedStringArray = []
 	# Compact stack marks for unlocked foods (short names)
+	_food_bread_low = false
 	for s in stacks:
 		var nm: String = str(s.get("name", ""))
 		var short := nm
+		var cnt: int = int(s.get("count", 0))
+		var mx: int = int(s.get("max", cnt))
 		if "Bread" in nm:
 			short = "Bread"
+			# Wave 71: pantry Bread N/M flashes when low (≤1/3 of max, at least when ≤2)
+			if mx > 0 and cnt <= maxi(2, int((mx + 2) / 3)):
+				_food_bread_low = true
 		elif "Water" in nm:
 			short = "Water"
 		elif "Trail" in nm:
@@ -284,7 +291,7 @@ func _refresh_food_lbl() -> void:
 		elif "Stew" in nm:
 			short = "Stew"
 		# Wave 48: clearer food stack counts on pantry HUD
-		bits.append("%s %d/%d" % [short, int(s.get("count", 0)), int(s.get("max", s.get("count", 0)))])
+		bits.append("%s %d/%d" % [short, cnt, mx])
 	var stack_txt := " · ".join(bits) if bits.size() > 0 else "empty"
 	var cd: float = float(info.get("cooldown", 0.0))
 	var best: Dictionary = info.get("best", {})
@@ -323,6 +330,12 @@ func _refresh_food_lbl() -> void:
 			food_lbl.modulate = bloom
 			food_lbl.add_theme_color_override("font_outline_color", Color(0.12, 0.48, 0.32, 0.6 + 0.35 * sin(u * PI)))
 			food_lbl.add_theme_constant_override("outline_size", 4)
+		elif _food_bread_low:
+			# Wave 71: pantry Bread N/M flashes when low — soft amber pulse (RuneScape-chunky, wholesome)
+			var pulse: float = 0.5 + 0.5 * absf(sin(float(Time.get_ticks_msec()) * 0.006))
+			food_lbl.modulate = Color(1.0, 0.72, 0.48, 1.0).lerp(Color(1.0, 0.92, 0.72, 1.0), pulse)
+			food_lbl.add_theme_color_override("font_outline_color", Color(0.55, 0.28, 0.12, 0.45 + 0.25 * pulse))
+			food_lbl.add_theme_constant_override("outline_size", 3)
 		else:
 			food_lbl.modulate = Color(0.85, 1.0, 0.85, 1.0)
 			food_lbl.remove_theme_color_override("font_outline_color")

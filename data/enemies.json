@@ -597,6 +597,19 @@
       "combat_xp": 276,
       "respawn_sec": 108.0,
       "description": "A curious mongoose of the mango wilds \u2014 pet it gently with a careful step!"
+    },
+    "papaya_panda": {
+      "kind": "papaya_panda",
+      "name": "Papaya Panda",
+      "defeat_verb": "hugged",
+      "color": "#e88858",
+      "accent": "#f8e8c8",
+      "max_hp": 296,
+      "damage": 49,
+      "accuracy": 0.17,
+      "combat_xp": 282,
+      "respawn_sec": 110.0,
+      "description": "A gentle panda of the papaya wilds \u2014 hug it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -1967,6 +1980,36 @@
       "kind": "mango_mongoose",
       "x": -180,
       "z": -40
+    },
+    {
+      "id": "e229",
+      "kind": "papaya_panda",
+      "x": -155,
+      "z": 95
+    },
+    {
+      "id": "e230",
+      "kind": "papaya_panda",
+      "x": 155,
+      "z": -95
+    },
+    {
+      "id": "e231",
+      "kind": "papaya_panda",
+      "x": -55,
+      "z": -170
+    },
+    {
+      "id": "e232",
+      "kind": "papaya_panda",
+      "x": 110,
+      "z": 170
+    },
+    {
+      "id": "e233",
+      "kind": "papaya_panda",
+      "x": -190,
+      "z": -55
     }
   ],
   "base_combat": {

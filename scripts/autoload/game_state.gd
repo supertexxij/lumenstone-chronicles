@@ -70,6 +70,7 @@ var seen_wave_67_toast: bool = false  # Wave 67: once-per-save polish tip toast 
 var seen_wave_68_toast: bool = false  # Wave 68: once-per-save polish tip toast on load
 var seen_wave_69_toast: bool = false  # Wave 69: once-per-save polish tip toast on load
 var seen_wave_70_toast: bool = false  # Wave 70: once-per-save polish tip toast on load
+var seen_wave_71_toast: bool = false  # Wave 71: once-per-save polish tip toast on load
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -167,6 +168,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_68_toast = false
 	seen_wave_69_toast = false
 	seen_wave_70_toast = false
+	seen_wave_71_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -372,6 +374,7 @@ func save_game() -> void:
 		"seen_wave_68_toast": seen_wave_68_toast,
 		"seen_wave_69_toast": seen_wave_69_toast,
 		"seen_wave_70_toast": seen_wave_70_toast,
+		"seen_wave_71_toast": seen_wave_71_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -453,6 +456,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_68_toast = bool(data.get("seen_wave_68_toast", false))
 	seen_wave_69_toast = bool(data.get("seen_wave_69_toast", false))
 	seen_wave_70_toast = bool(data.get("seen_wave_70_toast", false))
+	seen_wave_71_toast = bool(data.get("seen_wave_71_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -944,6 +948,16 @@ func maybe_wave_70_toast() -> bool:
 	save_game()
 	return true
 
+
+func maybe_wave_71_toast() -> bool:
+	## Wave 71: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_71_toast:
+		return false
+	seen_wave_71_toast = true
+	toast.emit("Wave 71 polish · Thistle Rise bloom drift + stronger dusk sway · clearer daily checkpoint reminder · pantry Bread flashes when low · Papaya Panda in the wilds.")
+	save_game()
+	return true
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -975,12 +989,12 @@ func maybe_festival_decade(pct: int) -> bool:
 
 
 func maybe_daily_checkpoint_reminder() -> void:
-	## Soft once-per-calendar-day toast pointing parents to the short checkpoint (PIN stays 1234).
+	## Wave 71: clearer once-per-calendar-day toast pointing parents to the short checkpoint (PIN stays 1234).
 	var today := Time.get_date_string_from_system()
 	if last_daily_reminder_date == today:
 		return
 	last_daily_reminder_date = today
-	toast.emit("Gentle reminder: when you have a moment, open Parent for today’s short checkpoint (PIN 1234 unless you changed it).")
+	toast.emit("Daily checkpoint · open Parent · today’s short check (PIN 1234). Takes about a minute.")
 	save_game()
 
 
