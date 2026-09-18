@@ -226,6 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.2-smooth — Fog weather freeze fix
+
+Fog weather no longer freezes click-to-move: lighter mist/edge-fog particle budgets, no `CPUParticles3D.amount` rebuild thrash on weather cycle, and click-move keeps desired velocity when RVO collapses to zero under load.
+
 ### v1.84.1-smooth — player freeze fix
 
 Far foes now **fully sleep** (physics off, collision off, nav avoidance off) so click-to-move no longer freezes against 263 RVO obstacles. World wakes nearby foes on a sparse timer. Walk limb cadence scales with speed; hit-pause is softer.

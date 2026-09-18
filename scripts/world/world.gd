@@ -2172,27 +2172,28 @@ func _setup_rain_puddle_ripples() -> void:
 
 func _setup_fog_mist() -> void:
 	## Wave 29: denser low ground-mist cue while foggy (player-visible fog density).
+	## v1.84.2: lighter mist budget — large sphere CPUParticles were freezing click-move on Fog.
 	_fog_mist = CPUParticles3D.new()
 	_fog_mist.name = "FogMist"
 	_fog_mist.emitting = false
-	_fog_mist.amount = 40
+	_fog_mist.amount = 22
 	_fog_mist.lifetime = 4.5
-	_fog_mist.preprocess = 2.0
+	_fog_mist.preprocess = 1.2
 	_fog_mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_fog_mist.emission_box_extents = Vector3(14, 0.4, 14)
+	_fog_mist.emission_box_extents = Vector3(12, 0.35, 12)
 	_fog_mist.direction = Vector3(0.15, 0.05, 0.1)
 	_fog_mist.spread = 35.0
 	_fog_mist.initial_velocity_min = 0.15
 	_fog_mist.initial_velocity_max = 0.45
 	_fog_mist.gravity = Vector3(0, 0.02, 0)
-	_fog_mist.scale_amount_min = 0.8
-	_fog_mist.scale_amount_max = 1.8
+	_fog_mist.scale_amount_min = 0.7
+	_fog_mist.scale_amount_max = 1.35
 	var fm := SphereMesh.new()
-	fm.radius = 0.55
-	fm.height = 0.7
+	fm.radius = 0.32
+	fm.height = 0.42
 	_fog_mist.mesh = fm
 	var fmat := StandardMaterial3D.new()
-	fmat.albedo_color = Color(0.88, 0.9, 0.94, 0.28)
+	fmat.albedo_color = Color(0.88, 0.9, 0.94, 0.26)
 	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_fog_mist.material_override = fmat
@@ -2203,6 +2204,7 @@ func _setup_fog_mist() -> void:
 func _setup_edge_fog_banks() -> void:
 	## Wave 46: soft fog banks along outdoor map edges (RuneScape-chunky, wholesome; off indoors).
 	## Wave 72: soft edge-fog banks polish — taller cream mist, gentler drift (RuneScape-chunky, wholesome).
+	## v1.84.2: cheaper edge banks — avoid amount thrash + huge sphere fill that freezes Fog movement.
 	_edge_fog_banks.clear()
 	var root := Node3D.new()
 	root.name = "EdgeFogBanks"
@@ -2217,9 +2219,9 @@ func _setup_edge_fog_banks() -> void:
 		var fx := CPUParticles3D.new()
 		fx.name = "EdgeFog%d" % i
 		fx.emitting = true
-		fx.amount = 22
+		fx.amount = 10
 		fx.lifetime = 6.2
-		fx.preprocess = 2.8
+		fx.preprocess = 1.6
 		fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 		fx.emission_box_extents = Vector3(11, 0.95, 11)
 		fx.direction = Vector3(0.08, 0.05, 0.04)
@@ -2227,14 +2229,14 @@ func _setup_edge_fog_banks() -> void:
 		fx.initial_velocity_min = 0.06
 		fx.initial_velocity_max = 0.26
 		fx.gravity = Vector3(0, 0.012, 0)
-		fx.scale_amount_min = 1.35
-		fx.scale_amount_max = 2.7
+		fx.scale_amount_min = 1.1
+		fx.scale_amount_max = 1.9
 		var sm := SphereMesh.new()
-		sm.radius = 0.62
-		sm.height = 1.05
+		sm.radius = 0.38
+		sm.height = 0.7
 		fx.mesh = sm
 		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.88, 0.92, 0.96, 0.26)
+		mat.albedo_color = Color(0.88, 0.92, 0.96, 0.22)
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		fx.material_override = mat
@@ -2244,6 +2246,9 @@ func _setup_edge_fog_banks() -> void:
 		_edge_fog_banks.append(fx)
 
 func _update_weather(delta: float) -> void:
+	# #region agent log
+	var _uw_t0: int = Time.get_ticks_msec()
+	# #endregion
 	# Follow player outdoors so rain reads nearby; mute-friendly (no weather audio)
 	if player and _rain:
 		if _inside_hall == "":
@@ -2345,6 +2350,11 @@ func _update_weather(delta: float) -> void:
 		if _weather_timer <= 0.0:
 			cycle_weather(true)
 			_weather_timer = [100.0, 70.0, 55.0][_weather_mode]
+	# #region agent log
+	var _uw_ms: int = Time.get_ticks_msec() - _uw_t0
+	if _uw_ms >= 8 or (_weather_mode == 1 and Engine.get_frames_drawn() % 30 == 0):
+		_agent_dbg_wx("C", "world.gd:_update_weather", "weather_tick", {"mode": _weather_mode, "ms": _uw_ms, "delta": delta, "fog_on": _fog_mist != null and _fog_mist.emitting, "snow_on": _snowdust != null and _snowdust.emitting, "fps_hint": Engine.get_frames_per_second()})
+	# #endregion
 
 
 func _player_near_xz(anchor: Vector3, radius: float) -> bool:
@@ -2380,12 +2390,17 @@ func get_weather_label() -> String:
 	return _weather_label_cache
 
 func _apply_weather_visuals(announce: bool = false) -> void:
+	# #region agent log
+	var _wx_t0: int = Time.get_ticks_msec()
+	_agent_dbg_wx("C", "world.gd:_apply_weather_visuals", "weather_apply_begin", {"mode": _weather_mode, "inside": _inside_hall, "announce": announce, "time_scale": Engine.time_scale, "runId": "post-fix"})
+	# #endregion
 	var rain_on := false
 	var drip_on := false
 	match _weather_mode:
 		1:
 			_weather_label_cache = "Fog"
-			_fog_boost = 0.0045
+			# Softer env fog — high density + huge mist spheres starved frames (v1.84.2)
+			_fog_boost = 0.0028
 			if _rain:
 				_rain.emitting = false
 				if _rain_splash:
@@ -2394,12 +2409,15 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 					_puddle_ripples.emitting = false
 			if _fog_mist:
 				_fog_mist.emitting = (_inside_hall == "")
-				_fog_mist.amount = 48
+				# Toggle emit only — never rebuild particle buffers on weather cycle
+				_set_cpu_amount_if(_fog_mist, 22)
+				_set_fog_mat_alpha(_fog_mist, 0.30)
 		2:
 			_weather_label_cache = "Rain"
 			_fog_boost = 0.0025
 			if _fog_mist:
 				_fog_mist.emitting = false
+				_set_fog_mat_alpha(_fog_mist, 0.22)
 			if _rain and _inside_hall == "":
 				_rain.emitting = true
 				if _rain_splash:
@@ -2419,6 +2437,7 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 			_fog_boost = 0.0
 			if _fog_mist:
 				_fog_mist.emitting = false
+				_set_fog_mat_alpha(_fog_mist, 0.22)
 			if _rain:
 				_rain.emitting = false
 				if _rain_splash:
@@ -2426,16 +2445,17 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				if _puddle_ripples:
 					_puddle_ripples.emitting = false
 	# Wave 26: weather cloud density (clear sparse · fog dense · rain medium)
+	# v1.84.2: only rewrite amount when it changes (CPUParticles rebuild hitch)
 	if _clouds:
 		match _weather_mode:
 			1:
-				_clouds.amount = 28
+				_set_cpu_amount_if(_clouds, 14)
 				_clouds.emitting = true
 			2:
-				_clouds.amount = 18
+				_set_cpu_amount_if(_clouds, 12)
 				_clouds.emitting = true
 			_:
-				_clouds.amount = 10
+				_set_cpu_amount_if(_clouds, 10)
 				_clouds.emitting = true
 		if _inside_hall != "":
 			_clouds.emitting = false
@@ -2443,12 +2463,18 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 		AudioBus.set_indoor_drip(drip_on)
 	if AudioBus.has_method("set_rain_audio"):
 		AudioBus.set_rain_audio(rain_on)
-	# Wave 46: edge fog denser in Fog weather
+	# Wave 46: edge fog denser in Fog weather (alpha/scale — not amount thrash)
 	for fx in _edge_fog_banks:
 		if fx == null or not is_instance_valid(fx):
 			continue
-		fx.amount = 34 if _weather_mode == 1 else 20
+		_set_cpu_amount_if(fx, 12 if _weather_mode == 1 else 10)
+		_set_fog_mat_alpha(fx, 0.30 if _weather_mode == 1 else 0.20)
+		fx.scale_amount_min = 1.25 if _weather_mode == 1 else 1.1
+		fx.scale_amount_max = 2.15 if _weather_mode == 1 else 1.9
 	weather_changed.emit(_weather_mode, _weather_label_cache)
+	# #region agent log
+	_agent_dbg_wx("C", "world.gd:_apply_weather_visuals", "weather_apply_end", {"mode": _weather_mode, "label": _weather_label_cache, "ms": Time.get_ticks_msec() - _wx_t0, "fog_emitting": _fog_mist != null and _fog_mist.emitting, "snowdust_on": _snowdust != null and _snowdust.emitting, "cloud_amt": _clouds.amount if _clouds else -1, "runId": "post-fix"})
+	# #endregion
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
 		match _weather_mode:
@@ -2458,6 +2484,39 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 				GameState.toast.emit("Weather cycle · Rain — gentle drops patter on the green.")
 			_:
 				GameState.toast.emit("Weather cycle · Clear — bright open skies settle soft over the village.")
+
+
+func _set_cpu_amount_if(p: CPUParticles3D, amt: int) -> void:
+	## Avoid CPUParticles3D.amount rebuilds — rewriting amount freezes the main thread (v1.84.2).
+	if p == null:
+		return
+	if p.amount != amt:
+		p.amount = amt
+
+
+func _set_fog_mat_alpha(p: CPUParticles3D, a: float) -> void:
+	if p == null:
+		return
+	var mat := p.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	var c: Color = mat.albedo_color
+	c.a = a
+	mat.albedo_color = c
+
+
+# #region agent log
+func _agent_dbg_wx(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
+	var path := "/opt/cursor/logs/debug.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
+	f.close()
+# #endregion
 
 
 func _update_quest_desk_highlights() -> void:
@@ -4524,14 +4583,15 @@ func _is_dusk_firefly_time() -> bool:
 
 func _setup_snowdust() -> void:
 	## Wave 47: soft snowdust motes in cold Fog outdoors (RuneScape-chunky, wholesome; off indoors).
+	## v1.84.2: lighter snowdust so Fog weather does not stall movement.
 	_snowdust = CPUParticles3D.new()
 	_snowdust.name = "ColdFogSnowdust"
 	_snowdust.emitting = false
-	_snowdust.amount = 36
+	_snowdust.amount = 18
 	_snowdust.lifetime = 4.2
-	_snowdust.preprocess = 1.5
+	_snowdust.preprocess = 0.8
 	_snowdust.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_snowdust.emission_box_extents = Vector3(9.5, 2.2, 9.5)
+	_snowdust.emission_box_extents = Vector3(8.0, 2.0, 8.0)
 	_snowdust.direction = Vector3(0.18, -0.35, 0.08)
 	_snowdust.spread = 48.0
 	_snowdust.initial_velocity_min = 0.15
