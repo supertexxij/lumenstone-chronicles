@@ -60,6 +60,7 @@ func _ready() -> void:
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
 	outfit_opt.item_selected.connect(func(_i): _refresh_preview())
 	_ensure_preview_row()
+	_ensure_first_hint()
 
 func _fill(opt: OptionButton, keys: Array) -> void:
 	opt.clear()
@@ -77,6 +78,10 @@ func open_new() -> void:
 	_select(cape_opt, "crimson")
 	_select(outfit_opt, "cream")
 	_refresh_preview()
+	_ensure_first_hint()
+	var hint: Label = get_node_or_null("Panel/VBox/FirstHint")
+	if hint:
+		hint.visible = true
 
 func open_wardrobe() -> void:
 	wardrobe_mode = true
@@ -89,6 +94,9 @@ func open_wardrobe() -> void:
 	_select(outfit_opt, GameState.appearance.get("outfit", "cream"))
 	_refresh_preview()
 	_play_wardrobe_flourish()  # Wave 34: soft open flourish
+	var hint: Label = get_node_or_null("Panel/VBox/FirstHint")
+	if hint:
+		hint.visible = false
 
 func _select(opt: OptionButton, key: String) -> void:
 	for i in opt.item_count:
@@ -246,6 +254,24 @@ func _play_wardrobe_equip_sparkle() -> void:
 		if is_instance_valid(host):
 			host.queue_free()
 	)
+
+func _ensure_first_hint() -> void:
+	var vbox: VBoxContainer = get_node_or_null("Panel/VBox")
+	if vbox == null:
+		return
+	if vbox.get_node_or_null("FirstHint") != null:
+		return
+	var hint := Label.new()
+	hint.name = "FirstHint"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.text = "After this you’ll stand by the fountain. Press J for Journal — it shows your next lesson. Talk to Steward Guide (gold hall) and press F."
+	PanelChrome.style_muted(hint, 13)
+	vbox.add_child(hint)
+	var ok_n: Node = vbox.get_node_or_null("OkBtn")
+	if ok_n:
+		vbox.move_child(hint, ok_n.get_index())
+
 
 func _play_wardrobe_close_flourish(done: Callable) -> void:
 	## Wave 48: soft wardrobe close flourish — gentle scale down + fade (RuneScape-chunky, wholesome).

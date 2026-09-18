@@ -996,8 +996,6 @@ func _enter_world() -> void:
 	if not GameState.hp_changed.is_connected(hud.set_hp):
 		GameState.hp_changed.connect(hud.set_hp)
 	AudioBus.start_ambient()
-	if GameState.has_method("maybe_daily_checkpoint_reminder"):
-		GameState.maybe_daily_checkpoint_reminder()
 	_play_load_toasts()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
@@ -1005,6 +1003,8 @@ func _enter_world() -> void:
 		_on_toast("Autosaved · %s" % lab)
 	else:
 		_on_toast("Autosaved · Slot %d" % (int(GameState.active_slot) + 1))
+	if GameState.has_method("maybe_daily_checkpoint_reminder"):
+		GameState.maybe_daily_checkpoint_reminder()
 
 func _play_load_toasts() -> void:
 	## Wave 50–77 + v1.78 refine once-per-save polish tips (PIN 1234; mastery ≥80%).
@@ -1020,8 +1020,14 @@ func _play_load_toasts() -> void:
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
-		"maybe_bugs_182_toast",
+		"maybe_bugs_182_toast", "maybe_curriculum_183_toast",
 	])
+	var early: bool = GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save()
+	if early and GameState.has_method("quiet_legacy_polish_toasts"):
+		GameState.quiet_legacy_polish_toasts()
+		if GameState.has_method("maybe_curriculum_183_toast"):
+			GameState.maybe_curriculum_183_toast()
+		return
 	for m in methods:
 		if not GameState.has_method(m):
 			continue

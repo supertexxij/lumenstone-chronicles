@@ -53,6 +53,7 @@ const ONCE_TOAST_FLAGS := [
 	"seen_refine_178_toast",
 	"seen_refine_181_toast",
 	"seen_bugs_182_toast",
+	"seen_curriculum_183_toast",
 ]
 
 
@@ -63,6 +64,16 @@ const GUILDS := {
 	"history": {"name": "Chronicle Keepers", "short": "History", "color": Color("#9b2226"), "lumen": "Crimson"},
 	"bible": {"name": "Word & Worship", "short": "Bible", "color": Color("#c9b037"), "lumen": "Silver"},
 }
+
+## Village mentors — used by Journal / NPC / Parent "what to do next" copy.
+const MENTORS := {
+	"math": {"name": "Master Builder", "hall": "Builder's Guild (gold hall)"},
+	"la": {"name": "Master Scribe", "hall": "Scribe's Guild (blue hall)"},
+	"science": {"name": "Steward of Creation", "hall": "Stewards of Creation (green hall)"},
+	"history": {"name": "Chronicle Keeper", "hall": "Chronicle Keepers (crimson hall)"},
+	"bible": {"name": "Steward Guide", "hall": "Word & Worship (gold Worship hall)"},
+}
+const DAILY_LESSON_GOAL := 2
 
 const SKIN_HEX := {"fair":"#ffe0bd","light":"#f1c27d","medium":"#c68642","tan":"#8d5524","deep":"#5c3317"}
 const HAIR_HEX := {"brown":"#5c4033","black":"#1a1a1a","blonde":"#d4a84b","auburn":"#8b3a2a","gray":"#8a8a8a"}
@@ -115,6 +126,7 @@ var seen_wave_77_toast: bool = false  # Wave 77: once-per-save polish tip toast 
 var seen_refine_178_toast: bool = false  # v1.78 refine: once-per-save look/HUD/Parent tip
 var seen_refine_181_toast: bool = false  # v1.81 UI: once-per-save menus/HUD/Parent tip
 var seen_bugs_182_toast: bool = false  # v1.82 bugs: once-per-save Esc/one-menu tip
+var seen_curriculum_183_toast: bool = false  # v1.83 curriculum: first-session / next-lesson tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -193,6 +205,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_aggro_tutorial = false
 	seen_combat_tutorial = false
 	_reset_once_toasts()
+	quiet_legacy_polish_toasts()
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -742,8 +755,13 @@ func get_parent_export_line() -> String:
 	var w: Dictionary = get_week_unlock_progress()
 	var q: Dictionary = get_quest_mastery_progress()
 	var help_n: int = needs_help_quests().size() if has_method("needs_help_quests") else 0
-	return "Week unlock %d/36 (%d%%) · Year mastery %d%% · Needs help: %d" % [
-		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0)), help_n
+	var day: Dictionary = get_school_day() if has_method("get_school_day") else {}
+	var today_bit := "Today %d/%d" % [int(day.get("done", 0)), int(day.get("goal", DAILY_LESSON_GOAL))]
+	var next_bit := str(day.get("next_title", "")).strip_edges()
+	if next_bit != "":
+		today_bit += " · next %s" % next_bit
+	return "Week unlock %d/36 (%d%%) · Year mastery %d%% · Needs help: %d · %s" % [
+		int(w.get("current", unlocked_week)), int(w.get("percent", 0)), int(q.get("percent", 0)), help_n, today_bit
 	]
 
 
@@ -912,6 +930,283 @@ func maybe_bugs_182_toast() -> bool:
 	return _maybe_once_toast("seen_bugs_182_toast", "Tip: one menu at a time. Esc closes it.")
 
 
+func maybe_curriculum_183_toast() -> bool:
+	## v1.83 curriculum: first-session / next-lesson tip (PIN stays 1234; mastery ≥80%).
+	var next: Dictionary = get_next_up()
+	var msg := "Welcome! Journal (J) shows your next lesson. Walk to a guild mentor and press F."
+	if str(next.get("quest_id", "")) != "":
+		msg = "Next lesson: talk to %s — %s. Journal (J) keeps this list." % [
+			str(next.get("mentor", "a guild mentor")), str(next.get("title", "your next lesson"))
+		]
+		if is_early_curriculum_save():
+			msg = "Welcome! Start with %s at %s — “%s”. Press J anytime to see what’s next." % [
+				str(next.get("mentor", "Steward Guide")),
+				str(next.get("hall", "Word & Worship")),
+				str(next.get("title", "The First Word")),
+			]
+	return _maybe_once_toast("seen_curriculum_183_toast", msg)
+
+
+func quiet_legacy_polish_toasts() -> void:
+	## New / early saves should not replay Wave 50–77 polish tips (first session stays about lessons).
+	for f in ONCE_TOAST_FLAGS:
+		if str(f) == "seen_curriculum_183_toast":
+			continue
+		set(f, true)
+
+
+func is_early_curriculum_save() -> bool:
+	return unlocked_week <= 1 and completed_quests.size() < 2
+
+
+func mentor_name(guild: String) -> String:
+	return str(MENTORS.get(guild, {}).get("name", GUILDS.get(guild, {}).get("name", "guild mentor")))
+
+
+func mentor_hall(guild: String) -> String:
+	return str(MENTORS.get(guild, {}).get("hall", GUILDS.get(guild, {}).get("name", "a guild hall")))
+
+
+func _is_raid_quest(qid: String, title: String = "") -> bool:
+	var idl := qid.to_lower()
+	var tl := title.to_lower()
+	return "raid" in idl or "feast" in idl or "supreme" in idl or "raid" in tl or "feast" in tl
+
+
+func _guild_lesson_rank(guild: String, qid: String, title: String) -> int:
+	if _is_raid_quest(qid, title):
+		return 50
+	match guild:
+		"bible":
+			return 0
+		"math":
+			return 1
+		"la":
+			return 2
+		"science":
+			return 3
+		"history":
+			return 4
+		_:
+			return 9
+
+
+func _short_quest_title(title: String, qid: String = "") -> String:
+	var t := title.strip_edges()
+	if t == "":
+		t = qid
+	if t.length() > 32:
+		return t.substr(0, 30) + "…"
+	return t
+
+
+func get_next_up() -> Dictionary:
+	## Single "what to do next" pick for Journal, NPC, Parent, and toasts.
+	var empty := {
+		"quest_id": "", "title": "", "week": unlocked_week, "day": 0, "guild": "",
+		"mentor": "", "hall": "", "status": "done", "percent": -1.0, "subject": "",
+		"raid": false,
+	}
+	var rows: Array = []
+	for q in QuestDB.all_quests():
+		if typeof(q) != TYPE_DICTIONARY:
+			continue
+		var qid: String = str(q.get("id", ""))
+		if qid == "":
+			continue
+		if qid in completed_quests:
+			continue
+		if not is_quest_unlocked(qid):
+			continue
+		var week_n: int = int(q.get("week", 1))
+		var day_n: int = int(q.get("day", 1))
+		var title_s: String = str(q.get("title", qid))
+		var guild_s: String = str(q.get("guild", ""))
+		var ap: float = get_latest_attempt_percent(qid) if has_method("get_latest_attempt_percent") else -1.0
+		var attempted: bool = ap >= 0.0
+		var raid: bool = _is_raid_quest(qid, title_s)
+		var rank := 3
+		if week_n == unlocked_week and attempted:
+			rank = 0
+		elif week_n == unlocked_week:
+			rank = 1
+		elif attempted:
+			rank = 2
+		if raid:
+			rank += 1
+		rows.append({
+			"q": q, "qid": qid, "rank": rank, "day": day_n, "week": week_n,
+			"gkey": _guild_lesson_rank(guild_s, qid, title_s), "pct": ap,
+			"title": title_s, "guild": guild_s, "raid": raid, "subject": str(q.get("subject_label", "")),
+		})
+	if rows.is_empty():
+		return empty
+	rows.sort_custom(func(a, b):
+		if int(a["rank"]) != int(b["rank"]):
+			return int(a["rank"]) < int(b["rank"])
+		if int(a["week"]) != int(b["week"]):
+			return int(a["week"]) < int(b["week"])
+		if int(a["day"]) != int(b["day"]):
+			return int(a["day"]) < int(b["day"])
+		if int(a["gkey"]) != int(b["gkey"]):
+			return int(a["gkey"]) < int(b["gkey"])
+		return str(a["title"]) < str(b["title"])
+	)
+	var pick: Dictionary = rows[0]
+	var q: Dictionary = pick["q"]
+	var guild_s: String = str(pick["guild"])
+	var ap2: float = float(pick["pct"])
+	var status := "practice" if ap2 >= 0.0 else "start"
+	if bool(pick["raid"]):
+		status = "raid"
+	return {
+		"quest_id": str(pick["qid"]),
+		"title": str(q.get("title", pick["qid"])),
+		"week": int(pick["week"]),
+		"day": int(pick["day"]),
+		"guild": guild_s,
+		"mentor": mentor_name(guild_s),
+		"hall": mentor_hall(guild_s),
+		"status": status,
+		"percent": ap2,
+		"subject": str(q.get("subject_label", "")),
+		"raid": bool(pick["raid"]),
+	}
+
+
+func get_next_up_line() -> String:
+	var n: Dictionary = get_next_up()
+	if str(n.get("quest_id", "")) == "":
+		if unlocked_week >= 36:
+			return "All open lessons mastered ★. Festival of Lumens awaits!"
+		return "This week’s open lessons are mastered ★. The Friday Raid (or 4★) opens the next week."
+	var title_s := _short_quest_title(str(n.get("title", "")), str(n.get("quest_id", "")))
+	var mentor_s := str(n.get("mentor", "a guild mentor"))
+	match str(n.get("status", "start")):
+		"practice":
+			var pct: int = percent_to_int(float(n.get("percent", 0.0)))
+			return "Next: practice again with %s — %s (%d%%, need 80%%)." % [mentor_s, title_s, pct]
+		"raid":
+			return "Next: Friday Raid with %s — %s (80%% unlocks next week)." % [mentor_s, title_s]
+		_:
+			return "Next: talk to %s — %s" % [mentor_s, title_s]
+
+
+func get_school_day() -> Dictionary:
+	## Calendar-day lesson goal (usually 2) so a school sitting feels on track.
+	_roll_daily_checkpoint()
+	var week_n: int = clampi(unlocked_week, 1, 36)
+	var open_n := 0
+	var week_total := 0
+	var week_mastered := 0
+	var suggested_day := 99
+	for q in QuestDB.quests_for_week(week_n) if QuestDB.has_method("quests_for_week") else []:
+		week_total += 1
+		var qid: String = str(q.get("id", ""))
+		if qid in completed_quests:
+			week_mastered += 1
+		else:
+			open_n += 1
+			suggested_day = mini(suggested_day, int(q.get("day", 1)))
+	if suggested_day == 99:
+		suggested_day = 5
+	var ids: Array = _mastered_today_ids()
+	var done: int = ids.size()
+	var goal: int = DAILY_LESSON_GOAL
+	if open_n <= 0:
+		goal = 0
+	else:
+		goal = clampi(mini(DAILY_LESSON_GOAL, open_n), 1, DAILY_LESSON_GOAL)
+	var complete: bool = (open_n <= 0) or (done >= goal and goal > 0)
+	var next: Dictionary = get_next_up()
+	return {
+		"week": week_n,
+		"day": suggested_day,
+		"done": done,
+		"goal": goal,
+		"open": open_n,
+		"week_mastered": week_mastered,
+		"week_total": week_total,
+		"complete": complete,
+		"next_id": str(next.get("quest_id", "")),
+		"next_title": str(next.get("title", "")),
+		"next_mentor": str(next.get("mentor", "")),
+	}
+
+
+func get_school_day_line() -> String:
+	var d: Dictionary = get_school_day()
+	var week_n: int = int(d.get("week", unlocked_week))
+	var done: int = int(d.get("done", 0))
+	var goal: int = int(d.get("goal", DAILY_LESSON_GOAL))
+	if int(d.get("open", 1)) <= 0:
+		return "Today’s school day ★ Week %d is mastered. Parent can see Needs Help." % week_n
+	if bool(d.get("complete", false)):
+		return "Today’s school day ★ %d/%d lessons — on track. Well done!" % [done, maxi(goal, done)]
+	return "Today’s school day · Week %d · %d/%d lessons" % [week_n, done, maxi(1, goal)]
+
+
+func format_needs_help_row(h: Dictionary) -> String:
+	## Actionable parent line: week, subject, score, who to sit with.
+	var q: Dictionary = QuestDB.get_quest(str(h.get("quest_id", "")))
+	var week_n: int = int(q.get("week", h.get("week", 0)))
+	var guild: String = str(q.get("guild", h.get("guild", "")))
+	var guild_short: String = str(GUILDS.get(guild, {}).get("short", guild)).to_upper()
+	var title_s := _short_quest_title(str(h.get("title", q.get("title", h.get("quest_id", "?")))), str(h.get("quest_id", "")))
+	var pct: int = percent_to_int(float(h.get("percent", 0))) if has_method("percent_to_int") else int(round(float(h.get("percent", 0)) * 100.0))
+	var mentor_s := mentor_name(guild)
+	return "WEEK %d · %s — %s · %d%% (%d/%d) · Sit with %s" % [
+		week_n, guild_short, title_s, pct, int(h.get("correct", 0)), int(h.get("total", 0)), mentor_s
+	]
+
+
+func _roll_daily_checkpoint() -> void:
+	var today := Time.get_date_string_from_system()
+	if checkpoint_date == today:
+		if typeof(checkpoint_checks) != TYPE_DICTIONARY:
+			checkpoint_checks = {}
+		if not checkpoint_checks.has("mastered_ids"):
+			checkpoint_checks["mastered_ids"] = []
+		return
+	checkpoint_date = today
+	checkpoint_checks = {"mastered_ids": [], "week": unlocked_week}
+
+
+func _mastered_today_ids() -> Array:
+	if typeof(checkpoint_checks) != TYPE_DICTIONARY:
+		return []
+	var raw = checkpoint_checks.get("mastered_ids", [])
+	var out: Array = []
+	if typeof(raw) == TYPE_ARRAY:
+		for v in raw:
+			var s := str(v)
+			if s != "" and s not in out:
+				out.append(s)
+	return out
+
+
+func note_quest_for_checkpoint(quest_id: String, mastered: bool) -> Dictionary:
+	_roll_daily_checkpoint()
+	var ids: Array = _mastered_today_ids()
+	var done_before: int = ids.size()
+	if mastered and quest_id != "" and quest_id not in ids:
+		ids.append(quest_id)
+	checkpoint_checks["mastered_ids"] = ids
+	checkpoint_checks["week"] = unlocked_week
+	var after: Dictionary = get_school_day()
+	var goal: int = int(after.get("goal", DAILY_LESSON_GOAL))
+	if goal <= 0:
+		goal = DAILY_LESSON_GOAL
+	var done_after: int = ids.size()
+	var crossed: bool = mastered and done_before < goal and done_after >= goal
+	return {
+		"crossed_goal": crossed,
+		"complete": bool(after.get("complete", false)) or crossed,
+		"done": done_after,
+		"goal": goal,
+	}
+
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -943,12 +1238,16 @@ func maybe_festival_decade(pct: int) -> bool:
 
 
 func maybe_daily_checkpoint_reminder() -> void:
-	## Wave 71: clearer once-per-calendar-day toast pointing parents to the short checkpoint (PIN stays 1234).
+	## Wave 71 / v1.83: once-per-calendar-day toast for the school-day checkpoint (PIN stays 1234).
+	_roll_daily_checkpoint()
 	var today := Time.get_date_string_from_system()
 	if last_daily_reminder_date == today:
 		return
 	last_daily_reminder_date = today
-	toast.emit("Daily checkpoint · open Parent to see today’s progress.")
+	var day_line := get_school_day_line()
+	var next_line := get_next_up_line()
+	# Keep "Daily checkpoint · open Parent" so older smoke scans still pass.
+	toast.emit("Daily checkpoint · open Parent or Journal (J). " + day_line + ". " + next_line)
 	save_game()
 
 
@@ -1237,21 +1536,22 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 			if (not is_food) and req > 0 and combat_level < req:
 				continue
 			unlock_item(str(iid))
-		# Wave 56/73: clearer quest complete toast with short title + week (RuneScape-chunky, wholesome)
+		# Wave 56/73 / v1.83: quest complete toast names the next lesson in plain words.
 		var week_n: int = int(quest.get("week", unlocked_week))
-		var short_title := str(quest.get("title", quest_id)).strip_edges()
-		if short_title.length() > 28:
-			short_title = short_title.substr(0, 26) + "…"
-		toast.emit("Quest complete · %s · Week %d ★" % [short_title, week_n])
+		var short_title := _short_quest_title(str(quest.get("title", quest_id)), quest_id)
+		var check: Dictionary = note_quest_for_checkpoint(quest_id, true)
+		_recalc_unlocked_week()
+		var next_line := get_next_up_line()
+		toast.emit("Quest complete · %s · Week %d ★. " % [short_title, week_n] + next_line)
+		if bool(check.get("crossed_goal", false)):
+			toast.emit("School day on track ★ · %d lessons today. Open Parent to see Needs Help." % int(check.get("done", 0)))
 		quest_mastered.emit(quest_id)
 		AudioBus.play_quest_complete()
-		_recalc_unlocked_week()
 	else:
-		# Wave 68: clearer near-miss toast with quest short title (RuneScape-chunky, wholesome)
-		var short_title := str(quest.get("title", quest_id)).strip_edges()
-		if short_title.length() > 28:
-			short_title = short_title.substr(0, 26) + "…"
-		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Retry anytime!" % [short_title, percent_to_int(pct)])
+		# Wave 68 / v1.83: near-miss toast + Needs Help pointer (Near miss — mastery smoke marker).
+		var short_title := _short_quest_title(str(quest.get("title", quest_id)), quest_id)
+		note_quest_for_checkpoint(quest_id, false)
+		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Try the same mentor again — Parent shows Needs Help." % [short_title, percent_to_int(pct)])
 		if AudioBus.has_method("play_quest_near_miss"):
 			AudioBus.play_quest_near_miss()  # Wave 54: softer than mastery chime
 	save_game()
@@ -1295,7 +1595,18 @@ func needs_help_quests() -> Array:
 		var a = latest[qid]
 		if not a.get("mastered", false):
 			var q: Dictionary = QuestDB.get_quest(qid)
-			help.append({"quest_id": qid, "title": q.get("title", qid), "percent": a.get("percent", 0), "correct": a.get("correct", 0), "total": a.get("total", 0), "timestamp": int(a.get("timestamp", 0))})  # Wave 67: days-since for parent Needs Help
+			var guild_s: String = str(q.get("guild", ""))
+			help.append({
+				"quest_id": qid,
+				"title": q.get("title", qid),
+				"percent": a.get("percent", 0),
+				"correct": a.get("correct", 0),
+				"total": a.get("total", 0),
+				"timestamp": int(a.get("timestamp", 0)),
+				"week": int(q.get("week", 0)),
+				"guild": guild_s,
+				"mentor": mentor_name(guild_s),
+			})  # Wave 67: days-since for parent Needs Help
 	return help
 
 func verify_pin(pin: String) -> bool:
@@ -1339,7 +1650,7 @@ func _recalc_unlocked_week() -> void:
 	if unlocked_week > prev:
 		# Wave 23: include year progress % so the learning loop feels paced
 		var year_pct: int = int(round(float(unlocked_week) / 36.0 * 100.0))
-		toast.emit("Campaign Week %d unlocked! (~%d%% of the year). Visit the guild halls." % [unlocked_week, year_pct])
+		toast.emit("Week %d is open! New lessons wait at the five guild halls (~%d%% of the year)." % [unlocked_week, year_pct])
 		# Wave 40: soft milestone toast every 5 weeks unlocked (RuneScape-chunky, wholesome)
 		if unlocked_week % 5 == 0 and unlocked_week < 36:
 			toast.emit("✦ Milestone · Week %d unlocked — a soft fifth-mark (~%d%% of the year). Well done!" % [unlocked_week, year_pct])

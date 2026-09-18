@@ -113,7 +113,7 @@ func _ensure_start_guide() -> void:
 		PanelChrome.style_muted(subtitle, 14)
 	var blurb: Label = vbox.get_node_or_null("Blurb")
 	if blurb:
-		blurb.text = "Grown-ups: Parent dashboard is in the game (PIN 1234)."
+		blurb.text = "Grown-ups: Parent dashboard is in the game (PIN 1234). Needs Help shows where to sit together."
 		PanelChrome.style_muted(blurb, 13)
 	if vbox.get_node_or_null("StartGuide") != null:
 		return
@@ -121,7 +121,7 @@ func _ensure_start_guide() -> void:
 	guide.name = "StartGuide"
 	guide.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	guide.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	guide.text = "How to start: Continue a save, or press Start on an empty slot."
+	guide.text = "How to start: Continue a save, or press Start on an empty slot. New? Journal (J) will show your next lesson — begin with Steward Guide (gold Worship hall)."
 	PanelChrome.style_body(guide, 15)
 	vbox.add_child(guide)
 	var slots_n: Node = vbox.get_node_or_null("Slots")

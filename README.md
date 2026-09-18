@@ -171,7 +171,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
 - Character customize (skin / hair / cape / outfit) with **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
 - Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + held weapon + cloak/armor overlays** when equipped
-- **Quest journal (J)** — available/completed by week + progress toward next unlock
+- **Quest journal (J)** — **Next up** lesson, today’s school-day checkpoint, available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
 - RuneScape-style **tick combat** with clearer hitsplats, player weapon swing pose, enemy flinch + death dissolve, soft wild aggro, wholesome defeat verbs, soft respawn
 - Wild edges: Lost Lantern Wisp, Shadow Moth, Briar Boar, Dust Golem, Moss Badger, Cedar Stag, Pine Fox, Oak Hare, Birch Squirrel, Aspen Otter
@@ -225,6 +225,17 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.83.0-curriculum — school-day feel
+
+Curriculum-feel pass so a Grade 3 player and a glancing parent can see **what to do next**. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; 36-week quest JSON is not rewritten (tiny Week 1 first-lesson hook only); navmesh, tick combat, and save keys unchanged (`checkpoint_checks` / `checkpoint_date` now drive the school-day loop).
+
+- **Journal Next up:** sticky “talk to [mentor] — [lesson]” with hall, status, and a `← next` row auto-selected. Detail says what to do (talk / retry / locked).
+- **Daily checkpoint:** two lessons make a school day on track. Reminder toast, Journal line, and Parent daily line share the same count. Completing the goal toasts “School day on track ★”.
+- **Parent Needs Help:** rows are `WEEK N · SUBJECT — title · % (score) · Sit with [mentor]` plus days since last try. Hero card names the weakest lesson.
+- **Mastery / unlock wording:** quest complete names the next lesson; near-miss points at the same mentor and Needs Help; week unlock says “Week N is open!”
+- **First session:** new saves skip Wave 50–77 polish-toast spam. Title + create-apprentice + welcome toast point at Journal (J) and Steward Guide. NPC list auto-picks the next lesson and the button says **Start this lesson**.
+- Re-export Linux + Windows when shipping a build
 
 ### v1.82.0-bugs — bugs / confusion
 

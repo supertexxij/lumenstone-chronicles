@@ -34,6 +34,7 @@ var _copy_btn: Button
 var _next_lbl: Label
 var _lumen_lbl: Label
 var _meta_lbl: Label
+var _daily_lbl: Label
 
 const CAMPAIGN_RANGES := [
 	{"title": "I · Kindling (1–9)", "lo": 1, "hi": 9},
@@ -192,7 +193,22 @@ func _refresh() -> void:
 		_hero_mastery.text = "QUEST MASTERY\n%d%%  ·  %d★\n%d / %d mastered" % [mastery_pct, mastered, mastered, total_q]
 	if _hero_help:
 		if help_n > 0:
-			_hero_help.text = "NEEDS HELP\n%d\nOldest attempt first" % help_n
+			var first_h: Dictionary = help_preview[0] if help_preview.size() > 0 else {}
+			# Oldest-first is applied later; here pick the weakest score for the card.
+			var worst: Dictionary = first_h
+			var worst_pct: float = 1.0
+			for h in help_preview:
+				var p: float = float(h.get("percent", 1.0))
+				if p < worst_pct:
+					worst_pct = p
+					worst = h
+			var wtitle: String = str(worst.get("title", "a lesson"))
+			if wtitle.length() > 28:
+				wtitle = wtitle.substr(0, 26) + "…"
+			var wpct: int = GameState.percent_to_int(float(worst.get("percent", 0))) if GameState.has_method("percent_to_int") else int(round(float(worst.get("percent", 0)) * 100.0))
+			var wweek: int = int(worst.get("week", 0))
+			var wguild: String = str(GameState.GUILDS.get(str(worst.get("guild", "")), {}).get("short", worst.get("guild", ""))).to_upper()
+			_hero_help.text = "NEEDS HELP\n%d · start with W%d %s\n%s (%d%%)" % [help_n, wweek, wguild, wtitle, wpct]
 			_hero_help.add_theme_color_override("font_color", Color(0.95, 0.72, 0.32, 1.0))
 		else:
 			_hero_help.text = "NEEDS HELP\nAll clear ★\nWonderful work together"
@@ -201,13 +217,18 @@ func _refresh() -> void:
 		_copy_edit.text = export_line
 	if _next_lbl:
 		_next_lbl.text = "Next: %s" % next_gate
+	if _daily_lbl and GameState.has_method("get_school_day_line"):
+		var day: Dictionary = GameState.get_school_day() if GameState.has_method("get_school_day") else {}
+		var next_up := GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else ""
+		_daily_lbl.text = GameState.get_school_day_line() + "\n" + next_up
+		if bool(day.get("complete", false)):
+			_daily_lbl.add_theme_color_override("font_color", Color(0.72, 0.88, 0.52, 1.0))
+		else:
+			_daily_lbl.add_theme_color_override("font_color", Color(0.99, 0.88, 0.48, 1.0))
 	if _lumen_lbl:
 		_lumen_lbl.text = "Lumens  %s" % " · ".join(lumen_bits)
 	# Keep a short skim in Summary so existing smoke strings still live here.
-	summary.text = "[b]%s[/b] · Slot %d · %s\n%s\n%s · %s\n%s" % [
-		child_line, GameState.active_slot + 1, last_sess,
-		help_bit, year_note, week_bar, mastery_bar
-	]
+	summary.text = "[b]" + child_line + "[/b] · Slot %d · %s\n" % [GameState.active_slot + 1, last_sess] + help_bit + "\n" + year_note + " · " + week_bar + "\n" + mastery_bar
 	summary.visible = false
 	summary.custom_minimum_size = Vector2(0, 0)
 	summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -222,7 +243,7 @@ func _refresh() -> void:
 			help_title.text = "Needs Help — all clear right now ★"
 			help_title.remove_theme_color_override("font_color")
 		else:
-			help_title.text = "Needs Help — %d item%s (oldest attempt first)" % [help.size(), "" if help.size() == 1 else "s"]
+			help_title.text = "Needs Help — %d item%s (oldest attempt first). Sit with the named mentor." % [help.size(), "" if help.size() == 1 else "s"]
 			# Wave 49: warm amber highlight when needs-help count > 0
 			help_title.add_theme_color_override("font_color", Color(0.92, 0.64, 0.18))
 	if help.is_empty():
@@ -240,10 +261,12 @@ func _refresh() -> void:
 			var pct: int = GameState.percent_to_int(float(h.get("percent", 0))) if GameState.has_method("percent_to_int") else int(round(float(h.get("percent", 0)) * 100.0))
 			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
 			var age: String = _days_since_attempt(int(h.get("timestamp", 0)))
-			var line: String = "WEEK %d · %s · %s  %d/%d (%d%%)  ·  %s" % [
+			var line: String = GameState.format_needs_help_row(h) if GameState.has_method("format_needs_help_row") else "WEEK %d · %s · %s  %d/%d (%d%%)  ·  %s" % [
 				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct, age
-			]  # Wave 67: days-since last attempt (PIN stays 1234; mastery ≥80%)
+			]
+			if GameState.has_method("format_needs_help_row"):
+				line = line + " · " + age
 			help_list.add_item(line)
 
 func _ensure_campaign_tabs() -> void:
@@ -566,6 +589,7 @@ func _ensure_hero_row() -> void:
 		_copy_edit = _copy_row.get_node_or_null("CopyEdit") if _copy_row else null
 		_copy_btn = _copy_row.get_node_or_null("CopyBtn") if _copy_row else null
 		_next_lbl = content.get_node_or_null("NextLbl")
+		_daily_lbl = content.get_node_or_null("DailyLbl")
 		_lumen_lbl = content.get_node_or_null("LumenLbl")
 		_meta_lbl = content.get_node_or_null("MetaLbl")
 		return
@@ -612,12 +636,18 @@ func _ensure_hero_row() -> void:
 	PanelChrome.style_body(_next_lbl, 14)
 	content.add_child(_next_lbl)
 	content.move_child(_next_lbl, _copy_row.get_index() + 1)
+	_daily_lbl = Label.new()
+	_daily_lbl.name = "DailyLbl"
+	_daily_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	PanelChrome.style_body(_daily_lbl, 15)
+	content.add_child(_daily_lbl)
+	content.move_child(_daily_lbl, _next_lbl.get_index() + 1)
 	_lumen_lbl = Label.new()
 	_lumen_lbl.name = "LumenLbl"
 	_lumen_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	PanelChrome.style_muted(_lumen_lbl, 13)
 	content.add_child(_lumen_lbl)
-	content.move_child(_lumen_lbl, _next_lbl.get_index() + 1)
+	content.move_child(_lumen_lbl, _daily_lbl.get_index() + 1)
 
 
 func _make_hero_card(host: HBoxContainer, panel_name: String, label_name: String, fallback: String) -> Label:

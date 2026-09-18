@@ -13,6 +13,8 @@ signal closed
 var _filter: String = "current"  # current | available | completed | all
 var _open_only: bool = false  # Wave 52: Open-only toggle (unlocked & not mastered)
 var _open_only_btn: CheckButton = null
+var _next_up: RichTextLabel = null
+var _daily_lbl: Label = null
 
 func _ready() -> void:
 	PanelChrome.apply_overlay(self)
@@ -31,6 +33,7 @@ func _ready() -> void:
 	filter_opt.item_selected.connect(_on_filter)
 	list.item_selected.connect(_on_select)
 	_ensure_open_only_toggle()
+	_ensure_next_up()
 
 func _ensure_open_only_toggle() -> void:
 	## Wave 52: Open-only filter toggle in journal FilterRow (PIN 1234; mastery ≥80% unchanged).
@@ -68,10 +71,40 @@ func open() -> void:
 	if "journal_open_only" in GameState:
 		_open_only = bool(GameState.journal_open_only)
 	_ensure_open_only_toggle()
+	_ensure_next_up()
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):
 		_open_only_btn.set_pressed_no_signal(_open_only)
 	refresh()
 	_play_journal_open_flourish()  # Wave 51: clearer journal open flourish
+
+
+func _ensure_next_up() -> void:
+	## v1.83: sticky Next-up + school-day lines so a Grade 3 player can see what to do.
+	var vbox: VBoxContainer = get_node_or_null("Panel/VBox")
+	if vbox == null:
+		return
+	if vbox.get_node_or_null("NextUp") != null:
+		_next_up = vbox.get_node("NextUp")
+		_daily_lbl = vbox.get_node_or_null("DailyLbl")
+		return
+	_next_up = RichTextLabel.new()
+	_next_up.name = "NextUp"
+	_next_up.bbcode_enabled = true
+	_next_up.fit_content = true
+	_next_up.scroll_active = false
+	_next_up.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_next_up.custom_minimum_size = Vector2(0, 64)
+	vbox.add_child(_next_up)
+	var title_n: Node = vbox.get_node_or_null("Title")
+	if title_n:
+		vbox.move_child(_next_up, title_n.get_index() + 1)
+	_daily_lbl = Label.new()
+	_daily_lbl.name = "DailyLbl"
+	_daily_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_daily_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	PanelChrome.style_body(_daily_lbl, 14)
+	vbox.add_child(_daily_lbl)
+	vbox.move_child(_daily_lbl, _next_up.get_index() + 1)
 
 
 func _play_journal_open_flourish() -> void:
@@ -122,8 +155,12 @@ func refresh() -> void:
 		else:
 			_open_only_btn.text = "Open only · %d" % open_n
 	progress_lbl.text = _unlock_progress_text(uw)
+	_refresh_next_up()
 	list.clear()
 	detail.text = "Select a quest."
+	var next_id := ""
+	if GameState.has_method("get_next_up"):
+		next_id = str(GameState.get_next_up().get("quest_id", ""))
 	var quests: Array = _collect_quests()
 	quests.sort_custom(func(a, b):
 		# Wave 36: when browsing all, group Available → Mastered → Locked for section headers
@@ -180,10 +217,13 @@ func refresh() -> void:
 			var ap: float = float(GameState.get_latest_attempt_percent(qid))
 			if ap >= 0.0:
 				pct_tag = " · %d%%" % (GameState.percent_to_int(ap) if GameState.has_method("percent_to_int") else int(round(ap * 100.0)))
-		list.add_item("W%d %s [%s] %s%s%s" % [week_n, mark, gname, title_s, raid_tag, pct_tag])
+		var next_tag := "  ← next" if (qid == next_id and unlocked and not done) else ""
+		list.add_item("W%d %s [%s] %s%s%s%s" % [week_n, mark, gname, title_s, raid_tag, pct_tag, next_tag])
 		list.set_item_metadata(list.item_count - 1, qid)
 		if not unlocked:
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.55, 0.55, 0.6))
+		elif qid == next_id and not done:
+			list.set_item_custom_fg_color(list.item_count - 1, Color(1.0, 0.90, 0.42))
 		elif is_raid and not done:
 			# Wave 23/42: brighter gold so next Friday Raid Review stands out more
 			list.set_item_custom_fg_color(list.item_count - 1, Color(1.0, 0.86, 0.22))
@@ -194,6 +234,7 @@ func refresh() -> void:
 		elif pct_tag != "":
 			# Soft amber for attempted-not-mastered with %
 			list.set_item_custom_fg_color(list.item_count - 1, Color(0.85, 0.72, 0.42))
+	_select_next_up_row(next_id)
 
 func _collect_quests() -> Array:
 	var out: Array = []
@@ -370,6 +411,56 @@ func _is_friday_raid(qid: String, title: String = "") -> bool:
 func _all_raw() -> Array:
 	return QuestDB.all_quests()
 
+
+func _refresh_next_up() -> void:
+	_ensure_next_up()
+	if _next_up == null:
+		return
+	var n: Dictionary = GameState.get_next_up() if GameState.has_method("get_next_up") else {}
+	var qid: String = str(n.get("quest_id", ""))
+	if qid == "":
+		_next_up.text = "[b]Next up[/b]\n" + (GameState.get_next_up_line() if GameState.has_method("get_next_up_line") else "All open lessons mastered ★")
+	else:
+		var how := "Walk to %s, press F, pick this lesson, then Start." % str(n.get("mentor", "the mentor"))
+		var status_s := "Not started yet"
+		if str(n.get("status", "")) == "practice":
+			var pct: int = GameState.percent_to_int(float(n.get("percent", 0.0))) if GameState.has_method("percent_to_int") else int(round(float(n.get("percent", 0.0)) * 100.0))
+			status_s = "Needs practice · %d%% (need 80%%)" % pct
+			how = "Talk to %s again and retry this lesson." % str(n.get("mentor", "the mentor"))
+		elif str(n.get("status", "")) == "raid":
+			status_s = "Friday Raid · 80% unlocks next week"
+		var first := ""
+		if GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save() and str(n.get("guild", "")) == "bible":
+			first = "\nNew here? Start at the gold Worship hall."
+		_next_up.text = "[b]Next up[/b]  talk to [color=#e8c44a]%s[/color] — [b]%s[/b]\n" % [
+			str(n.get("mentor", "a guild mentor")),
+			str(n.get("title", qid)),
+		] + status_s + " · Week %d · %s\n" % [int(n.get("week", 1)), str(n.get("hall", ""))] + how + first
+	if _daily_lbl:
+		var day_line := GameState.get_school_day_line() if GameState.has_method("get_school_day_line") else ""
+		_daily_lbl.text = day_line
+		var d: Dictionary = GameState.get_school_day() if GameState.has_method("get_school_day") else {}
+		if bool(d.get("complete", false)):
+			_daily_lbl.add_theme_color_override("font_color", Color(0.72, 0.88, 0.52, 1.0))
+		else:
+			_daily_lbl.add_theme_color_override("font_color", Color(0.99, 0.90, 0.55, 1.0))
+
+
+func _select_next_up_row(next_id: String) -> void:
+	if next_id == "" or list.item_count <= 0:
+		return
+	for i in list.item_count:
+		if list.is_item_disabled(i):
+			continue
+		if str(list.get_item_metadata(i)) == next_id:
+			list.select(i)
+			_on_select(i)
+			return
+	if list.item_count > 0 and not list.is_item_disabled(0):
+		list.select(0)
+		_on_select(0)
+
+
 func _on_select(idx: int) -> void:
 	if idx < 0 or list.is_item_disabled(idx):
 		detail.text = "Select a quest."
@@ -381,24 +472,31 @@ func _on_select(idx: int) -> void:
 	var q: Dictionary = QuestDB.get_quest(qid)
 	var done: bool = qid in GameState.completed_quests
 	var unlocked: bool = GameState.is_quest_unlocked(qid)
-	var status := "Mastered ★" if done else ("Available — talk to the guild NPC" if unlocked else "Locked")
+	var guild: String = str(q.get("guild", ""))
+	var gfull: String = str(GameState.GUILDS.get(guild, {}).get("name", guild))
+	var mentor := GameState.mentor_name(guild) if GameState.has_method("mentor_name") else gfull
+	var hall := GameState.mentor_hall(guild) if GameState.has_method("mentor_hall") else gfull
+	var status := "Mastered ★" if done else ("Available — talk to %s" % mentor if unlocked else "Locked")
+	var do_next := ""
+	if done:
+		do_next = "Done. Journal Next up shows the following lesson."
+	elif not unlocked:
+		do_next = "Locked until this week opens (Friday Raid at ≥80%, or 4★ this week)."
+	else:
+		do_next = "What to do: talk to %s at %s, pick this lesson, press Start. Score 80%% or more to master." % [mentor, hall]
 	if (not done) and unlocked and GameState.has_method("get_latest_attempt_percent"):
 		var ap2: float = float(GameState.get_latest_attempt_percent(qid))
 		if ap2 >= 0.0:
-			status = "Attempted — mastery %d%% (need ≥80%%)" % (GameState.percent_to_int(ap2) if GameState.has_method("percent_to_int") else int(round(ap2 * 100.0)))
-	var guild: String = str(q.get("guild", ""))
-	var gfull: String = str(GameState.GUILDS.get(guild, {}).get("name", guild))
+			status = "Needs practice — %d%% (need ≥80%%)" % (GameState.percent_to_int(ap2) if GameState.has_method("percent_to_int") else int(round(ap2 * 100.0)))
+			do_next = "What to do: talk to %s again and retry. Grown-ups see this under Parent → Needs Help." % mentor
 	var raid_note := ""
 	if _is_friday_raid(qid, str(q.get("title", ""))):
 		raid_note = "\n\n[color=#e8c44a]★ Friday Raid Review[/color] — master at ≥80% to unlock the next week (or master 4+ quests this week)."
-	detail.text = "[b]%s[/b]\nWeek %d · %s\nStatus: %s%s\n\n%s" % [
+	detail.text = "[b]%s[/b]\nWeek %d · %s\nStatus: " % [
 		q.get("title", qid),
 		int(q.get("week", 1)),
 		gfull,
-		status,
-		raid_note,
-		q.get("hook", q.get("description", "")),
-	]
+	] + status + "\n" + do_next + raid_note + "\n\n" + str(q.get("hook", q.get("description", "")))
 
 
 func _count_campaign_mastered(week: int) -> int:
