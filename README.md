@@ -226,10 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
-### v1.84.1-celebrate — animated unicorn art party
+### v1.84.1-celebrate — 3D mesh unicorn party (longer-than-wide)
 
-- Week-complete party now uses the player-provided MLP unicorn illustration as **billboard AnimatedSprite3D** dancers (6-frame prance sheet, hop orbit, flip, soft tint)
-- Sheet: `assets/vfx/party_unicorn_dance_sheet.png`
+- Week-complete party uses the original soft **3D mesh** unicorns again (2D cartoon art billboards removed)
+- Body capsule pitched nose→tail (`Vector3(90,0,0)`), longer than wide (`0.14×0.92`)
 
 ### v1.84.0-celebrate — quest fireworks & unicorn week party
 

@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless smoke: week unicorn party signal + celebrate source markers (v1.84).
+## Headless smoke: week unicorn party signal + 3D mesh celebrate markers (v1.84).
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -17,21 +17,20 @@ func _run() -> void:
 	assert("_spawn_firework_burst" in world_src)
 	assert("_play_week_unicorn_party" in world_src)
 	assert("_dance_unicorn" in world_src)
-	assert("_make_party_unicorn_sprite" in world_src)
-	assert("_set_party_unicorn_frame" in world_src)
-	assert("party_unicorn_frame_%d.png" in world_src)
-	assert("BILLBOARD_FIXED_Y" in world_src)
-	assert("TRANSPARENCY_ALPHA_SCISSOR" in world_src)
-	assert("_party_unicorn_frames_loaded" in world_src)
+	assert("CreatureBuilder.build" in world_src)
+	assert("colorize_party_unicorn" in world_src)
+	assert("atan2(-cos" in world_src)
 	assert("week_advanced.is_connected" in world_src)
 	assert("play_firework_pop" in audio_src and "play_unicorn_party" in audio_src)
 	assert("party_unicorn" in creature_src and "_build_party_unicorn" in creature_src)
 	assert("Horn" in creature_src and "ManeA" in creature_src and "Forelock" in creature_src and "Muzzle" in creature_src)
 	assert("EyeWhiteL" in creature_src and "IrisL" in creature_src and "ShineL" in creature_src)
 	assert("colorize_party_unicorn" in creature_src)
-	assert(FileAccess.file_exists("res://assets/vfx/party_unicorn_frame_0.png"))
-	assert(FileAccess.file_exists("res://assets/vfx/party_unicorn_frame_5.png"))
-	assert(FileAccess.file_exists("res://assets/vfx/party_unicorn_art.png"))
+	assert("_soft_capsule(0.14, 0.92)" in creature_src)
+	assert("Vector3(90, 0, 0)" in creature_src)
+	# 2D cartoon art path must be gone from the party
+	assert("_make_party_unicorn_sprite" not in world_src)
+	assert("party_unicorn_frame_" not in world_src)
 	print("SOURCE_OK")
 
 	var gs: Node = get_root().get_node_or_null("/root/GameState")

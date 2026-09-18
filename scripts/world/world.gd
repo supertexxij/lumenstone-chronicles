@@ -4956,7 +4956,7 @@ func _spawn_firework_burst(anchor: Node3D, local_pos: Vector3, col: Color, play_
 
 
 func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> void:
-	## v1.84: after a week assignment unlocks the next week, animated unicorn art dances around the apprentice.
+	## v1.84: after a week assignment unlocks the next week, 3D mesh unicorns dance around the apprentice.
 	if HeadlessGuard.is_headless():
 		return
 	var anchor: Node3D = player
@@ -4971,32 +4971,33 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	# Keep party in world space near the player (not parented to moving mesh root forever)
 	add_child(party)
 	party.global_position = anchor.global_position
-	if not _party_unicorn_frames_loaded():
-		return
-	# Soft coat tints — art already has a rainbow mane; keep modulate gentle
-	var tints: Array = [
-		Color(1.0, 1.0, 1.0),
-		Color(1.0, 0.88, 0.95),
-		Color(0.88, 0.94, 1.0),
-		Color(0.95, 0.9, 1.0),
-		Color(1.0, 0.95, 0.85),
-		Color(0.88, 1.0, 0.92),
+	var palette: Array = [
+		# Soft coat + vivid contrasting mane
+		[Color("#ffb6d9"), Color("#ff4fa3")],  # pink / hot-pink
+		[Color("#b8e0ff"), Color("#4a7dff")],  # sky / blue
+		[Color("#d4b8ff"), Color("#7a3cff")],  # lilac / violet
+		[Color("#ffe29a"), Color("#ff8c2a")],  # buttercream / orange
+		[Color("#b8f5c8"), Color("#2db86a")],  # mint / green
+		[Color("#ffd0b8"), Color("#ff5c7a")],  # peach / coral
 	]
-	var count: int = tints.size()
+	var count: int = palette.size()
 	var radius: float = 3.2
 	for i in count:
+		var pair: Array = palette[i]
 		var uni := Node3D.new()
 		uni.name = "PartyUnicorn%d" % i
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
+		# Face party center (+Z mesh forward)
+		uni.rotation.y = atan2(-cos(ang), -sin(ang))
 		uni.scale = Vector3(1.0, 1.0, 1.0)
 		party.add_child(uni)
-		var spr := _make_party_unicorn_sprite(uni, null, tints[i], float(i))
-		if spr == null:
-			continue
+		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
+		CreatureBuilder.colorize_party_unicorn(bob, pair[0], pair[1])
+		# Soft rainbow trail sparkle under each unicorn
 		var trail := CPUParticles3D.new()
 		trail.name = "UnicornTrail"
-		trail.position = Vector3(0, 0.35, 0)
+		trail.position = Vector3(0, 0.4, 0)
 		trail.emitting = true
 		trail.amount = 10
 		trail.lifetime = 0.7
@@ -5009,11 +5010,10 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		trail.gravity = Vector3(0, 0.6, 0)
 		trail.scale_amount_min = 0.06
 		trail.scale_amount_max = 0.14
-		var tint: Color = tints[i]
-		trail.color = Color(tint.r, tint.g, tint.b, 0.7)
+		trail.color = Color(pair[0].r, pair[0].g, pair[0].b, 0.7)
 		HeadlessGuard.guard_particles(trail)
 		uni.add_child(trail)
-		_dance_unicorn(uni, spr, ang, radius, float(i))
+		_dance_unicorn(uni, bob, ang, radius, float(i))
 	# Soft center rainbow fountain
 	var fountain := CPUParticles3D.new()
 	fountain.name = "PartyFountain"
@@ -5077,101 +5077,24 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	)
 
 
-var _party_unicorn_frame_tex: Array = []  # Texture2D[6]
-
-
-func _party_unicorn_frames_loaded() -> bool:
-	## Load six discrete opaque frame textures (more reliable than atlas + AnimatedSprite3D).
-	if not _party_unicorn_frame_tex.is_empty():
-		return true
-	var loaded: Array = []
-	for i in 6:
-		var path := "res://assets/vfx/party_unicorn_frame_%d.png" % i
-		if not ResourceLoader.exists(path):
-			push_warning("Party unicorn frame missing: %s" % path)
-			return false
-		var tex: Texture2D = load(path) as Texture2D
-		if tex == null:
-			return false
-		loaded.append(tex)
-	_party_unicorn_frame_tex = loaded
-	return true
-
-
-func _party_unicorn_sheet() -> Texture2D:
-	## Kept for smoke/path checks; frames prefer discrete PNGs.
-	if _party_unicorn_frames_loaded():
-		return _party_unicorn_frame_tex[0] as Texture2D
-	var path := "res://assets/vfx/party_unicorn_dance_sheet.png"
-	if not ResourceLoader.exists(path):
-		return null
-	return load(path) as Texture2D
-
-
-func _make_party_unicorn_sprite(parent: Node3D, _frames: SpriteFrames, tint: Color, idx: float) -> MeshInstance3D:
-	## Upright Y-billboard cutout — stays vertical under the overhead camera.
-	if not _party_unicorn_frames_loaded():
-		return null
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	mat.alpha_scissor_threshold = 0.4
-	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	# FIXED_Y keeps the art upright (full BILLBOARD flattens toward the top-down camera).
-	mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
-	mat.billboard_keep_scale = true
-	mat.albedo_color = Color(tint.r, tint.g, tint.b, 1.0)
-	mat.albedo_texture = _party_unicorn_frame_tex[int(idx) % 6] as Texture2D
-	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
-	var quad := QuadMesh.new()
-	quad.size = Vector2(1.55, 2.15)
-	var mi := MeshInstance3D.new()
-	mi.name = "Art"
-	mi.mesh = quad
-	mi.material_override = mat
-	mi.position = Vector3(0, 1.25, 0)
-	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	mi.set_meta("mat", mat)
-	mi.set_meta("frame_i", int(idx) % 6)
-	parent.add_child(mi)
-	return mi
-
-
-func _set_party_unicorn_frame(spr: MeshInstance3D, frame_i: int) -> void:
-	if spr == null or not is_instance_valid(spr):
-		return
-	if not _party_unicorn_frames_loaded():
-		return
-	var mat: StandardMaterial3D = spr.get_meta("mat") as StandardMaterial3D
-	if mat == null:
-		return
-	var fi: int = posmod(frame_i, 6)
-	mat.albedo_texture = _party_unicorn_frame_tex[fi] as Texture2D
-	spr.set_meta("frame_i", fi)
-
-
-func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, idx: float) -> void:
-	## Orbit + hop + prance-frame dance for one party unicorn (~8s).
+func _dance_unicorn(uni: Node3D, bob: Node3D, start_ang: float, radius: float, idx: float) -> void:
+	## Orbit + hop + sway dance for one 3D party unicorn (~7s).
 	if uni == null or not is_instance_valid(uni):
 		return
-	var hop_h: float = 0.7 + (idx * 0.05)
+	var hop_h: float = 0.35 + (idx * 0.03)
 	var orbit := uni.create_tween()
-	orbit.set_loops(16)
+	orbit.set_loops(10)
 	orbit.tween_method(func(t: float):
 		if not is_instance_valid(uni):
 			return
 		var a: float = start_ang + t * TAU
-		var hop: float = absf(sin(t * TAU * 2.5)) * hop_h
-		uni.position = Vector3(cos(a) * radius, hop, sin(a) * radius)
-		if spr != null and is_instance_valid(spr) and spr is MeshInstance3D:
-			var mi: MeshInstance3D = spr as MeshInstance3D
-			_set_party_unicorn_frame(mi, int(floor(t * 18.0 + idx * 2.0)))
-			var flip: float = -1.0 if (-sin(a) > 0.0) else 1.0
-			var squash: float = 1.0 + absf(sin(t * TAU * 2.5)) * 0.14
-			mi.scale = Vector3(flip * (2.0 - squash), squash, 1.0)
-			mi.position.y = 1.25 + absf(sin(t * TAU * 5.0)) * 0.12
-	, 0.0, 1.0, 0.5).set_trans(Tween.TRANS_LINEAR)
+		uni.position = Vector3(cos(a) * radius, absf(sin(t * TAU * 2.0)) * hop_h, sin(a) * radius)
+		# Nose toward party center (+Z mesh forward)
+		uni.rotation.y = atan2(-cos(a), -sin(a)) + 0.2
+		if bob != null and is_instance_valid(bob):
+			bob.rotation_degrees.y = sin(t * TAU * 4.0) * 16.0
+			bob.position.y = absf(sin(t * TAU * 2.0)) * 0.08
+	, 0.0, 1.0, 0.7).set_trans(Tween.TRANS_LINEAR)
 
 
 func _build_ambient_life() -> void:

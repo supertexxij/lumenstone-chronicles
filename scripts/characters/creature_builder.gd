@@ -185,87 +185,86 @@ static func build(kind: String, root: Node3D) -> Node3D:
 
 
 static func _build_party_unicorn(bob: Node3D) -> void:
-	## My-Little-Pony-inspired party unicorn — slim soft pony facing +Z,
-	## big shiny eyes, flowing hair locks, cute short legs.
-	# Barrel along Z (nose→tail), NOT along X — earlier Z-roll made them look sideways-wide.
-	# Radius ~0.18 keeps an MLP-plump silhouette without the old blob width.
-	var body := _mi(_soft_capsule(0.18, 0.74), Vector3(0, 0.58, 0.0), bob, "Body")
+	## Soft 3D party unicorn facing +Z — body longer nose→tail than it is wide.
+	# Capsule pitched onto +Z (not Z-rolled onto X, which made them sideways-wide).
+	# length 0.92 / diameter 0.28 ≈ 3.3× longer than wide.
+	var body := _mi(_soft_capsule(0.14, 0.92), Vector3(0, 0.58, 0.0), bob, "Body")
 	body.rotation_degrees = Vector3(90, 0, 0)
-	_mi(_soft_sphere(0.13, 0.12), Vector3(0, 0.45, 0.02), bob, "Belly")
+	_mi(_soft_sphere(0.11, 0.10), Vector3(0, 0.46, 0.02), bob, "Belly")
 	# Soft short neck toward +Z
-	var neck := _mi(_soft_cyl(0.09, 0.11, 0.26), Vector3(0, 0.78, 0.30), bob, "Neck")
+	var neck := _mi(_soft_cyl(0.08, 0.10, 0.24), Vector3(0, 0.78, 0.36), bob, "Neck")
 	neck.rotation_degrees = Vector3(18, 0, 0)
-	# Cute head + tiny muzzle (still MLP-round, but not oversized)
-	_mi(_soft_sphere(0.19, 0.20), Vector3(0, 0.98, 0.48), bob, "Head")
-	_mi(_soft_sphere(0.08, 0.09), Vector3(0, 0.92, 0.64), bob, "Muzzle")
-	_mi(_soft_sphere(0.028, 0.022), Vector3(0, 0.90, 0.72), bob, "Nose")
+	# Head + muzzle on the nose end
+	_mi(_soft_sphere(0.17, 0.18), Vector3(0, 0.98, 0.56), bob, "Head")
+	_mi(_soft_sphere(0.075, 0.085), Vector3(0, 0.92, 0.72), bob, "Muzzle")
+	_mi(_soft_sphere(0.026, 0.020), Vector3(0, 0.90, 0.80), bob, "Nose")
 	# Big shiny cartoon eyes
-	_mi(_soft_sphere(0.055, 0.06), Vector3(-0.08, 1.02, 0.58), bob, "EyeWhiteL")
-	_mi(_soft_sphere(0.055, 0.06), Vector3(0.08, 1.02, 0.58), bob, "EyeWhiteR")
-	_mi(_soft_sphere(0.036), Vector3(-0.08, 1.02, 0.62), bob, "IrisL")
-	_mi(_soft_sphere(0.036), Vector3(0.08, 1.02, 0.62), bob, "IrisR")
-	_mi(_soft_sphere(0.018), Vector3(-0.08, 1.02, 0.65), bob, "PupilL")
-	_mi(_soft_sphere(0.018), Vector3(0.08, 1.02, 0.65), bob, "PupilR")
-	_mi(_soft_sphere(0.012), Vector3(-0.065, 1.04, 0.655), bob, "ShineL")
-	_mi(_soft_sphere(0.012), Vector3(0.095, 1.04, 0.655), bob, "ShineR")
+	_mi(_soft_sphere(0.050, 0.055), Vector3(-0.07, 1.02, 0.66), bob, "EyeWhiteL")
+	_mi(_soft_sphere(0.050, 0.055), Vector3(0.07, 1.02, 0.66), bob, "EyeWhiteR")
+	_mi(_soft_sphere(0.032), Vector3(-0.07, 1.02, 0.70), bob, "IrisL")
+	_mi(_soft_sphere(0.032), Vector3(0.07, 1.02, 0.70), bob, "IrisR")
+	_mi(_soft_sphere(0.016), Vector3(-0.07, 1.02, 0.73), bob, "PupilL")
+	_mi(_soft_sphere(0.016), Vector3(0.07, 1.02, 0.73), bob, "PupilR")
+	_mi(_soft_sphere(0.011), Vector3(-0.055, 1.04, 0.735), bob, "ShineL")
+	_mi(_soft_sphere(0.011), Vector3(0.085, 1.04, 0.735), bob, "ShineR")
 	# Soft blush
-	_mi(_soft_sphere(0.038, 0.025), Vector3(-0.12, 0.94, 0.54), bob, "BlushL")
-	_mi(_soft_sphere(0.038, 0.025), Vector3(0.12, 0.94, 0.54), bob, "BlushR")
+	_mi(_soft_sphere(0.034, 0.022), Vector3(-0.11, 0.94, 0.60), bob, "BlushL")
+	_mi(_soft_sphere(0.034, 0.022), Vector3(0.11, 0.94, 0.60), bob, "BlushR")
 	# Soft rounded ears
-	var ear_l := _mi(_soft_cyl(0.012, 0.04, 0.10), Vector3(-0.10, 1.14, 0.42), bob, "EarL")
+	var ear_l := _mi(_soft_cyl(0.011, 0.036, 0.10), Vector3(-0.09, 1.14, 0.50), bob, "EarL")
 	ear_l.rotation_degrees = Vector3(8, 0, -22)
-	var ear_r := _mi(_soft_cyl(0.012, 0.04, 0.10), Vector3(0.10, 1.14, 0.42), bob, "EarR")
+	var ear_r := _mi(_soft_cyl(0.011, 0.036, 0.10), Vector3(0.09, 1.14, 0.50), bob, "EarR")
 	ear_r.rotation_degrees = Vector3(8, 0, 22)
 	# Elegant pearl horn
 	var horn_root := Node3D.new()
 	horn_root.name = "Horn"
-	horn_root.position = Vector3(0, 1.14, 0.44)
+	horn_root.position = Vector3(0, 1.14, 0.52)
 	horn_root.rotation_degrees = Vector3(-10, 0, 0)
 	bob.add_child(horn_root)
-	_mi(_soft_cyl(0.032, 0.022, 0.10), Vector3(0, 0.04, 0), horn_root, "HornBase")
-	_mi(_soft_cyl(0.022, 0.012, 0.12), Vector3(0, 0.13, 0), horn_root, "HornMid")
-	_mi(_soft_cyl(0.012, 0.003, 0.10), Vector3(0, 0.22, 0), horn_root, "HornTip")
-	# Flowing hair locks — keep close to the spine (not flared wide)
+	_mi(_soft_cyl(0.030, 0.020, 0.10), Vector3(0, 0.04, 0), horn_root, "HornBase")
+	_mi(_soft_cyl(0.020, 0.011, 0.12), Vector3(0, 0.13, 0), horn_root, "HornMid")
+	_mi(_soft_cyl(0.011, 0.003, 0.10), Vector3(0, 0.22, 0), horn_root, "HornTip")
+	# Flowing hair locks along the spine
 	var mane := Node3D.new()
 	mane.name = "Mane"
-	mane.position = Vector3(0, 0.88, 0.14)
+	mane.position = Vector3(0, 0.88, 0.18)
 	bob.add_child(mane)
 	var lock_specs := [
-		["Forelock", Vector3(0.0, 0.22, 0.32), Vector3(-48, 0, 0), 0.05, 0.26],
-		["ManeA", Vector3(0.05, 0.16, 0.14), Vector3(-18, 18, 12), 0.055, 0.36],
-		["ManeB", Vector3(-0.05, 0.12, 0.06), Vector3(-12, -20, -12), 0.052, 0.38],
-		["ManeC", Vector3(0.06, -0.02, -0.06), Vector3(8, 14, 14), 0.05, 0.40],
-		["ManeD", Vector3(-0.05, -0.08, -0.14), Vector3(14, -12, -10), 0.048, 0.38],
-		["ManeE", Vector3(0.01, -0.16, -0.22), Vector3(22, 4, 2), 0.046, 0.34],
+		["Forelock", Vector3(0.0, 0.22, 0.36), Vector3(-48, 0, 0), 0.048, 0.26],
+		["ManeA", Vector3(0.04, 0.16, 0.16), Vector3(-18, 16, 10), 0.052, 0.36],
+		["ManeB", Vector3(-0.04, 0.12, 0.06), Vector3(-12, -18, -10), 0.050, 0.38],
+		["ManeC", Vector3(0.05, -0.02, -0.08), Vector3(8, 12, 12), 0.048, 0.40],
+		["ManeD", Vector3(-0.04, -0.08, -0.18), Vector3(14, -10, -8), 0.046, 0.38],
+		["ManeE", Vector3(0.01, -0.16, -0.28), Vector3(22, 4, 2), 0.044, 0.34],
 	]
 	for spec in lock_specs:
 		var lock := _mi(_soft_capsule(float(spec[3]), float(spec[4])), spec[1], mane, str(spec[0]))
 		lock.rotation_degrees = spec[2]
-	# Soft flowing tail
+	# Soft flowing tail at the rump
 	var tail := Node3D.new()
 	tail.name = "Tail"
-	tail.position = Vector3(0, 0.62, -0.36)
+	tail.position = Vector3(0, 0.62, -0.46)
 	bob.add_child(tail)
-	var t1 := _mi(_soft_capsule(0.048, 0.34), Vector3(0.01, 0.02, -0.10), tail, "TailA")
+	var t1 := _mi(_soft_capsule(0.046, 0.34), Vector3(0.01, 0.02, -0.10), tail, "TailA")
 	t1.rotation_degrees = Vector3(42, 8, 0)
-	var t2 := _mi(_soft_capsule(0.045, 0.32), Vector3(-0.03, -0.02, -0.26), tail, "TailB")
+	var t2 := _mi(_soft_capsule(0.043, 0.32), Vector3(-0.03, -0.02, -0.26), tail, "TailB")
 	t2.rotation_degrees = Vector3(52, -10, 4)
-	var t3 := _mi(_soft_capsule(0.042, 0.28), Vector3(0.03, -0.05, -0.40), tail, "TailC")
+	var t3 := _mi(_soft_capsule(0.040, 0.28), Vector3(0.03, -0.05, -0.40), tail, "TailC")
 	t3.rotation_degrees = Vector3(60, 6, -3)
-	# Cute short pony legs — stance under the barrel
+	# Legs under the long barrel
 	for info in [
-		["FL", Vector3(-0.09, 0.34, 0.22)],
-		["FR", Vector3(0.09, 0.34, 0.22)],
-		["BL", Vector3(-0.09, 0.34, -0.22)],
-		["BR", Vector3(0.09, 0.34, -0.22)],
+		["FL", Vector3(-0.07, 0.34, 0.28)],
+		["FR", Vector3(0.07, 0.34, 0.28)],
+		["BL", Vector3(-0.07, 0.34, -0.28)],
+		["BR", Vector3(0.07, 0.34, -0.28)],
 	]:
 		var leg := Node3D.new()
 		leg.name = "Leg" + str(info[0])
 		leg.position = info[1]
 		bob.add_child(leg)
-		_mi(_soft_cyl(0.032, 0.036, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
-		_mi(_soft_cyl(0.026, 0.028, 0.12), Vector3(0, -0.14, 0), leg, "Shin")
-		_mi(_soft_sphere(0.038, 0.032), Vector3(0, -0.23, 0.01), leg, "Hoof")
+		_mi(_soft_cyl(0.028, 0.032, 0.16), Vector3(0, -0.02, 0), leg, "Thigh")
+		_mi(_soft_cyl(0.024, 0.026, 0.12), Vector3(0, -0.14, 0), leg, "Shin")
+		_mi(_soft_sphere(0.034, 0.028), Vector3(0, -0.23, 0.01), leg, "Hoof")
 
 
 static func _soft_sphere(r: float, h: float = -1.0) -> SphereMesh:
