@@ -390,6 +390,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _any_overlay_visible() and not _panel_is_open(travel_panel):
 			return
 		match code:
+			KEY_H:
 				_goto_landmark(Vector3(0, 0, 12), "Village Fountain")
 			KEY_N:
 				_goto_landmark(Vector3(0.5, 0, -46), "Lantern Glade")
