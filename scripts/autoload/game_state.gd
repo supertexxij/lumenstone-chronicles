@@ -129,7 +129,7 @@ var seen_refine_181_toast: bool = false  # v1.81 UI: once-per-save menus/HUD/Par
 var seen_bugs_182_toast: bool = false  # v1.82 bugs: once-per-save Esc/one-menu tip
 var seen_curriculum_183_toast: bool = false  # v1.83 curriculum: first-session / next-lesson tip
 var seen_minigames_184_toast: bool = false  # v1.84 minigames: Village Games tip
-var minigame_scores: Dictionary = {"lantern": 0, "match": 0, "facts": 0}
+var minigame_scores: Dictionary = {"lantern": 0, "wisp": 0, "facts": 0}
 var minigame_xp_date: String = ""
 var minigame_xp_today: int = 0
 const MINIGAME_XP_DAILY_CAP := 6
@@ -219,7 +219,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	discovered_landmarks = []
 	last_travel_label = ""
 	favorite_landmark = ""
-	minigame_scores = {"lantern": 0, "match": 0, "facts": 0}
+	minigame_scores = {"lantern": 0, "wisp": 0, "facts": 0}
 	minigame_xp_date = ""
 	minigame_xp_today = 0
 	hp = 40
@@ -962,7 +962,7 @@ func maybe_curriculum_183_toast() -> bool:
 
 func maybe_minigames_184_toast() -> bool:
 	## v1.84 minigames: Village Games tip (PIN stays 1234; mastery ≥80%).
-	return _maybe_once_toast("seen_minigames_184_toast", "Village Games are open — Lantern Catch, Virtue Match, and Fact Dash. Tap Games for a fun recess.")
+	return _maybe_once_toast("seen_minigames_184_toast", "Village Games are open — Lantern Catch, Wisp Pop, and Fact Dash. Tap Games for a colorful recess.")
 
 
 func quiet_legacy_polish_toasts() -> void:
@@ -979,11 +979,14 @@ func _today_key() -> String:
 
 
 func _load_minigame_scores(data: Dictionary) -> void:
-	minigame_scores = {"lantern": 0, "match": 0, "facts": 0}
+	minigame_scores = {"lantern": 0, "wisp": 0, "facts": 0}
 	var raw = data.get("minigame_scores", {})
 	if typeof(raw) == TYPE_DICTIONARY:
-		for k in ["lantern", "match", "facts"]:
+		for k in ["lantern", "wisp", "facts"]:
 			minigame_scores[k] = int(raw.get(k, 0))
+		# Legacy saves that stored Virtue Match as "match"
+		if int(raw.get("match", 0)) > int(minigame_scores.get("wisp", 0)) and int(raw.get("wisp", 0)) == 0:
+			minigame_scores["wisp"] = int(raw.get("match", 0))
 	minigame_xp_date = str(data.get("minigame_xp_date", ""))
 	minigame_xp_today = int(data.get("minigame_xp_today", 0))
 

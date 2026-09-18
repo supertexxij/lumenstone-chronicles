@@ -161,7 +161,7 @@ func _ensure_games_btn() -> void:
 		$BottomBar.add_child(games_btn)
 		var insert_at: int = travel_btn.get_index() + 1 if travel_btn else 0
 		$BottomBar.move_child(games_btn, insert_at)
-	games_btn.tooltip_text = "Village Games — Lantern Catch, Virtue Match, Fact Dash"
+	games_btn.tooltip_text = "Village Games — Lantern Catch, Wisp Pop, Fact Dash"
 	if not games_btn.pressed.is_connected(_on_games_pressed):
 		games_btn.pressed.connect(_on_games_pressed)
 

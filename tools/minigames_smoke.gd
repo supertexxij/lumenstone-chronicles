@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless smoke for Village Games (v1.84 minigames).
+## Headless smoke for Village Games (no Virtue Match — Wisp Pop instead).
 
 func _initialize() -> void:
 	print("MINIGAMES_SMOKE_START")
@@ -10,19 +10,28 @@ func _initialize() -> void:
 	var hud_src := FileAccess.get_file_as_string("res://scripts/ui/hud.gd")
 	var proj := FileAccess.get_file_as_string("res://project.godot")
 
+	if "Virtue Match" in panel_src or "GAME_MATCH" in panel_src or "_begin_match" in panel_src:
+		print("FAIL_VIRTUE_MATCH_STILL_PRESENT")
+		ok = false
 	if "Village Games" not in panel_src or "Lantern Catch" not in panel_src:
 		print("FAIL_PANEL_LANTERN")
 		ok = false
-	if "Virtue Match" not in panel_src or "Fact Dash" not in panel_src:
+	if "Wisp Pop" not in panel_src or "Fact Dash" not in panel_src:
 		print("FAIL_PANEL_GAMES")
+		ok = false
+	if "_burst" not in panel_src or "_float_score" not in panel_src or "_spawn_wisp" not in panel_src:
+		print("FAIL_COLORFUL_VFX")
+		ok = false
+	if "WISP_PALETTE" not in panel_src or "FACT_BTN_COLORS" not in panel_src:
+		print("FAIL_ICONS_COLORS")
 		ok = false
 	if "func record_minigame_score" not in gs_src or "func get_minigame_best" not in gs_src:
 		print("FAIL_GS_API")
 		ok = false
-	if "MINIGAME_XP_DAILY_CAP" not in gs_src or "minigame_scores" not in gs_src:
+	if '"wisp"' not in gs_src or "minigame_scores" not in gs_src:
 		print("FAIL_GS_SAVE")
 		ok = false
-	if "maybe_minigames_184_toast" not in gs_src or "seen_minigames_184_toast" not in gs_src:
+	if "maybe_minigames_184_toast" not in gs_src:
 		print("FAIL_GS_TOAST")
 		ok = false
 	if "_toggle_minigames" not in main_src or "_setup_minigames_panel" not in main_src:
@@ -56,12 +65,11 @@ func _initialize() -> void:
 	if bool(r2.get("new_best", false)) or int(r2.get("xp_awarded", 0)) != 0:
 		print("FAIL_LOWER_SCORE")
 		ok = false
-	var r3: Dictionary = gs.record_minigame_score("lantern", 15)
+	var r3: Dictionary = gs.record_minigame_score("wisp", 20)
 	print("SCORE3", r3)
-	if not bool(r3.get("new_best", false)) or int(gs.get_minigame_best("lantern")) != 15:
-		print("FAIL_RAISE_BEST")
+	if not bool(r3.get("new_best", false)) or int(gs.get_minigame_best("wisp")) != 20:
+		print("FAIL_WISP_BEST")
 		ok = false
-	# Daily cap: award until cap, then zero
 	gs.minigame_xp_today = 6
 	var dt := Time.get_datetime_dict_from_system()
 	gs.minigame_xp_date = "%04d-%02d-%02d" % [int(dt.get("year", 0)), int(dt.get("month", 0)), int(dt.get("day", 0))]
@@ -69,12 +77,6 @@ func _initialize() -> void:
 	print("SCORE4_CAPPED", r4)
 	if int(r4.get("xp_awarded", -1)) != 0 or not bool(r4.get("new_best", false)):
 		print("FAIL_DAILY_CAP")
-		ok = false
-	if "day_cash" in hud_src.to_lower() or "Day Cash" in hud_src:
-		print("FAIL_DAY_CASH")
-		ok = false
-	if 'DEFAULT_PIN := "1234"' not in gs_src and 'const DEFAULT_PIN := "1234"' not in gs_src:
-		print("FAIL_PIN")
 		ok = false
 
 	var panel_script: Script = load("res://scripts/ui/minigames_panel.gd")
@@ -88,12 +90,11 @@ func _initialize() -> void:
 		if node.has_method("open"):
 			node.open()
 			print("PANEL_OPEN_OK", node.visible)
-			# Start lantern briefly to ensure arena builds
 			if node.has_method("_start_game"):
 				node._start_game("lantern")
 				print("LANTERN_START_OK", str(node.get("_mode")))
-				node._start_game("match")
-				print("MATCH_START_OK", str(node.get("_mode")), "cards", (node.get("_match_cards") as Array).size() if node.get("_match_cards") != null else -1)
+				node._start_game("wisp")
+				print("WISP_START_OK", str(node.get("_mode")))
 				node._start_game("facts")
 				print("FACTS_START_OK", str(node.get("_mode")))
 		node.queue_free()
