@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 73 overnight (v1.73.0-overnight)
+- Soft **Amber Knoll amber-glow polish at dusk** — warmer honey OmniLight + soft amber motes over the ENE knoll (RuneScape-chunky, wholesome)
+- Soft **brook murmur / puddle ripple polish** — richer water hush nearby + denser rain puddle rings
+- Clearer **quest complete toast with short title** — `Quest complete · <title> · Week N ★`
+- New wilds foe **Lime Llama** — long neck, banana ears, soft snout, fluffy chest, stubby legs, cheek blush, gentle “led” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda / Coconut Crab)
+- Parent QoL: **empty-week row warmer copy**; Inventory: **bag stack N/M shows 🍞 type icon hint** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 72 overnight (v1.72.0-overnight)
 - Soft **Maple Copse maple-leaf drift at dusk** — warm autumn maple leaves drift over the NW copse; denser Maple Copse leaf fall reads stronger at dusk (RuneScape-chunky, wholesome)
 - Soft **edge-fog banks polish** — taller cream mist, gentler drift along the wilds rim (denser in Fog weather)

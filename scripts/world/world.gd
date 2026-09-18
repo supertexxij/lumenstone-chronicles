@@ -51,6 +51,7 @@ var _fern_fronds: CPUParticles3D  # Wave 69: soft Fern Dell fern-frond drift at 
 var _heather_blooms: CPUParticles3D  # Wave 70: soft Heather Heath heather-bloom drift at dusk
 var _thistle_blooms: CPUParticles3D  # Wave 71: soft Thistle Rise thistle-bloom drift at dusk
 var _maple_dusk_leaves: CPUParticles3D  # Wave 72: soft Maple Copse maple-leaf drift at dusk
+var _amber_knoll_motes: CPUParticles3D  # Wave 73: soft Amber Knoll amber-glow motes at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1163,6 +1164,7 @@ func _update_leaf_rustle() -> void:
 
 func _update_brook_murmur() -> void:
 	## Wave 38: soft brook murmur when outdoors and near water landmarks (throttled; respects mute via AudioBus).
+	## Wave 73: soft brook murmur polish — a touch wider hear-distance (RuneScape-chunky, wholesome).
 	if not AudioBus.has_method("set_brook_murmur"):
 		return
 	if _inside_hall != "" or player == null:
@@ -1177,7 +1179,7 @@ func _update_brook_murmur() -> void:
 	for wp in _water_positions:
 		var dx: float = pp.x - wp.x
 		var dz: float = pp.z - wp.z
-		if dx * dx + dz * dz < 100.0:  # 10^2 — soft hear-distance by water
+		if dx * dx + dz * dz < 144.0:  # Wave 73: 12^2 — soft brook murmur polish hear-distance
 			near = true
 			break
 	AudioBus.set_brook_murmur(near)
@@ -1252,12 +1254,13 @@ func _update_village_dusk_lamps(dayness: float) -> void:
 
 func _update_knoll_dusk_glow(dayness: float) -> void:
 	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
+	## Wave 73: soft Amber Knoll amber-glow polish at dusk — warmer honey energy + gentler pulse (RuneScape-chunky, wholesome).
 	if _knoll_dusk_lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0020))
-	var energy: float = dusk * 1.85 * pulse
+	var pulse: float = 0.88 + 0.12 * abs(sin(t_ms * 0.0017))
+	var energy: float = dusk * 2.35 * pulse
 	var i: int = 0
 	for light in _knoll_dusk_lights:
 		if light == null or not is_instance_valid(light):
@@ -1789,6 +1792,7 @@ func _setup_weather() -> void:
 	_setup_heather_blooms()
 	_setup_thistle_blooms()
 	_setup_maple_dusk_leaves()
+	_setup_amber_knoll_motes()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -1826,11 +1830,12 @@ func _setup_rain_splash() -> void:
 
 func _setup_rain_puddle_ripples() -> void:
 	## Wave 41: soft expanding puddle ripples while raining (RuneScape-chunky, wholesome).
+	## Wave 73: soft puddle ripple polish — denser rings, gentler fade (RuneScape-chunky, wholesome).
 	_puddle_ripples = CPUParticles3D.new()
 	_puddle_ripples.name = "RainPuddleRipples"
 	_puddle_ripples.emitting = false
-	_puddle_ripples.amount = 14
-	_puddle_ripples.lifetime = 1.35
+	_puddle_ripples.amount = 22
+	_puddle_ripples.lifetime = 1.55
 	_puddle_ripples.preprocess = 0.4
 	_puddle_ripples.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	_puddle_ripples.emission_box_extents = Vector3(7.5, 0.02, 7.5)
@@ -2041,6 +2046,10 @@ func _update_weather(delta: float) -> void:
 		var maple_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_maple_dusk_leaves.emitting = maple_dusk
 		_maple_dusk_leaves.visible = maple_dusk
+	if _amber_knoll_motes:
+		var amber_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_amber_knoll_motes.emitting = amber_dusk
+		_amber_knoll_motes.visible = amber_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3100,19 +3109,19 @@ func _build_amber_knoll() -> void:
 	# Wave 59: soft amber knoll glow at dusk — warm OmniLight on the crest (RuneScape-chunky, wholesome)
 	var knoll_light := OmniLight3D.new()
 	knoll_light.name = "KnollDuskGlow"
-	knoll_light.light_color = Color(1.0, 0.78, 0.42)
+	knoll_light.light_color = Color(1.0, 0.80, 0.40)  # Wave 73: warmer amber-glow polish
 	knoll_light.light_energy = 0.0
-	knoll_light.omni_range = 9.5
-	knoll_light.omni_attenuation = 1.2
+	knoll_light.omni_range = 11.0  # Wave 73: soft Amber Knoll amber-glow polish at dusk
+	knoll_light.omni_attenuation = 1.15
 	knoll_light.shadow_enabled = false
 	knoll_light.position = Vector3(48.0, 1.55, -22.0)
 	root.add_child(knoll_light)
 	_knoll_dusk_lights.append(knoll_light)
 	var knoll_rim := OmniLight3D.new()
 	knoll_rim.name = "KnollDuskRim"
-	knoll_rim.light_color = Color(1.0, 0.72, 0.35)
+	knoll_rim.light_color = Color(1.0, 0.74, 0.32)  # Wave 73: warmer amber rim
 	knoll_rim.light_energy = 0.0
-	knoll_rim.omni_range = 6.0
+	knoll_rim.omni_range = 7.2
 	knoll_rim.omni_attenuation = 1.4
 	knoll_rim.shadow_enabled = false
 	knoll_rim.position = Vector3(48.0, 0.85, -22.0)
@@ -3928,6 +3937,48 @@ func _setup_maple_dusk_leaves() -> void:
 	_maple_dusk_leaves.position = Vector3(-48.0, 3.4, -48.0)
 	add_child(_maple_dusk_leaves)
 	HeadlessGuard.guard_particles(_maple_dusk_leaves)
+
+
+func _setup_amber_knoll_motes() -> void:
+	## Wave 73: soft Amber Knoll amber-glow motes at dusk — warm honey motes drift over the ENE knoll (RuneScape-chunky, wholesome).
+	_amber_knoll_motes = CPUParticles3D.new()
+	_amber_knoll_motes.name = "AmberKnollGlowMotes"
+	_amber_knoll_motes.emitting = false
+	_amber_knoll_motes.amount = 28
+	_amber_knoll_motes.lifetime = 4.6
+	_amber_knoll_motes.preprocess = 1.2
+	_amber_knoll_motes.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	_amber_knoll_motes.emission_sphere_radius = 4.8
+	_amber_knoll_motes.direction = Vector3(0.05, 0.35, 0.02)
+	_amber_knoll_motes.spread = 48.0
+	_amber_knoll_motes.initial_velocity_min = 0.05
+	_amber_knoll_motes.initial_velocity_max = 0.28
+	_amber_knoll_motes.gravity = Vector3(0, 0.02, 0)
+	_amber_knoll_motes.scale_amount_min = 0.12
+	_amber_knoll_motes.scale_amount_max = 0.38
+	var sm := SphereMesh.new()
+	sm.radius = 0.06
+	sm.height = 0.12
+	_amber_knoll_motes.mesh = sm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.78, 0.38, 0.72)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.72, 0.28)
+	mat.emission_energy_multiplier = 1.4
+	_amber_knoll_motes.material_override = mat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.85, 0.45, 0.0),
+		Color(1.0, 0.78, 0.38, 0.85),
+		Color(0.95, 0.55, 0.22, 0.0),
+	])
+	_amber_knoll_motes.color_ramp = ramp
+	# Amber Knoll landmark at (48, 0, -22)
+	_amber_knoll_motes.position = Vector3(48.0, 2.2, -22.0)
+	add_child(_amber_knoll_motes)
+	HeadlessGuard.guard_particles(_amber_knoll_motes)
 
 
 func _setup_brook_sparkle() -> void:

@@ -306,8 +306,8 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 	detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	detail.custom_minimum_size = Vector2(0, 8)
 	if titles.is_empty():
-		# Wave 63: friendlier empty campaign week row (PIN stays 1234; mastery ≥80%)
-		detail.text = "  No quests listed for this week yet — try another week, or check back after a curriculum update."
+		# Wave 63/73: warmer empty campaign week row (PIN stays 1234; mastery ≥80%)
+		detail.text = "  A quiet week for now — nothing listed here yet. Browse another week, or check back after a curriculum update. You're doing great!"
 	else:
 		detail.text = "  " + "\n  ".join(titles)
 	detail.visible = expanded

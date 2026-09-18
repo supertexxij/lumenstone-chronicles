@@ -623,6 +623,19 @@
       "combat_xp": 288,
       "respawn_sec": 112.0,
       "description": "A sturdy crab of the coconut wilds \u2014 coax it kindly with a careful step!"
+    },
+    "lime_llama": {
+      "kind": "lime_llama",
+      "name": "Lime Llama",
+      "defeat_verb": "led",
+      "color": "#a8c848",
+      "accent": "#e8f2c8",
+      "max_hp": 308,
+      "damage": 51,
+      "accuracy": 0.16,
+      "combat_xp": 294,
+      "respawn_sec": 114.0,
+      "description": "A gentle llama of the lime wilds \u2014 lead it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -2053,6 +2066,36 @@
       "kind": "coconut_crab",
       "x": -185,
       "z": -70
+    },
+    {
+      "id": "e239",
+      "kind": "lime_llama",
+      "x": 175,
+      "z": 55
+    },
+    {
+      "id": "e240",
+      "kind": "lime_llama",
+      "x": -175,
+      "z": -95
+    },
+    {
+      "id": "e241",
+      "kind": "lime_llama",
+      "x": 70,
+      "z": -185
+    },
+    {
+      "id": "e242",
+      "kind": "lime_llama",
+      "x": -100,
+      "z": 180
+    },
+    {
+      "id": "e243",
+      "kind": "lime_llama",
+      "x": 190,
+      "z": -40
     }
   ],
   "base_combat": {

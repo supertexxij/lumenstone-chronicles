@@ -123,7 +123,7 @@ func _ready() -> void:
 	_brook_murmur = AudioStreamPlayer.new()
 	_brook_murmur.name = "BrookMurmur"
 	_brook_murmur.bus = "Master"
-	_brook_murmur.volume_db = -30.0
+	_brook_murmur.volume_db = -26.5  # Wave 73: soft brook murmur polish
 	_brook_murmur.stream = _streams.get("brook_murmur")
 	add_child(_brook_murmur)
 	_wind_chime = AudioStreamPlayer.new()
@@ -354,7 +354,7 @@ func _build_streams() -> void:
 	_streams["hall_reverb"] = _soft_hall_reverb(6.5, 0.06)  # Wave 37: soft indoor hall reverb
 	_streams["hall_chatter"] = _soft_hall_chatter(7.0, 0.055)  # Wave 42: soft guild-hall ambient chatter
 	_streams["leaf_rustle"] = _soft_leaf_rustle(5.5, 0.07)  # Wave 37: leaf rustle near trees
-	_streams["brook_murmur"] = _soft_brook_murmur(6.0, 0.07)  # Wave 38: soft brook murmur near water
+	_streams["brook_murmur"] = _soft_brook_murmur(6.0, 0.09)  # Wave 73: soft brook murmur polish (richer hush)
 	_streams["wind_chime"] = _soft_wind_chime(8.0, 0.055)  # Wave 52: soft wind chime near halls
 
 
@@ -926,6 +926,7 @@ func _soft_leaf_rustle(dur: float, amp: float) -> AudioStreamWAV:
 
 func _soft_brook_murmur(dur: float, amp: float) -> AudioStreamWAV:
 	## Wave 38: soft brook murmur near water — gentle low gurgle hush (RuneScape-chunky, wholesome).
+	## Wave 73: soft brook murmur polish — warmer gurgle + soft bubble hush (RuneScape-chunky, wholesome).
 	var rate := 22050
 	var n := int(dur * rate)
 	var samples := PackedFloat32Array()
@@ -935,9 +936,9 @@ func _soft_brook_murmur(dur: float, amp: float) -> AudioStreamWAV:
 		var tt := float(i) / float(rate)
 		var noise := randf() * 2.0 - 1.0
 		prev = prev * 0.92 + noise * 0.08
-		var gurgle := sin(TAU * 90.0 * tt) * 0.14 + sin(TAU * 140.0 * tt + 0.7) * 0.09
-		var bubble := sin(TAU * 220.0 * tt) * 0.04 * (0.5 + 0.5 * sin(TAU * 0.28 * tt))
-		var flow := 0.8 + 0.2 * sin(TAU * 0.11 * tt)
+		var gurgle := sin(TAU * 88.0 * tt) * 0.16 + sin(TAU * 136.0 * tt + 0.7) * 0.11
+		var bubble := sin(TAU * 210.0 * tt) * 0.055 * (0.5 + 0.5 * sin(TAU * 0.26 * tt))
+		var flow := 0.82 + 0.18 * sin(TAU * 0.10 * tt)
 		samples[i] = (prev * 0.5 + gurgle + bubble) * amp * flow
 	var stream := _make_wav(samples, rate)
 	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD

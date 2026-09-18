@@ -822,6 +822,9 @@ func _enter_world() -> void:
 	# Wave 72: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_72_toast"):
 		GameState.maybe_wave_72_toast()
+	# Wave 73: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_73_toast"):
+		GameState.maybe_wave_73_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":
