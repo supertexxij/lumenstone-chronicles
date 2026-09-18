@@ -910,5 +910,12 @@ func _initialize():
 	var gs182 = _src("res://scripts/autoload/game_state.gd")
 	print("PIN_STILL_1234_W182", "const DEFAULT_PIN := \"1234\"" in gs182 or 'DEFAULT_PIN := "1234"' in gs182)
 	print("MASTERY_80_W182", "MASTERY_PCT := 0.8" in gs182 or "0.8" in gs182)
+
+	print("VERSION_183", _ver_ge(83))
+	print("HAIR_STYLE_183", "HairStyleOpt" in _src("res://scenes/main.tscn") and "apply_hair_style" in _src("res://scripts/characters/humanoid_builder.gd") and "hair_style" in _src("res://scripts/ui/customize_screen.gd"))
+	print("FACIAL_HAIR_183", "FacialHairOpt" in _src("res://scenes/main.tscn") and "apply_facial_hair" in _src("res://scripts/characters/humanoid_builder.gd") and "FaceMustache" in _src("res://scripts/characters/humanoid_builder.gd") and "FaceBeard" in _src("res://scripts/characters/humanoid_builder.gd"))
+	var gs183 = _src("res://scripts/autoload/game_state.gd")
+	print("PIN_STILL_1234_W183", "const DEFAULT_PIN := \"1234\"" in gs183 or 'DEFAULT_PIN := "1234"' in gs183)
+	print("MASTERY_80_W183", "MASTERY_PCT := 0.8" in gs183 or "0.8" in gs183)
 	print("CHECK_OK")
 	quit(0)

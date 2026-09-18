@@ -81,7 +81,7 @@ static func build(root: Node3D) -> Dictionary:
 	# Hair sits back so the face stays visible from the RuneScape camera.
 	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
 	var bangs := _mi(_box(Vector3(0.30, 0.10, 0.08)), Vector3(0, 1.88, 0.14), bob, "Bangs")
-	# Gender hair extras (toggled by apply_gender) — longer back + side locks for girl look.
+	# Optional hair-style parts (toggled by apply_hair_style).
 	var hair_long := _mi(_sphere(0.24, 0.62), Vector3(0, 1.48, -0.16), bob, "HairLong")
 	hair_long.visible = false
 	var hair_l_lock := _mi(_capsule(0.055, 0.38), Vector3(-0.20, 1.52, 0.08), bob, "HairLLock")
@@ -90,6 +90,32 @@ static func build(root: Node3D) -> Dictionary:
 	var hair_r_lock := _mi(_capsule(0.055, 0.38), Vector3(0.20, 1.52, 0.08), bob, "HairRLock")
 	hair_r_lock.rotation_degrees = Vector3(18, 0, -22)
 	hair_r_lock.visible = false
+	var hair_wave_l := _mi(_sphere(0.12, 0.22), Vector3(-0.22, 1.78, 0.0), bob, "HairWaveL")
+	hair_wave_l.visible = false
+	var hair_wave_r := _mi(_sphere(0.12, 0.22), Vector3(0.22, 1.78, 0.0), bob, "HairWaveR")
+	hair_wave_r.visible = false
+	var hair_spike_l := _mi(_box(Vector3(0.08, 0.18, 0.08)), Vector3(-0.10, 2.02, -0.02), bob, "HairSpikeL")
+	hair_spike_l.rotation_degrees = Vector3(0, 0, -18)
+	hair_spike_l.visible = false
+	var hair_spike_m := _mi(_box(Vector3(0.08, 0.22, 0.08)), Vector3(0.0, 2.06, -0.02), bob, "HairSpikeM")
+	hair_spike_m.visible = false
+	var hair_spike_r := _mi(_box(Vector3(0.08, 0.18, 0.08)), Vector3(0.10, 2.02, -0.02), bob, "HairSpikeR")
+	hair_spike_r.rotation_degrees = Vector3(0, 0, 18)
+	hair_spike_r.visible = false
+	var hair_ponytail := _mi(_capsule(0.07, 0.42), Vector3(0.0, 1.55, -0.22), bob, "HairPonytail")
+	hair_ponytail.rotation_degrees = Vector3(28, 0, 0)
+	hair_ponytail.visible = false
+	var hair_bun := _mi(_sphere(0.11), Vector3(0.0, 2.02, -0.08), bob, "HairBun")
+	hair_bun.visible = false
+	# Boy facial hair (toggled by apply_facial_hair; always hidden for girls).
+	var face_stubble := _mi(_box(Vector3(0.18, 0.04, 0.05)), Vector3(0, 1.58, 0.20), bob, "FaceStubble")
+	face_stubble.visible = false
+	var face_mustache := _mi(_box(Vector3(0.14, 0.035, 0.05)), Vector3(0, 1.64, 0.22), bob, "FaceMustache")
+	face_mustache.visible = false
+	var face_goatee := _mi(_box(Vector3(0.08, 0.10, 0.06)), Vector3(0, 1.56, 0.21), bob, "FaceGoatee")
+	face_goatee.visible = false
+	var face_beard := _mi(_sphere(0.12, 0.18), Vector3(0, 1.52, 0.16), bob, "FaceBeard")
+	face_beard.visible = false
 	var l_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(-0.34, 1.38, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(0.34, 1.38, 0), bob, "RShoulder")
 	# Face (eyes / brows / nose / mouth) — kid-readable, not a blank sphere.
@@ -227,6 +253,17 @@ static func build(root: Node3D) -> Dictionary:
 		"hair_long": hair_long,
 		"hair_l_lock": hair_l_lock,
 		"hair_r_lock": hair_r_lock,
+		"hair_wave_l": hair_wave_l,
+		"hair_wave_r": hair_wave_r,
+		"hair_spike_l": hair_spike_l,
+		"hair_spike_m": hair_spike_m,
+		"hair_spike_r": hair_spike_r,
+		"hair_ponytail": hair_ponytail,
+		"hair_bun": hair_bun,
+		"face_stubble": face_stubble,
+		"face_mustache": face_mustache,
+		"face_goatee": face_goatee,
+		"face_beard": face_beard,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -343,46 +380,41 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("chest_plate"), outfit.darkened(0.12))
 	set_color(parts.get("l_pad"), outfit.darkened(0.18))
 	set_color(parts.get("r_pad"), outfit.darkened(0.18))
-	# Gender extras share hair / outfit palette when visible
+	# Gender extras / style extras share hair / outfit palette when visible
 	set_color(parts.get("hair_long"), hair.darkened(0.04))
 	set_color(parts.get("hair_l_lock"), hair.darkened(0.02))
 	set_color(parts.get("hair_r_lock"), hair.darkened(0.02))
+	set_color(parts.get("hair_wave_l"), hair.darkened(0.03))
+	set_color(parts.get("hair_wave_r"), hair.darkened(0.03))
+	set_color(parts.get("hair_spike_l"), hair.lightened(0.04))
+	set_color(parts.get("hair_spike_m"), hair.lightened(0.06))
+	set_color(parts.get("hair_spike_r"), hair.lightened(0.04))
+	set_color(parts.get("hair_ponytail"), hair.darkened(0.05))
+	set_color(parts.get("hair_bun"), hair.darkened(0.02))
+	set_color(parts.get("face_stubble"), hair.darkened(0.15))
+	set_color(parts.get("face_mustache"), hair.darkened(0.08))
+	set_color(parts.get("face_goatee"), hair.darkened(0.10))
+	set_color(parts.get("face_beard"), hair.darkened(0.12))
 	set_color(parts.get("skirt"), outfit.darkened(0.08))
 
 
-## Boy / girl silhouette: hair length + skirt hem (RuneScape-chunky, kid-readable).
-## Safe to call after apply_human_colors; missing parts are no-ops for older meshes.
+## Boy / girl body silhouette (skirt / shoulders). Hair is handled by apply_hair_style.
 static func apply_gender(parts: Dictionary, gender: String) -> void:
 	var is_girl := str(gender).to_lower() == "girl"
-	for key in ["hair_long", "hair_l_lock", "hair_r_lock", "skirt"]:
-		var n: Node = parts.get(key)
-		if n:
-			n.visible = is_girl
-	var hair_n: MeshInstance3D = parts.get("hair")
-	var bangs_n: MeshInstance3D = parts.get("bangs")
+	var skirt_n: Node = parts.get("skirt")
+	if skirt_n:
+		skirt_n.visible = is_girl
 	var hem_n: MeshInstance3D = parts.get("hem")
 	var l_sh: MeshInstance3D = parts.get("l_shoulder")
 	var r_sh: MeshInstance3D = parts.get("r_shoulder")
 	if is_girl:
-		if hair_n:
-			hair_n.scale = Vector3(1.12, 1.18, 1.14)
-			hair_n.position = Vector3(0, 1.90, -0.04)
-		if bangs_n:
-			bangs_n.scale = Vector3(1.25, 1.15, 1.1)
-			bangs_n.position = Vector3(0, 1.89, 0.16)
 		if hem_n:
-			hem_n.visible = false  # skirt replaces tunic hem for a clear girl read
+			hem_n.visible = false
 		if l_sh:
 			l_sh.scale = Vector3(0.90, 0.92, 0.92)
 		if r_sh:
 			r_sh.scale = Vector3(0.90, 0.92, 0.92)
 	else:
-		if hair_n:
-			hair_n.scale = Vector3.ONE
-			hair_n.position = Vector3(0, 1.86, -0.06)
-		if bangs_n:
-			bangs_n.scale = Vector3.ONE
-			bangs_n.position = Vector3(0, 1.88, 0.14)
 		if hem_n:
 			hem_n.visible = true
 			hem_n.scale = Vector3.ONE
@@ -393,21 +425,131 @@ static func apply_gender(parts: Dictionary, gender: String) -> void:
 			r_sh.scale = Vector3.ONE
 
 
+const HAIR_STYLE_PARTS := [
+	"hair_long", "hair_l_lock", "hair_r_lock", "hair_wave_l", "hair_wave_r",
+	"hair_spike_l", "hair_spike_m", "hair_spike_r", "hair_ponytail", "hair_bun",
+]
+const FACIAL_HAIR_PARTS := ["face_stubble", "face_mustache", "face_goatee", "face_beard"]
+
+
+## Hair styles: short / neat / spiky / fringe / wavy / long / ponytail / bun.
+static func apply_hair_style(parts: Dictionary, style: String) -> void:
+	var s := str(style).to_lower()
+	for key in HAIR_STYLE_PARTS:
+		var n: Node = parts.get(key)
+		if n:
+			n.visible = false
+	var hair_n: MeshInstance3D = parts.get("hair")
+	var bangs_n: MeshInstance3D = parts.get("bangs")
+	if hair_n:
+		hair_n.visible = true
+		hair_n.scale = Vector3.ONE
+		hair_n.position = Vector3(0, 1.86, -0.06)
+	if bangs_n:
+		bangs_n.visible = true
+		bangs_n.scale = Vector3.ONE
+		bangs_n.position = Vector3(0, 1.88, 0.14)
+	match s:
+		"neat":
+			if hair_n:
+				hair_n.scale = Vector3(1.02, 0.78, 1.05)
+				hair_n.position = Vector3(0, 1.84, -0.04)
+			if bangs_n:
+				bangs_n.scale = Vector3(0.85, 0.7, 1.0)
+				bangs_n.position = Vector3(0, 1.86, 0.14)
+		"spiky":
+			if hair_n:
+				hair_n.scale = Vector3(0.95, 0.85, 0.95)
+				hair_n.position = Vector3(0, 1.88, -0.05)
+			if bangs_n:
+				bangs_n.visible = false
+			_show_parts(parts, ["hair_spike_l", "hair_spike_m", "hair_spike_r"])
+		"fringe":
+			if hair_n:
+				hair_n.scale = Vector3(1.05, 1.0, 1.05)
+			if bangs_n:
+				bangs_n.scale = Vector3(1.35, 1.45, 1.2)
+				bangs_n.position = Vector3(0, 1.86, 0.17)
+		"wavy":
+			if hair_n:
+				hair_n.scale = Vector3(1.12, 1.08, 1.12)
+				hair_n.position = Vector3(0, 1.88, -0.04)
+			_show_parts(parts, ["hair_wave_l", "hair_wave_r", "hair_l_lock", "hair_r_lock"])
+		"long":
+			if hair_n:
+				hair_n.scale = Vector3(1.10, 1.15, 1.12)
+				hair_n.position = Vector3(0, 1.90, -0.04)
+			if bangs_n:
+				bangs_n.scale = Vector3(1.15, 1.1, 1.05)
+			_show_parts(parts, ["hair_long", "hair_l_lock", "hair_r_lock"])
+		"ponytail":
+			if hair_n:
+				hair_n.scale = Vector3(0.92, 0.88, 0.95)
+				hair_n.position = Vector3(0, 1.88, -0.02)
+			if bangs_n:
+				bangs_n.scale = Vector3(0.95, 0.9, 1.0)
+			_show_parts(parts, ["hair_ponytail"])
+		"bun":
+			if hair_n:
+				hair_n.scale = Vector3(0.98, 0.85, 1.0)
+				hair_n.position = Vector3(0, 1.86, -0.03)
+			if bangs_n:
+				bangs_n.scale = Vector3(1.05, 0.95, 1.0)
+			_show_parts(parts, ["hair_bun"])
+		_:
+			# short — default bowl cut
+			pass
+
+
+## Facial hair for boys: none / stubble / mustache / goatee / beard. Girls always clear.
+static func apply_facial_hair(parts: Dictionary, style: String, gender: String = "boy") -> void:
+	for key in FACIAL_HAIR_PARTS:
+		var n: Node = parts.get(key)
+		if n:
+			n.visible = false
+	if str(gender).to_lower() == "girl":
+		return
+	match str(style).to_lower():
+		"stubble":
+			_show_parts(parts, ["face_stubble"])
+		"mustache":
+			_show_parts(parts, ["face_mustache"])
+		"goatee":
+			_show_parts(parts, ["face_mustache", "face_goatee"])
+		"beard":
+			_show_parts(parts, ["face_beard", "face_mustache"])
+		_:
+			pass
+
+
+static func _show_parts(parts: Dictionary, keys: Array) -> void:
+	for key in keys:
+		var n: Node = parts.get(key)
+		if n:
+			n.visible = true
+
+
 static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Color("#c68642")) -> void:
 	var outfit := accent
 	var hair := accent.darkened(0.35)
 	apply_human_colors(parts, skin, hair, outfit, accent.darkened(0.2))
-	# NPCs show a small cape stub in accent; no player armor overlays
+	# NPCs show a small cape stub in accent; no player armor overlays / style extras
 	var cape: MeshInstance3D = parts.get("cape")
 	if cape:
 		cape.visible = true
-	for key in ["chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory", "hair_long", "hair_l_lock", "hair_r_lock", "skirt"]:
+	var hide_keys: Array = [
+		"chest_plate", "l_pad", "r_pad", "hat", "weapon", "accessory", "skirt",
+	]
+	hide_keys.append_array(HAIR_STYLE_PARTS)
+	hide_keys.append_array(FACIAL_HAIR_PARTS)
+	for key in hide_keys:
 		var n: Node = parts.get(key)
 		if n:
 			n.visible = false
 	var belt_n: MeshInstance3D = parts.get("belt")
 	if belt_n:
 		belt_n.visible = true
+	apply_hair_style(parts, "short")
 
 
 ## Style accessory mesh from item id/name heuristics (lantern, pin, beads, pouch, scroll…).

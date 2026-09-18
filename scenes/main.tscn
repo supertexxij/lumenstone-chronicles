@@ -104,9 +104,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -340.0
-offset_top = -290.0
+offset_top = -340.0
 offset_right = 340.0
-offset_bottom = 290.0
+offset_bottom = 340.0
 
 [node name="MainRow" type="HBoxContainer" parent="UI/CustomizeScreen/Panel"]
 layout_mode = 2
@@ -166,9 +166,23 @@ layout_mode = 2
 
 [node name="HairLbl" type="Label" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
 layout_mode = 2
-text = "Hair"
+text = "Hair color"
 
 [node name="HairOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
+layout_mode = 2
+
+[node name="HairStyleLbl" type="Label" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
+layout_mode = 2
+text = "Hair style"
+
+[node name="HairStyleOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
+layout_mode = 2
+
+[node name="FacialHairLbl" type="Label" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
+layout_mode = 2
+text = "Facial hair (boys)"
+
+[node name="FacialHairOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]
 layout_mode = 2
 
 [node name="CapeLbl" type="Label" parent="UI/CustomizeScreen/Panel/MainRow/ControlsCol"]

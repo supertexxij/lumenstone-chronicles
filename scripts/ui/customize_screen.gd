@@ -7,6 +7,9 @@ signal cancelled
 @onready var gender_opt: OptionButton = $Panel/MainRow/ControlsCol/GenderOpt
 @onready var skin_opt: OptionButton = $Panel/MainRow/ControlsCol/SkinOpt
 @onready var hair_opt: OptionButton = $Panel/MainRow/ControlsCol/HairOpt
+@onready var hair_style_opt: OptionButton = $Panel/MainRow/ControlsCol/HairStyleOpt
+@onready var facial_hair_opt: OptionButton = $Panel/MainRow/ControlsCol/FacialHairOpt
+@onready var facial_hair_lbl: Label = $Panel/MainRow/ControlsCol/FacialHairLbl
 @onready var cape_opt: OptionButton = $Panel/MainRow/ControlsCol/CapeOpt
 @onready var outfit_opt: OptionButton = $Panel/MainRow/ControlsCol/OutfitOpt
 @onready var title_lbl: Label = $Panel/MainRow/ControlsCol/Title
@@ -53,21 +56,29 @@ const OUTFIT_COLORS := {
 	"rose": Color("#d4a0a0"),
 }
 
+const HAIR_STYLES := ["short", "neat", "spiky", "fringe", "wavy", "long", "ponytail", "bun"]
+const FACIAL_HAIR_STYLES := ["none", "stubble", "mustache", "goatee", "beard"]
+
 func _ready() -> void:
 	_fill(gender_opt, ["boy", "girl"])
 	_fill(skin_opt, ["fair","light","medium","tan","deep"])
 	_fill(hair_opt, ["brown","black","blonde","auburn","gray"])
+	_fill_pretty(hair_style_opt, HAIR_STYLES)
+	_fill_pretty(facial_hair_opt, FACIAL_HAIR_STYLES)
 	_fill(cape_opt, ["crimson","azure","emerald","gold","violet"])
 	_fill(outfit_opt, ["cream","sky","forest","sand","rose"])
 	ok_btn.pressed.connect(_on_ok)
 	cancel_btn.pressed.connect(_on_cancel)
-	gender_opt.item_selected.connect(func(_i): _refresh_preview())
+	gender_opt.item_selected.connect(func(_i): _on_gender_changed())
 	skin_opt.item_selected.connect(func(_i): _refresh_preview())
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
+	hair_style_opt.item_selected.connect(func(_i): _refresh_preview())
+	facial_hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
 	outfit_opt.item_selected.connect(func(_i): _refresh_preview())
 	_ensure_character_preview()
 	_ensure_preview_row()
+	_sync_facial_hair_enabled()
 
 func _process(delta: float) -> void:
 	## Gentle yaw sway — face stays kid-readable; cape still peeks on the turn.
@@ -82,6 +93,32 @@ func _fill(opt: OptionButton, keys: Array) -> void:
 		opt.add_item(str(k).capitalize())
 		opt.set_item_metadata(opt.item_count - 1, k)
 
+func _fill_pretty(opt: OptionButton, keys: Array) -> void:
+	## Keys like "ponytail" / "short_beard" → "Ponytail" / "Short Beard".
+	opt.clear()
+	for k in keys:
+		var label := str(k).replace("_", " ").capitalize()
+		opt.add_item(label)
+		opt.set_item_metadata(opt.item_count - 1, k)
+
+func _on_gender_changed() -> void:
+	_sync_facial_hair_enabled()
+	# Girls default toward longer hair if still on short; boys keep current style.
+	var gender_k: String = str(gender_opt.get_selected_metadata())
+	if gender_k == "girl":
+		_select(facial_hair_opt, "none")
+		if str(hair_style_opt.get_selected_metadata()) == "short":
+			_select(hair_style_opt, "long")
+	_refresh_preview()
+
+func _sync_facial_hair_enabled() -> void:
+	var is_boy := str(gender_opt.get_selected_metadata()) == "boy"
+	if facial_hair_opt:
+		facial_hair_opt.disabled = not is_boy
+		facial_hair_opt.modulate = Color(1, 1, 1, 1) if is_boy else Color(1, 1, 1, 0.45)
+	if facial_hair_lbl:
+		facial_hair_lbl.modulate = Color(1, 1, 1, 1) if is_boy else Color(1, 1, 1, 0.55)
+
 func open_new() -> void:
 	wardrobe_mode = false
 	title_lbl.text = "Create Your Apprentice"
@@ -94,8 +131,11 @@ func open_new() -> void:
 	_select(gender_opt, demo_gender)
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
+	_select(hair_style_opt, "long" if demo_gender == "girl" else "short")
+	_select(facial_hair_opt, "none")
 	_select(cape_opt, "crimson")
 	_select(outfit_opt, "cream")
+	_sync_facial_hair_enabled()
 	_refresh_preview()
 
 func open_wardrobe() -> void:
@@ -107,8 +147,11 @@ func open_wardrobe() -> void:
 	_select(gender_opt, GameState.appearance.get("gender", "boy"))
 	_select(skin_opt, GameState.appearance.get("skin", "medium"))
 	_select(hair_opt, GameState.appearance.get("hair", "brown"))
+	_select(hair_style_opt, GameState.appearance.get("hair_style", "short"))
+	_select(facial_hair_opt, GameState.appearance.get("facial_hair", "none"))
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
 	_select(outfit_opt, GameState.appearance.get("outfit", "cream"))
+	_sync_facial_hair_enabled()
 	_refresh_preview()
 	_play_wardrobe_flourish()  # Wave 34: soft open flourish
 
@@ -244,14 +287,21 @@ func _refresh_preview() -> void:
 	_swatches["cape"].color = cape_c
 	_swatches["outfit"].color = outfit_c
 	var gender_k: String = str(gender_opt.get_selected_metadata())
-	_apply_preview_appearance(skin_c, hair_c, outfit_c, cape_c, gender_k)
+	var style_k: String = str(hair_style_opt.get_selected_metadata())
+	var face_k: String = str(facial_hair_opt.get_selected_metadata())
+	_apply_preview_appearance(skin_c, hair_c, outfit_c, cape_c, gender_k, style_k, face_k)
 	_play_wardrobe_preview_pulse()  # Wave 52: color preview pulse
 
-func _apply_preview_appearance(skin: Color, hair: Color, outfit: Color, cape_col: Color, gender: String = "boy") -> void:
+func _apply_preview_appearance(
+	skin: Color, hair: Color, outfit: Color, cape_col: Color,
+	gender: String = "boy", hair_style: String = "short", facial_hair: String = "none"
+) -> void:
 	if _preview_parts.is_empty():
 		return
 	HumanoidBuilder.apply_human_colors(_preview_parts, skin, hair, outfit, cape_col)
 	HumanoidBuilder.apply_gender(_preview_parts, gender)
+	HumanoidBuilder.apply_hair_style(_preview_parts, hair_style)
+	HumanoidBuilder.apply_facial_hair(_preview_parts, facial_hair, gender)
 	var cape_mesh: MeshInstance3D = _preview_parts.get("cape")
 	if cape_mesh:
 		cape_mesh.visible = true
@@ -342,6 +392,8 @@ func _on_ok() -> void:
 		"gender": gender_opt.get_selected_metadata(),
 		"skin": skin_opt.get_selected_metadata(),
 		"hair": hair_opt.get_selected_metadata(),
+		"hair_style": hair_style_opt.get_selected_metadata(),
+		"facial_hair": facial_hair_opt.get_selected_metadata() if str(gender_opt.get_selected_metadata()) == "boy" else "none",
 		"cape_color": cape_opt.get_selected_metadata(),
 		"outfit": outfit_opt.get_selected_metadata(),
 	}

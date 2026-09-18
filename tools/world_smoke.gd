@@ -635,5 +635,9 @@ func _finish():
 
 	print("VERSION_182_SRC", _ver_ge(82))
 	print("GENDER_OPT_182_SRC", "GenderOpt" in _src("res://scenes/main.tscn") and "apply_gender" in _src("res://scripts/characters/humanoid_builder.gd") and "HairLong" in _src("res://scripts/characters/humanoid_builder.gd"))
+
+	print("VERSION_183_SRC", _ver_ge(83))
+	print("HAIR_STYLE_183_SRC", "apply_hair_style" in _src("res://scripts/characters/humanoid_builder.gd") and "HairStyleOpt" in _src("res://scenes/main.tscn"))
+	print("FACIAL_HAIR_183_SRC", "apply_facial_hair" in _src("res://scripts/characters/humanoid_builder.gd") and "FacialHairOpt" in _src("res://scenes/main.tscn") and "FaceBeard" in _src("res://scripts/characters/humanoid_builder.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

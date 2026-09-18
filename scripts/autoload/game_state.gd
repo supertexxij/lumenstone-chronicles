@@ -68,7 +68,15 @@ const CAPE_HEX := {"crimson":"#c1121f","azure":"#1d7a9c","emerald":"#2d6a4f","go
 const OUTFIT_HEX := {"cream":"#f4e4bc","sky":"#87b8d4","forest":"#4a7c59","sand":"#c2b280","rose":"#d4a0a0"}
 
 var child_name: String = "Apprentice"
-var appearance: Dictionary = {"gender":"boy","hair":"brown","skin":"medium","cape_color":"crimson","outfit":"cream"}
+var appearance: Dictionary = {
+	"gender": "boy",
+	"hair": "brown",
+	"hair_style": "short",
+	"facial_hair": "none",
+	"skin": "medium",
+	"cape_color": "crimson",
+	"outfit": "cream",
+}
 var xp: int = 0
 var level: int = 1
 var lumens: Dictionary = {"math":0,"la":0,"science":0,"history":0,"bible":0}
@@ -438,9 +446,22 @@ func load_game(slot: int = -1) -> bool:
 	child_name = data.get("child_name", "Apprentice")
 	appearance = data.get("appearance", appearance)
 	if typeof(appearance) != TYPE_DICTIONARY:
-		appearance = {"gender":"boy","hair":"brown","skin":"medium","cape_color":"crimson","outfit":"cream"}
-	elif not appearance.has("gender"):
-		appearance["gender"] = "boy"
+		appearance = {
+			"gender": "boy",
+			"hair": "brown",
+			"hair_style": "short",
+			"facial_hair": "none",
+			"skin": "medium",
+			"cape_color": "crimson",
+			"outfit": "cream",
+		}
+	else:
+		if not appearance.has("gender"):
+			appearance["gender"] = "boy"
+		if not appearance.has("hair_style"):
+			appearance["hair_style"] = "short"
+		if not appearance.has("facial_hair"):
+			appearance["facial_hair"] = "none"
 	xp = int(data.get("xp", 0))
 	level = int(data.get("level", 1))
 	lumens = data.get("lumens", lumens)
