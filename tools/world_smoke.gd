@@ -189,6 +189,7 @@ func _finish():
 	print("UNEQUIP_TOAST_SRC", "Unequipped" in _src("res://scripts/autoload/game_state.gd"))
 	print("DEF_FLASH_SRC", "softens the hit" in _src("res://scripts/ui/hud.gd"))
 	print("WARDROBE_PREVIEW_SRC", "PreviewRow" in _src("res://scripts/ui/customize_screen.gd"))
+	print("WARDROBE_CHAR_PREVIEW_SRC", "_ensure_character_preview" in _src("res://scripts/ui/customize_screen.gd") and "PreviewCharacter" in _src("res://scripts/ui/customize_screen.gd"))
 	print("BIRCH_REST_SRC", "_build_birch_rest" in _src("res://scripts/world/world.gd"))
 	print("BIRCH_REST_NODE", world.static_world.get_node_or_null("BirchRest") != null if world else false)
 	print("DAY_NIGHT_AUDIO_SRC", "set_day_night_audio" in _src("res://scripts/autoload/audio_bus.gd"))
@@ -628,5 +629,8 @@ func _finish():
 	print("LANDMARK_PLAZA_SRC", "LandmarkPlazaGlade" in _src("res://scripts/world/world.gd") and "_dress_world_finish" in _src("res://scripts/world/world.gd") and "_dress_landmark_ring" in _src("res://scripts/world/world.gd"))
 	print("DAY_FILL_SRC", "DayFill" in _src("res://scripts/world/world.gd"))
 	print("HUMANOID_CLOTHES_SRC", "Collar" in _src("res://scripts/characters/humanoid_builder.gd") and "Hem" in _src("res://scripts/characters/humanoid_builder.gd") and "Buckle" in _src("res://scripts/characters/humanoid_builder.gd"))
+
+	print("VERSION_181_SRC", _ver_ge(81))
+	print("WARDROBE_CHAR_PREVIEW_181_SRC", "_ensure_character_preview" in _src("res://scripts/ui/customize_screen.gd") and "PreviewHost" in _src("res://scenes/main.tscn"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

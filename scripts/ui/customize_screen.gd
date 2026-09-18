@@ -3,48 +3,53 @@ extends Control
 signal confirmed(p_name: String, appearance: Dictionary)
 signal cancelled
 
-@onready var name_edit: LineEdit = $Panel/VBox/NameEdit
-@onready var skin_opt: OptionButton = $Panel/VBox/SkinOpt
-@onready var hair_opt: OptionButton = $Panel/VBox/HairOpt
-@onready var cape_opt: OptionButton = $Panel/VBox/CapeOpt
-@onready var outfit_opt: OptionButton = $Panel/VBox/OutfitOpt
-@onready var title_lbl: Label = $Panel/VBox/Title
-@onready var ok_btn: Button = $Panel/VBox/OkBtn
-@onready var cancel_btn: Button = $Panel/VBox/CancelBtn
+@onready var name_edit: LineEdit = $Panel/MainRow/ControlsCol/NameEdit
+@onready var skin_opt: OptionButton = $Panel/MainRow/ControlsCol/SkinOpt
+@onready var hair_opt: OptionButton = $Panel/MainRow/ControlsCol/HairOpt
+@onready var cape_opt: OptionButton = $Panel/MainRow/ControlsCol/CapeOpt
+@onready var outfit_opt: OptionButton = $Panel/MainRow/ControlsCol/OutfitOpt
+@onready var title_lbl: Label = $Panel/MainRow/ControlsCol/Title
+@onready var ok_btn: Button = $Panel/MainRow/ControlsCol/OkBtn
+@onready var cancel_btn: Button = $Panel/MainRow/ControlsCol/CancelBtn
+@onready var preview_host: SubViewportContainer = $Panel/MainRow/PreviewCol/PreviewHost
+@onready var preview_viewport: SubViewport = $Panel/MainRow/PreviewCol/PreviewHost/SubViewport
 
 var wardrobe_mode: bool = false
 var _preview_row: HBoxContainer = null
 var _preview_pulse_tw: Tween = null  # Wave 52: wardrobe color preview pulse
+var _preview_parts: Dictionary = {}
+var _preview_root: Node3D = null
+var _preview_yaw: float = 0.35  # gentle turn so cape + face both read
 
 var _swatches: Dictionary = {}  # key -> ColorRect
 
 const SKIN_COLORS := {
-	"fair": Color("#f3d5b5"),
-	"light": Color("#e0b48a"),
+	"fair": Color("#ffe0bd"),
+	"light": Color("#f1c27d"),
 	"medium": Color("#c68642"),
 	"tan": Color("#8d5524"),
 	"deep": Color("#5c3317"),
 }
 const HAIR_COLORS := {
 	"brown": Color("#5c4033"),
-	"black": Color("#1a1a1e"),
-	"blonde": Color("#d4b483"),
-	"auburn": Color("#8a3a22"),
-	"gray": Color("#9a9aa2"),
+	"black": Color("#1a1a1a"),
+	"blonde": Color("#d4a84b"),
+	"auburn": Color("#8b3a2a"),
+	"gray": Color("#8a8a8a"),
 }
 const CAPE_COLORS := {
 	"crimson": Color("#c1121f"),
-	"azure": Color("#2a6fbb"),
+	"azure": Color("#1d7a9c"),
 	"emerald": Color("#2d6a4f"),
 	"gold": Color("#c9a227"),
 	"violet": Color("#6a4c93"),
 }
 const OUTFIT_COLORS := {
-	"cream": Color("#f5f0e1"),
-	"sky": Color("#a8d4ea"),
-	"forest": Color("#3d6b3d"),
-	"sand": Color("#d4c4a0"),
-	"rose": Color("#e8b4b8"),
+	"cream": Color("#f4e4bc"),
+	"sky": Color("#87b8d4"),
+	"forest": Color("#4a7c59"),
+	"sand": Color("#c2b280"),
+	"rose": Color("#d4a0a0"),
 }
 
 func _ready() -> void:
@@ -58,7 +63,15 @@ func _ready() -> void:
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
 	outfit_opt.item_selected.connect(func(_i): _refresh_preview())
+	_ensure_character_preview()
 	_ensure_preview_row()
+
+func _process(delta: float) -> void:
+	## Slow idle turn so kids can see cape + face while picking colors.
+	if not visible or _preview_root == null or not is_instance_valid(_preview_root):
+		return
+	_preview_yaw += delta * 0.55
+	_preview_root.rotation.y = _preview_yaw
 
 func _fill(opt: OptionButton, keys: Array) -> void:
 	opt.clear()
@@ -71,6 +84,7 @@ func open_new() -> void:
 	title_lbl.text = "Create Your Apprentice"
 	name_edit.text = ""
 	name_edit.editable = true
+	ok_btn.text = "Begin"
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
 	_select(cape_opt, "crimson")
@@ -82,6 +96,7 @@ func open_wardrobe() -> void:
 	title_lbl.text = "Wardrobe"
 	name_edit.text = GameState.child_name
 	name_edit.editable = true
+	ok_btn.text = "Wear This Look"
 	_select(skin_opt, GameState.appearance.get("skin", "medium"))
 	_select(hair_opt, GameState.appearance.get("hair", "brown"))
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
@@ -95,27 +110,98 @@ func _select(opt: OptionButton, key: String) -> void:
 			opt.select(i)
 			return
 
+func _ensure_character_preview() -> void:
+	## Live 3D apprentice beside the color pickers (RuneScape-chunky, kid-readable).
+	if preview_viewport == null:
+		return
+	if _preview_root != null and is_instance_valid(_preview_root):
+		return
+	# Clear any leftover scene children except we own the viewport empty
+	for c in preview_viewport.get_children():
+		preview_viewport.remove_child(c)
+		c.free()
+
+	preview_viewport.own_world_3d = true
+	preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	preview_viewport.transparent_bg = false
+	preview_viewport.size = Vector2i(260, 340)
+
+	var world_env := WorldEnvironment.new()
+	var env := Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color("#2a3a2e")
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.72, 0.74, 0.68)
+	env.ambient_light_energy = 0.55
+	world_env.environment = env
+	preview_viewport.add_child(world_env)
+
+	var sun := DirectionalLight3D.new()
+	sun.light_energy = 1.15
+	sun.shadow_enabled = false
+	sun.rotation_degrees = Vector3(-42, 35, 0)
+	preview_viewport.add_child(sun)
+
+	var fill := OmniLight3D.new()
+	fill.light_color = Color(1.0, 0.95, 0.85)
+	fill.light_energy = 0.55
+	fill.omni_range = 8.0
+	fill.position = Vector3(-1.2, 2.2, 2.4)
+	preview_viewport.add_child(fill)
+
+	# Soft podium so the figure grounds in the frame
+	var podium := MeshInstance3D.new()
+	podium.name = "Podium"
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.55
+	cyl.bottom_radius = 0.62
+	cyl.height = 0.08
+	podium.mesh = cyl
+	podium.position = Vector3(0, 0.04, 0)
+	podium.material_override = HumanoidBuilder.make_mat(Color("#4a5c48"), 0.9)
+	HeadlessGuard.guard_mesh(podium)
+	preview_viewport.add_child(podium)
+
+	_preview_root = Node3D.new()
+	_preview_root.name = "PreviewCharacter"
+	_preview_root.position = Vector3(0, 0.08, 0)
+	preview_viewport.add_child(_preview_root)
+	_preview_parts = HumanoidBuilder.build(_preview_root)
+
+	var cam := Camera3D.new()
+	cam.name = "PreviewCam"
+	# Elevated oblique — same family as the in-world RuneScape camera
+	cam.position = Vector3(0.95, 2.15, 2.55)
+	cam.look_at(Vector3(0, 1.05, 0))
+	cam.fov = 38.0
+	preview_viewport.add_child(cam)
+	cam.current = true
+
+	if preview_host:
+		preview_host.stretch = true
+		preview_host.custom_minimum_size = Vector2(240, 320)
+
 func _ensure_preview_row() -> void:
 	## Wave 25: chunky color swatches so wardrobe picks read before you confirm.
 	if _preview_row != null and is_instance_valid(_preview_row):
 		return
-	var vbox: VBoxContainer = $Panel/VBox
+	var preview_col: VBoxContainer = $Panel/MainRow/PreviewCol
 	_preview_row = HBoxContainer.new()
 	_preview_row.name = "PreviewRow"
 	_preview_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_preview_row.add_theme_constant_override("separation", 10)
+	_preview_row.add_theme_constant_override("separation", 8)
 	var note := Label.new()
-	note.text = "Preview"
+	note.text = "Colors"
 	note.modulate = Color(0.85, 0.88, 0.75, 1)
 	_preview_row.add_child(note)
 	for key in ["skin", "hair", "cape", "outfit"]:
 		var wrap := VBoxContainer.new()
 		wrap.alignment = BoxContainer.ALIGNMENT_CENTER
 		var sw := ColorRect.new()
-		sw.custom_minimum_size = Vector2(28, 28)
+		sw.custom_minimum_size = Vector2(24, 24)
 		sw.name = "Swatch_%s" % key
 		var border := PanelContainer.new()
-		border.custom_minimum_size = Vector2(32, 32)
+		border.custom_minimum_size = Vector2(28, 28)
 		var inner := MarginContainer.new()
 		inner.add_theme_constant_override("margin_left", 2)
 		inner.add_theme_constant_override("margin_top", 2)
@@ -126,17 +212,15 @@ func _ensure_preview_row() -> void:
 		var lbl := Label.new()
 		lbl.text = key.capitalize()
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.add_theme_font_size_override("font_size", 11)
+		lbl.add_theme_font_size_override("font_size", 10)
 		wrap.add_child(border)
 		wrap.add_child(lbl)
 		_preview_row.add_child(wrap)
 		_swatches[key] = sw
-	# Place above Ok button
-	var ok_i: int = ok_btn.get_index()
-	vbox.add_child(_preview_row)
-	vbox.move_child(_preview_row, ok_i)
+	preview_col.add_child(_preview_row)
 
 func _refresh_preview() -> void:
+	_ensure_character_preview()
 	_ensure_preview_row()
 	if _swatches.is_empty():
 		return
@@ -144,11 +228,86 @@ func _refresh_preview() -> void:
 	var hair_k: String = str(hair_opt.get_selected_metadata())
 	var cape_k: String = str(cape_opt.get_selected_metadata())
 	var outfit_k: String = str(outfit_opt.get_selected_metadata())
-	_swatches["skin"].color = SKIN_COLORS.get(skin_k, Color.WHITE)
-	_swatches["hair"].color = HAIR_COLORS.get(hair_k, Color.WHITE)
-	_swatches["cape"].color = CAPE_COLORS.get(cape_k, Color.WHITE)
-	_swatches["outfit"].color = OUTFIT_COLORS.get(outfit_k, Color.WHITE)
+	var skin_c: Color = SKIN_COLORS.get(skin_k, Color.WHITE)
+	var hair_c: Color = HAIR_COLORS.get(hair_k, Color.WHITE)
+	var cape_c: Color = CAPE_COLORS.get(cape_k, Color.WHITE)
+	var outfit_c: Color = OUTFIT_COLORS.get(outfit_k, Color.WHITE)
+	_swatches["skin"].color = skin_c
+	_swatches["hair"].color = hair_c
+	_swatches["cape"].color = cape_c
+	_swatches["outfit"].color = outfit_c
+	_apply_preview_appearance(skin_c, hair_c, outfit_c, cape_c)
 	_play_wardrobe_preview_pulse()  # Wave 52: color preview pulse
+
+func _apply_preview_appearance(skin: Color, hair: Color, outfit: Color, cape_col: Color) -> void:
+	if _preview_parts.is_empty():
+		return
+	HumanoidBuilder.apply_human_colors(_preview_parts, skin, hair, outfit, cape_col)
+	var cape_mesh: MeshInstance3D = _preview_parts.get("cape")
+	if cape_mesh:
+		cape_mesh.visible = true
+	# Wardrobe: mirror worn hat / weapon / accessory so the look matches the village avatar
+	if wardrobe_mode:
+		_apply_preview_equipment()
+	else:
+		_clear_preview_equipment()
+
+func _clear_preview_equipment() -> void:
+	for key in ["hat", "weapon", "accessory", "chest_plate", "l_pad", "r_pad"]:
+		var n: Node = _preview_parts.get(key)
+		if n:
+			n.visible = false
+	var jewel: MeshInstance3D = _preview_parts.get("hat_jewel")
+	if jewel:
+		jewel.visible = false
+
+func _apply_preview_equipment() -> void:
+	# Keep selected cape color as the wardrobe signal; still show soft armor if a defensive cape is worn
+	var cape_id = GameState.equipped.get("cape")
+	if cape_id != null:
+		var citem: Dictionary = ItemDB.get_item(str(cape_id))
+		if not citem.is_empty():
+			HumanoidBuilder.style_armor(_preview_parts, citem)
+			# Re-assert wardrobe cape color after armor styling
+			var cape_k: String = str(cape_opt.get_selected_metadata())
+			HumanoidBuilder.set_color(_preview_parts.get("cape"), CAPE_COLORS.get(cape_k, Color("#c1121f")))
+	else:
+		HumanoidBuilder.style_armor(_preview_parts, {})
+
+	var weapon_root: Node3D = _preview_parts.get("weapon")
+	var wid = GameState.equipped.get("weapon")
+	if weapon_root:
+		weapon_root.visible = wid != null
+		if wid != null:
+			HumanoidBuilder.style_weapon(_preview_parts, ItemDB.get_item(str(wid)))
+
+	var hat_root: Node3D = _preview_parts.get("hat")
+	var hid = GameState.equipped.get("head")
+	if hat_root:
+		if hid != null:
+			HumanoidBuilder.style_hat(_preview_parts, ItemDB.get_item(str(hid)))
+		else:
+			hat_root.visible = false
+			var jewel: MeshInstance3D = _preview_parts.get("hat_jewel")
+			if jewel:
+				jewel.visible = false
+
+	var belt_mesh: MeshInstance3D = _preview_parts.get("belt")
+	var bid = GameState.equipped.get("belt")
+	if belt_mesh:
+		belt_mesh.visible = true
+		if bid != null:
+			var bitem: Dictionary = ItemDB.get_item(str(bid))
+			HumanoidBuilder.set_color(belt_mesh, Color(bitem.get("color", "#d4a017")))
+		else:
+			HumanoidBuilder.set_color(belt_mesh, Color("#5c3d24"))
+
+	var acc_root: Node3D = _preview_parts.get("accessory")
+	var aid = GameState.equipped.get("accessory")
+	if acc_root:
+		acc_root.visible = aid != null
+		if aid != null:
+			HumanoidBuilder.style_accessory(_preview_parts, ItemDB.get_item(str(aid)))
 
 func _play_wardrobe_preview_pulse() -> void:
 	## Wave 52: soft wardrobe color preview pulse — gentle cream scale bloom on swatches (RuneScape-chunky, wholesome).
@@ -159,10 +318,15 @@ func _play_wardrobe_preview_pulse() -> void:
 	_preview_row.pivot_offset = _preview_row.size * 0.5
 	_preview_row.scale = Vector2(1.06, 1.06)
 	_preview_row.modulate = Color(1.08, 1.05, 0.92, 1.0)
+	# Soft nudge on the 3D host too
+	if preview_host != null and is_instance_valid(preview_host):
+		preview_host.modulate = Color(1.06, 1.04, 0.94, 1.0)
 	_preview_pulse_tw = create_tween()
 	_preview_pulse_tw.set_parallel(true)
 	_preview_pulse_tw.tween_property(_preview_row, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_preview_pulse_tw.tween_property(_preview_row, "modulate", Color(1, 1, 1, 1), 0.28)
+	if preview_host != null and is_instance_valid(preview_host):
+		_preview_pulse_tw.tween_property(preview_host, "modulate", Color(1, 1, 1, 1), 0.28)
 
 func _on_ok() -> void:
 	var app := {
@@ -262,4 +426,3 @@ func _play_wardrobe_close_flourish(done: Callable) -> void:
 		panel.modulate = Color(1, 1, 1, 1)
 		done.call()
 	)
-
