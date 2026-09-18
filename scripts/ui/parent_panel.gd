@@ -154,7 +154,7 @@ func _refresh() -> void:
 			help_title.text = "Needs Help — all clear right now ★"
 			help_title.remove_theme_color_override("font_color")
 		else:
-			help_title.text = "Needs Help — %d item%s (WEEK · GUILD first)" % [help.size(), "" if help.size() == 1 else "s"]
+			help_title.text = "Needs Help — %d item%s (oldest attempt first)" % [help.size(), "" if help.size() == 1 else "s"]
 			# Wave 49: warm amber highlight when needs-help count > 0
 			help_title.add_theme_color_override("font_color", Color(0.92, 0.64, 0.18))
 	if help.is_empty():
@@ -163,7 +163,7 @@ func _refresh() -> void:
 		var tip_week: int = clampi(GameState.unlocked_week, 1, 36)
 		help_list.add_item("All clear — wonderful work together! Tip: Week %d is open — a short review keeps mastery humming." % tip_week)
 	else:
-		help.sort_custom(func(a, b): return float(a.get("percent", 0)) < float(b.get("percent", 0)))
+		help.sort_custom(func(a, b): return int(a.get("timestamp", 0)) < int(b.get("timestamp", 0)))  # Wave 75: oldest attempt first (PIN stays 1234; mastery ≥80%)
 		for h in help:
 			var q: Dictionary = QuestDB.get_quest(str(h.get("quest_id", "")))
 			var week_n: int = int(q.get("week", 0))

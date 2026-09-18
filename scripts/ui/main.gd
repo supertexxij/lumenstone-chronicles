@@ -624,7 +624,7 @@ func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
 			GameState.refill_pantry(true)
 		GameState.toast.emit("Arrived · %s — resting." % short_n)
 	elif first_discover:
-		GameState.toast.emit("Arrived · %s — first discovery!" % short_n)
+		GameState.toast.emit("✦ First discovery · %s — welcome!" % short_n)  # Wave 75: clearer first-discovery landmark toast
 	else:
 		GameState.toast.emit("Arrived · %s" % short_n)
 	_play_soft_travel_landing_puff()
@@ -847,6 +847,9 @@ func _enter_world() -> void:
 	# Wave 74: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_74_toast"):
 		GameState.maybe_wave_74_toast()
+	# Wave 75: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_75_toast"):
+		GameState.maybe_wave_75_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

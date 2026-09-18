@@ -171,6 +171,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_llama(bob)
 		"melon_moose":
 			_build_moose(bob)
+		"quince_quokka":
+			_build_quokka(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1938,4 +1940,39 @@ static func _build_moose(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.035, 0.025, 0.10), Vector3(0, 0.50, -0.28), bob, "Tail")
 	tail.rotation_degrees = Vector3(-35, 0, 0)
 	_mi(_sphere(0.055, 0.06), Vector3(0, 0.56, -0.34), bob, "TailFluff")
+
+static func _build_quokka(bob: Node3D) -> void:
+	## Soft quince-wilds quokka — plump round body, short thick tail, small rounded ears, blunt snout, stubby legs, cheek blush (distinct from Kiwi Koala / Palm Pika / Blueberry Bunny / Lemon Lemming / Cherry Chinchilla / Melon Moose).
+	# Plump round body + soft cream belly
+	_mi(_sphere(0.20, 0.24), Vector3(0, 0.34, 0.0), bob, "Body")
+	_mi(_sphere(0.11, 0.13), Vector3(0, 0.26, 0.05), bob, "Belly")
+	# Round head + small rounded ears (quokka signature — smaller than koala)
+	_mi(_sphere(0.12, 0.13), Vector3(0, 0.56, 0.12), bob, "Head")
+	_mi(_sphere(0.045, 0.05), Vector3(-0.10, 0.66, 0.10), bob, "EarL")
+	_mi(_sphere(0.045, 0.05), Vector3(0.10, 0.66, 0.10), bob, "EarR")
+	# Soft blunt snout (quokka smile silhouette)
+	_mi(_sphere(0.055, 0.06), Vector3(0, 0.52, 0.24), bob, "Snout")
+	_mi(_sphere(0.022, 0.018), Vector3(0, 0.52, 0.30), bob, "Nose")
+	_mi(_sphere(0.02), Vector3(-0.04, 0.60, 0.22), bob, "EyeL")
+	_mi(_sphere(0.02), Vector3(0.04, 0.60, 0.22), bob, "EyeR")
+	# Soft quince cheek blush
+	_mi(_sphere(0.035, 0.028), Vector3(-0.10, 0.50, 0.16), bob, "BlushL")
+	_mi(_sphere(0.035, 0.028), Vector3(0.10, 0.50, 0.16), bob, "BlushR")
+	# Stubby legs
+	for info in [
+		["FL", Vector3(-0.09, 0.14, 0.10)],
+		["FR", Vector3(0.09, 0.14, 0.10)],
+		["BL", Vector3(-0.09, 0.14, -0.10)],
+		["BR", Vector3(0.09, 0.14, -0.10)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.026, 0.03, 0.12), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.055, 0.016, 0.065)), Vector3(0, -0.09, 0.01), leg, "Foot")
+	# Short thick quokka tail (signature — not a long bushy mongoose tail)
+	var tail := _mi(_cyl(0.04, 0.03, 0.12), Vector3(0, 0.32, -0.22), bob, "Tail")
+	tail.rotation_degrees = Vector3(25, 0, 0)
+	_mi(_sphere(0.05, 0.055), Vector3(0, 0.34, -0.30), bob, "TailTip")
 

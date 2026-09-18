@@ -649,6 +649,19 @@
       "combat_xp": 300,
       "respawn_sec": 116.0,
       "description": "A gentle moose of the melon wilds \u2014 guide it kindly with a careful step!"
+    },
+    "quince_quokka": {
+      "kind": "quince_quokka",
+      "name": "Quince Quokka",
+      "defeat_verb": "cheered",
+      "color": "#d4a84a",
+      "accent": "#f5e8c8",
+      "max_hp": 320,
+      "damage": 53,
+      "accuracy": 0.16,
+      "combat_xp": 306,
+      "respawn_sec": 118.0,
+      "description": "A gentle quokka of the quince wilds \u2014 cheer it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -2139,6 +2152,36 @@
       "kind": "melon_moose",
       "x": 185,
       "z": 80
+    },
+    {
+      "id": "e249",
+      "kind": "quince_quokka",
+      "x": 145,
+      "z": -145
+    },
+    {
+      "id": "e250",
+      "kind": "quince_quokka",
+      "x": -145,
+      "z": 130
+    },
+    {
+      "id": "e251",
+      "kind": "quince_quokka",
+      "x": 130,
+      "z": 150
+    },
+    {
+      "id": "e252",
+      "kind": "quince_quokka",
+      "x": -135,
+      "z": -155
+    },
+    {
+      "id": "e253",
+      "kind": "quince_quokka",
+      "x": 195,
+      "z": 25
     }
   ],
   "base_combat": {

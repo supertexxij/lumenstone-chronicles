@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 75 overnight (v1.75.0-overnight)
+- Soft **Stone Arch limestone dust motes at dusk** — cool pale limestone motes drift through the western gateway (RuneScape-chunky, wholesome)
+- Soft **wind leaf particles polish** — a few more outdoor flakes + soft color fade (RuneScape-chunky, wholesome)
+- Clearer **first-discovery landmark toast** — approach + Soft Travel say ✦ First discovery (no cheesy combat labels)
+- New wilds foe **Quince Quokka** — plump round body, short thick tail, small rounded ears, blunt snout, stubby legs, cheek blush, gentle “cheered” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda / Coconut Crab / Lime Llama / Melon Moose)
+- Journal/Parent QoL: **★ Mastered this week sticky shows count**; **Parent Needs Help sorts oldest attempt first** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 74 overnight (v1.74.0-overnight)
 - Soft **Cedar Hollow cedar-needle drift at dusk** — soft green-brown needles drift over the NE hollow (RuneScape-chunky, wholesome)
 - Soft **plaza dusk lantern sync polish** — hearth + village lamps share a warmer dusk breath (RuneScape-chunky, wholesome)

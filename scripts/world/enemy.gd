@@ -149,6 +149,9 @@ func _ready() -> void:
 		"melon_moose":
 			if label: label.position.y = 2.2
 			hp_bar.position.y = 1.95
+		"quince_quokka":
+			if label: label.position.y = 1.4
+			hp_bar.position.y = 1.15
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -947,6 +950,23 @@ func _idle_anim(delta: float) -> void:
 			var mtail := creature_bob.get_node_or_null("Tail")
 			if mtail:
 				mtail.rotation.y = sin(t * 0.85) * 0.1
+		"quince_quokka":
+			# Soft smile-bob — plump breathe, ear twitch, short thick tail sway (Wave 75)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.9)) * 0.028
+			creature_bob.rotation.y = sin(t * 0.3) * 0.08
+			var qear_l := creature_bob.get_node_or_null("EarL")
+			var qear_r := creature_bob.get_node_or_null("EarR")
+			if qear_l:
+				qear_l.rotation.z = sin(t * 1.1) * 0.08
+			if qear_r:
+				qear_r.rotation.z = -sin(t * 1.1 + 0.2) * 0.08
+			var qtail := creature_bob.get_node_or_null("Tail")
+			if qtail:
+				qtail.rotation.y = sin(t * 1.0) * 0.12
+			var qhead := creature_bob.get_node_or_null("Head")
+			if qhead:
+				qhead.rotation.y = sin(t * 0.65) * 0.06
+				qhead.rotation.x = sin(t * 0.5) * 0.04
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

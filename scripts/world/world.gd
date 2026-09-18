@@ -53,6 +53,7 @@ var _thistle_blooms: CPUParticles3D  # Wave 71: soft Thistle Rise thistle-bloom 
 var _maple_dusk_leaves: CPUParticles3D  # Wave 72: soft Maple Copse maple-leaf drift at dusk
 var _amber_knoll_motes: CPUParticles3D  # Wave 73: soft Amber Knoll amber-glow motes at dusk
 var _cedar_needles: CPUParticles3D  # Wave 74: soft Cedar Hollow cedar-needle drift at dusk
+var _stone_arch_dust: CPUParticles3D  # Wave 75: soft Stone Arch limestone dust motes at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -919,11 +920,11 @@ func _update_landmark_approach() -> void:
 			var msg := ""
 			if first:
 				var raw_f := str(best_zone.get("first_toast", best_zone.get("return_toast", "")))
-				# Wave 40: clearer landmark approach toast
+				# Wave 40/75: clearer first-discovery landmark toast (RuneScape-chunky, wholesome)
 				if raw_f.begins_with("First discovery:"):
-					msg = "✦ New landmark ·" + raw_f.substr("First discovery:".length())
+					msg = "✦ First discovery ·" + raw_f.substr("First discovery:".length())
 				else:
-					msg = "✦ New landmark · " + raw_f
+					msg = "✦ First discovery · " + raw_f
 			else:
 				var raw_r := str(best_zone.get("return_toast", best_zone.get("first_toast", "")))
 				var stripped := raw_r
@@ -1797,6 +1798,7 @@ func _setup_weather() -> void:
 	_setup_maple_dusk_leaves()
 	_setup_amber_knoll_motes()
 	_setup_cedar_needles()
+	_setup_stone_arch_dust()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2058,6 +2060,10 @@ func _update_weather(delta: float) -> void:
 		var cedar_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_cedar_needles.emitting = cedar_dusk
 		_cedar_needles.visible = cedar_dusk
+	if _stone_arch_dust:
+		var arch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_stone_arch_dust.emitting = arch_dusk
+		_stone_arch_dust.visible = arch_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3546,32 +3552,39 @@ func _build_maple_copse() -> void:
 
 
 func _setup_wind_leaves() -> void:
-	## Wave 30: soft wind-blown leaf flakes that follow the player outdoors (RuneScape-chunky, wholesome).
+	## Wave 30/75: soft wind-blown leaf flakes that follow the player outdoors — Wave 75 soft wind leaf particles polish (RuneScape-chunky, wholesome).
 	_wind_leaves = CPUParticles3D.new()
 	_wind_leaves.name = "WindLeaves"
 	_wind_leaves.emitting = true
-	_wind_leaves.amount = 22
-	_wind_leaves.lifetime = 5.5
-	_wind_leaves.preprocess = 2.5
+	_wind_leaves.amount = 28
+	_wind_leaves.lifetime = 5.8
+	_wind_leaves.preprocess = 2.6
 	_wind_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	_wind_leaves.emission_box_extents = Vector3(11, 2.5, 11)
-	_wind_leaves.direction = Vector3(0.55, -0.12, 0.25)
-	_wind_leaves.spread = 42.0
-	_wind_leaves.initial_velocity_min = 0.35
-	_wind_leaves.initial_velocity_max = 1.1
-	_wind_leaves.gravity = Vector3(0, -0.35, 0)
-	_wind_leaves.angular_velocity_min = -40.0
-	_wind_leaves.angular_velocity_max = 40.0
-	_wind_leaves.scale_amount_min = 0.35
-	_wind_leaves.scale_amount_max = 0.85
+	_wind_leaves.emission_box_extents = Vector3(11.5, 2.8, 11.5)
+	_wind_leaves.direction = Vector3(0.58, -0.14, 0.28)
+	_wind_leaves.spread = 46.0
+	_wind_leaves.initial_velocity_min = 0.32
+	_wind_leaves.initial_velocity_max = 1.15
+	_wind_leaves.gravity = Vector3(0, -0.38, 0)
+	_wind_leaves.angular_velocity_min = -48.0
+	_wind_leaves.angular_velocity_max = 48.0
+	_wind_leaves.scale_amount_min = 0.32
+	_wind_leaves.scale_amount_max = 0.92
 	var lm := BoxMesh.new()
-	lm.size = Vector3(0.22, 0.04, 0.14)
+	lm.size = Vector3(0.24, 0.035, 0.15)
 	_wind_leaves.mesh = lm
 	var lmat := StandardMaterial3D.new()
-	lmat.albedo_color = Color(0.78, 0.42, 0.18, 0.72)
+	lmat.albedo_color = Color(0.80, 0.44, 0.18, 0.74)
 	lmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_wind_leaves.material_override = lmat
+	var wramp := Gradient.new()
+	wramp.colors = PackedColorArray([
+		Color(0.85, 0.55, 0.22, 0.0),
+		Color(0.80, 0.44, 0.18, 0.82),
+		Color(0.62, 0.32, 0.12, 0.0),
+	])
+	_wind_leaves.color_ramp = wramp
 	_wind_leaves.position = Vector3(0, 2.4, 0)
 	add_child(_wind_leaves)
 	HeadlessGuard.guard_particles(_wind_leaves)
@@ -4028,6 +4041,51 @@ func _setup_cedar_needles() -> void:
 	_cedar_needles.position = Vector3(38.0, 3.2, -36.0)
 	add_child(_cedar_needles)
 	HeadlessGuard.guard_particles(_cedar_needles)
+
+
+
+func _setup_stone_arch_dust() -> void:
+	## Wave 75: soft Stone Arch limestone dust motes at dusk — cool pale limestone motes drift through the western gateway (RuneScape-chunky, wholesome).
+	_stone_arch_dust = CPUParticles3D.new()
+	_stone_arch_dust.name = "StoneArchLimestoneDust"
+	_stone_arch_dust.emitting = false
+	_stone_arch_dust.amount = 32
+	_stone_arch_dust.lifetime = 4.8
+	_stone_arch_dust.preprocess = 1.2
+	_stone_arch_dust.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_stone_arch_dust.emission_box_extents = Vector3(5.5, 3.2, 4.2)
+	_stone_arch_dust.direction = Vector3(0.12, 0.18, 0.08)
+	_stone_arch_dust.spread = 55.0
+	_stone_arch_dust.initial_velocity_min = 0.04
+	_stone_arch_dust.initial_velocity_max = 0.32
+	_stone_arch_dust.gravity = Vector3(0, -0.08, 0)
+	_stone_arch_dust.angular_velocity_min = -25.0
+	_stone_arch_dust.angular_velocity_max = 25.0
+	_stone_arch_dust.scale_amount_min = 0.10
+	_stone_arch_dust.scale_amount_max = 0.36
+	var dm := SphereMesh.new()
+	dm.radius = 0.045
+	dm.height = 0.09
+	_stone_arch_dust.mesh = dm
+	var dmat := StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.82, 0.80, 0.72, 0.70)
+	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dmat.emission_enabled = true
+	dmat.emission = Color(0.78, 0.76, 0.68)
+	dmat.emission_energy_multiplier = 0.55
+	_stone_arch_dust.material_override = dmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.88, 0.86, 0.78, 0.0),
+		Color(0.82, 0.80, 0.72, 0.78),
+		Color(0.70, 0.68, 0.60, 0.0),
+	])
+	_stone_arch_dust.color_ramp = ramp
+	# Stone Arch landmark at (-48, 0, 8)
+	_stone_arch_dust.position = Vector3(-48.0, 2.8, 8.0)
+	add_child(_stone_arch_dust)
+	HeadlessGuard.guard_particles(_stone_arch_dust)
 
 
 func _setup_brook_sparkle() -> void:
