@@ -4988,10 +4988,10 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
 		uni.rotation.y = ang + PI  # face roughly toward center
-		uni.scale = Vector3(0.85, 0.85, 0.85)
+		uni.scale = Vector3(1.05, 1.05, 1.05)
 		party.add_child(uni)
 		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
-		CreatureBuilder.colorize(bob, pair[0], pair[1])
+		CreatureBuilder.colorize_party_unicorn(bob, pair[0], pair[1])
 		# Soft rainbow trail sparkle under each unicorn
 		var trail := CPUParticles3D.new()
 		trail.name = "UnicornTrail"

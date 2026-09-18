@@ -185,45 +185,117 @@ static func build(kind: String, root: Node3D) -> Node3D:
 
 
 static func _build_party_unicorn(bob: Node3D) -> void:
-	## Festive week-complete unicorn — chunky horse body, spiral horn, flowing mane/tail (wholesome, Grade 3).
-	var body := _mi(_capsule(0.24, 0.92), Vector3(0, 0.68, 0), bob, "Body")
+	## Cartoon week-party unicorn — blocky horse read (boxy muzzle, ribbon mane sheets,
+	## tall horn, cylinder legs). Avoid sphere-clusters that read as bubble animals.
+	# Main barrel (one clean capsule) — no extra chest/rump blobs
+	var body := _mi(_capsule(0.20, 0.88), Vector3(0, 0.70, 0.0), bob, "Body")
 	body.rotation_degrees = Vector3(0, 0, 90)
-	var neck := _mi(_cyl(0.09, 0.13, 0.42), Vector3(0, 0.92, 0.38), bob, "Neck")
-	neck.rotation_degrees = Vector3(22, 0, 0)
-	_mi(_sphere(0.18), Vector3(0, 1.12, 0.62), bob, "Head")
-	_mi(_sphere(0.07), Vector3(0, 1.06, 0.78), bob, "Snout")
-	# Spiral horn
-	var horn := _mi(_cyl(0.01, 0.045, 0.36), Vector3(0, 1.36, 0.58), bob, "Horn")
-	horn.rotation_degrees = Vector3(-18, 0, 0)
-	_mi(_sphere(0.035), Vector3(0, 1.52, 0.52), bob, "HornTip")
-	# Ears
-	_mi(_sphere(0.06, 0.11), Vector3(-0.10, 1.24, 0.52), bob, "EarL")
-	_mi(_sphere(0.06, 0.11), Vector3(0.10, 1.24, 0.52), bob, "EarR")
-	# Mane tufts
-	_mi(_sphere(0.09, 0.16), Vector3(-0.02, 1.22, 0.40), bob, "ManeA")
-	_mi(_sphere(0.08, 0.14), Vector3(0.04, 1.10, 0.28), bob, "ManeB")
-	_mi(_sphere(0.07, 0.12), Vector3(-0.03, 0.98, 0.18), bob, "ManeC")
-	# Flowing tail
+	# Soft flat belly plate
+	_mi(_box(Vector3(0.28, 0.10, 0.55)), Vector3(0, 0.52, 0.0), bob, "Belly")
+	# Arched neck
+	var neck := _mi(_cyl(0.09, 0.12, 0.46), Vector3(0, 0.96, 0.38), bob, "Neck")
+	neck.rotation_degrees = Vector3(30, 0, 0)
+	# Cartoon head: rounded box + long muzzle box (horse face, not a ball)
+	_mi(_box(Vector3(0.22, 0.20, 0.22)), Vector3(0, 1.22, 0.58), bob, "Head")
+	_mi(_box(Vector3(0.16, 0.12, 0.24)), Vector3(0, 1.14, 0.78), bob, "Muzzle")
+	_mi(_box(Vector3(0.08, 0.05, 0.06)), Vector3(0, 1.10, 0.92), bob, "Nose")
+	# Big cartoon eyes on the face box
+	_mi(_sphere(0.038), Vector3(-0.08, 1.28, 0.70), bob, "EyeL")
+	_mi(_sphere(0.038), Vector3(0.08, 1.28, 0.70), bob, "EyeR")
+	_mi(_sphere(0.018), Vector3(-0.08, 1.29, 0.735), bob, "PupilL")
+	_mi(_sphere(0.018), Vector3(0.08, 1.29, 0.735), bob, "PupilR")
+	# Soft cheek blush disks (flat, not bubbly)
+	_mi(_box(Vector3(0.05, 0.04, 0.02)), Vector3(-0.12, 1.18, 0.68), bob, "BlushL")
+	_mi(_box(Vector3(0.05, 0.04, 0.02)), Vector3(0.12, 1.18, 0.68), bob, "BlushR")
+	# Pointed triangle ears
+	var ear_l := _mi(_cyl(0.008, 0.06, 0.18), Vector3(-0.10, 1.40, 0.54), bob, "EarL")
+	ear_l.rotation_degrees = Vector3(8, 0, -32)
+	var ear_r := _mi(_cyl(0.008, 0.06, 0.18), Vector3(0.10, 1.40, 0.54), bob, "EarR")
+	ear_r.rotation_degrees = Vector3(8, 0, 32)
+	# Tall bold spiral horn
+	var horn_root := Node3D.new()
+	horn_root.name = "Horn"
+	horn_root.position = Vector3(0, 1.40, 0.54)
+	horn_root.rotation_degrees = Vector3(-18, 0, 0)
+	bob.add_child(horn_root)
+	_mi(_cyl(0.055, 0.038, 0.16), Vector3(0, 0.07, 0), horn_root, "HornBase")
+	_mi(_cyl(0.038, 0.020, 0.18), Vector3(0, 0.22, 0), horn_root, "HornMid")
+	_mi(_cyl(0.020, 0.005, 0.16), Vector3(0, 0.36, 0), horn_root, "HornTip")
+	# Big ribbon mane sheets — wide flat boxes so they read from the village camera
+	var mane := Node3D.new()
+	mane.name = "Mane"
+	mane.position = Vector3(0, 1.02, 0.18)
+	bob.add_child(mane)
+	var mane_a := _mi(_box(Vector3(0.08, 0.36, 0.18)), Vector3(0.04, 0.22, 0.24), mane, "ManeA")
+	mane_a.rotation_degrees = Vector3(-22, 14, 10)
+	var mane_b := _mi(_box(Vector3(0.07, 0.40, 0.16)), Vector3(-0.05, 0.08, 0.08), mane, "ManeB")
+	mane_b.rotation_degrees = Vector3(-10, -12, -8)
+	var mane_c := _mi(_box(Vector3(0.07, 0.38, 0.15)), Vector3(0.05, -0.10, -0.06), mane, "ManeC")
+	mane_c.rotation_degrees = Vector3(8, 10, 12)
+	var mane_d := _mi(_box(Vector3(0.06, 0.34, 0.14)), Vector3(-0.03, -0.22, -0.18), mane, "ManeD")
+	mane_d.rotation_degrees = Vector3(16, -8, -6)
+	var forelock := _mi(_box(Vector3(0.07, 0.24, 0.14)), Vector3(0, 0.34, 0.40), mane, "Forelock")
+	forelock.rotation_degrees = Vector3(-42, 0, 0)
+	# Flowing ribbon tail — wide sheets
 	var tail := Node3D.new()
 	tail.name = "Tail"
-	tail.position = Vector3(0, 0.72, -0.48)
-	tail.rotation_degrees = Vector3(-28, 0, 0)
+	tail.position = Vector3(0, 0.78, -0.48)
+	tail.rotation_degrees = Vector3(-12, 0, 0)
 	bob.add_child(tail)
-	_mi(_capsule(0.08, 0.42), Vector3(0, 0.08, -0.06), tail, "TailMain")
-	_mi(_sphere(0.10), Vector3(0, 0.18, -0.24), tail, "TailTip")
-	# Four legs + soft hooves
+	var t1 := _mi(_box(Vector3(0.08, 0.12, 0.28)), Vector3(0, 0.04, -0.10), tail, "TailA")
+	t1.rotation_degrees = Vector3(20, 10, 0)
+	var t2 := _mi(_box(Vector3(0.10, 0.14, 0.30)), Vector3(0.03, 0.0, -0.32), tail, "TailB")
+	t2.rotation_degrees = Vector3(30, -12, 8)
+	var t3 := _mi(_box(Vector3(0.11, 0.16, 0.26)), Vector3(-0.03, -0.04, -0.54), tail, "TailC")
+	t3.rotation_degrees = Vector3(38, 8, -6)
+	# Longer clearer legs + block hooves
 	for info in [
-		["FL", Vector3(-0.14, 0.40, 0.28)],
-		["FR", Vector3(0.14, 0.40, 0.28)],
-		["BL", Vector3(-0.14, 0.40, -0.26)],
-		["BR", Vector3(0.14, 0.40, -0.26)],
+		["FL", Vector3(-0.12, 0.48, 0.28)],
+		["FR", Vector3(0.12, 0.48, 0.28)],
+		["BL", Vector3(-0.12, 0.48, -0.26)],
+		["BR", Vector3(0.12, 0.48, -0.26)],
 	]:
 		var leg := Node3D.new()
 		leg.name = "Leg" + str(info[0])
 		leg.position = info[1]
 		bob.add_child(leg)
-		_mi(_capsule(0.055, 0.34), Vector3(0, -0.08, 0), leg, "Thigh")
-		_mi(_box(Vector3(0.09, 0.05, 0.12)), Vector3(0, -0.30, 0.02), leg, "Hoof")
+		_mi(_cyl(0.042, 0.048, 0.26), Vector3(0, -0.04, 0), leg, "Thigh")
+		_mi(_cyl(0.032, 0.036, 0.24), Vector3(0, -0.26, 0), leg, "Shin")
+		_mi(_box(Vector3(0.09, 0.05, 0.13)), Vector3(0, -0.42, 0.02), leg, "Hoof")
+
+
+static func colorize_party_unicorn(root: Node3D, coat: Color, mane: Color) -> void:
+	## Coat on body/legs; accent on mane, horn, tail, blush; dark eyes/hooves.
+	var dark := Color(0.18, 0.12, 0.22)
+	var hoof_c := coat.darkened(0.35)
+	var nose_c := Color(0.35, 0.22, 0.28)
+	_colorize_named_meshes(root, func(n: String) -> Color:
+		var low := n.to_lower()
+		if "eye" in low or "pupil" in low:
+			return dark
+		if "hoof" in low:
+			return hoof_c
+		if "nose" in low:
+			return nose_c
+		if "mane" in low or "forelock" in low or "horn" in low or "tail" in low or "blush" in low or "ear" in low:
+			return mane
+		if "belly" in low:
+			return coat.lightened(0.18)
+		return coat
+	)
+
+
+static func _colorize_named_meshes(root: Node3D, pick: Callable) -> void:
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = pick.call(str(n.name))
+			mat.roughness = 0.62
+			(n as MeshInstance3D).material_override = mat
+		for c in n.get_children():
+			stack.append(c)
 
 
 static func _build_wisp(bob: Node3D) -> void:
