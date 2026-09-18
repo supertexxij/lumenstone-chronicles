@@ -10,3 +10,6 @@ builds/linux/*
 builds/windows/*
 !builds/linux/.gitkeep
 !builds/windows/.gitkeep
+
+# Godot editor binary (fetched by Cloud Agent install / local bootstrap)
+tools/godot/
