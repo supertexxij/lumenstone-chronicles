@@ -88,7 +88,8 @@ func _ready() -> void:
 	_ensure_foe_count()
 	_ensure_fav_paces()
 	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
-	hint_lbl.text = "Click ground or WASD · I bag · J journal · T travel · F talk · V eat · H fountain · Parent for grown-ups"
+	hint_lbl.text = "I bag · J journal · T travel · V eat · Parent for grown-ups"
+	_style_compact_hud()
 	_refresh_mute_label()
 	if not AudioBus.mute_changed.is_connected(_on_mute):
 		AudioBus.mute_changed.connect(_on_mute)
@@ -140,18 +141,49 @@ func _refresh_mute_label() -> void:
 		mute_btn.remove_theme_color_override("font_color")
 		mute_btn.tooltip_text = "Mute sound (M)"
 
+func _style_compact_hud() -> void:
+	## v1.81 UI: quieter top bar so HP / food / year read first.
+	if name_lbl:
+		name_lbl.add_theme_font_size_override("font_size", 18)
+	if xp_lbl:
+		xp_lbl.add_theme_font_size_override("font_size", 13)
+		xp_lbl.modulate = Color(0.90, 0.88, 0.80, 1.0)
+	if combat_lbl:
+		combat_lbl.add_theme_font_size_override("font_size", 13)
+		combat_lbl.modulate = Color(0.90, 0.88, 0.80, 1.0)
+	if lumen_lbl:
+		lumen_lbl.add_theme_font_size_override("font_size", 13)
+	if inv_btn:
+		inv_btn.text = "Bag (I)"
+	if look_btn:
+		look_btn.text = "Looks (C)"
+	if journal_btn:
+		journal_btn.text = "Journal (J)"
+	if travel_btn:
+		travel_btn.text = "Travel (T)"
+	if weather_btn:
+		weather_btn.text = "Weather (R)"
+	if parent_btn:
+		parent_btn.text = "Parent"
+		PanelChrome.style_button(parent_btn, true)
+	if hint_lbl:
+		hint_lbl.modulate = Color(0.88, 0.84, 0.72, 0.85)
+
+
 func refresh() -> void:
 	name_lbl.text = GameState.child_name
-	xp_lbl.text = "XP %d · Lv %d · Wk %d" % [GameState.xp, GameState.level, GameState.unlocked_week]
+	xp_lbl.text = "Lv %d · %d XP" % [GameState.level, GameState.xp]
+	xp_lbl.tooltip_text = "Level %d · %d XP · week %d of 36" % [GameState.level, GameState.xp, GameState.unlocked_week]
 	var def_n: int = 0
 	if GameState.has_method("get_defense"):
 		def_n = int(GameState.get_defense())
 	if _def_flash_active and def_n > 0:
-		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d softens the hit" % [GameState.combat_level, GameState.combat_xp, def_n]
+		combat_lbl.text = "Combat %d · Def %d softens the hit" % [GameState.combat_level, def_n]
 	elif def_n > 0:
-		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d" % [GameState.combat_level, GameState.combat_xp, def_n]
+		combat_lbl.text = "Combat %d · Def %d" % [GameState.combat_level, def_n]
 	else:
-		combat_lbl.text = "Combat Lv %d (%d XP)" % [GameState.combat_level, GameState.combat_xp]
+		combat_lbl.text = "Combat %d" % GameState.combat_level
+	combat_lbl.tooltip_text = "Combat Lv %d (%d XP) · Def %d" % [GameState.combat_level, GameState.combat_xp, def_n]
 	var parts: PackedStringArray = []
 	var lumen_total := 0
 	for g in ["math","la","science","history","bible"]:
@@ -173,7 +205,9 @@ func set_hp(cur: int, mx: int) -> void:
 	_ensure_clear_hp_text(hp_txt)
 	# Wave 35: clearer combat HP number — bold "HP N / M" on the bar
 	# Wave 41: combat level shown near HP
-	hp_txt.text = "HP %d / %d · Lv %d" % [cur, mx, GameState.combat_level]
+	# v1.81 UI: HP digits on the bar; combat level on the quieter combat line
+	hp_txt.text = "HP %d / %d" % [cur, mx]
+	hp_txt.tooltip_text = "HP %d / %d · Lv %d" % [cur, mx, GameState.combat_level]
 	_update_hurt_vignette(cur, mx)
 
 func _ensure_clear_hp_text(hp_txt: Label) -> void:
@@ -251,7 +285,8 @@ func _update_day_label() -> void:
 	var weather: String = str(_map_data.get("weather", "Clear"))
 	day_lbl.text = "%s · %s" % [tod, weather]
 	if weather_btn:
-		weather_btn.text = "Weather (R): %s" % weather
+		weather_btn.text = "Weather (R)"
+		weather_btn.tooltip_text = "Cycle weather (R) · now %s" % weather
 
 func _ensure_food_lbl() -> void:
 	var top: HBoxContainer = $TopBar
@@ -261,7 +296,8 @@ func _ensure_food_lbl() -> void:
 	food_lbl = Label.new()
 	food_lbl.name = "FoodLbl"
 	food_lbl.text = "Pantry —"
-	food_lbl.custom_minimum_size = Vector2(160, 0)
+	food_lbl.custom_minimum_size = Vector2(128, 0)
+	food_lbl.add_theme_font_size_override("font_size", 14)
 	top.add_child(food_lbl)
 	# Place right after HpBar
 	var hp_i: int = hp_bar.get_index()
@@ -316,9 +352,11 @@ func _refresh_food_lbl() -> void:
 		next_txt = "%s +%d" % [bname, int(best.get("heal", 0))]
 	# Wave 34: clearer food cooldown — Wait vs Ready (no cryptic CD)
 	# Wave 41: soft Ready flash when cooldown ends
+	# v1.81 UI: pantry HUD shows next food only; full stacks live in the tooltip
+	food_lbl.tooltip_text = "Pantry %s · V eats the best food" % stack_txt
 	if cd > 0.05:
 		_food_was_waiting = true
-		food_lbl.text = "Pantry %s · Wait %.1fs · V:%s" % [stack_txt, cd, next_txt]
+		food_lbl.text = "Pantry · Wait %.1fs · V %s" % [cd, next_txt]
 		food_lbl.modulate = Color(1.0, 0.88, 0.55, 1.0)
 	else:
 		if _food_was_waiting:
@@ -327,7 +365,7 @@ func _refresh_food_lbl() -> void:
 			# Wave 65: pantry Ready flash + tiny chime (respects mute via AudioBus)
 			if AudioBus.has_method("play_ready_chime"):
 				AudioBus.play_ready_chime()
-		food_lbl.text = "Pantry %s · Ready · V:%s" % [stack_txt, next_txt]
+		food_lbl.text = "Pantry · Ready · V %s" % next_txt
 		if _food_ready_flash_t > 0.0:
 			# Wave 57: clearer Ready flash color — bright mint→gold bloom (distinct from idle Ready green)
 			var u := clampf(_food_ready_flash_t / 0.75, 0.0, 1.0)
@@ -455,8 +493,8 @@ func _ensure_year_chip() -> void:
 		return
 	var made_year := _make_hud_chip(
 		"YearChipPanel", "YearChip", Control.PRESET_TOP_RIGHT,
-		-300.0, 84.0, -12.0, 118.0,
-		Color(0.14, 0.18, 0.14, 0.72), Color(0.78, 0.86, 0.55, 0.75),
+		-188.0, 84.0, -12.0, 118.0,
+		Color(0.14, 0.18, 0.14, 0.78), Color(0.78, 0.86, 0.55, 0.85),
 		15, Color(0.94, 0.98, 0.82, 1.0)
 	)
 	_year_chip_panel = made_year["panel"]
@@ -495,15 +533,16 @@ func _refresh_year_chip() -> void:
 			wx_letter = "R"
 			wx_name = "Rain"
 	# Wave 74: Year chip shows week N of 36 beside % (PIN stays 1234; mastery ≥80%)
+	# v1.81 UI: short chip; week of 36 + Year · mastery stay in the tooltip
 	var week_show: int = clampi(int(GameState.unlocked_week), 1, 36)
 	var lab := str(GameState.slot_label).strip_edges()
 	var slot_n: int = int(GameState.active_slot) + 1
-	if lab != "":
-		_year_chip.text = "Year · week %d of 36 · %d%% · %s" % [week_show, pct, lab]
-	else:
-		_year_chip.text = "Year · week %d of 36 · %d%%" % [week_show, pct]
+	_year_chip.text = "Year · Wk %d · %d%%" % [week_show, pct]
 	var ynote := GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
-	_year_chip.tooltip_text = "%s · week %d of 36 · weather %s (%s) · Slot %d" % [ynote, week_show, wx_letter, wx_name, slot_n]
+	# Keep smoke strings: "week %d of 36", "Year · mastery %d%% · %s"
+	_year_chip.tooltip_text = "%s · week %d of 36 · Year · mastery %d%% · %s · weather %s (%s) · Slot %d" % [
+		ynote, week_show, pct, lab if lab != "" else ("Slot %d" % slot_n), wx_letter, wx_name, slot_n
+	]
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
 		_year_chip_flash_dur = 0.85
@@ -788,7 +827,7 @@ func _on_hurt_def_flash(_amount: int) -> void:
 	_def_flash_active = true
 	_def_flash_t = 1.35
 	if combat_lbl:
-		combat_lbl.text = "Combat Lv %d (%d XP) · Def %d softens the hit" % [GameState.combat_level, GameState.combat_xp, def_n]
+		combat_lbl.text = "Combat %d · Def %d softens the hit" % [GameState.combat_level, def_n]
 		combat_lbl.modulate = Color(1.0, 0.92, 0.55, 1.0)
 
 

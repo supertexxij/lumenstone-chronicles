@@ -21,6 +21,7 @@ var correct_count: int = 0
 var selected_option: String = ""
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
 	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	submit_btn.pressed.connect(_on_submit)
 	fill_edit.text_submitted.connect(func(_t): _on_submit())
