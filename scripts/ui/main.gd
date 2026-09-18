@@ -26,7 +26,6 @@ var _minigames_panel: Control
 var _pending_clear_slot: int = -1
 var _pending_overwrite_slot: int = -1
 var _reset_confirm_armed: bool = false
-var _hit_pausing: bool = false
 var _travel_fading: bool = false
 var _travel_fade: ColorRect = null
 var _travel_fade_label: Label = null  # Wave 62: landmark name during soft-travel fade
@@ -87,6 +86,20 @@ func _ready() -> void:
 	_setup_minigames_panel()
 	if hud.has_signal("saves_pressed"):
 		hud.saves_pressed.connect(_open_save_panel)
+	# Cloud / agent demo: skip title when LUMEN_AUTO_CONTINUE=1 and a save exists
+	if str(OS.get_environment("LUMEN_AUTO_CONTINUE")).strip_edges() in ["1", "true", "yes"]:
+		call_deferred("_auto_continue_demo")
+
+
+func _auto_continue_demo() -> void:
+	## Soft boot into the village for headless/GUI demos (does not change default play).
+	if GameState.in_world:
+		return
+	var slot := 0
+	if GameState.has_save(slot):
+		_on_continue(slot)
+	else:
+		_on_new_game(slot)
 
 func _setup_travel_panel() -> void:
 	if travel_panel == null:
@@ -559,8 +572,8 @@ func _play_travel_open_flourish() -> void:
 	panel.modulate = Color(1, 1, 1, 0.0)
 	var tw := create_tween()
 	tw.set_parallel(true)
-	tw.tween_property(panel, "scale", Vector2.ONE, 0.24).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.20)
+	tw.tween_property(panel, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.12)
 
 func _refresh_travel_list() -> void:
 	## Wave 39/45/56: search/filter + group counts + distance + ★ fav hoisted to top (PIN 1234; mastery ≥80%).
@@ -859,17 +872,17 @@ func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
 			_travel_fade_label.add_theme_color_override("font_outline_color", Color(0.18, 0.14, 0.10, 0.85))
 		var tw := create_tween()
 		tw.set_parallel(true)
-		tw.tween_property(_travel_fade, "color:a", 0.68, 0.26).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tw.tween_property(_travel_fade, "color:a", 0.68, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		if _travel_fade_label:
-			tw.tween_property(_travel_fade_label, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			tw.tween_property(_travel_fade_label, "modulate:a", 1.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		await tw.finished
 	_apply_soft_travel_arrival(pos, label)
 	if _travel_fade:
 		var tw2 := create_tween()
 		tw2.set_parallel(true)
-		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.36).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		tw2.tween_property(_travel_fade, "color:a", 0.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		if _travel_fade_label:
-			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await tw2.finished
 		_travel_fade.visible = false
 		_travel_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1082,7 +1095,8 @@ func _play_load_toasts() -> void:
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
-		"maybe_bugs_182_toast", "maybe_curriculum_183_toast", "maybe_minigames_184_toast",
+		"maybe_bugs_182_toast", "maybe_curriculum_183_toast",
+		"maybe_minigames_184_toast", "maybe_smooth_184_toast",
 	])
 	var early: bool = GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save()
 	if early and GameState.has_method("quiet_legacy_polish_toasts"):
@@ -1091,6 +1105,8 @@ func _play_load_toasts() -> void:
 			GameState.maybe_curriculum_183_toast()
 		if GameState.has_method("maybe_minigames_184_toast"):
 			GameState.maybe_minigames_184_toast()
+		if GameState.has_method("maybe_smooth_184_toast"):
+			GameState.maybe_smooth_184_toast()
 		return
 	for m in methods:
 		if not GameState.has_method(m):
@@ -1131,23 +1147,10 @@ func _on_ui_open(panel: String) -> void:
 				return
 
 func _on_player_hurt(amount: int) -> void:
-	## Tiny hit pause for combat feel — wholesome, very short.
+	## v1.84.4: no Engine.time_scale hit-pause — that felt like the apprentice freezing.
+	## Hurt vignette / toasts still carry the soft combat cue.
 	if amount <= 0:
 		return
-	_play_hit_pause()
-
-
-func _play_hit_pause() -> void:
-	if _hit_pausing:
-		return
-	if HeadlessGuard.is_headless():
-		return
-	_hit_pausing = true
-	var prev: float = Engine.time_scale
-	Engine.time_scale = 0.14
-	await get_tree().create_timer(0.05, true, false, true).timeout
-	Engine.time_scale = prev if prev > 0.01 else 1.0
-	_hit_pausing = false
 
 
 func _on_toast(msg: String) -> void:

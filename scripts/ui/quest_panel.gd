@@ -132,7 +132,7 @@ func _on_submit() -> void:
 		hint_lbl.modulate = Color(0.95, 0.5, 0.4)
 	challenge_i += 1
 	var gen: int = _submit_gen
-	await get_tree().create_timer(0.85).timeout
+	await get_tree().create_timer(0.45).timeout
 	if gen != _submit_gen or not visible:
 		return
 	hint_lbl.modulate = Color.WHITE

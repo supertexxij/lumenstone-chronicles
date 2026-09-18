@@ -26,6 +26,11 @@ var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
 var _countdown_nudge: bool = false  # Wave 37: mid-telegraph countdown toast
 var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
+## v1.84 smooth: distance LOD so 200+ wild foes do not burn CPU when off-screen
+const LOD_ANIM_DIST2 := 28.0 * 28.0
+const LOD_HIDE_DIST2 := 42.0 * 42.0
+var _cached_player: Node3D = null
+var _lod_hidden: bool = false
 
 @onready var mesh_root: Node3D = $MeshRoot
 var label: Label3D
@@ -167,6 +172,13 @@ func _ready() -> void:
 	_ensure_nav_obstacle()
 	if GameState.has_signal("soft_combat_cleared") and not GameState.soft_combat_cleared.is_connected(clear_soft_aggro):
 		GameState.soft_combat_cleared.connect(clear_soft_aggro)
+	call_deferred("_try_initial_lod_sleep")
+
+
+func _try_initial_lod_sleep() -> void:
+	## Sleep immediately after spawn if the apprentice is far (cuts RVO load on boot).
+	if alive and not _player_near(LOD_HIDE_DIST2):
+		_set_lod_sleep(true)
 
 func is_alive() -> bool:
 	return alive
@@ -185,8 +197,38 @@ func _ensure_nav_obstacle() -> void:
 	obs.name = "NavObstacle"
 	obs.radius = 0.5
 	obs.height = 1.5
-	obs.avoidance_enabled = true
+	# v1.84.4: never feed NavigationServer RVO — player avoidance is off and
+	# hundreds of awake obstacles were still hitching click-move on family PCs.
+	obs.avoidance_enabled = false
 	add_child(obs)
+
+
+func _set_lod_sleep(sleep: bool) -> void:
+	## Fully sleep far foes so they do not stall player RVO / physics (v1.84.1).
+	_lod_hidden = sleep
+	visible = (not sleep) and alive
+	var col := get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if col:
+		col.disabled = sleep or not alive
+	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
+	if obs:
+		obs.avoidance_enabled = false  # v1.84.4: keep RVO obstacles off even when awake
+	# Keep a physics tick while dissolving or waiting to respawn; otherwise sleep fully.
+	var need_tick := (not sleep) or _dissolve_t >= 0.0 or not alive
+	set_physics_process(need_tick)
+
+
+func wake_for_player() -> void:
+	## Called by World sparse scanner when the apprentice walks near.
+	if not alive and _dissolve_t < 0.0:
+		# Dead waiting to respawn — keep a light physics tick for the timer
+		set_physics_process(true)
+		return
+	if _lod_hidden:
+		_set_lod_sleep(false)
+	elif not is_physics_processing():
+		set_physics_process(true)
+
 
 func _physics_process(delta: float) -> void:
 	if _dissolve_t >= 0.0:
@@ -198,7 +240,7 @@ func _physics_process(delta: float) -> void:
 		modulate_meshes(1.0 - u)
 		if u >= 1.0:
 			_dissolve_t = -1.0
-			visible = false
+			_set_lod_sleep(true)  # stay asleep until respawn / player near
 			mesh_root.scale = _base_scale
 			modulate_meshes(1.0)
 		return
@@ -209,16 +251,46 @@ func _physics_process(delta: float) -> void:
 			_respawn()
 		return
 
+	var in_combat := GameState.combat_target == self
+	var near := in_combat or _player_near(LOD_ANIM_DIST2)
+	if not near:
+		# Far: fully sleep (no idle, no RVO obstacle, no physics callback)
+		_aggro_pulse = 0.0
+		_set_warning(false)
+		_was_warning = false
+		if not _player_near(LOD_HIDE_DIST2):
+			_set_lod_sleep(true)
+		return
+
+	if _lod_hidden:
+		_set_lod_sleep(false)
+
 	_idle_anim(delta)
 	_update_flinch(delta)
 	_soft_aggro(delta)
 	_update_target_reticle(delta)
 
-	if GameState.combat_target == self:
+	if in_combat:
 		tick_timer -= delta
 		if tick_timer <= 0:
-			tick_timer = float(EnemyDB.base_combat.get("tick_sec", 0.7))
+			tick_timer = float(EnemyDB.base_combat.get("tick_sec", 0.55))
 			_combat_tick()
+
+
+func _player_near(dist2: float) -> bool:
+	var p := _get_player()
+	if p == null:
+		return false
+	var dx: float = global_position.x - p.global_position.x
+	var dz: float = global_position.z - p.global_position.z
+	return dx * dx + dz * dz <= dist2
+
+
+func _get_player() -> Node3D:
+	if _cached_player != null and is_instance_valid(_cached_player):
+		return _cached_player
+	_cached_player = get_tree().get_first_node_in_group("player") as Node3D
+	return _cached_player
 
 func modulate_meshes(a: float) -> void:
 	## Fade meshes during dissolve (alpha via albedo)
@@ -351,7 +423,7 @@ func _set_warning(on: bool) -> void:
 			label.modulate = Color(1.0, 0.96, 0.72)
 			# Wave 50: clearer soft-aggro name+countdown combo on the floating nameplate
 			var foe_n: String = str(def.get("name", kind))
-			var remain_lbl: float = maxf(0.1, 1.15 - _aggro_pulse)
+			var remain_lbl: float = maxf(0.1, 0.95 - _aggro_pulse)
 			label.text = "%s · ~%.1fs" % [foe_n, remain_lbl]
 			label.outline_size = 10
 		# Wave 28: slightly stronger soft-pull breath so the yellow ring reads before a pull (no combat labels)
@@ -359,7 +431,7 @@ func _set_warning(on: bool) -> void:
 		# Wave 64: clearer soft-aggro ring when armor Def high (RuneScape-chunky, wholesome; no cheesy combat labels)
 		var pulse: float = 0.26 + 0.22 * abs(sin(Time.get_ticks_msec() * 0.0042))
 		var s: float = 0.92 + 0.14 * abs(sin(Time.get_ticks_msec() * 0.0038))
-		var prog: float = clampf(_aggro_pulse / 1.15, 0.0, 1.0)
+		var prog: float = clampf(_aggro_pulse / 0.95, 0.0, 1.0)
 		var def_n: int = 0
 		if GameState.has_method("get_defense"):
 			def_n = int(GameState.get_defense())
@@ -403,7 +475,7 @@ func _soft_aggro(delta: float) -> void:
 		_set_warning(false)
 		_aggro_pulse = 0.0
 		return
-	var player: Node = get_tree().get_first_node_in_group("player")
+	var player: Node = _get_player()
 	if player == null:
 		_set_warning(false)
 		return
@@ -417,7 +489,7 @@ func _soft_aggro(delta: float) -> void:
 		return
 	var engage: float = float(EnemyDB.base_combat.get("engage_range", 3.8))
 	var warn_range: float = engage + 1.6
-	var telegraph_sec: float = 1.15  # longer fair warning
+	var telegraph_sec: float = 0.95  # v1.84 smooth: slightly snappier fair warning
 	var dist: float = global_position.distance_to(player.global_position)
 	if dist <= warn_range:
 		_aggro_pulse += delta
@@ -451,7 +523,7 @@ func _soft_aggro(delta: float) -> void:
 			if first_fight:
 				# Wave 65: clearer first-fight tip with foe name — lead with who, then soft ticks + how to leave (RuneScape-chunky, wholesome)
 				var foe_nm := str(def.get("name", "Foe"))
-				GameState.toast.emit("First fight · %s: soft ticks (~0.7s). Walk away or click the ground to leave." % foe_nm)
+				GameState.toast.emit("First fight · %s: soft ticks (~0.55s). Walk away or click the ground to leave." % foe_nm)
 			else:
 				GameState.toast.emit("%s approaches — click away to leave." % def.get("name", "Foe"))
 			_aggro_pulse = 0.0
@@ -1045,7 +1117,7 @@ func _update_flinch(delta: float) -> void:
 		creature_bob.rotation.z = 0.0
 
 func _combat_tick() -> void:
-	var player: Node = get_tree().get_first_node_in_group("player")
+	var player: Node = _get_player()
 	if not player:
 		return
 	var dist: float = global_position.distance_to(player.global_position)
@@ -1106,6 +1178,9 @@ func _take_hit(dmg: int) -> void:
 func _defeat() -> void:
 	alive = false
 	$CollisionShape3D.disabled = true
+	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
+	if obs:
+		obs.avoidance_enabled = false
 	GameState.set_combat_target(null)
 	var cxp: int = int(def.get("combat_xp", 5))
 	var prev_cl: int = GameState.combat_level
@@ -1117,7 +1192,8 @@ func _defeat() -> void:
 	GameState.toast.emit("%s %s (+%d combat XP)" % [def.get("name", "Foe"), def.get("defeat_verb", "cleared"), cxp])
 	if GameState.combat_level > prev_cl:
 		GameState.toast.emit("Combat level up! Now Combat Lv %d — well fought." % GameState.combat_level)
-	GameState.save_game()
+	# v1.84.3: defer save so defeat FX / dissolve never hitch the movement frame
+	GameState.call_deferred("save_game")
 	GameState.state_changed.emit()
 	_begin_kill_flash()
 	_dissolve_t = 0.0
@@ -1253,8 +1329,7 @@ func _tick_kill_flash(delta: float) -> void:
 
 func _respawn() -> void:
 	alive = true
-	visible = true
-	$CollisionShape3D.disabled = false
+	_set_lod_sleep(false)
 	hp = max_hp
 	global_position = spawn_pos
 	mesh_root.scale = _base_scale
@@ -1263,6 +1338,9 @@ func _respawn() -> void:
 	# Restore original mesh colors after kill-flash wash (v1.14 bug fix)
 	_restore_kill_flash_colors()
 	_update_hp_bar()
+	# Immediately re-sleep if the apprentice is still far (v1.84.1)
+	if not _player_near(LOD_HIDE_DIST2):
+		_set_lod_sleep(true)
 
 func _restore_kill_flash_colors() -> void:
 	for mi in _kill_flash_base.keys():

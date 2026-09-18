@@ -5,8 +5,8 @@ const HitsplatUtil = preload("res://scripts/combat/hitsplat.gd")
 
 signal clicked_ground(pos: Vector3)
 
-const SPEED := 6.5
-const ACCEL := 18.0
+const SPEED := 8.2
+const ACCEL := 26.0
 const CAM_BASE := Vector3(0, 10.5, 12.6)
 const CAM_ZOOM_MIN := 0.55
 const CAM_ZOOM_MAX := 1.55
@@ -42,6 +42,7 @@ var _foot_dust: CPUParticles3D = null
 var _talk_nudge_active: bool = false  # Wave 44: soft NPC talk camera nudge
 var _talk_nudge_zoom_saved: float = 1.0
 var _talk_nudge_yaw_saved: float = 0.0
+var _combat_chase_retarget_cd: float = 0.0  # v1.84.5: throttle combat chase repath
 
 func _ready() -> void:
 	add_to_group("player")
@@ -65,16 +66,18 @@ func _ensure_nav_agent() -> void:
 		add_child(_nav_agent)
 	_nav_agent.path_desired_distance = 0.55
 	_nav_agent.target_desired_distance = 0.45
-	# Light RVO avoidance vs other agents / NavigationObstacle3D (NPCs, foes)
-	_nav_agent.avoidance_enabled = true
+	# Pathfinding only — RVO avoidance disabled (v1.84.3). Soft sidestep handles mentors/foes;
+	# avoidance was still collapsing velocity to zero under weather/particle load.
+	_nav_agent.avoidance_enabled = false
 	_nav_agent.radius = 0.42
 	_nav_agent.height = 1.6
 	_nav_agent.max_speed = SPEED
-	_nav_agent.neighbor_distance = 2.8
-	_nav_agent.max_neighbors = 6
-	_nav_agent.time_horizon_agents = 0.7
-	_nav_agent.time_horizon_obstacles = 0.35
+	_nav_agent.neighbor_distance = 2.2
+	_nav_agent.max_neighbors = 4
+	_nav_agent.time_horizon_agents = 0.55
+	_nav_agent.time_horizon_obstacles = 0.28
 	_nav_agent.avoidance_priority = 1.0
+	# Keep callback wired in case avoidance is re-enabled later; no-op while disabled.
 	if not _nav_agent.velocity_computed.is_connected(_on_nav_velocity_computed):
 		_nav_agent.velocity_computed.connect(_on_nav_velocity_computed)
 
@@ -211,12 +214,20 @@ func _play_food_heal_sparkle() -> void:
 
 func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
 	## Apply RVO-safe velocity. WASD prefers player intent so avoidance does not fight the stick.
+	## v1.84.1: if RVO zeroes click-move against far obstacles, keep a slice of desired velocity so we do not freeze.
+	## v1.84.2: when RVO collapses to ~0 under Fog/load, trust desired velocity fully so rings are not a lie.
 	if _manual_move:
 		velocity.x = lerpf(safe_velocity.x, _desired_vel.x, 0.78)
 		velocity.z = lerpf(safe_velocity.z, _desired_vel.z, 0.78)
 	else:
-		velocity.x = safe_velocity.x
-		velocity.z = safe_velocity.z
+		var safe_len2: float = safe_velocity.x * safe_velocity.x + safe_velocity.z * safe_velocity.z
+		var desire_len2: float = _desired_vel.x * _desired_vel.x + _desired_vel.z * _desired_vel.z
+		if desire_len2 > 0.25 and safe_len2 < desire_len2 * 0.04:
+			velocity.x = _desired_vel.x
+			velocity.z = _desired_vel.z
+		else:
+			velocity.x = safe_velocity.x
+			velocity.z = safe_velocity.z
 
 func _apply_appearance() -> void:
 	if parts.is_empty():
@@ -402,6 +413,33 @@ func _set_move_target(pos: Vector3) -> void:
 		if target_pos.distance_to(GameState.combat_target.global_position) > float(EnemyDB.base_combat.get("escape_range", 8)):
 			_leave_combat_soft()
 
+
+func _combat_chase_toward(pos: Vector3, delta: float) -> void:
+	## Soft chase the combat target without per-frame nav rebuild / yellow-ring spam (v1.84.5).
+	## Soft sidestep still applies via the normal has_click_target steer path.
+	_combat_chase_retarget_cd = maxf(0.0, _combat_chase_retarget_cd - delta)
+	var goal := Vector3(pos.x, 0.0, pos.z)
+	var need_repath := not has_click_target
+	if has_click_target:
+		var drift: float = Vector2(goal.x - target_pos.x, goal.z - target_pos.z).length()
+		if drift > 0.85:
+			need_repath = true
+	if (not need_repath) and _combat_chase_retarget_cd > 0.0:
+		return
+	_combat_chase_retarget_cd = 0.35
+	target_pos = goal
+	has_click_target = true
+	_stuck_timer = 0.0
+	_assist_waypoints.clear()
+	_path_idx = 0
+	# No click marker during combat chase — rings were thrashing every retarget.
+	if _nav_ready and _nav_agent:
+		_nav_agent.target_position = target_pos
+		if _nav_agent.is_navigation_finished() or not _nav_agent.is_target_reachable():
+			_build_assist_waypoints(target_pos)
+	else:
+		_build_assist_waypoints(target_pos)
+
 func _build_assist_waypoints(goal: Vector3) -> void:
 	## Raycast lookahead around props when no navmesh path is available.
 	_assist_waypoints.clear()
@@ -462,9 +500,9 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if Input.is_action_pressed("cam_left"):
-		cam_yaw += 1.5 * delta
+		cam_yaw += 2.2 * delta
 	if Input.is_action_pressed("cam_right"):
-		cam_yaw -= 1.5 * delta
+		cam_yaw -= 2.2 * delta
 	camera_pivot.rotation.y = cam_yaw
 
 	# Arrive near pending NPC → talk
@@ -541,12 +579,9 @@ func _physics_process(delta: float) -> void:
 	_was_manual = _manual_move
 	velocity.y = 0
 	_desired_vel = Vector3(velocity.x, 0.0, velocity.z)
-	# Feed desired velocity into avoidance. WASD uses forced velocity so RVO does not fight keys.
+	# v1.84.3: always force velocity — player RVO avoidance is off; never let safe-vel zero stalls.
 	if _nav_agent and _nav_agent.avoidance_enabled:
-		if _manual_move:
-			_nav_agent.set_velocity_forced(_desired_vel)
-		else:
-			_nav_agent.set_velocity(_desired_vel)
+		_nav_agent.set_velocity_forced(_desired_vel)
 	var pre_pos := global_position
 	move_and_slide()
 	# Slide-along + stuck detection for click-to-move against barrels/trees/fences
@@ -589,7 +624,7 @@ func _physics_process(delta: float) -> void:
 		if dist > float(EnemyDB.base_combat.get("escape_range", 9.5)):
 			_leave_combat_soft()
 		elif dist > float(EnemyDB.base_combat.get("attack_range", 3.2)):
-			_set_move_target(GameState.combat_target.global_position)
+			_combat_chase_toward(GameState.combat_target.global_position, delta)
 		else:
 			# Face the foe while in range
 			var to_e: Vector3 = GameState.combat_target.global_position - global_position
@@ -736,7 +771,8 @@ func _animate_walk(moving: bool, delta: float) -> void:
 		return
 	var armed: bool = weapon != null and weapon.visible
 	if moving:
-		_walk_phase += delta * 10.0
+		# Match limb cadence to travel speed so faster walk does not look like skating/lag (v1.84.1)
+		_walk_phase += delta * (10.0 * (SPEED / 6.5))
 		# v1.80 world: stronger opposite-limb swing + hip twist so the walk reads from the oblique camera.
 		var swing := sin(_walk_phase) * (0.84 if armed else 0.76)
 		var swing2 := cos(_walk_phase) * 0.22

@@ -92,7 +92,7 @@ Presets: `export_presets.cfg` (`Linux/X11`, `Windows Desktop`).
 | Soft travel | **T** menu · **H** Fountain · **N** Glade · **B** Ridge · **G** Prayer Garden · **L** Lookout Rock · **K** Mill Bridge · **O** Cedar Hollow · **P** Willow Bend · **Y** Reed Pool · **U** Quiet Cross · **X** Stone Arch · **Z** Amber Knoll · **6** Birch Rest · **7** Fern Dell · **8** Heather Heath · **9** Thistle Rise · **0** Maple Copse · **1–5** halls (outdoors only) |
 | Village Games | **Games** on HUD or **;** / **'** — Lantern Catch (1), Wisp Pop (2), Fact Dash (3) |
 | Eat best food | **V** / **F1** — highest-heal pantry item off cooldown (Bread / Water / Trail Rations / Honey Cake / Hearty Stew) |
-| Combat | **Click** enemy · auto-attack ~0.7s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
+| Combat | **Click** enemy · auto-attack ~0.55s tick · walk away to leave · yellow soft-aggro warning then pull · first-fight tip toast |
 | Parent dashboard | **Parent** · PIN default `1234` (changeable; type **RESET** twice to restore) |
 | Save slots in-game | **Saves** on HUD · switch / rename / clear without wiping parent PIN |
 
@@ -227,9 +227,9 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
-### v1.84.0-minigames — Village Games recess
+### v1.84.6-minigames — Village Games recess
 
-Wholesome recess mini games between lessons. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, and tick combat unchanged.
+Wholesome recess mini games between lessons. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, and tick combat unchanged. Builds on v1.84.5 smooth/freeze fixes.
 
 - **Games** HUD button (or **;** / **'**) opens **Village Games**: Lantern Catch, Wisp Pop, Fact Dash
 - Hub accepts **1 / 2 / 3** to start each game; Fact Dash also accepts **1–4** for answers
@@ -240,6 +240,36 @@ Wholesome recess mini games between lessons. PIN stays **1234**; mastery still �
 - Once-per-save tip toast; Esc closes Games like other kid menus
 - Headless smoke: `tools/minigames_smoke.gd`
 - Re-export Linux + Windows when shipping a build
+
+### v1.84.5-smooth — combat chase retarget throttle
+
+Combat chase no longer calls `_set_move_target` every physics frame (that rebuilt nav + spam-spawned the yellow click ring and snapped the camera onto the foe). Soft chase now repaths only on drift / 0.35s cooldown and skips the click marker; soft sidestep around mentors/foes is unchanged. Keeps v1.84.4 Compatibility cuts.
+
+### v1.84.4-smooth — stop freezes on family PCs
+
+Renderer switched to **GL Compatibility** (was Forward+). Removed Engine.time_scale hit-pause (felt like freezing). Dropped FogMist / edge-fog / snowdust particle banks (env fog still reads as Fog). Directional sun shadows off. Enemy and mentor NavigationObstacle RVO disabled. Much lighter rain/cloud/campfire/landmark particle budgets. Thinner foe wake batches. Keeps v1.84.3 RVO-off / weather budget cuts.
+
+### v1.84.3-smooth — remaining hitch / freeze hardening
+
+Disable player NavigationAgent RVO (forced velocity + soft sidestep only). Cut rain/fog/edge/snow/canopy particle budgets further; edge fog emits only in Fog weather. Occlusion culling off. World polish / foe-wake staggered more. Combat defeat save deferred.
+
+### v1.84.2-smooth — Fog weather freeze fix
+
+Fog weather no longer freezes click-to-move: lighter mist/edge-fog particle budgets, no `CPUParticles3D.amount` rebuild thrash on weather cycle, click-to-move forces nav velocity (RVO was collapsing to zero under Fog load), and desired velocity is kept when avoidance still returns ~0.
+
+### v1.84.1-smooth — player freeze fix
+
+Far foes now **fully sleep** (physics off, collision off, nav avoidance off) so click-to-move no longer freezes against 263 RVO obstacles. World wakes nearby foes on a sparse timer. Walk limb cadence scales with speed; hit-pause is softer.
+
+### v1.84.0-smooth — smoother & quicker
+
+Performance and feel pass so the village and wilds run lighter and respond faster. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON and save keys unchanged.
+
+- **Foe distance LOD** — far wild creatures skip idle/aggro work and hide past ~42 paces (263 spawns no longer all animate every frame)
+- **Landmark FX distance gate** — dusk fireflies/leaves/motes only emit near that landmark
+- **Staggered world polish** — plant sway, desk pulse, ambient critters update on a 4-frame cadence
+- **Lighter render** — MSAA off, FXAA on; rain particle budget cut; minimap rebuilds alternate frames
+- **Snappier play** — walk speed 6.5→8.2, camera turn faster, combat tick 0.7→0.55s, shorter UI/travel fades and quest answer pause
 
 ### v1.83.0-curriculum — school-day feel
 
