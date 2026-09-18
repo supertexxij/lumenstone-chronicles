@@ -51,37 +51,29 @@ func _ready() -> void:
 	if title_screen.has_signal("clear_slot_pressed"):
 		title_screen.clear_slot_pressed.connect(_on_clear_slot)
 	customize_screen.confirmed.connect(_on_customize_done)
-	hud.inventory_pressed.connect(func(): _toggle(inventory_panel))
-	hud.wardrobe_pressed.connect(func():
-		customize_screen.open_wardrobe()
-		customize_screen.visible = true
-		_set_player_ui_block(true)
-	)
-	hud.journal_pressed.connect(_open_journal)
+	hud.inventory_pressed.connect(_toggle_inventory)
+	hud.wardrobe_pressed.connect(_open_wardrobe)
+	hud.journal_pressed.connect(_toggle_journal)
 	hud.mute_pressed.connect(func(): AudioBus.toggle_mute())
 	hud.weather_pressed.connect(_cycle_weather)
 	if hud.has_signal("travel_pressed"):
-		hud.travel_pressed.connect(_open_travel)
-	hud.parent_pressed.connect(func():
-		parent_panel.open()
-		parent_panel.visible = true
-		_set_player_ui_block(true)
-	)
-	inventory_panel.closed.connect(func(): inventory_panel.visible = false; _set_player_ui_block(false))
-	quest_panel.closed.connect(func(): quest_panel.visible = false; _set_player_ui_block(false))
+		hud.travel_pressed.connect(_toggle_travel)
+	hud.parent_pressed.connect(_open_parent)
+	inventory_panel.closed.connect(func(): inventory_panel.visible = false; _sync_ui_blocking())
+	quest_panel.closed.connect(func(): quest_panel.visible = false; _sync_ui_blocking())
 	npc_panel.closed.connect(func():
 		npc_panel.visible = false
-		_set_player_ui_block(false)
 		if AudioBus.has_method("set_talk_duck"):
 			AudioBus.set_talk_duck(false)
 		_end_talk_camera_nudge()
+		_sync_ui_blocking()
 	)
 	npc_panel.quest_chosen.connect(_on_quest_chosen)
-	parent_panel.closed.connect(func(): parent_panel.visible = false; _set_player_ui_block(false))
-	journal_panel.closed.connect(func(): journal_panel.visible = false; _set_player_ui_block(false))
+	parent_panel.closed.connect(func(): parent_panel.visible = false; _sync_ui_blocking())
+	journal_panel.closed.connect(func(): journal_panel.visible = false; _sync_ui_blocking())
 	customize_screen.cancelled.connect(func():
 		customize_screen.visible = false
-		_set_player_ui_block(false)
+		_sync_ui_blocking()
 		if not GameState.in_world:
 			title_screen.visible = true
 			title_screen.refresh_slots()
@@ -101,7 +93,7 @@ func _setup_travel_panel() -> void:
 		title_n.text = "Travel"
 	var hint_n: Label = travel_panel.get_node_or_null("Panel/VBox/Hint")
 	if hint_n:
-		hint_n.text = "Pick a place, then Travel. H Fountain · O Hollow · K Mill · 1–5 halls outdoors."
+		hint_n.text = "Pick a place, then Travel. Esc closes. Letter keys work after this menu is closed."
 	var go: Button = travel_panel.get_node_or_null("Panel/VBox/GoBtn")
 	var close: Button = travel_panel.get_node_or_null("Panel/VBox/CloseBtn")
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
@@ -143,15 +135,7 @@ func _setup_travel_panel() -> void:
 		if existing and not existing.pressed.is_connected(_travel_pin_favorite):
 			existing.pressed.connect(_travel_pin_favorite)
 	if close:
-		close.pressed.connect(func():
-			# Wave 64: clear remembered travel search on close
-			_travel_last_query = ""
-			if _travel_search:
-				_travel_search.text = ""
-			_travel_filter = ""
-			travel_panel.visible = false
-			_set_player_ui_block(false)
-		)
+		close.pressed.connect(_close_travel)
 	if list:
 		list.item_activated.connect(func(_i): _travel_go_selected())
 
@@ -169,31 +153,243 @@ func _process(delta: float) -> void:
 	# Wave 74: Travel nearest row gets a soft mint pulse (PIN 1234; mastery ≥80%)
 	_tick_travel_near_pulse()
 
+func _overlay_nodes() -> Array:
+	return [
+		quest_panel, npc_panel, parent_panel, _save_panel, travel_panel,
+		inventory_panel, journal_panel, customize_screen,
+	]
+
+
+func _panel_is_open(panel: Control) -> bool:
+	return panel != null and is_instance_valid(panel) and panel.visible
+
+
+func _any_overlay_visible() -> bool:
+	for n in _overlay_nodes():
+		if _panel_is_open(n):
+			return true
+	return false
+
+
+func _is_busy_overlay() -> bool:
+	## Quest, NPC talk, and Parent stay on top — kid menus must not steal them.
+	return _panel_is_open(quest_panel) or _panel_is_open(npc_panel) or _panel_is_open(parent_panel)
+
+
+func _gui_text_focused() -> bool:
+	var f = get_viewport().gui_get_focus_owner() if get_viewport() else null
+	return f is LineEdit or f is TextEdit
+
+
+func _release_gui_focus() -> void:
+	var f = get_viewport().gui_get_focus_owner() if get_viewport() else null
+	if f is Control:
+		(f as Control).release_focus()
+
+
+func _sync_ui_blocking() -> void:
+	_set_player_ui_block(_any_overlay_visible() or _travel_fading)
+
+
+func _close_kid_menus(keep: Control = null) -> void:
+	## Close bag / journal / travel / wardrobe / saves so panels never stack.
+	if inventory_panel != keep:
+		inventory_panel.visible = false
+	if journal_panel != keep:
+		journal_panel.visible = false
+	if travel_panel != keep:
+		_hide_travel(false)
+	if _save_panel != keep and _save_panel != null:
+		_save_panel.visible = false
+	if customize_screen != keep and GameState.in_world:
+		customize_screen.visible = false
+	_sync_ui_blocking()
+
+
+func _hide_travel(clear_query: bool = true) -> void:
+	if travel_panel == null:
+		return
+	if clear_query:
+		# Wave 64: clear remembered travel search on close
+		_travel_last_query = ""
+		if _travel_search:
+			_travel_search.text = ""
+		_travel_filter = ""
+	travel_panel.visible = false
+	_release_gui_focus()
+
+
+func _close_travel() -> void:
+	_hide_travel(true)
+	_sync_ui_blocking()
+
+
+func _close_all_overlays() -> void:
+	_hide_travel(true)
+	inventory_panel.visible = false
+	journal_panel.visible = false
+	quest_panel.visible = false
+	if npc_panel.visible:
+		if AudioBus.has_method("set_talk_duck"):
+			AudioBus.set_talk_duck(false)
+		_end_talk_camera_nudge()
+	npc_panel.visible = false
+	parent_panel.visible = false
+	if _save_panel:
+		_save_panel.visible = false
+	if GameState.in_world:
+		customize_screen.visible = false
+	_release_gui_focus()
+	_sync_ui_blocking()
+
+
+func _close_top_overlay() -> bool:
+	## Esc closes the topmost menu (quest → talk → Parent → saves → travel → looks → bag → journal).
+	if _confirm_dialog != null and _confirm_dialog.visible:
+		return false
+	if _panel_is_open(quest_panel):
+		quest_panel.closed.emit()
+		return true
+	if _panel_is_open(npc_panel):
+		npc_panel.closed.emit()
+		return true
+	if _panel_is_open(parent_panel):
+		parent_panel.closed.emit()
+		return true
+	if _panel_is_open(_save_panel):
+		_save_panel.visible = false
+		_sync_ui_blocking()
+		return true
+	if _panel_is_open(travel_panel):
+		_close_travel()
+		return true
+	if _panel_is_open(customize_screen) and GameState.in_world:
+		customize_screen.cancelled.emit()
+		return true
+	if _panel_is_open(inventory_panel):
+		inventory_panel.closed.emit()
+		return true
+	if _panel_is_open(journal_panel):
+		journal_panel.closed.emit()
+		return true
+	return false
+
+
+func _toggle_inventory() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	if _panel_is_open(inventory_panel):
+		inventory_panel.visible = false
+		_sync_ui_blocking()
+		return
+	_close_kid_menus(inventory_panel)
+	inventory_panel.visible = true
+	inventory_panel.refresh()
+	_sync_ui_blocking()
+	AudioBus.play_ui()
+
+
+func _toggle_journal() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	if _panel_is_open(journal_panel):
+		journal_panel.visible = false
+		_sync_ui_blocking()
+		return
+	_open_journal()
+
+
+func _toggle_travel() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	if _panel_is_open(travel_panel):
+		_close_travel()
+		return
+	_open_travel()
+
+
+func _open_wardrobe() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	if _panel_is_open(customize_screen) and GameState.in_world:
+		customize_screen.cancelled.emit()
+		return
+	_close_kid_menus(customize_screen)
+	customize_screen.open_wardrobe()
+	customize_screen.visible = true
+	_sync_ui_blocking()
+	AudioBus.play_ui()
+
+
+func _open_parent() -> void:
+	if _travel_fading:
+		return
+	if _panel_is_open(quest_panel) or _panel_is_open(npc_panel):
+		return
+	_close_kid_menus(parent_panel)
+	parent_panel.open()
+	parent_panel.visible = true
+	_sync_ui_blocking()
+
+
+func _input(event: InputEvent) -> void:
+	if not GameState.in_world:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		if _close_top_overlay():
+			get_viewport().set_input_as_handled()
+			AudioBus.play_ui()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not GameState.in_world:
 		return
+	if _travel_fading:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		if _close_top_overlay():
+			return
+	if _gui_text_focused():
+		return
 	if event.is_action_pressed("inventory"):
-		_toggle(inventory_panel)
+		_toggle_inventory()
+		return
 	if event.is_action_pressed("wardrobe"):
-		customize_screen.open_wardrobe()
-		customize_screen.visible = true
-		_set_player_ui_block(true)
+		_open_wardrobe()
+		return
 	if event.is_action_pressed("journal"):
-		_open_journal()
+		_toggle_journal()
+		return
 	if event.is_action_pressed("mute_toggle"):
 		AudioBus.toggle_mute()
+		return
+	if _is_busy_overlay() or _panel_is_open(_save_panel) or (_panel_is_open(customize_screen) and GameState.in_world):
+		return
 	if event.is_action_pressed("weather_cycle"):
+		if _any_overlay_visible():
+			return
 		_cycle_weather()
+		return
 	if event.is_action_pressed("interact"):
+		if _any_overlay_visible():
+			return
 		_try_nearby_npc()
+		return
 	if event.is_action_pressed("use_food"):
+		if _any_overlay_visible():
+			return
 		if GameState.has_method("use_best_consumable"):
 			GameState.use_best_consumable()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var code: int = event.keycode if event.keycode != 0 else event.physical_keycode
+		if code == KEY_T:
+			_toggle_travel()
+			return
+		# Landmark letters work from the Travel menu; ignore them under other overlays.
+		if _any_overlay_visible() and not _panel_is_open(travel_panel):
+			return
 		match code:
-			KEY_T:
-				_open_travel()
 			KEY_H:
 				_goto_landmark(Vector3(0, 0, 12), "Village Fountain")
 			KEY_N:
@@ -274,9 +470,11 @@ func _travel_destinations() -> Array:
 func _open_travel() -> void:
 	if travel_panel == null:
 		return
-	if world_scene and world_scene.player and world_scene.player.get("ui_blocking"):
-		# v1.78 refine: do not steal focus from another open panel (inventory, journal, Parent, quest)
+	# v1.78 refine: do not steal focus from another open panel (inventory, journal, Parent, quest)
+	# v1.82: quest/NPC/Parent stay busy; kid menus close so Travel never stacks on Bag/Journal.
+	if _is_busy_overlay() or _travel_fading:
 		return
+	_close_kid_menus(travel_panel)
 	# Wave 64: travel search remembers last query until close (PIN 1234; mastery ≥80%)
 	if _travel_search:
 		_travel_search.text = _travel_last_query
@@ -284,7 +482,7 @@ func _open_travel() -> void:
 	_refresh_travel_list()
 	travel_panel.visible = true
 	_play_travel_open_flourish()  # Wave 54: clearer soft-travel menu open
-	_set_player_ui_block(true)
+	_sync_ui_blocking()
 	AudioBus.play_ui()
 
 func _play_travel_open_flourish() -> void:
@@ -511,25 +709,27 @@ func _travel_go_selected() -> void:
 	if bool(d.get("group", false)):
 		return
 	# Wave 64: travel search clears on close/go
-	_travel_last_query = ""
-	if _travel_search:
-		_travel_search.text = ""
-	_travel_filter = ""
-	travel_panel.visible = false
-	_set_player_ui_block(false)
+	_hide_travel(true)
+	_sync_ui_blocking()
 	_goto_landmark(d["pos"], d["label"])
 
 func _goto_landmark(pos: Vector3, label: String) -> void:
 	if not world_scene or not world_scene.player:
 		return
-	if world_scene.player.get("ui_blocking"):
+	if _travel_fading:
+		return
+	if _is_busy_overlay() or _panel_is_open(_save_panel):
+		return
+	# Allow landmark keys while Travel is open; block them under bag/journal/wardrobe.
+	if world_scene.player.get("ui_blocking") and not _panel_is_open(travel_panel):
 		return
 	# Soft travel only outdoors (not from hall interiors)
 	if world_scene.player.global_position.x >= 90.0:
 		GameState.toast.emit("Exit the hall first, then travel to %s." % label)
 		return
-	if _travel_fading:
-		return
+	if _panel_is_open(travel_panel):
+		_hide_travel(true)
+		_sync_ui_blocking()
 	_soft_travel_with_fade(pos, label)
 
 
@@ -584,8 +784,10 @@ func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
 	## Wave 43: soft cream fade out → teleport → fade in (RuneScape-chunky, wholesome).
 	## Wave 62: landmark name reads clearly during the hush fade.
 	_travel_fading = true
+	_sync_ui_blocking()
 	_ensure_travel_fade()
 	if _travel_fade:
+		_travel_fade.mouse_filter = Control.MOUSE_FILTER_STOP
 		_travel_fade.visible = true
 		_travel_fade.color = Color(0.14, 0.12, 0.09, 0.0)
 		if _travel_fade_label:
@@ -608,9 +810,11 @@ func _soft_travel_with_fade(pos: Vector3, label: String) -> void:
 			tw2.tween_property(_travel_fade_label, "modulate:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		await tw2.finished
 		_travel_fade.visible = false
+		_travel_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		if _travel_fade_label:
 			_travel_fade_label.text = ""
 	_travel_fading = false
+	_sync_ui_blocking()
 
 
 func _apply_soft_travel_arrival(pos: Vector3, label: String) -> void:
@@ -679,9 +883,13 @@ func _play_soft_travel_landing_puff() -> void:
 	)
 
 func _open_journal() -> void:
+	if _is_busy_overlay() or _travel_fading:
+		return
+	_close_kid_menus(journal_panel)
 	journal_panel.open()
 	journal_panel.visible = true
-	_set_player_ui_block(true)
+	_sync_ui_blocking()
+	AudioBus.play_ui()
 
 func _cycle_weather() -> void:
 	if world_scene and world_scene.has_method("toggle_weather_auto"):
@@ -707,8 +915,15 @@ func _try_nearby_npc() -> void:
 		_open_npc(best)
 
 func _toggle(panel: Control) -> void:
+	## Kept for older HUD wiring; kid menus now go through exclusive toggles.
+	if panel == inventory_panel:
+		_toggle_inventory()
+		return
+	if panel == journal_panel:
+		_toggle_journal()
+		return
 	panel.visible = not panel.visible
-	_set_player_ui_block(panel.visible)
+	_sync_ui_blocking()
 	if panel == inventory_panel and panel.visible:
 		inventory_panel.refresh()
 
@@ -758,18 +973,21 @@ func _on_customize_done(p_name: String, appearance: Dictionary) -> void:
 		GameState.new_game(p_name, appearance, _pending_new_slot)
 		_enter_world()
 	else:
-		GameState.child_name = p_name if p_name != "" else GameState.child_name
+		var nm := p_name.strip_edges()
+		GameState.child_name = nm if nm != "" else GameState.child_name
 		GameState.appearance = appearance
 		GameState.save_game()
 		GameState.state_changed.emit()
-		_set_player_ui_block(false)
+		_sync_ui_blocking()
 
 func _enter_world() -> void:
+	_close_all_overlays()
 	if world_scene:
 		world_scene.queue_free()
 	world_scene = load("res://scenes/world/world.tscn").instantiate()
 	world_host.add_child(world_scene)
 	world_scene.npc_talk.connect(_open_npc)
+	_sync_ui_blocking()
 	hud.visible = true
 	hud.set_world(world_scene)
 	hud.refresh()
@@ -802,6 +1020,7 @@ func _play_load_toasts() -> void:
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
+		"maybe_bugs_182_toast",
 	])
 	for m in methods:
 		if not GameState.has_method(m):
@@ -812,9 +1031,10 @@ func _play_load_toasts() -> void:
 
 
 func _open_npc(npc: Node) -> void:
+	_close_kid_menus(npc_panel)
 	npc_panel.open(npc)
 	npc_panel.visible = true
-	_set_player_ui_block(true)
+	_sync_ui_blocking()
 	if AudioBus.has_method("set_talk_duck"):
 		AudioBus.set_talk_duck(true)
 	# Wave 44: soft NPC talk camera nudge
@@ -826,9 +1046,11 @@ func _on_quest_chosen(quest_id: String) -> void:
 	if AudioBus.has_method("set_talk_duck"):
 		AudioBus.set_talk_duck(false)
 	_end_talk_camera_nudge()
-	quest_panel.open(quest_id)
+	if not quest_panel.open(quest_id):
+		_sync_ui_blocking()
+		return
 	quest_panel.visible = true
-	_set_player_ui_block(true)
+	_sync_ui_blocking()
 
 func _on_ui_open(panel: String) -> void:
 	if panel.begins_with("npc:"):
@@ -936,7 +1158,7 @@ func _setup_save_panel() -> void:
 	var rename_hint := Label.new()
 	rename_hint.name = "RenameHint"
 	rename_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rename_hint.text = "Type a nickname for a save slot, then Set. Helps tell siblings apart. Parent PIN stays 1234 unless you changed it."
+	rename_hint.text = "Type a nickname, then Set. Helps tell siblings apart. Parent PIN is separate and is not changed here."
 	vbox.add_child(rename_hint)
 	var rename_row := HBoxContainer.new()
 	rename_row.name = "RenameSelectedRow"
@@ -982,7 +1204,8 @@ func _setup_save_panel() -> void:
 	close_btn.text = "Close"
 	close_btn.pressed.connect(func():
 		_save_panel.visible = false
-		_set_player_ui_block(false)
+		_release_gui_focus()
+		_sync_ui_blocking()
 	)
 	vbox.add_child(close_btn)
 	$UI.add_child(_save_panel)
@@ -990,9 +1213,12 @@ func _setup_save_panel() -> void:
 func _open_save_panel() -> void:
 	if _save_panel == null:
 		return
+	if _is_busy_overlay() or _travel_fading:
+		return
+	_close_kid_menus(_save_panel)
 	_refresh_save_panel()
 	_save_panel.visible = true
-	_set_player_ui_block(true)
+	_sync_ui_blocking()
 	AudioBus.play_ui()
 
 func _refresh_save_panel() -> void:
@@ -1078,7 +1304,6 @@ func _save_switch_selected() -> void:
 		_on_toast("Could not load slot %d." % (idx + 1))
 		return
 	_save_panel.visible = false
-	_set_player_ui_block(false)
 	_enter_world()
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

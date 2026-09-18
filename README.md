@@ -226,6 +226,21 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.82.0-bugs — bugs / confusion
+
+Player-facing bugs and confusing moments after v1.81.0-ui. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save keys unchanged (optional `hp` is restored when present).
+
+- **Panels no longer stack:** Bag, Journal, Travel, Looks, and Saves close each other. Closing one menu no longer unlocks WASD while Parent/Journal is still open.
+- **Esc closes the top menu.** Quest / talk / Parent stay sticky (I/J/T will not steal them).
+- **Travel vs Bag/Journal:** T while Bag is open switches to Travel instead of stacking. Landmark letters work from the Travel list; they no longer fire under other menus. Hint no longer lists letter keys that were ignored while Travel was open.
+- **Parent PIN:** wrong PIN still stays locked; after a good PIN, focus leaves the hidden PIN box so typing cannot “vanish.” Daily reminder no longer hardcodes PIN 1234 (custom PIN families were misled).
+- **Mastery %:** 4/5 now shows **80%** (was sometimes 79% from float truncation). Gate is still ≥80%.
+- **Fountain rest** no longer double-toasts when Travel (H) lands inside the refill circle.
+- **Save/load:** empty nicknames become Apprentice; combat target is cleared on slot switch; HP is kept when a save has it.
+- **Quest Close during the answer pause** no longer pops the next question after the panel is gone.
+- **Minimap clicks** no longer punch through to foes underneath.
+- Re-export Linux + Windows when shipping a build
+
 ### v1.81.0-ui — menus / HUD / Parent
 
 UI pass so a Grade 3 player and a glancing parent can read the screen. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save/load unchanged.

@@ -19,6 +19,7 @@ var dialogue_i: int = 0
 var challenge_i: int = 0
 var correct_count: int = 0
 var selected_option: String = ""
+var _submit_gen: int = 0
 
 func _ready() -> void:
 	PanelChrome.apply_overlay(self)
@@ -26,8 +27,15 @@ func _ready() -> void:
 	submit_btn.pressed.connect(_on_submit)
 	fill_edit.text_submitted.connect(func(_t): _on_submit())
 
-func open(quest_id: String) -> void:
+func open(quest_id: String) -> bool:
+	_submit_gen += 1
+	if quest_id == "" or not GameState.is_quest_unlocked(quest_id):
+		GameState.toast.emit("That lesson is still locked.")
+		return false
 	quest = QuestDB.get_quest(quest_id)
+	if quest.is_empty():
+		GameState.toast.emit("That lesson is still locked.")
+		return false
 	phase = "dialogue"
 	dialogue_i = 0
 	challenge_i = 0
@@ -35,6 +43,7 @@ func open(quest_id: String) -> void:
 	title_lbl.text = quest.get("title", "")
 	subject_lbl.text = quest.get("subject_label", "")
 	_show_dialogue()
+	return true
 
 func _clear_options() -> void:
 	for c in options.get_children():
@@ -122,7 +131,10 @@ func _on_submit() -> void:
 		hint_lbl.text = "Not quite. The answer was: %s" % str(ch.get("answer",""))
 		hint_lbl.modulate = Color(0.95, 0.5, 0.4)
 	challenge_i += 1
+	var gen: int = _submit_gen
 	await get_tree().create_timer(0.85).timeout
+	if gen != _submit_gen or not visible:
+		return
 	hint_lbl.modulate = Color.WHITE
 	_show_challenge()
 
@@ -132,11 +144,11 @@ func _finish() -> void:
 	var attempt: Dictionary = GameState.record_quest_attempt(str(quest.get("id", "")), correct_count, total)
 	fill_edit.visible = false
 	_clear_options()
-	var pct: int = int(float(attempt.get("percent", 0)) * 100)
+	var pct: int = GameState.mastery_percent_int(correct_count, total) if GameState.has_method("mastery_percent_int") else int(round(float(correct_count) / float(maxi(1, total)) * 100.0))
 	if attempt.get("mastered", false):
 		dialogue_lbl.text = "[b]Mastered![/b]\nYou scored %d / %d (%d%%).\nGear and XP awarded. Well done, apprentice!" % [correct_count, total, pct]
 	else:
-		dialogue_lbl.text = "[b]Needs practice[/b]\nYou scored %d / %d (%d%%).\nNeed ≥80%% for mastery. Talk to the NPC again to retry — parents can see this under Needs Help." % [correct_count, total, pct]
+		dialogue_lbl.text = "[b]Needs practice[/b]\nYou scored %d / %d (%d%%).\nNeed ≥80%% to master. Talk to the mentor again — grown-ups can see this under Needs Help." % [correct_count, total, pct]
 	prompt_lbl.text = ""
 	hint_lbl.text = ""
 	progress_lbl.text = ""
