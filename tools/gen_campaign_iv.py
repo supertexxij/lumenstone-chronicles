@@ -14,7 +14,7 @@ def tf(pid, prompt, answer="True"):
 def fb(pid, prompt, answer):
     return {"id": pid, "prompt": prompt, "type": "fill-blank", "answer": answer}
 
-def quest(qid, title, week, day, guild, subject, hook, dialogue, challenges, item, xp=10, bonus=None):
+def quest(qid, title, week, day, guild, subject, hook, dialogue, challenges, item, xp=20, bonus=None):
     return {
         "id": qid, "title": title, "week": week, "day": day, "guild": guild,
         "subject_label": subject, "hook": hook, "dialogue": dialogue,

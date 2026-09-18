@@ -1509,16 +1509,22 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		"percent": pct,
 		"mastered": mastered,
 		"timestamp": int(Time.get_unix_time_from_system()),
+		"xp_awarded": 0,
+		"lumens_awarded": 0,
 	}
 	quest_attempts.append(attempt)
 	var quest: Dictionary = QuestDB.get_quest(quest_id)
+	var base_xp: int = int(quest.get("xp_reward", 20))
 	if mastered:
 		if quest_id not in completed_quests:
 			completed_quests.append(quest_id)
-		add_xp(int(quest.get("xp_reward", 10)))
+		# v1.84: denser mastery rewards — full XP + 2 guild lumens so every lesson feels worth finishing.
+		add_xp(base_xp)
+		attempt["xp_awarded"] = base_xp
 		if quest.get("lumen_on_mastery", false):
 			var g: String = quest.get("guild", "math")
-			lumens[g] = int(lumens.get(g, 0)) + 1
+			lumens[g] = int(lumens.get(g, 0)) + 2
+			attempt["lumens_awarded"] = 2
 		var unlock: String = str(quest.get("unlock_item_id", ""))
 		if unlock != "":
 			unlock_item(unlock)
@@ -1542,16 +1548,20 @@ func record_quest_attempt(quest_id: String, correct: int, total: int) -> Diction
 		var check: Dictionary = note_quest_for_checkpoint(quest_id, true)
 		_recalc_unlocked_week()
 		var next_line := get_next_up_line()
-		toast.emit("Quest complete · %s · Week %d ★. " % [short_title, week_n] + next_line)
+		toast.emit("Quest complete · %s · Week %d ★ · +%d XP. " % [short_title, week_n, base_xp] + next_line)
 		if bool(check.get("crossed_goal", false)):
 			toast.emit("School day on track ★ · %d lessons today. Open Parent to see Needs Help." % int(check.get("done", 0)))
 		quest_mastered.emit(quest_id)
 		AudioBus.play_quest_complete()
 	else:
+		# v1.84: progress XP on near-miss so attempting any lesson still pays (half of score share).
+		var progress_xp: int = maxi(1, int(round(float(base_xp) * pct * 0.5)))
+		add_xp(progress_xp)
+		attempt["xp_awarded"] = progress_xp
 		# Wave 68 / v1.83: near-miss toast + Needs Help pointer (Near miss — mastery smoke marker).
 		var short_title := _short_quest_title(str(quest.get("title", quest_id)), quest_id)
 		note_quest_for_checkpoint(quest_id, false)
-		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%). Try the same mentor again — Parent shows Needs Help." % [short_title, percent_to_int(pct)])
+		toast.emit("Near miss · %s · mastery %d%% (need ≥80%%) · +%d XP. Try the same mentor again — Parent shows Needs Help." % [short_title, percent_to_int(pct), progress_xp])
 		if AudioBus.has_method("play_quest_near_miss"):
 			AudioBus.play_quest_near_miss()  # Wave 54: softer than mastery chime
 	save_game()

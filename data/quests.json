@@ -80,7 +80,7 @@
         "answer": "The Creator's gifts: mind, diligence, truth, and grace"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "scripture_bookmark",
     "bonus_items": [
@@ -191,7 +191,7 @@
         "answer": "182"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "builders_belt",
     "bonus_items": [],
@@ -277,7 +277,7 @@
         "answer": "147"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": false,
     "unlock_item_id": "wooden_practice_sword",
     "bonus_items": [],
@@ -372,7 +372,7 @@
         "answer": "lamp"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "scribe_satchel",
     "bonus_items": [],
@@ -469,7 +469,7 @@
         "answer": "oceans"
       }
     ],
-    "xp_reward": 5,
+    "xp_reward": 10,
     "lumen_on_mastery": true,
     "unlock_item_id": "texas_star_pin",
     "bonus_items": [],
@@ -564,7 +564,7 @@
         "answer": "design"
       }
     ],
-    "xp_reward": 8,
+    "xp_reward": 16,
     "lumen_on_mastery": true,
     "unlock_item_id": "brass_lantern",
     "bonus_items": [],
@@ -648,7 +648,7 @@
         "answer": "1,250"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": false,
     "unlock_item_id": "explorers_hat",
     "bonus_items": [],
@@ -751,7 +751,7 @@
         "answer": "southern"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "stewards_cloak",
     "bonus_items": [],
@@ -839,7 +839,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "gratitude_medallion",
     "bonus_items": []
@@ -929,7 +929,7 @@
         "answer": "75"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "ten_stone_pouch",
     "bonus_items": [
@@ -1026,7 +1026,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "scribe_notebook",
     "bonus_items": []
@@ -1121,7 +1121,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "leaf_press",
     "bonus_items": []
@@ -1220,7 +1220,7 @@
         "answer": "locate regions and understand places"
       }
     ],
-    "xp_reward": 8,
+    "xp_reward": 16,
     "lumen_on_mastery": true,
     "unlock_item_id": "map_scroll",
     "bonus_items": []
@@ -1329,7 +1329,7 @@
         "answer": "thanking God for gifts"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "river_stone_cloak",
     "bonus_items": []
@@ -1412,7 +1412,7 @@
         "answer": "praise the Creator"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "reverence_band",
     "bonus_items": []
@@ -1498,7 +1498,7 @@
         "answer": "345"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "bridge_compass",
     "bonus_items": []
@@ -1593,7 +1593,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "quill_of_verbs",
     "bonus_items": []
@@ -1688,7 +1688,7 @@
         "answer": "praise the Creator's order"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "star_chart",
     "bonus_items": []
@@ -1787,7 +1787,7 @@
         "answer": "United States"
       }
     ],
-    "xp_reward": 8,
+    "xp_reward": 16,
     "lumen_on_mastery": true,
     "unlock_item_id": "texas_tribe_badge",
     "bonus_items": []
@@ -1892,7 +1892,7 @@
         "answer": "not worship"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "moonlight_cloak",
     "bonus_items": []
@@ -1975,7 +1975,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "courage_brooch",
     "bonus_items": []
@@ -2070,7 +2070,7 @@
         "answer": "12"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "multiplication_tablet",
     "bonus_items": []
@@ -2165,7 +2165,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "adjective_ribbon",
     "bonus_items": []
@@ -2260,7 +2260,7 @@
         "answer": "sorting by observed features"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "seabird_feather",
     "bonus_items": []
@@ -2359,7 +2359,7 @@
         "answer": "learn honest history age-right"
       }
     ],
-    "xp_reward": 8,
+    "xp_reward": 16,
     "lumen_on_mastery": true,
     "unlock_item_id": "explorer_compass",
     "bonus_items": []
@@ -2458,7 +2458,7 @@
         "answer": "hard"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "gate_key_pendant",
     "bonus_items": []
@@ -2541,7 +2541,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "image_seal",
     "bonus_items": []
@@ -2642,7 +2642,7 @@
         "answer": "377"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "times_table_slate",
     "bonus_items": []
@@ -2753,7 +2753,7 @@
         "answer": "long / name sound"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "letter_seal_ring",
     "bonus_items": []
@@ -2848,7 +2848,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "field_journal",
     "bonus_items": []
@@ -2947,7 +2947,7 @@
         "answer": "Spanish language influence"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "mission_bell",
     "bonus_items": []
@@ -3046,10 +3046,12 @@
         "answer": "respect"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "hall_table_badge",
-    "bonus_items": ["trail_rations"]
+    "bonus_items": [
+      "trail_rations"
+    ]
   },
   {
     "id": "w6-bible-rest",
@@ -3129,7 +3131,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "rest_hourglass",
     "bonus_items": []
@@ -3236,7 +3238,7 @@
         "answer": "35"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "storehouse_key",
     "bonus_items": []
@@ -3335,7 +3337,7 @@
         "answer": "Facts about how bees make honey"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "howto_scroll",
     "bonus_items": []
@@ -3430,7 +3432,7 @@
         "answer": "creation"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "walking_staff",
     "bonus_items": []
@@ -3529,7 +3531,7 @@
         "answer": "history and motives"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "colony_map_pin",
     "bonus_items": []
@@ -3628,7 +3630,7 @@
         "answer": "the Creator"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "storehouse_cloak",
     "bonus_items": []
@@ -3711,7 +3713,7 @@
         "answer": "God (through Scripture)"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "ant_token",
     "bonus_items": []
@@ -3812,7 +3814,7 @@
         "answer": "24"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "perimeter_ribbon",
     "bonus_items": []
@@ -3911,7 +3913,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "story_bookmark",
     "bonus_items": []
@@ -4006,7 +4008,7 @@
         "answer": "care wisely for living things"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "habitat_lens",
     "bonus_items": []
@@ -4105,7 +4107,7 @@
         "answer": "steady daily work"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "hearth_charm",
     "bonus_items": []
@@ -4204,7 +4206,7 @@
         "answer": "steady faithful work"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "fact_keeper_badge",
     "bonus_items": []
@@ -4287,7 +4289,7 @@
         "answer": "creation through the Word"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "truth_lantern",
     "bonus_items": []
@@ -4388,7 +4390,7 @@
         "answer": "6"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "division_abacus",
     "bonus_items": []
@@ -4487,7 +4489,7 @@
         "answer": "remember new words and meanings"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "poetry_ribbon",
     "bonus_items": []
@@ -4582,7 +4584,7 @@
         "answer": "God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "weather_vane",
     "bonus_items": []
@@ -4681,7 +4683,7 @@
         "answer": "telling facts carefully without cheering harm"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "liberty_quill",
     "bonus_items": []
@@ -4780,7 +4782,7 @@
         "answer": "true"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "language_lantern_badge",
     "bonus_items": []
@@ -4875,7 +4877,7 @@
         "answer": "image"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "virtue_feast_cup",
     "bonus_items": []
@@ -4978,7 +4980,7 @@
         "answer": "36"
       }
     ],
-    "xp_reward": 15,
+    "xp_reward": 30,
     "lumen_on_mastery": true,
     "unlock_item_id": "foundation_stone",
     "bonus_items": []
@@ -5085,7 +5087,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "portfolio_folder",
     "bonus_items": []
@@ -5192,7 +5194,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "creation_poster_kit",
     "bonus_items": []
@@ -5291,7 +5293,7 @@
         "answer": "respecting image-bearers in every era we study"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "timeline_ribbon",
     "bonus_items": []
@@ -5418,7 +5420,7 @@
         "answer": "ant"
       }
     ],
-    "xp_reward": 40,
+    "xp_reward": 80,
     "lumen_on_mastery": true,
     "unlock_item_id": "campaign_i_badge",
     "bonus_items": [
@@ -5503,7 +5505,7 @@
         "answer": "serving in love"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "service_band",
     "bonus_items": []
@@ -5592,7 +5594,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "equal_share_pail",
     "bonus_items": []
@@ -5687,7 +5689,7 @@
         "answer": "Testing How Hard Rocks Are"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "main_idea_bookmark",
     "bonus_items": []
@@ -5782,7 +5784,7 @@
         "answer": "natural substances that make up many rocks"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "rock_sample_pouch",
     "bonus_items": []
@@ -5877,7 +5879,7 @@
         "answer": "Thomas Jefferson (among others)"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "declaration_scroll",
     "bonus_items": []
@@ -5984,7 +5986,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "well_cloak",
     "bonus_items": []
@@ -6067,7 +6069,7 @@
         "answer": "courage"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "joshua_band",
     "bonus_items": []
@@ -6156,7 +6158,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "algorithm_slate",
     "bonus_items": []
@@ -6251,7 +6253,7 @@
         "answer": "punctuation like a comma or period before the closing quote"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "dialogue_quill",
     "bonus_items": []
@@ -6346,7 +6348,7 @@
         "answer": "caring for it carefully as God's creation"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "bean_planter",
     "bonus_items": []
@@ -6441,7 +6443,7 @@
         "answer": "learn courage, cost of freedom, and honest facts"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "continental_pin",
     "bonus_items": []
@@ -6548,7 +6550,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "courage_cloak",
     "bonus_items": []
@@ -6631,7 +6633,7 @@
         "answer": "parents/guardians teaching and guiding"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "order_seal",
     "bonus_items": []
@@ -6720,7 +6722,7 @@
         "answer": "28 square tiles"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "area_tile_set",
     "bonus_items": []
@@ -6815,7 +6817,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "revise_ribbon",
     "bonus_items": []
@@ -6910,7 +6912,7 @@
         "answer": "condensation of water vapor"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "water_cycle_chart",
     "bonus_items": []
@@ -7005,7 +7007,7 @@
         "answer": "order / respect for rightful structure"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "constitution_bookmark",
     "bonus_items": []
@@ -7112,7 +7114,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "citadel_cloak",
     "bonus_items": []
@@ -7195,7 +7197,7 @@
         "answer": "looking for help / dependence on God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "psalm_travel_band",
     "bonus_items": []
@@ -7290,7 +7292,7 @@
         "answer": "it may still matter in the real situation"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "remainder_abacus",
     "bonus_items": []
@@ -7385,7 +7387,7 @@
         "answer": "expand them into clear complete sentences"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "report_notebook",
     "bonus_items": []
@@ -7480,7 +7482,7 @@
         "answer": "harm living things that depend on each link"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "food_chain_cards",
     "bonus_items": []
@@ -7575,7 +7577,7 @@
         "answer": "light for a hard journey / hope and guidance"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "trail_lantern",
     "bonus_items": []
@@ -7688,7 +7690,7 @@
         "answer": "complete sentences in a report"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "westward_cloak",
     "bonus_items": []
@@ -7771,7 +7773,7 @@
         "answer": "faithfulness"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "commission_bookmark",
     "bonus_items": []
@@ -7878,7 +7880,7 @@
         "answer": "three of four equal parts"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "fraction_folds",
     "bonus_items": []
@@ -7973,7 +7975,7 @@
         "answer": "voice matches meaning (not monotone always)"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "fluency_metronome",
     "bonus_items": []
@@ -8068,7 +8070,7 @@
         "answer": "notice order and design in living kinds"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "classification_cards",
     "bonus_items": []
@@ -8163,7 +8165,7 @@
         "answer": "faithfulness to Christ's commission"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "mission_map_pin",
     "bonus_items": []
@@ -8276,7 +8278,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "spain_texas_cloak",
     "bonus_items": []
@@ -8359,7 +8361,7 @@
         "answer": "God's care as we entrust our work"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "purpose_seal",
     "bonus_items": []
@@ -8472,7 +8474,7 @@
         "answer": "0"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "number_line_ruler",
     "bonus_items": []
@@ -8567,7 +8569,7 @@
         "answer": "an opinion with a reason cue"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "opinion_scroll",
     "bonus_items": []
@@ -8662,7 +8664,7 @@
         "answer": "rest, food, movement, and safety habits"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "anatomy_chart",
     "bonus_items": []
@@ -8757,7 +8759,7 @@
         "answer": "rules, culture, and settlement patterns changed over time"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "empresario_compass",
     "bonus_items": []
@@ -8876,7 +8878,7 @@
         "answer": "support the body"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "mexican_texas_cloak",
     "bonus_items": []
@@ -8959,7 +8961,7 @@
         "answer": "strong and self-giving"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "sacrifice_medallion",
     "bonus_items": []
@@ -9054,7 +9056,7 @@
         "answer": "81"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "equivalent_tiles",
     "bonus_items": []
@@ -9149,7 +9151,7 @@
         "answer": "the last step or ending event"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "timeline_ink",
     "bonus_items": []
@@ -9244,7 +9246,7 @@
         "answer": "flight, warmth, and protection (among roles)"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "bird_field_card",
     "bonus_items": []
@@ -9339,7 +9341,7 @@
         "answer": "San Antonio, Texas"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "alamo_star_pin",
     "bonus_items": []
@@ -9452,7 +9454,7 @@
         "answer": "k"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "alamo_cloak",
     "bonus_items": []
@@ -9535,7 +9537,7 @@
         "answer": "give thanks with humble hearts"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "humility_band",
     "bonus_items": []
@@ -9624,7 +9626,7 @@
         "answer": "100"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "time_money_ledger",
     "bonus_items": []
@@ -9719,7 +9721,7 @@
         "answer": "a simile"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "poetry_copybook",
     "bonus_items": []
@@ -9814,7 +9816,7 @@
         "answer": "a resting/transforming stage"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "life_cycle_wheel",
     "bonus_items": []
@@ -9909,7 +9911,7 @@
         "answer": "courage and leadership (age-right overview)"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "san_jacinto_pin",
     "bonus_items": []
@@ -10016,7 +10018,7 @@
         "answer": "40¢"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "sunrise_cloak",
     "bonus_items": []
@@ -10111,7 +10113,7 @@
         "answer": "sacrificial love"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "justice_mercy_cup",
     "bonus_items": []
@@ -10218,7 +10220,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 15,
+    "xp_reward": 30,
     "lumen_on_mastery": true,
     "unlock_item_id": "fluency_stone",
     "bonus_items": []
@@ -10325,7 +10327,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "midyear_portfolio",
     "bonus_items": []
@@ -10432,7 +10434,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "steward_journal_badge",
     "bonus_items": []
@@ -10539,7 +10541,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "dual_timeline_ribbon",
     "bonus_items": []
@@ -10664,7 +10666,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 40,
+    "xp_reward": 80,
     "lumen_on_mastery": true,
     "unlock_item_id": "campaign_ii_badge",
     "bonus_items": [
@@ -10749,7 +10751,7 @@
         "answer": "the Creator made it with purpose"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "orderliness_band",
     "bonus_items": []
@@ -10838,7 +10840,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "realm_yardstick",
     "bonus_items": []
@@ -10933,7 +10935,7 @@
         "answer": "shun at the end"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "research_notecards",
     "bonus_items": []
@@ -11028,7 +11030,7 @@
         "answer": "a wise Creator"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "solar_order_chart",
     "bonus_items": []
@@ -11123,7 +11125,7 @@
         "answer": "understand courage, mistakes, and service"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "houston_pin",
     "bonus_items": []
@@ -11224,7 +11226,7 @@
         "answer": "1"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "yardstick_cloak",
     "bonus_items": []
@@ -11307,7 +11309,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "excellence_seal",
     "bonus_items": []
@@ -11396,7 +11398,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "balance_scale",
     "bonus_items": []
@@ -11491,7 +11493,7 @@
         "answer": "clear and factual"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "essay_scaffold",
     "bonus_items": []
@@ -11586,7 +11588,7 @@
         "answer": "a repeating order over weeks"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "moon_phase_wheel",
     "bonus_items": []
@@ -11681,7 +11683,7 @@
         "answer": "see how the nation grew"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "statehood_star",
     "bonus_items": []
@@ -11782,7 +11784,7 @@
         "answer": "1"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "scales_cloak",
     "bonus_items": []
@@ -11865,7 +11867,7 @@
         "answer": "thankful humility"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "psalm8_band",
     "bonus_items": []
@@ -11954,7 +11956,7 @@
         "answer": "16"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "geometry_set",
     "bonus_items": []
@@ -12049,7 +12051,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "adverb_ribbon",
     "bonus_items": []
@@ -12144,7 +12146,7 @@
         "answer": "variety in created order"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "planet_cards",
     "bonus_items": []
@@ -12239,7 +12241,7 @@
         "answer": "understand shared history"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "eagle_pin",
     "bonus_items": []
@@ -12340,7 +12342,7 @@
         "answer": "3"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "garden_cloak",
     "bonus_items": []
@@ -12423,7 +12425,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "cheer_lantern",
     "bonus_items": []
@@ -12512,7 +12514,7 @@
         "answer": "8"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "area_grid",
     "bonus_items": []
@@ -12607,7 +12609,7 @@
         "answer": "what the map is about"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "glossary_bookmark",
     "bonus_items": []
@@ -12702,7 +12704,7 @@
         "answer": "study the sky without superstition"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "star_season_chart",
     "bonus_items": []
@@ -12797,7 +12799,7 @@
         "answer": "locate regions and cities"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "bluebonnet_pin",
     "bonus_items": []
@@ -12904,7 +12906,7 @@
         "answer": "topics and pages"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "starmap_cloak",
     "bonus_items": []
@@ -12987,7 +12989,7 @@
         "answer": "a prophet in Scripture"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "micah_token",
     "bonus_items": []
@@ -13076,7 +13078,7 @@
         "answer": "25"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "multistep_slate",
     "bonus_items": []
@@ -13171,7 +13173,7 @@
         "answer": "beginning, problem, ending that fits"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "revise_checklist",
     "bonus_items": []
@@ -13266,7 +13268,7 @@
         "answer": "rain gauge"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "windsock_kit",
     "bonus_items": []
@@ -13361,7 +13363,7 @@
         "answer": "facts, respect, and age-right care"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "union_ribbon",
     "bonus_items": []
@@ -13468,7 +13470,7 @@
         "answer": "wind direction"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "mountain_cloak",
     "bonus_items": []
@@ -13551,7 +13553,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "order_band",
     "bonus_items": []
@@ -13640,7 +13642,7 @@
         "answer": "5/7"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "fraction_forge_tiles",
     "bonus_items": []
@@ -13735,7 +13737,7 @@
         "answer": "patterns, practice, and checking"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "dictation_slate",
     "bonus_items": []
@@ -13830,7 +13832,7 @@
         "answer": "leaf"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "plant_part_cards",
     "bonus_items": []
@@ -13925,7 +13927,7 @@
         "answer": "order"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "inventor_compass",
     "bonus_items": []
@@ -14032,7 +14034,7 @@
         "answer": "4/9"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "forge_cloak",
     "bonus_items": []
@@ -14115,7 +14117,7 @@
         "answer": "Peter"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "honor_medallion",
     "bonus_items": []
@@ -14216,7 +14218,7 @@
         "answer": "5"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "graph_tablet",
     "bonus_items": []
@@ -14311,7 +14313,7 @@
         "answer": "kind, truthful words"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "opinion_scroll_case",
     "bonus_items": []
@@ -14406,7 +14408,7 @@
         "answer": "cleaning up and treating nature kindly"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "steward_seed_pouch",
     "bonus_items": []
@@ -14501,7 +14503,7 @@
         "answer": "telling the truth and helping neighbors"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "citizen_pin",
     "bonus_items": []
@@ -14614,7 +14616,7 @@
         "answer": "clear and respectful"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "citizen_cloak",
     "bonus_items": []
@@ -14697,7 +14699,7 @@
         "answer": "Jesus"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "perseverance_band",
     "bonus_items": []
@@ -14774,7 +14776,7 @@
         "answer": "1"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "trail_abacus",
     "bonus_items": []
@@ -14869,7 +14871,7 @@
         "answer": "clear and respectful"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "book_project_folio",
     "bonus_items": []
@@ -14964,7 +14966,7 @@
         "answer": "variety in created homes for creatures"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "habitat_map_texas",
     "bonus_items": []
@@ -15059,7 +15061,7 @@
         "answer": "virtue matters more than fame"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "character_ribbon",
     "bonus_items": []
@@ -15160,7 +15162,7 @@
         "answer": "24"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "trail_cloak",
     "bonus_items": []
@@ -15255,7 +15257,7 @@
         "answer": "perseverance, stewardship, patriotism (respectful)"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "stewardship_cup",
     "bonus_items": []
@@ -15344,7 +15346,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 15,
+    "xp_reward": 30,
     "lumen_on_mastery": true,
     "unlock_item_id": "builders_stone",
     "bonus_items": []
@@ -15451,7 +15453,7 @@
         "answer": "how, when, or where"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "campaign_iii_portfolio",
     "bonus_items": []
@@ -15558,7 +15560,7 @@
         "answer": "varied homes for creatures"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "space_steward_poster",
     "bonus_items": []
@@ -15665,7 +15667,7 @@
         "answer": "love of country with humility"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "republic_timeline_ribbon",
     "bonus_items": []
@@ -15772,7 +15774,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 40,
+    "xp_reward": 80,
     "lumen_on_mastery": true,
     "unlock_item_id": "campaign_iii_badge",
     "bonus_items": [
@@ -15869,7 +15871,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "self_control_band",
     "bonus_items": []
@@ -15958,7 +15960,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "fluency_millstone",
     "bonus_items": []
@@ -16065,7 +16067,7 @@
         "answer": "know where ideas start and stop"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "grammar_quill",
     "bonus_items": []
@@ -16160,7 +16162,7 @@
         "answer": "change one thing carefully and watch results"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "project_choice_token",
     "bonus_items": []
@@ -16255,7 +16257,7 @@
         "answer": "to remember the story clearly"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "us_scene_scroll",
     "bonus_items": []
@@ -16356,7 +16358,7 @@
         "answer": "60"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "mills_cloak",
     "bonus_items": []
@@ -16439,7 +16441,7 @@
         "answer": "the Holy Spirit's work in believers"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "patience_pin",
     "bonus_items": []
@@ -16522,7 +16524,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "solver_abacus",
     "bonus_items": []
@@ -16617,7 +16619,7 @@
         "answer": "topic, audience, and key points"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "process_folio",
     "bonus_items": []
@@ -16712,7 +16714,7 @@
         "answer": "studies God's world with honesty and wonder"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "experiment_plan_scroll",
     "bonus_items": []
@@ -16807,7 +16809,7 @@
         "answer": "tells hard and hopeful parts with care"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "texas_scene_scroll",
     "bonus_items": []
@@ -16908,7 +16910,7 @@
         "answer": "27"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "solvers_cloak",
     "bonus_items": []
@@ -16991,7 +16993,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "joy_ribbon",
     "bonus_items": []
@@ -17080,7 +17082,7 @@
         "answer": "24"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "station_ruler",
     "bonus_items": []
@@ -17175,7 +17177,7 @@
         "answer": "confidence and shared joy"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "published_booklet",
     "bonus_items": []
@@ -17270,7 +17272,7 @@
         "answer": "clean up and care for materials and living things"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "results_journal",
     "bonus_items": []
@@ -17365,7 +17367,7 @@
         "answer": "understanding of how stories connect"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "dual_timeline_card",
     "bonus_items": []
@@ -17460,7 +17462,7 @@
         "answer": "1"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "publishers_cloak",
     "bonus_items": []
@@ -17543,7 +17545,7 @@
         "answer": "helpful work with a willing heart"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "thanks_seal",
     "bonus_items": []
@@ -17632,7 +17634,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "jubilee_compass",
     "bonus_items": []
@@ -17727,7 +17729,7 @@
         "answer": "listen kindly and clap politely"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "poetry_cafe_card",
     "bonus_items": []
@@ -17822,7 +17824,7 @@
         "answer": "truthful claims and tidy setup"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "display_board_kit",
     "bonus_items": []
@@ -17917,7 +17919,7 @@
         "answer": "clear and accurate"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "map_mastery_pin",
     "bonus_items": []
@@ -18018,7 +18020,7 @@
         "answer": "16"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "jubilee_cloak",
     "bonus_items": []
@@ -18101,7 +18103,7 @@
         "answer": "steals glory that belongs to God"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "goodness_lamp",
     "bonus_items": []
@@ -18184,7 +18186,7 @@
         "answer": "5"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "data_graph_slate",
     "bonus_items": []
@@ -18279,7 +18281,7 @@
         "answer": "Dear… and a clear thanks"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "thankyou_set",
     "bonus_items": []
@@ -18374,7 +18376,7 @@
         "answer": "share learning and honor creation"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "science_fair_ribbon",
     "bonus_items": []
@@ -18469,7 +18471,7 @@
         "answer": "to remember and bless listeners"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "museum_night_badge",
     "bonus_items": []
@@ -18570,7 +18572,7 @@
         "answer": "21"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "fair_cloak",
     "bonus_items": []
@@ -18653,7 +18655,7 @@
         "answer": "Paul"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "kindness_crownlet",
     "bonus_items": []
@@ -18736,7 +18738,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "change_purse",
     "bonus_items": []
@@ -18831,7 +18833,7 @@
         "answer": "noticing harder passages you can now understand"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "passage_bookmark",
     "bonus_items": []
@@ -18926,7 +18928,7 @@
         "answer": "thankfulness for creation"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "scavenger_satchel",
     "bonus_items": []
@@ -19021,7 +19023,7 @@
         "answer": "love of country with humility before God"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "citizenship_crown",
     "bonus_items": []
@@ -19122,7 +19124,7 @@
         "answer": "75"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "citizenship_cloak",
     "bonus_items": []
@@ -19217,7 +19219,7 @@
         "answer": "growth over pretending perfection"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "perseverance_path_band",
     "bonus_items": []
@@ -19312,7 +19314,7 @@
         "answer": "strengthen thin spots with steady practice"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "clinic_chalk",
     "bonus_items": []
@@ -19407,7 +19409,7 @@
         "answer": "try again with courage"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "language_clinic_slate",
     "bonus_items": []
@@ -19502,7 +19504,7 @@
         "answer": "roots, stems, leaves, flowers"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "catchup_walk_token",
     "bonus_items": []
@@ -19597,7 +19599,7 @@
         "answer": "reviewing missing events with care"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "symbols_quiz_card",
     "bonus_items": []
@@ -19692,7 +19694,7 @@
         "answer": "75"
       }
     ],
-    "xp_reward": 30,
+    "xp_reward": 60,
     "lumen_on_mastery": true,
     "unlock_item_id": "remediation_cloak",
     "bonus_items": []
@@ -19787,7 +19789,7 @@
         "answer": "hide God's words in our hearts"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "faithfulness_seal",
     "bonus_items": []
@@ -19882,7 +19884,7 @@
         "answer": "True"
       }
     ],
-    "xp_reward": 15,
+    "xp_reward": 30,
     "lumen_on_mastery": true,
     "unlock_item_id": "year_math_seal",
     "bonus_items": []
@@ -19989,7 +19991,7 @@
         "answer": "use their own words and honest effort"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "year_la_seal",
     "bonus_items": []
@@ -20096,7 +20098,7 @@
         "answer": "clear and honest"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "science_conference_pin",
     "bonus_items": []
@@ -20203,7 +20205,7 @@
         "answer": "clear, respectful, and truthful"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "history_conference_pin",
     "bonus_items": []
@@ -20316,7 +20318,7 @@
         "answer": "20"
       }
     ],
-    "xp_reward": 40,
+    "xp_reward": 80,
     "lumen_on_mastery": true,
     "unlock_item_id": "supreme_cloak",
     "bonus_items": []
@@ -20411,7 +20413,7 @@
         "answer": "love"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "love_lumen_pendant",
     "bonus_items": []
@@ -20500,7 +20502,7 @@
         "answer": "1"
       }
     ],
-    "xp_reward": 12,
+    "xp_reward": 24,
     "lumen_on_mastery": true,
     "unlock_item_id": "feast_game_die",
     "bonus_items": []
@@ -20595,7 +20597,7 @@
         "answer": "see growth across the year"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "author_party_badge",
     "bonus_items": []
@@ -20690,7 +20692,7 @@
         "answer": "praise thanks the Creator; worship of creation is rejected"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "praise_hike_token",
     "bonus_items": []
@@ -20785,7 +20787,7 @@
         "answer": "finding cities, rivers, and regions quickly"
       }
     ],
-    "xp_reward": 10,
+    "xp_reward": 20,
     "lumen_on_mastery": true,
     "unlock_item_id": "history_gamenight_cup",
     "bonus_items": []
@@ -20904,7 +20906,7 @@
         "answer": "glorify the Father"
       }
     ],
-    "xp_reward": 50,
+    "xp_reward": 100,
     "lumen_on_mastery": true,
     "unlock_item_id": "campaign_iv_badge",
     "bonus_items": [
