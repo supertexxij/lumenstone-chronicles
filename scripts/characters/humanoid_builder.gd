@@ -35,43 +35,64 @@ static func set_face_color(mi: MeshInstance3D, c: Color, roughness: float = 0.48
 
 
 static func _load_face_tex() -> Texture2D:
-	var path := ProjectSettings.globalize_path("res://assets/faces/apprentice_face.png")
+	return _load_png_tex("res://assets/faces/apprentice_face.png")
+
+
+static func _load_png_tex(res_path: String) -> Texture2D:
+	var path := ProjectSettings.globalize_path(res_path)
 	var img := Image.new()
 	var err := img.load(path)
 	if err != OK:
-		push_warning("HumanoidBuilder: could not load face texture (%s)" % err)
+		push_warning("HumanoidBuilder: could not load texture %s (%s)" % [res_path, err])
 		return null
 	return ImageTexture.create_from_image(img)
 
 
-static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
-	## Painted storybook face card — tipped toward the elevated village camera.
+static func _make_alpha_card(parent: Node3D, name: String, tex: Texture2D, size: Vector2, pos: Vector3, rot_deg: Vector3, priority: int = 8) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
-	mi.name = "FaceDecal"
+	mi.name = name
 	var q := QuadMesh.new()
-	q.size = Vector2(0.55, 0.55)
+	q.size = size
 	mi.mesh = q
-	# Upper-front of the head, tipped so the painted face faces the overhead camera.
-	mi.position = Vector3(0, 1.92, 0.22)
-	mi.rotation_degrees.x = -40
+	mi.position = pos
+	mi.rotation_degrees = rot_deg
 	parent.add_child(mi)
 	var mat := StandardMaterial3D.new()
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	var tex := _load_face_tex()
 	if tex:
 		mat.albedo_texture = tex
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.roughness = 1.0
-	# Always draw over the head sphere so the face stays readable from above
-	# (otherwise the sphere depth-tests away most of the painted card).
 	mat.no_depth_test = true
 	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
-	mat.render_priority = 10
+	mat.render_priority = priority
 	mi.material_override = mat
 	HeadlessGuard.guard_mesh(mi)
 	return mi
+
+
+static func _tint_card(mi: MeshInstance3D, c: Color) -> void:
+	if mi == null or mi.material_override == null:
+		return
+	var mat := mi.material_override as StandardMaterial3D
+	if mat:
+		# Texture is authored dark-brown; multiply toward wardrobe hair color.
+		mat.albedo_color = c
+
+
+static func _make_face_decal(parent: Node3D) -> MeshInstance3D:
+	## Painted storybook face card — tipped toward the elevated village camera.
+	return _make_alpha_card(
+		parent,
+		"FaceDecal",
+		_load_face_tex(),
+		Vector2(0.55, 0.55),
+		Vector3(0, 1.92, 0.22),
+		Vector3(-40, 0, 0),
+		10
+	)
 
 
 static func _mi(mesh: Mesh, pos: Vector3, parent: Node3D, name: String) -> MeshInstance3D:
@@ -112,22 +133,6 @@ static func _capsule(r: float, h: float) -> CapsuleMesh:
 	return m
 
 
-static func _prism(size: Vector3) -> PrismMesh:
-	var m := PrismMesh.new()
-	m.size = size
-	return m
-
-
-static func _cone(bot_r: float, h: float) -> CylinderMesh:
-	## Pointy anime hair clump (fat base → thin tip).
-	var m := CylinderMesh.new()
-	m.top_radius = 0.008
-	m.bottom_radius = bot_r
-	m.height = h
-	m.radial_segments = 18
-	return m
-
-
 ## Clears visual children of root and builds a full humanoid.
 ## Returns named part refs for coloring / equipment / animation.
 static func build(root: Node3D) -> Dictionary:
@@ -151,41 +156,58 @@ static func build(root: Node3D) -> Dictionary:
 	var collar := _mi(_sphere(0.20, 0.12), Vector3(0, 1.36, 0.03), bob, "Collar")
 	# Big storybook head — face features sit on the front surface (not buried inside).
 	var head := _mi(_sphere(0.32), Vector3(0, 1.78, 0.04), bob, "Head")
-	# Anime-inspired hair: crown + smooth cone spikes + fringe + side locks + ahoge.
-	# Pointed volumetric clumps (high-segment cones, no ink-grow) read as anime tufts.
-	var hair := _mi(_sphere(0.30, 0.24), Vector3(0, 1.93, -0.12), bob, "Hair")
-	hair.scale = Vector3(1.16, 0.82, 1.08)
-	# Top / back spikes
-	var hair_spike_c := _mi(_cone(0.10, 0.38), Vector3(0.0, 2.18, -0.02), bob, "HairSpikeC")
-	hair_spike_c.rotation_degrees = Vector3(25, 0, 0)
-	var hair_spike_l := _mi(_cone(0.085, 0.34), Vector3(-0.15, 2.14, 0.04), bob, "HairSpikeL")
-	hair_spike_l.rotation_degrees = Vector3(12, -5, -36)
-	var hair_spike_r := _mi(_cone(0.085, 0.34), Vector3(0.15, 2.14, 0.04), bob, "HairSpikeR")
-	hair_spike_r.rotation_degrees = Vector3(12, 5, 36)
-	var hair_spike_bl := _mi(_cone(0.08, 0.32), Vector3(-0.10, 2.06, -0.18), bob, "HairSpikeBL")
-	hair_spike_bl.rotation_degrees = Vector3(40, -18, -10)
-	var hair_spike_br := _mi(_cone(0.08, 0.32), Vector3(0.10, 2.06, -0.18), bob, "HairSpikeBR")
-	hair_spike_br.rotation_degrees = Vector3(40, 18, 10)
-	# Side wing spikes
-	var hair_spike_wl := _mi(_cone(0.075, 0.30), Vector3(-0.28, 1.96, 0.04), bob, "HairSpikeWL")
-	hair_spike_wl.rotation_degrees = Vector3(5, 10, -78)
-	var hair_spike_wr := _mi(_cone(0.075, 0.30), Vector3(0.28, 1.96, 0.04), bob, "HairSpikeWR")
-	hair_spike_wr.rotation_degrees = Vector3(5, -10, 78)
-	# Forehead fringe — tip toward face, base at hairline
-	var bangs := _mi(_cone(0.075, 0.24), Vector3(0.0, 1.98, 0.18), bob, "Bangs")
-	bangs.rotation_degrees = Vector3(118, 0, 0)
-	var bang_l := _mi(_cone(0.06, 0.22), Vector3(-0.11, 1.96, 0.16), bob, "BangL")
-	bang_l.rotation_degrees = Vector3(112, 18, -18)
-	var bang_r := _mi(_cone(0.06, 0.22), Vector3(0.11, 1.96, 0.16), bob, "BangR")
-	bang_r.rotation_degrees = Vector3(112, -18, 18)
-	# Side locks
-	var l_lock := _mi(_capsule(0.048, 0.34), Vector3(-0.28, 1.66, 0.10), bob, "LLock")
-	l_lock.rotation_degrees = Vector3(18, 8, 28)
-	var r_lock := _mi(_capsule(0.048, 0.34), Vector3(0.28, 1.66, 0.10), bob, "RLock")
-	r_lock.rotation_degrees = Vector3(18, -8, -28)
-	# Ahoge
-	var ahoge := _mi(_cone(0.03, 0.20), Vector3(0.05, 2.30, 0.0), bob, "Ahoge")
-	ahoge.rotation_degrees = Vector3(8, 0, 40)
+	# Soft anime short-hair: fluffy crown volume + painted bangs/back cards
+	# (cute layered fringe — not geometric cone spikes).
+	var hair := _mi(_sphere(0.34, 0.30), Vector3(0, 1.92, -0.08), bob, "Hair")
+	hair.scale = Vector3(1.22, 0.95, 1.18)
+	# Soft top fluff tufts (gentle, not weapon spikes)
+	var hair_spike_c := _mi(_sphere(0.12, 0.18), Vector3(0.02, 2.14, -0.04), bob, "HairSpikeC")
+	hair_spike_c.scale = Vector3(1.1, 0.85, 0.9)
+	var hair_spike_l := _mi(_sphere(0.10, 0.16), Vector3(-0.16, 2.08, 0.0), bob, "HairSpikeL")
+	hair_spike_l.scale = Vector3(1.0, 0.8, 0.85)
+	var hair_spike_r := _mi(_sphere(0.10, 0.16), Vector3(0.16, 2.08, 0.0), bob, "HairSpikeR")
+	hair_spike_r.scale = Vector3(1.0, 0.8, 0.85)
+	var hair_spike_bl := _mi(_sphere(0.11, 0.16), Vector3(-0.12, 2.00, -0.18), bob, "HairSpikeBL")
+	var hair_spike_br := _mi(_sphere(0.11, 0.16), Vector3(0.12, 2.00, -0.18), bob, "HairSpikeBR")
+	# Soft side volume (hidden under painted cards / locks — kept for wardrobe API)
+	var hair_spike_wl := _mi(_sphere(0.09, 0.14), Vector3(-0.28, 1.90, -0.02), bob, "HairSpikeWL")
+	var hair_spike_wr := _mi(_sphere(0.09, 0.14), Vector3(0.28, 1.90, -0.02), bob, "HairSpikeWR")
+	# Painted bangs card — soft swept anime fringe
+	var bangs := _make_alpha_card(
+		bob,
+		"Bangs",
+		_load_png_tex("res://assets/faces/apprentice_bangs.png"),
+		Vector2(0.72, 0.48),
+		Vector3(0.0, 1.98, 0.16),
+		Vector3(-42, 0, 0),
+		9
+	)
+	# Extra soft 3D bang accents under the card
+	var bang_l := _mi(_sphere(0.07, 0.14), Vector3(-0.14, 1.92, 0.18), bob, "BangL")
+	bang_l.scale = Vector3(0.9, 1.0, 0.55)
+	bang_l.rotation_degrees = Vector3(35, 10, -10)
+	var bang_r := _mi(_sphere(0.07, 0.14), Vector3(0.14, 1.92, 0.18), bob, "BangR")
+	bang_r.scale = Vector3(0.9, 1.0, 0.55)
+	bang_r.rotation_degrees = Vector3(35, -10, 10)
+	# Soft cheek-framing locks
+	var l_lock := _mi(_capsule(0.055, 0.28), Vector3(-0.27, 1.70, 0.10), bob, "LLock")
+	l_lock.rotation_degrees = Vector3(12, 5, 20)
+	var r_lock := _mi(_capsule(0.055, 0.28), Vector3(0.27, 1.70, 0.10), bob, "RLock")
+	r_lock.rotation_degrees = Vector3(12, -5, -20)
+	# Tiny soft tuft (cute, not a rigid ahoge spear)
+	var ahoge := _mi(_sphere(0.05, 0.12), Vector3(0.08, 2.20, 0.02), bob, "Ahoge")
+	ahoge.scale = Vector3(0.7, 1.0, 0.7)
+	ahoge.rotation_degrees = Vector3(10, 0, 25)
+	# Painted soft bob card on the back for layered anime silhouette
+	var hair_back := _make_alpha_card(
+		bob,
+		"HairBack",
+		_load_png_tex("res://assets/faces/apprentice_hair_back.png"),
+		Vector2(0.78, 0.78),
+		Vector3(0.0, 1.88, -0.20),
+		Vector3(18, 180, 0),
+		7
+	)
 
 	var l_shoulder := _mi(_sphere(0.15), Vector3(-0.36, 1.32, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_sphere(0.15), Vector3(0.36, 1.32, 0), bob, "RShoulder")
@@ -362,6 +384,7 @@ static func build(root: Node3D) -> Dictionary:
 		"hair_spike_wl": hair_spike_wl,
 		"hair_spike_wr": hair_spike_wr,
 		"ahoge": ahoge,
+		"hair_back": hair_back,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -438,21 +461,22 @@ static func build(root: Node3D) -> Dictionary:
 static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outfit: Color, cape_col: Color, shoe: Color = Color("#3b2f2f")) -> void:
 	set_color(parts.get("head"), skin)
 	set_color(parts.get("neck"), skin)
-	# Anime hair layers — no ink-grow on strands (grow outlines make cones look like slabs).
+	# Soft anime hair — tint painted cards + soft fluff meshes (no ink-grow slabs).
 	set_color(parts.get("hair"), hair, 0.7, false)
-	set_color(parts.get("bangs"), hair.lightened(0.07), 0.65, false)
-	set_color(parts.get("bang_l"), hair.lightened(0.04), 0.65, false)
-	set_color(parts.get("bang_r"), hair.lightened(0.04), 0.65, false)
-	set_color(parts.get("hair_spike_c"), hair.darkened(0.02), 0.68, false)
-	set_color(parts.get("hair_spike_l"), hair.darkened(0.05), 0.68, false)
-	set_color(parts.get("hair_spike_r"), hair.darkened(0.05), 0.68, false)
-	set_color(parts.get("hair_spike_bl"), hair.darkened(0.08), 0.7, false)
-	set_color(parts.get("hair_spike_br"), hair.darkened(0.08), 0.7, false)
-	set_color(parts.get("hair_spike_wl"), hair.darkened(0.06), 0.68, false)
-	set_color(parts.get("hair_spike_wr"), hair.darkened(0.06), 0.68, false)
-	set_color(parts.get("l_lock"), hair.darkened(0.04), 0.68, false)
-	set_color(parts.get("r_lock"), hair.darkened(0.04), 0.68, false)
-	set_color(parts.get("ahoge"), hair.lightened(0.10), 0.62, false)
+	set_color(parts.get("bang_l"), hair.lightened(0.05), 0.65, false)
+	set_color(parts.get("bang_r"), hair.lightened(0.05), 0.65, false)
+	set_color(parts.get("hair_spike_c"), hair.lightened(0.04), 0.65, false)
+	set_color(parts.get("hair_spike_l"), hair.darkened(0.03), 0.68, false)
+	set_color(parts.get("hair_spike_r"), hair.darkened(0.03), 0.68, false)
+	set_color(parts.get("hair_spike_bl"), hair.darkened(0.06), 0.7, false)
+	set_color(parts.get("hair_spike_br"), hair.darkened(0.06), 0.7, false)
+	set_color(parts.get("hair_spike_wl"), hair.darkened(0.04), 0.68, false)
+	set_color(parts.get("hair_spike_wr"), hair.darkened(0.04), 0.68, false)
+	set_color(parts.get("l_lock"), hair.darkened(0.05), 0.68, false)
+	set_color(parts.get("r_lock"), hair.darkened(0.05), 0.68, false)
+	set_color(parts.get("ahoge"), hair.lightened(0.08), 0.62, false)
+	_tint_card(parts.get("bangs"), hair.lightened(0.05))
+	_tint_card(parts.get("hair_back"), hair)
 	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
 	set_color(parts.get("pelvis"), pants)
