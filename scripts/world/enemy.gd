@@ -220,6 +220,10 @@ func _set_lod_sleep(sleep: bool) -> void:
 
 func wake_for_player() -> void:
 	## Called by World sparse scanner when the apprentice walks near.
+	# #region agent log
+	if _lod_hidden or not is_physics_processing():
+		_enemy_dbg("E2", "enemy.gd:wake_for_player", "wake", {"kind": kind, "was_hidden": _lod_hidden, "phys_was": is_physics_processing(), "pos": [global_position.x, global_position.z]})
+	# #endregion
 	if not alive and _dissolve_t < 0.0:
 		# Dead waiting to respawn — keep a light physics tick for the timer
 		set_physics_process(true)
@@ -411,6 +415,11 @@ func _ensure_telegraph() -> void:
 	add_child(rim)
 
 func _set_warning(on: bool) -> void:
+	# #region agent log
+	var _was_on := _telegraph != null and _telegraph.visible
+	if on and not _was_on:
+		_enemy_dbg("E1", "enemy.gd:_set_warning", "warn_on", {"kind": kind, "pulse": _aggro_pulse})
+	# #endregion
 	_ensure_telegraph()
 	var rim: MeshInstance3D = get_node_or_null("AggroRim") as MeshInstance3D
 	if _telegraph:
@@ -518,6 +527,9 @@ func _soft_aggro(delta: float) -> void:
 			_set_warning(false)
 			_was_warning = false
 			_countdown_nudge = false
+			# #region agent log
+			_enemy_dbg("E1", "enemy.gd:_soft_aggro", "engage", {"kind": kind, "name": str(def.get("name", "")), "dist": dist, "pos": [global_position.x, global_position.z]})
+			# #endregion
 			GameState.set_combat_target(self)
 			var first_fight := GameState.mark_combat_tutorial(true)
 			if first_fight:
@@ -1123,6 +1135,9 @@ func _combat_tick() -> void:
 	var dist: float = global_position.distance_to(player.global_position)
 	if dist > float(EnemyDB.base_combat.get("attack_range", 3.2)):
 		return
+	# #region agent log
+	_enemy_dbg("E3", "enemy.gd:_combat_tick", "tick", {"kind": kind, "dist": dist, "hp": hp})
+	# #endregion
 	# Player swing telegraph
 	if player.has_method("play_attack_swing"):
 		player.play_attack_swing()
@@ -1365,3 +1380,17 @@ func _update_hp_bar() -> void:
 	else:
 		mat.albedo_color = Color(0.88, 0.42, 0.38)
 	hp_bar.material_override = mat
+
+
+# #region agent log
+func _enemy_dbg(hid: String, loc: String, msg: String, data: Dictionary = {}) -> void:
+	var path := "/opt/cursor/logs/debug.log"
+	var f := FileAccess.open(path, FileAccess.READ_WRITE)
+	if f == null:
+		f = FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	f.seek_end()
+	f.store_line(JSON.stringify({"hypothesisId": hid, "location": loc, "message": msg, "data": data, "timestamp": Time.get_ticks_msec()}))
+	f.close()
+# #endregion
