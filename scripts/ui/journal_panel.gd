@@ -109,7 +109,12 @@ func refresh() -> void:
 	_ensure_open_only_toggle()
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):
 		var open_n: int = _count_open_quests()
-		_open_only_btn.text = "Open only · %d" % open_n
+		# Wave 72: Open-only toggle shows week span when weeks are known (PIN 1234; mastery ≥80%)
+		var wk_txt: String = _format_open_quest_weeks()
+		if wk_txt != "" and open_n > 0:
+			_open_only_btn.text = "Open only · %d · Wk %s" % [open_n, wk_txt]
+		else:
+			_open_only_btn.text = "Open only · %d" % open_n
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
 	detail.text = "Select a quest for details."
@@ -271,9 +276,14 @@ func _unlock_progress_text(uw: int) -> String:
 		year_total = maxi(1, total_stars)
 	lines.insert(0, "★ Total mastered: %d / %d" % [total_stars, year_total])
 	# Wave 66: Open-only sticky shows count when toggled (PIN 1234; mastery ≥80% unchanged)
+	# Wave 72: Open-only sticky also shows week numbers of open quests (PIN 1234; mastery ≥80% unchanged)
 	if _open_only:
 		var open_n: int = _count_open_quests()
-		lines.insert(0, "Open only · %d quests still open" % open_n)
+		var wk_txt: String = _format_open_quest_weeks()
+		if wk_txt != "":
+			lines.insert(0, "Open only · %d open · Wk %s" % [open_n, wk_txt])
+		else:
+			lines.insert(0, "Open only · %d quests still open" % open_n)
 	return "\n".join(lines)
 
 
@@ -301,6 +311,44 @@ func _count_open_quests() -> int:
 		if GameState.is_quest_unlocked(qid):
 			n += 1
 	return n
+
+func _open_quest_weeks() -> Array:
+	## Wave 72: sorted unique week numbers of unlocked-not-mastered quests (PIN 1234; mastery ≥80%).
+	var weeks: Dictionary = {}
+	for q in _all_raw():
+		var qid: String = str(q.get("id", ""))
+		if qid == "":
+			continue
+		if qid in GameState.completed_quests:
+			continue
+		if not GameState.is_quest_unlocked(qid):
+			continue
+		weeks[int(q.get("week", 1))] = true
+	var out: Array = weeks.keys()
+	out.sort()
+	return out
+
+
+func _format_open_quest_weeks() -> String:
+	## Wave 72: compact week list for Open-only sticky (e.g. "1–3,5" or "2,4").
+	var weeks: Array = _open_quest_weeks()
+	if weeks.is_empty():
+		return ""
+	var parts: PackedStringArray = []
+	var i := 0
+	while i < weeks.size():
+		var start: int = int(weeks[i])
+		var end: int = start
+		while i + 1 < weeks.size() and int(weeks[i + 1]) == end + 1:
+			i += 1
+			end = int(weeks[i])
+		if end > start:
+			parts.append("%d–%d" % [start, end])
+		else:
+			parts.append(str(start))
+		i += 1
+	return ",".join(parts)
+
 
 func _count_week_mastered(week_n: int) -> int:
 	var n := 0

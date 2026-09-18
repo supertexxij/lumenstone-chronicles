@@ -71,6 +71,7 @@ var seen_wave_68_toast: bool = false  # Wave 68: once-per-save polish tip toast 
 var seen_wave_69_toast: bool = false  # Wave 69: once-per-save polish tip toast on load
 var seen_wave_70_toast: bool = false  # Wave 70: once-per-save polish tip toast on load
 var seen_wave_71_toast: bool = false  # Wave 71: once-per-save polish tip toast on load
+var seen_wave_72_toast: bool = false  # Wave 72: once-per-save polish tip toast on load
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -169,6 +170,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_69_toast = false
 	seen_wave_70_toast = false
 	seen_wave_71_toast = false
+	seen_wave_72_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -375,6 +377,7 @@ func save_game() -> void:
 		"seen_wave_69_toast": seen_wave_69_toast,
 		"seen_wave_70_toast": seen_wave_70_toast,
 		"seen_wave_71_toast": seen_wave_71_toast,
+		"seen_wave_72_toast": seen_wave_72_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -457,6 +460,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_69_toast = bool(data.get("seen_wave_69_toast", false))
 	seen_wave_70_toast = bool(data.get("seen_wave_70_toast", false))
 	seen_wave_71_toast = bool(data.get("seen_wave_71_toast", false))
+	seen_wave_72_toast = bool(data.get("seen_wave_72_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -958,6 +962,16 @@ func maybe_wave_71_toast() -> bool:
 	save_game()
 	return true
 
+
+func maybe_wave_72_toast() -> bool:
+	## Wave 72: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_72_toast:
+		return false
+	seen_wave_72_toast = true
+	toast.emit("Wave 72 polish · Maple Copse leaf drift at dusk + softer edge fog · clearer Fountain rest toast · Open-only sticky shows weeks · Coconut Crab in the wilds.")
+	save_game()
+	return true
+
 func set_favorite_landmark(label: String) -> void:
 	## Wave 51: pin/favorite one landmark for Travel (T) ★ fav (PIN 1234; mastery ≥80%).
 	var lab := str(label).strip_edges()
@@ -1195,6 +1209,7 @@ func clear_soft_combat(announce: bool = false) -> void:
 
 func rest_at_fountain(announce: bool = true) -> void:
 	## Soft rest: clear combat status, refill pantry, brief HP regen ticks.
+	## Wave 72: clearer Fountain rest toast (RuneScape-chunky, wholesome; no cheesy combat labels).
 	clear_soft_combat(false)
 	refill_pantry(announce)
 	# Wave 68: soft fountain-rest chime (RuneScape-chunky, wholesome; respects mute)
@@ -1204,10 +1219,10 @@ func rest_at_fountain(announce: bool = true) -> void:
 		_fountain_regen_left = 3
 		_fountain_regen_timer = 0.05
 		if announce:
-			toast.emit("Resting by the fountain — strength returns.")
+			toast.emit("Fountain rest · HP returning gently · pantry topped up.")
 	elif announce:
 		# refill_pantry already toasted if stocks changed; still confirm calm
-		pass
+		toast.emit("Fountain rest · calm and ready.")
 
 func _tick_fountain_regen(delta: float) -> void:
 	if _fountain_regen_left <= 0:

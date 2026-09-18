@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 72 overnight (v1.72.0-overnight)
+- Soft **Maple Copse maple-leaf drift at dusk** — warm autumn maple leaves drift over the NW copse; denser Maple Copse leaf fall reads stronger at dusk (RuneScape-chunky, wholesome)
+- Soft **edge-fog banks polish** — taller cream mist, gentler drift along the wilds rim (denser in Fog weather)
+- Clearer **Fountain rest toast** — `Fountain rest · HP returning gently · pantry topped up.` / `Fountain rest · calm and ready.`
+- New wilds foe **Coconut Crab** — round coconut shell, stalk eyes, big soft claws, stubby walking legs, cheek blush, gentle “coaxed” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda)
+- Journal QoL: **Open-only sticky shows week numbers** of open quests (e.g. `Open only · 12 open · Wk 1–3,5`) — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 71 overnight (v1.71.0-overnight)
 - Soft **Thistle Rise thistle-bloom drift at dusk** — pale purple thistle tufts drift over the ESE rise; thistle sway reads stronger at dusk (RuneScape-chunky, wholesome)
 - Clearer **daily checkpoint reminder toast** — `Daily checkpoint · open Parent · today’s short check (PIN 1234). Takes about a minute.`

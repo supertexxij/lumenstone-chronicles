@@ -50,6 +50,7 @@ var _willow_leaves: CPUParticles3D  # Wave 68: soft Willow Bend willow-leaf drif
 var _fern_fronds: CPUParticles3D  # Wave 69: soft Fern Dell fern-frond drift at dusk
 var _heather_blooms: CPUParticles3D  # Wave 70: soft Heather Heath heather-bloom drift at dusk
 var _thistle_blooms: CPUParticles3D  # Wave 71: soft Thistle Rise thistle-bloom drift at dusk
+var _maple_dusk_leaves: CPUParticles3D  # Wave 72: soft Maple Copse maple-leaf drift at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1787,6 +1788,7 @@ func _setup_weather() -> void:
 	_setup_fern_fronds()
 	_setup_heather_blooms()
 	_setup_thistle_blooms()
+	_setup_maple_dusk_leaves()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -1894,6 +1896,7 @@ func _setup_fog_mist() -> void:
 
 func _setup_edge_fog_banks() -> void:
 	## Wave 46: soft fog banks along outdoor map edges (RuneScape-chunky, wholesome; off indoors).
+	## Wave 72: soft edge-fog banks polish — taller cream mist, gentler drift (RuneScape-chunky, wholesome).
 	_edge_fog_banks.clear()
 	var root := Node3D.new()
 	root.name = "EdgeFogBanks"
@@ -1908,24 +1911,24 @@ func _setup_edge_fog_banks() -> void:
 		var fx := CPUParticles3D.new()
 		fx.name = "EdgeFog%d" % i
 		fx.emitting = true
-		fx.amount = 18
-		fx.lifetime = 5.5
-		fx.preprocess = 2.5
+		fx.amount = 22
+		fx.lifetime = 6.2
+		fx.preprocess = 2.8
 		fx.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-		fx.emission_box_extents = Vector3(10, 0.6, 10)
-		fx.direction = Vector3(0.1, 0.04, 0.05)
-		fx.spread = 28.0
-		fx.initial_velocity_min = 0.08
-		fx.initial_velocity_max = 0.28
-		fx.gravity = Vector3(0, 0.015, 0)
-		fx.scale_amount_min = 1.2
-		fx.scale_amount_max = 2.4
+		fx.emission_box_extents = Vector3(11, 0.95, 11)
+		fx.direction = Vector3(0.08, 0.05, 0.04)
+		fx.spread = 32.0
+		fx.initial_velocity_min = 0.06
+		fx.initial_velocity_max = 0.26
+		fx.gravity = Vector3(0, 0.012, 0)
+		fx.scale_amount_min = 1.35
+		fx.scale_amount_max = 2.7
 		var sm := SphereMesh.new()
-		sm.radius = 0.55
-		sm.height = 0.9
+		sm.radius = 0.62
+		sm.height = 1.05
 		fx.mesh = sm
 		var mat := StandardMaterial3D.new()
-		mat.albedo_color = Color(0.86, 0.90, 0.94, 0.22)
+		mat.albedo_color = Color(0.88, 0.92, 0.96, 0.26)
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		fx.material_override = mat
@@ -1987,6 +1990,11 @@ func _update_weather(delta: float) -> void:
 		var maple_out := (_inside_hall == "")
 		_maple_leaves.emitting = maple_out
 		_maple_leaves.visible = maple_out
+		# Wave 72: denser Maple Copse leaf fall reads stronger at dusk (RuneScape-chunky, wholesome)
+		if maple_out and _is_dusk_firefly_time():
+			_maple_leaves.amount = 72
+		else:
+			_maple_leaves.amount = 56
 	if player and _dusk_fireflies:
 		# Wave 39: soft firefly sparkles at dusk/night outdoors only
 		var dusk_on := _inside_hall == "" and _is_dusk_firefly_time()
@@ -2029,6 +2037,10 @@ func _update_weather(delta: float) -> void:
 		var thistle_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_thistle_blooms.emitting = thistle_dusk
 		_thistle_blooms.visible = thistle_dusk
+	if _maple_dusk_leaves:
+		var maple_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_maple_dusk_leaves.emitting = maple_dusk
+		_maple_dusk_leaves.visible = maple_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -2133,7 +2145,7 @@ func _apply_weather_visuals(announce: bool = false) -> void:
 	for fx in _edge_fog_banks:
 		if fx == null or not is_instance_valid(fx):
 			continue
-		fx.amount = 28 if _weather_mode == 1 else 16
+		fx.amount = 34 if _weather_mode == 1 else 20
 	weather_changed.emit(_weather_mode, _weather_label_cache)
 	if announce:
 		# Wave 44: clearer weather cycle toast (Clear / Fog / Rain each named with a soft cue)
@@ -3877,6 +3889,45 @@ func _setup_thistle_blooms() -> void:
 	_thistle_blooms.position = Vector3(48.0, 2.6, 42.0)
 	add_child(_thistle_blooms)
 	HeadlessGuard.guard_particles(_thistle_blooms)
+
+func _setup_maple_dusk_leaves() -> void:
+	## Wave 72: soft Maple Copse maple-leaf drift at dusk — warm autumn maple leaves drift over the NW copse (RuneScape-chunky, wholesome).
+	_maple_dusk_leaves = CPUParticles3D.new()
+	_maple_dusk_leaves.name = "MapleCopseDuskLeafDrift"
+	_maple_dusk_leaves.emitting = false
+	_maple_dusk_leaves.amount = 38
+	_maple_dusk_leaves.lifetime = 5.2
+	_maple_dusk_leaves.preprocess = 1.4
+	_maple_dusk_leaves.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_maple_dusk_leaves.emission_box_extents = Vector3(7.2, 2.6, 7.2)
+	_maple_dusk_leaves.direction = Vector3(0.28, -0.42, 0.16)
+	_maple_dusk_leaves.spread = 52.0
+	_maple_dusk_leaves.initial_velocity_min = 0.14
+	_maple_dusk_leaves.initial_velocity_max = 0.72
+	_maple_dusk_leaves.gravity = Vector3(0, -0.42, 0)
+	_maple_dusk_leaves.angular_velocity_min = -48.0
+	_maple_dusk_leaves.angular_velocity_max = 48.0
+	_maple_dusk_leaves.scale_amount_min = 0.35
+	_maple_dusk_leaves.scale_amount_max = 0.95
+	var lm := BoxMesh.new()
+	lm.size = Vector3(0.22, 0.03, 0.14)
+	_maple_dusk_leaves.mesh = lm
+	var lmat := StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.88, 0.42, 0.18, 0.82)
+	lmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_maple_dusk_leaves.material_override = lmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.92, 0.55, 0.22, 0.0),
+		Color(0.88, 0.42, 0.18, 0.85),
+		Color(0.72, 0.28, 0.12, 0.0),
+	])
+	_maple_dusk_leaves.color_ramp = ramp
+	# Maple Copse landmark at (-48, 0, -48)
+	_maple_dusk_leaves.position = Vector3(-48.0, 3.4, -48.0)
+	add_child(_maple_dusk_leaves)
+	HeadlessGuard.guard_particles(_maple_dusk_leaves)
 
 
 func _setup_brook_sparkle() -> void:

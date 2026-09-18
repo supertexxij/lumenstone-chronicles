@@ -610,6 +610,19 @@
       "combat_xp": 282,
       "respawn_sec": 110.0,
       "description": "A gentle panda of the papaya wilds \u2014 hug it kindly with a careful step!"
+    },
+    "coconut_crab": {
+      "kind": "coconut_crab",
+      "name": "Coconut Crab",
+      "defeat_verb": "coaxed",
+      "color": "#c48a48",
+      "accent": "#f2e6c8",
+      "max_hp": 302,
+      "damage": 50,
+      "accuracy": 0.16,
+      "combat_xp": 288,
+      "respawn_sec": 112.0,
+      "description": "A sturdy crab of the coconut wilds \u2014 coax it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -2010,6 +2023,36 @@
       "kind": "papaya_panda",
       "x": -190,
       "z": -55
+    },
+    {
+      "id": "e234",
+      "kind": "coconut_crab",
+      "x": -165,
+      "z": 80
+    },
+    {
+      "id": "e235",
+      "kind": "coconut_crab",
+      "x": 165,
+      "z": -80
+    },
+    {
+      "id": "e236",
+      "kind": "coconut_crab",
+      "x": -80,
+      "z": -175
+    },
+    {
+      "id": "e237",
+      "kind": "coconut_crab",
+      "x": 95,
+      "z": 175
+    },
+    {
+      "id": "e238",
+      "kind": "coconut_crab",
+      "x": -185,
+      "z": -70
     }
   ],
   "base_combat": {

@@ -165,6 +165,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_mongoose(bob)
 		"papaya_panda":
 			_build_panda(bob)
+		"coconut_crab":
+			_build_crab(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1787,4 +1789,60 @@ static func _build_panda(bob: Node3D) -> void:
 		_mi(_box(Vector3(0.055, 0.016, 0.065)), Vector3(0, -0.085, 0.01), leg, "Foot")
 	# Soft fluff rump tuft
 	_mi(_sphere(0.07, 0.08), Vector3(0, 0.34, -0.20), bob, "RumpTuft")
+
+static func _build_crab(bob: Node3D) -> void:
+	## Soft coconut-wilds crab — round coconut shell, stalk eyes, big soft claws, stubby walking legs, cheek blush (distinct from Cypress Turtle / Chestnut Toad / Grape Gecko / Sycamore Skink / Apricot Armadillo / Magnolia Beaver / Papaya Panda).
+	# Round coconut shell body (signature)
+	_mi(_sphere(0.22, 0.20), Vector3(0, 0.32, 0.0), bob, "Shell")
+	_mi(_sphere(0.14, 0.10), Vector3(0, 0.28, 0.02), bob, "Belly")
+	# Soft shell tuft / husk ridge
+	_mi(_box(Vector3(0.16, 0.04, 0.10)), Vector3(0, 0.44, 0.0), bob, "HuskRidge")
+	# Round head peeking forward
+	_mi(_sphere(0.10, 0.09), Vector3(0, 0.36, 0.20), bob, "Head")
+	# Stalk eyes (crab signature)
+	var stalk_l := Node3D.new()
+	stalk_l.name = "StalkL"
+	stalk_l.position = Vector3(-0.06, 0.44, 0.22)
+	bob.add_child(stalk_l)
+	_mi(_cyl(0.012, 0.014, 0.10), Vector3(0, 0.04, 0), stalk_l, "StemL")
+	_mi(_sphere(0.028), Vector3(0, 0.10, 0.01), stalk_l, "EyeL")
+	var stalk_r := Node3D.new()
+	stalk_r.name = "StalkR"
+	stalk_r.position = Vector3(0.06, 0.44, 0.22)
+	bob.add_child(stalk_r)
+	_mi(_cyl(0.012, 0.014, 0.10), Vector3(0, 0.04, 0), stalk_r, "StemR")
+	_mi(_sphere(0.028), Vector3(0, 0.10, 0.01), stalk_r, "EyeR")
+	# Soft coconut cheek blush
+	_mi(_sphere(0.03, 0.025), Vector3(-0.09, 0.32, 0.18), bob, "BlushL")
+	_mi(_sphere(0.03, 0.025), Vector3(0.09, 0.32, 0.18), bob, "BlushR")
+	# Big soft claws (signature — not combat-y)
+	var claw_l := Node3D.new()
+	claw_l.name = "ClawL"
+	claw_l.position = Vector3(-0.22, 0.28, 0.14)
+	bob.add_child(claw_l)
+	_mi(_cyl(0.035, 0.04, 0.14), Vector3(0, 0, 0.02), claw_l, "ArmL")
+	_mi(_box(Vector3(0.10, 0.06, 0.12)), Vector3(-0.02, 0.0, 0.12), claw_l, "PincerL")
+	var claw_r := Node3D.new()
+	claw_r.name = "ClawR"
+	claw_r.position = Vector3(0.22, 0.28, 0.14)
+	bob.add_child(claw_r)
+	_mi(_cyl(0.035, 0.04, 0.14), Vector3(0, 0, 0.02), claw_r, "ArmR")
+	_mi(_box(Vector3(0.10, 0.06, 0.12)), Vector3(0.02, 0.0, 0.12), claw_r, "PincerR")
+	# Four stubby walking legs
+	for info in [
+		["FL", Vector3(-0.12, 0.16, 0.08)],
+		["FR", Vector3(0.12, 0.16, 0.08)],
+		["ML", Vector3(-0.14, 0.16, -0.02)],
+		["MR", Vector3(0.14, 0.16, -0.02)],
+		["BL", Vector3(-0.10, 0.16, -0.12)],
+		["BR", Vector3(0.10, 0.16, -0.12)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.018, 0.022, 0.10), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.04, 0.014, 0.05)), Vector3(0, -0.08, 0.01), leg, "Foot")
+	# Soft little tail flap
+	_mi(_box(Vector3(0.10, 0.03, 0.08)), Vector3(0, 0.22, -0.22), bob, "TailFlap")
 
