@@ -50,7 +50,8 @@ func _ready() -> void:
 		_players[kind] = p
 	_ambient = _make_loop_player("Ambient", -24.0, "ambient")
 	_music = _make_loop_player("Music", -18.0, "music")
-	_rain = _make_loop_player("Rain", -34.0, "rain")  # Wave 33: softer rain mix
+	_rain = _make_loop_player("Rain", -34.0, "rain")
+	_rain.volume_db = -34.0  # Wave 33: softer rain mix
 	_drip = _make_loop_player("IndoorDrip", -22.0, "drip")
 	_day_birds = _make_loop_player("DayBirds", _birds_base_db, "day_birds")
 	_night_hush = _make_loop_player("NightHush", -27.0, "night_hush")

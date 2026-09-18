@@ -21,7 +21,7 @@ const SLOT_COUNT := 3
 const DEFAULT_PIN := "1234"
 const MASTERY_PCT := 0.8
 
-const ONCE_TOAST_FLAGS := PackedStringArray([
+const ONCE_TOAST_FLAGS := [
 	"seen_wave_50_toast",
 	"seen_wave_51_toast",
 	"seen_wave_52_toast",
@@ -50,8 +50,8 @@ const ONCE_TOAST_FLAGS := PackedStringArray([
 	"seen_wave_75_toast",
 	"seen_wave_76_toast",
 	"seen_wave_77_toast",
-	"seen_refine_178_toast"
-])
+	"seen_refine_178_toast",
+]
 
 
 const GUILDS := {
