@@ -5113,18 +5113,19 @@ func _make_party_unicorn_sprite(parent: Node3D, frames: SpriteFrames, tint: Colo
 	spr.name = "Art"
 	spr.sprite_frames = frames
 	spr.animation = &"dance"
+	spr.autoplay = &"dance"
 	spr.pixel_size = 0.0042
 	spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	spr.shaded = false
 	spr.transparent = true
 	spr.double_sided = true
 	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_DISABLED
-	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
 	spr.modulate = tint
 	spr.position = Vector3(0, 1.05, 0)
 	spr.frame = int(idx) % 6
 	parent.add_child(spr)
-	spr.play("dance")
+	spr.play(&"dance")
 	return spr
 
 
@@ -5132,9 +5133,9 @@ func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, i
 	## Orbit + hop + flip dance for one party unicorn sprite (~7s).
 	if uni == null or not is_instance_valid(uni):
 		return
-	var hop_h: float = 0.32 + (idx * 0.03)
+	var hop_h: float = 0.45 + (idx * 0.04)
 	var orbit := create_tween()
-	orbit.set_loops(8)
+	orbit.set_loops(10)
 	orbit.tween_method(func(t: float):
 		if not is_instance_valid(uni):
 			return
@@ -5145,12 +5146,15 @@ func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, i
 			# Flip with orbit direction so the prance reads left/right
 			var moving_east: bool = -sin(a) > 0.0
 			if spr is AnimatedSprite3D:
-				(spr as AnimatedSprite3D).flip_h = moving_east
+				var aspr: AnimatedSprite3D = spr as AnimatedSprite3D
+				aspr.flip_h = moving_east
+				if not aspr.is_playing():
+					aspr.play(&"dance")
 			# Soft squash/stretch on the hop
-			var squash: float = 1.0 + absf(sin(t * TAU * 2.0)) * 0.06
+			var squash: float = 1.0 + absf(sin(t * TAU * 2.0)) * 0.08
 			spr.scale = Vector3(2.0 - squash, squash, 1.0)
-			spr.position.y = 1.05 + absf(sin(t * TAU * 4.0)) * 0.06
-	, 0.0, 1.0, 0.9).set_trans(Tween.TRANS_LINEAR)
+			spr.position.y = 1.05 + absf(sin(t * TAU * 4.0)) * 0.08
+	, 0.0, 1.0, 0.75).set_trans(Tween.TRANS_LINEAR)
 
 
 func _build_ambient_life() -> void:
