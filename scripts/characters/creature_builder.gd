@@ -177,9 +177,53 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_wallaby(bob)
 		"honeydew_hamster":
 			_build_hamster(bob)
+		"party_unicorn":
+			_build_party_unicorn(bob)
 		_:
 			_build_wisp(bob)
 	return bob
+
+
+static func _build_party_unicorn(bob: Node3D) -> void:
+	## Festive week-complete unicorn — chunky horse body, spiral horn, flowing mane/tail (wholesome, Grade 3).
+	var body := _mi(_capsule(0.24, 0.92), Vector3(0, 0.68, 0), bob, "Body")
+	body.rotation_degrees = Vector3(0, 0, 90)
+	var neck := _mi(_cyl(0.09, 0.13, 0.42), Vector3(0, 0.92, 0.38), bob, "Neck")
+	neck.rotation_degrees = Vector3(22, 0, 0)
+	_mi(_sphere(0.18), Vector3(0, 1.12, 0.62), bob, "Head")
+	_mi(_sphere(0.07), Vector3(0, 1.06, 0.78), bob, "Snout")
+	# Spiral horn
+	var horn := _mi(_cyl(0.01, 0.045, 0.36), Vector3(0, 1.36, 0.58), bob, "Horn")
+	horn.rotation_degrees = Vector3(-18, 0, 0)
+	_mi(_sphere(0.035), Vector3(0, 1.52, 0.52), bob, "HornTip")
+	# Ears
+	_mi(_sphere(0.06, 0.11), Vector3(-0.10, 1.24, 0.52), bob, "EarL")
+	_mi(_sphere(0.06, 0.11), Vector3(0.10, 1.24, 0.52), bob, "EarR")
+	# Mane tufts
+	_mi(_sphere(0.09, 0.16), Vector3(-0.02, 1.22, 0.40), bob, "ManeA")
+	_mi(_sphere(0.08, 0.14), Vector3(0.04, 1.10, 0.28), bob, "ManeB")
+	_mi(_sphere(0.07, 0.12), Vector3(-0.03, 0.98, 0.18), bob, "ManeC")
+	# Flowing tail
+	var tail := Node3D.new()
+	tail.name = "Tail"
+	tail.position = Vector3(0, 0.72, -0.48)
+	tail.rotation_degrees = Vector3(-28, 0, 0)
+	bob.add_child(tail)
+	_mi(_capsule(0.08, 0.42), Vector3(0, 0.08, -0.06), tail, "TailMain")
+	_mi(_sphere(0.10), Vector3(0, 0.18, -0.24), tail, "TailTip")
+	# Four legs + soft hooves
+	for info in [
+		["FL", Vector3(-0.14, 0.40, 0.28)],
+		["FR", Vector3(0.14, 0.40, 0.28)],
+		["BL", Vector3(-0.14, 0.40, -0.26)],
+		["BR", Vector3(0.14, 0.40, -0.26)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_capsule(0.055, 0.34), Vector3(0, -0.08, 0), leg, "Thigh")
+		_mi(_box(Vector3(0.09, 0.05, 0.12)), Vector3(0, -0.30, 0.02), leg, "Hoof")
 
 
 static func _build_wisp(bob: Node3D) -> void:

@@ -41,7 +41,7 @@ var _ready_ok: bool = false
 
 func _ready() -> void:
 	_build_streams()
-	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop", "ready_chime", "fountain_rest_chime"]:
+	for kind in ["ui", "hit", "miss", "foot", "quest", "quest_near_miss", "swing", "door", "ember_pop", "ready_chime", "fountain_rest_chime", "firework_pop", "unicorn_party"]:
 		var p := AudioStreamPlayer.new()
 		p.name = "SFX_%s" % kind
 		p.bus = "Master"
@@ -212,6 +212,17 @@ func play_quest_near_miss() -> void:
 	## Wave 54: softer near-miss chime than mastery — quieter, fewer notes, lower pitch (wholesome, no combat cheese).
 	_play("quest_near_miss", -9.0)
 
+
+func play_firework_pop() -> void:
+	## v1.84: tiny firework pop for quest mini-fireworks (wholesome, soft).
+	_play("firework_pop", -11.0)
+
+
+func play_unicorn_party() -> void:
+	## v1.84: short colorful jingle when week assignment unlocks next week.
+	_play("unicorn_party", -7.0)
+
+
 func play_ember_pop() -> void:
 	## Wave 55: soft campfire ember pop — brief warm crackle tick (RuneScape-chunky, wholesome).
 	_play("ember_pop", -11.0)
@@ -264,6 +275,8 @@ func _build_streams() -> void:
 	_streams["door"] = _door_whoosh(0.32, 0.22)  # Wave 47: soft hall door open whoosh
 	_streams["quest"] = _quest_chime()  # Wave 38: clearer quest-complete chime
 	_streams["quest_near_miss"] = _quest_near_miss_chime()  # Wave 54: softer near-miss than mastery
+	_streams["firework_pop"] = _firework_pop_sfx()  # v1.84: mini quest fireworks
+	_streams["unicorn_party"] = _unicorn_party_jingle()  # v1.84: week-complete unicorn dance
 	_streams["ambient"] = _soft_drone(8.0, 0.07)
 	_streams["music"] = _village_tune(12.0, 0.11)
 	_streams["rain"] = _soft_rain(6.0, 0.065)  # Wave 33: softer rain mix
@@ -840,6 +853,45 @@ func _quest_near_miss_chime() -> AudioStreamWAV:
 		samples[i] = clampf(s, -1.0, 1.0)
 	return _make_wav(samples, rate)
 
+
+func _firework_pop_sfx() -> AudioStreamWAV:
+	## v1.84: soft mini firework pop — brief bright noise bloom (wholesome, not loud).
+	var rate := 22050
+	var n := int(0.12 * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 18401
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var env := exp(-tsec * 28.0)
+		var noise := rng.randf_range(-1.0, 1.0) * 0.35
+		var tone := sin(TAU * 880.0 * tsec) * 0.18 + sin(TAU * 1320.0 * tsec) * 0.08
+		samples[i] = clampf((noise + tone) * env, -1.0, 1.0)
+	return _make_wav(samples, rate)
+
+
+func _unicorn_party_jingle() -> AudioStreamWAV:
+	## v1.84: short playful rising jingle for the week-complete unicorn dance.
+	var rate := 22050
+	var freqs := [523.25, 659.25, 783.99, 987.77, 1174.66]  # C E G B D — cheerful climb
+	var note_dur := 0.10
+	var total := note_dur * float(freqs.size()) + 0.28
+	var n := int(total * rate)
+	var samples := PackedFloat32Array()
+	samples.resize(n)
+	for i in n:
+		var tsec := float(i) / float(rate)
+		var s := 0.0
+		for fi in freqs.size():
+			var start := float(fi) * note_dur
+			var u := tsec - start
+			if u >= 0.0 and u < note_dur + 0.12:
+				var env := exp(-u * 6.5)
+				s += sin(TAU * float(freqs[fi]) * u) * env * 0.28
+				s += sin(TAU * float(freqs[fi]) * 2.0 * u) * env * 0.06
+		samples[i] = clampf(s, -1.0, 1.0)
+	return _make_wav(samples, rate)
 
 
 func _ember_pop_sfx() -> AudioStreamWAV:

@@ -130,6 +130,8 @@ func _ready() -> void:
 		GameState.soft_defeated.connect(_play_fountain_restore_fx)
 	if GameState.has_signal("quest_mastered") and not GameState.quest_mastered.is_connected(_play_quest_victory_sparkle):
 		GameState.quest_mastered.connect(_play_quest_victory_sparkle)
+	if GameState.has_signal("week_advanced") and not GameState.week_advanced.is_connected(_play_week_unicorn_party):
+		GameState.week_advanced.connect(_play_week_unicorn_party)
 
 func _init_mats() -> void:
 	## v1.80 world: warmer earth tones so the map reads as a finished village, not muddy gray.
@@ -4810,7 +4812,7 @@ func play_festival_decade_sparkle() -> void:
 	)
 
 func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
-	## Wave 29/46/66: soft cream/gold victory sparkle + warm light pulse when a quest is mastered (RuneScape-chunky, wholesome).
+	## Wave 29/46/66 + v1.84: soft cream/gold victory sparkle + mini fireworks over the apprentice.
 	if HeadlessGuard.is_headless():
 		return
 	var anchor: Node3D = player
@@ -4875,6 +4877,211 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 		if is_instance_valid(glow):
 			glow.queue_free()
 	)
+	# v1.84: mini fireworks bursts above the character (wholesome, colorful, short)
+	_play_quest_mini_fireworks(anchor)
+
+
+func _play_quest_mini_fireworks(anchor: Node3D) -> void:
+	## Small staggered firework pops over the apprentice on quest mastery.
+	if anchor == null or not is_instance_valid(anchor):
+		return
+	var colors: Array = [
+		Color(1.0, 0.45, 0.42, 0.95),  # soft coral
+		Color(0.45, 0.75, 1.0, 0.95),  # sky
+		Color(0.55, 0.95, 0.55, 0.95), # mint
+		Color(1.0, 0.72, 0.35, 0.95),  # honey
+		Color(0.85, 0.55, 1.0, 0.95),  # lilac
+		Color(1.0, 0.55, 0.78, 0.95),  # rose
+	]
+	for i in colors.size():
+		var delay: float = 0.12 + float(i) * 0.18
+		var col: Color = colors[i]
+		var ox: float = randf_range(-0.55, 0.55)
+		var oz: float = randf_range(-0.55, 0.55)
+		var oy: float = 2.05 + float(i % 3) * 0.35
+		get_tree().create_timer(delay).timeout.connect(func():
+			if not is_instance_valid(anchor):
+				return
+			_spawn_firework_burst(anchor, Vector3(ox, oy, oz), col, i % 2 == 0)
+		)
+
+
+func _spawn_firework_burst(anchor: Node3D, local_pos: Vector3, col: Color, play_pop: bool = true) -> void:
+	var burst := CPUParticles3D.new()
+	burst.name = "QuestFireworkBurst"
+	burst.position = local_pos
+	burst.emitting = true
+	burst.one_shot = true
+	burst.explosiveness = 0.96
+	burst.amount = 22
+	burst.lifetime = 0.85
+	burst.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+	burst.emission_sphere_radius = 0.08
+	burst.direction = Vector3(0, 1, 0)
+	burst.spread = 180.0
+	burst.initial_velocity_min = 1.6
+	burst.initial_velocity_max = 3.4
+	burst.gravity = Vector3(0, -3.2, 0)
+	burst.scale_amount_min = 0.08
+	burst.scale_amount_max = 0.22
+	burst.color = col
+	HeadlessGuard.guard_particles(burst)
+	anchor.add_child(burst)
+	var flash := OmniLight3D.new()
+	flash.name = "QuestFireworkFlash"
+	flash.position = local_pos
+	flash.light_color = Color(col.r, col.g, col.b)
+	flash.light_energy = 2.8
+	flash.omni_range = 3.2
+	flash.shadow_enabled = false
+	anchor.add_child(flash)
+	var tw := create_tween()
+	tw.tween_property(flash, "light_energy", 0.05, 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(1.1).timeout.connect(func():
+		if is_instance_valid(burst):
+			burst.queue_free()
+		if is_instance_valid(flash):
+			flash.queue_free()
+	)
+	if play_pop and AudioBus.has_method("play_firework_pop"):
+		AudioBus.play_firework_pop()
+
+
+func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> void:
+	## v1.84: after a week assignment unlocks the next week, colorful unicorns dance around the apprentice.
+	if HeadlessGuard.is_headless():
+		return
+	var anchor: Node3D = player
+	if anchor == null or not is_instance_valid(anchor):
+		return
+	# Clear any prior party so repeats stay tidy
+	var old := get_node_or_null("WeekUnicornParty")
+	if old != null:
+		old.queue_free()
+	var party := Node3D.new()
+	party.name = "WeekUnicornParty"
+	# Keep party in world space near the player (not parented to moving mesh root forever)
+	add_child(party)
+	party.global_position = anchor.global_position
+	var palette: Array = [
+		[Color("#f7a8c8"), Color("#ffe08a")],  # rose / honey
+		[Color("#7ec8ff"), Color("#b8f0ff")],  # sky / ice
+		[Color("#9be56a"), Color("#e8ff9a")],  # mint / lime
+		[Color("#c9a0ff"), Color("#ffe0ff")],  # lilac / blush
+		[Color("#ffb347"), Color("#fff0a8")],  # apricot / cream
+		[Color("#6ad4c8"), Color("#d0fff4")],  # teal / seafoam
+	]
+	var count: int = palette.size()
+	var radius: float = 3.2
+	for i in count:
+		var pair: Array = palette[i]
+		var uni := Node3D.new()
+		uni.name = "PartyUnicorn%d" % i
+		var ang: float = TAU * float(i) / float(count)
+		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
+		uni.rotation.y = ang + PI  # face roughly toward center
+		uni.scale = Vector3(0.85, 0.85, 0.85)
+		party.add_child(uni)
+		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
+		CreatureBuilder.colorize(bob, pair[0], pair[1])
+		# Soft rainbow trail sparkle under each unicorn
+		var trail := CPUParticles3D.new()
+		trail.name = "UnicornTrail"
+		trail.position = Vector3(0, 0.4, 0)
+		trail.emitting = true
+		trail.amount = 10
+		trail.lifetime = 0.7
+		trail.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
+		trail.emission_sphere_radius = 0.2
+		trail.direction = Vector3(0, 1, 0)
+		trail.spread = 50.0
+		trail.initial_velocity_min = 0.2
+		trail.initial_velocity_max = 0.7
+		trail.gravity = Vector3(0, 0.6, 0)
+		trail.scale_amount_min = 0.06
+		trail.scale_amount_max = 0.14
+		trail.color = Color(pair[0].r, pair[0].g, pair[0].b, 0.7)
+		HeadlessGuard.guard_particles(trail)
+		uni.add_child(trail)
+		_dance_unicorn(uni, bob, ang, radius, float(i))
+	# Soft center rainbow fountain
+	var fountain := CPUParticles3D.new()
+	fountain.name = "PartyFountain"
+	fountain.position = Vector3(0, 0.2, 0)
+	fountain.emitting = true
+	fountain.amount = 40
+	fountain.lifetime = 1.4
+	fountain.direction = Vector3(0, 1, 0)
+	fountain.spread = 40.0
+	fountain.initial_velocity_min = 1.2
+	fountain.initial_velocity_max = 2.6
+	fountain.gravity = Vector3(0, -1.5, 0)
+	fountain.scale_amount_min = 0.1
+	fountain.scale_amount_max = 0.28
+	fountain.color = Color(1.0, 0.85, 0.95, 0.85)
+	HeadlessGuard.guard_particles(fountain)
+	party.add_child(fountain)
+	var party_glow := OmniLight3D.new()
+	party_glow.name = "PartyGlow"
+	party_glow.position = Vector3(0, 1.8, 0)
+	party_glow.light_color = Color(1.0, 0.85, 0.95)
+	party_glow.light_energy = 2.4
+	party_glow.omni_range = 8.0
+	party_glow.shadow_enabled = false
+	party.add_child(party_glow)
+	if AudioBus.has_method("play_unicorn_party"):
+		AudioBus.play_unicorn_party()
+	# Dance ~7s then soft fade/poof
+	var fade_tw := create_tween()
+	fade_tw.tween_interval(6.5)
+	fade_tw.tween_property(party_glow, "light_energy", 0.05, 0.8)
+	get_tree().create_timer(7.4).timeout.connect(func():
+		if is_instance_valid(party):
+			# Soft exit sparkle
+			var poof := CPUParticles3D.new()
+			poof.name = "PartyPoof"
+			poof.emitting = true
+			poof.one_shot = true
+			poof.explosiveness = 0.9
+			poof.amount = 48
+			poof.lifetime = 0.9
+			poof.direction = Vector3(0, 1, 0)
+			poof.spread = 80.0
+			poof.initial_velocity_min = 1.0
+			poof.initial_velocity_max = 2.8
+			poof.gravity = Vector3(0, -1.0, 0)
+			poof.scale_amount_min = 0.1
+			poof.scale_amount_max = 0.3
+			poof.color = Color(1.0, 0.9, 1.0, 0.9)
+			HeadlessGuard.guard_particles(poof)
+			party.add_child(poof)
+			for c in party.get_children():
+				if c is Node3D and str(c.name).begins_with("PartyUnicorn"):
+					c.visible = false
+			get_tree().create_timer(1.0).timeout.connect(func():
+				if is_instance_valid(party):
+					party.queue_free()
+			)
+	)
+
+
+func _dance_unicorn(uni: Node3D, bob: Node3D, start_ang: float, radius: float, idx: float) -> void:
+	## Orbit + hop + sway dance for one party unicorn (~7s).
+	if uni == null or not is_instance_valid(uni):
+		return
+	var hop_h: float = 0.28 + (idx * 0.03)
+	var orbit := create_tween()
+	orbit.set_loops(8)
+	orbit.tween_method(func(t: float):
+		if not is_instance_valid(uni):
+			return
+		var a: float = start_ang + t * TAU
+		uni.position = Vector3(cos(a) * radius, absf(sin(t * TAU * 2.0)) * hop_h, sin(a) * radius)
+		uni.rotation.y = a + PI + 0.4
+		if bob != null and is_instance_valid(bob):
+			bob.rotation_degrees.y = sin(t * TAU * 4.0) * 18.0
+			bob.position.y = absf(sin(t * TAU * 2.0)) * 0.08
+	, 0.0, 1.0, 0.9).set_trans(Tween.TRANS_LINEAR)
 
 
 func _build_ambient_life() -> void:

@@ -9,6 +9,7 @@ signal ui_open_requested(panel: String)
 signal combat_target_changed(enemy: Node)
 signal soft_defeated
 signal quest_mastered(quest_id: String)
+signal week_advanced(new_week: int, completed_week: int)  # v1.84: week assignment done → unicorn party
 signal hurt(amount: int)
 signal soft_combat_cleared
 signal heal_tick(amount: int)
@@ -1650,7 +1651,9 @@ func _recalc_unlocked_week() -> void:
 	if unlocked_week > prev:
 		# Wave 23: include year progress % so the learning loop feels paced
 		var year_pct: int = int(round(float(unlocked_week) / 36.0 * 100.0))
-		toast.emit("Week %d is open! New lessons wait at the five guild halls (~%d%% of the year)." % [unlocked_week, year_pct])
+		var completed_week: int = clampi(prev, 1, max_week)
+		toast.emit("Week %d complete ★ — unicorns celebrate! Week %d is open (~%d%% of the year)." % [completed_week, unlocked_week, year_pct])
+		week_advanced.emit(unlocked_week, completed_week)
 		# Wave 40: soft milestone toast every 5 weeks unlocked (RuneScape-chunky, wholesome)
 		if unlocked_week % 5 == 0 and unlocked_week < 36:
 			toast.emit("✦ Milestone · Week %d unlocked — a soft fifth-mark (~%d%% of the year). Well done!" % [unlocked_week, year_pct])

@@ -226,6 +226,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.0-celebrate — quest fireworks & unicorn week party
+
+Celebration polish so mastery and week-complete feel joyful. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new combat foes; quest JSON XP values unchanged in this pass; navmesh / tick combat / save keys unchanged.
+
+- **Mini fireworks** over the apprentice on quest mastery (colorful staggered bursts + soft pops; keeps the cream victory sparkle)
+- **Unicorn dance party** when a week’s assignment unlocks the next week — six colorful unicorns orbit, hop, and sway for ~7s with a short jingle, then soft poof away
+- Toast: `Week N complete ★ — unicorns celebrate!`
+- Re-export Linux + Windows when shipping a build
+
 ### v1.83.0-curriculum — school-day feel
 
 Curriculum-feel pass so a Grade 3 player and a glancing parent can see **what to do next**. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; 36-week quest JSON is not rewritten (tiny Week 1 first-lesson hook only); navmesh, tick combat, and save keys unchanged (`checkpoint_checks` / `checkpoint_date` now drive the school-day loop).
