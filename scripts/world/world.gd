@@ -132,6 +132,14 @@ func _ready() -> void:
 		GameState.quest_mastered.connect(_play_quest_victory_sparkle)
 	if GameState.has_signal("week_advanced") and not GameState.week_advanced.is_connected(_play_week_unicorn_party):
 		GameState.week_advanced.connect(_play_week_unicorn_party)
+	# Optional visual demo: LUMEN_CELEBRATE_DEMO=1 auto-plays fireworks then unicorn party.
+	if OS.get_environment("LUMEN_CELEBRATE_DEMO") == "1" and not HeadlessGuard.is_headless():
+		get_tree().create_timer(2.2).timeout.connect(func():
+			_play_quest_victory_sparkle("demo-quest")
+			get_tree().create_timer(2.4).timeout.connect(func():
+				_play_week_unicorn_party(2, 1)
+			)
+		)
 
 func _init_mats() -> void:
 	## v1.80 world: warmer earth tones so the map reads as a finished village, not muddy gray.
