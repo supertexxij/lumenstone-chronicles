@@ -4971,7 +4971,7 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	# Keep party in world space near the player (not parented to moving mesh root forever)
 	add_child(party)
 	party.global_position = anchor.global_position
-	if _party_unicorn_sheet() == null:
+	if not _party_unicorn_frames_loaded():
 		return
 	# Soft coat tints — art already has a rainbow mane; keep modulate gentle
 	var tints: Array = [
@@ -5077,95 +5077,103 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	)
 
 
-var _party_unicorn_sheet_tex: Texture2D = null
-var _party_unicorn_cell_w: int = 0
-var _party_unicorn_cell_h: int = 0
+var _party_unicorn_frame_tex: Array = []  # Texture2D[6]
+
+
+func _party_unicorn_frames_loaded() -> bool:
+	## Load six discrete opaque frame textures (more reliable than atlas + AnimatedSprite3D).
+	if not _party_unicorn_frame_tex.is_empty():
+		return true
+	var loaded: Array = []
+	for i in 6:
+		var path := "res://assets/vfx/party_unicorn_frame_%d.png" % i
+		if not ResourceLoader.exists(path):
+			push_warning("Party unicorn frame missing: %s" % path)
+			return false
+		var tex: Texture2D = load(path) as Texture2D
+		if tex == null:
+			return false
+		loaded.append(tex)
+	_party_unicorn_frame_tex = loaded
+	return true
 
 
 func _party_unicorn_sheet() -> Texture2D:
-	## Shared sheet texture; each sprite gets its own AtlasTexture region.
-	if _party_unicorn_sheet_tex != null:
-		return _party_unicorn_sheet_tex
+	## Kept for smoke/path checks; frames prefer discrete PNGs.
+	if _party_unicorn_frames_loaded():
+		return _party_unicorn_frame_tex[0] as Texture2D
 	var path := "res://assets/vfx/party_unicorn_dance_sheet.png"
 	if not ResourceLoader.exists(path):
-		push_warning("Party unicorn sheet missing: %s" % path)
 		return null
-	var tex: Texture2D = load(path) as Texture2D
-	if tex == null:
+	return load(path) as Texture2D
+
+
+func _make_party_unicorn_sprite(parent: Node3D, _frames: SpriteFrames, tint: Color, idx: float) -> MeshInstance3D:
+	## Solid cutout quad billboard — alpha scissor so bodies are never ghostly.
+	if not _party_unicorn_frames_loaded():
 		return null
-	_party_unicorn_sheet_tex = tex
-	_party_unicorn_cell_w = int(tex.get_width() / 6)
-	_party_unicorn_cell_h = tex.get_height()
-	return tex
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.5
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.albedo_color = Color(tint.r, tint.g, tint.b, 1.0)
+	mat.albedo_texture = _party_unicorn_frame_tex[int(idx) % 6] as Texture2D
+	# Disable depth weirdness that can make cutouts look glassy
+	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
+	var quad := QuadMesh.new()
+	# Portrait art ~367x512 → keep aspect (~1.54 tall)
+	quad.size = Vector2(1.4, 1.95)
+	var mi := MeshInstance3D.new()
+	mi.name = "Art"
+	mi.mesh = quad
+	mi.material_override = mat
+	mi.position = Vector3(0, 1.15, 0)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.set_meta("mat", mat)
+	mi.set_meta("frame_i", int(idx) % 6)
+	parent.add_child(mi)
+	return mi
 
 
-func _make_party_unicorn_sprite(parent: Node3D, _frames: SpriteFrames, tint: Color, idx: float) -> Sprite3D:
-	## Opaque cutout billboard from the player MLP art — frames driven manually while dancing.
-	var sheet: Texture2D = _party_unicorn_sheet()
-	if sheet == null:
-		return null
-	var atlas := AtlasTexture.new()
-	atlas.atlas = sheet
-	atlas.region = Rect2(0, 0, _party_unicorn_cell_w, _party_unicorn_cell_h)
-	var spr := Sprite3D.new()
-	spr.name = "Art"
-	spr.texture = atlas
-	spr.pixel_size = 0.0042
-	spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	spr.shaded = false
-	spr.transparent = true
-	spr.double_sided = true
-	# Hard cutout so unicorns read solid (not ghostly alpha-blend).
-	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_OPAQUE_PREPASS
-	spr.alpha_scissor_threshold = 0.5
-	spr.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	spr.modulate = Color(tint.r, tint.g, tint.b, 1.0)
-	spr.position = Vector3(0, 1.15, 0)
-	spr.set_meta("cell_w", _party_unicorn_cell_w)
-	spr.set_meta("cell_h", _party_unicorn_cell_h)
-	spr.set_meta("atlas", atlas)
-	spr.set_meta("frame_i", int(idx) % 6)
-	_set_party_unicorn_frame(spr, int(idx) % 6)
-	parent.add_child(spr)
-	return spr
-
-
-func _set_party_unicorn_frame(spr: Sprite3D, frame_i: int) -> void:
+func _set_party_unicorn_frame(spr: MeshInstance3D, frame_i: int) -> void:
 	if spr == null or not is_instance_valid(spr):
 		return
-	var atlas: AtlasTexture = spr.get_meta("atlas") as AtlasTexture
-	if atlas == null:
+	if not _party_unicorn_frames_loaded():
 		return
-	var cell_w: int = int(spr.get_meta("cell_w"))
-	var cell_h: int = int(spr.get_meta("cell_h"))
+	var mat: StandardMaterial3D = spr.get_meta("mat") as StandardMaterial3D
+	if mat == null:
+		return
 	var fi: int = posmod(frame_i, 6)
-	atlas.region = Rect2(fi * cell_w, 0, cell_w, cell_h)
+	mat.albedo_texture = _party_unicorn_frame_tex[fi] as Texture2D
 	spr.set_meta("frame_i", fi)
 
 
 func _dance_unicorn(uni: Node3D, spr: Node3D, start_ang: float, radius: float, idx: float) -> void:
-	## Orbit + hop + prance-frame dance for one party unicorn sprite (~7.5s).
+	## Orbit + hop + prance-frame dance for one party unicorn (~7.5s).
 	if uni == null or not is_instance_valid(uni):
 		return
-	var hop_h: float = 0.55 + (idx * 0.05)
-	# Bind tween to the unicorn so it keeps processing with the party node.
+	var hop_h: float = 0.65 + (idx * 0.05)
 	var orbit := uni.create_tween()
-	orbit.set_loops(12)
+	orbit.set_loops(14)
 	orbit.tween_method(func(t: float):
 		if not is_instance_valid(uni):
 			return
 		var a: float = start_ang + t * TAU
 		var hop: float = absf(sin(t * TAU * 2.0)) * hop_h
 		uni.position = Vector3(cos(a) * radius, hop, sin(a) * radius)
-		if spr != null and is_instance_valid(spr) and spr is Sprite3D:
-			var s: Sprite3D = spr as Sprite3D
-			# Explicit prance frames (2 cycles per orbit lap) — don't rely on AnimatedSprite3D.play().
-			_set_party_unicorn_frame(s, int(floor(t * 12.0 + idx)))
-			s.flip_h = (-sin(a) > 0.0)
-			var squash: float = 1.0 + absf(sin(t * TAU * 2.0)) * 0.10
-			s.scale = Vector3(2.0 - squash, squash, 1.0)
-			s.position.y = 1.15 + absf(sin(t * TAU * 4.0)) * 0.10
-	, 0.0, 1.0, 0.65).set_trans(Tween.TRANS_LINEAR)
+		if spr != null and is_instance_valid(spr) and spr is MeshInstance3D:
+			var mi: MeshInstance3D = spr as MeshInstance3D
+			# ~2 full prance cycles per orbit lap
+			_set_party_unicorn_frame(mi, int(floor(t * 12.0 + idx)))
+			# Flip billboard via negative X scale
+			var flip: float = -1.0 if (-sin(a) > 0.0) else 1.0
+			var squash: float = 1.0 + absf(sin(t * TAU * 2.0)) * 0.12
+			mi.scale = Vector3(flip * (2.0 - squash), squash, 1.0)
+			mi.position.y = 1.15 + absf(sin(t * TAU * 4.0)) * 0.12
+	, 0.0, 1.0, 0.55).set_trans(Tween.TRANS_LINEAR)
 
 
 func _build_ambient_life() -> void:

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cqwv0kwi7rf5a"
-path="res://.godot/imported/party_unicorn_art.png-b01021ed4838eddd13cd94052a014e72.ctex"
+uid="uid://byi7c42polh82"
+path="res://.godot/imported/party_unicorn_frame_3.png-27abdf1fca5033ddd7c2669bbf7d01f4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/vfx/party_unicorn_art.png"
-dest_files=["res://.godot/imported/party_unicorn_art.png-b01021ed4838eddd13cd94052a014e72.ctex"]
+source_file="res://assets/vfx/party_unicorn_frame_3.png"
+dest_files=["res://.godot/imported/party_unicorn_frame_3.png-27abdf1fca5033ddd7c2669bbf7d01f4.ctex"]
 
 [params]
 

@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless check: opaque party unicorn sheet + Sprite3D frame helper markers.
+## Headless check: opaque party unicorn frames + alpha-scissor mesh markers.
 
 
 func _initialize() -> void:
@@ -8,38 +8,34 @@ func _initialize() -> void:
 
 func _run() -> void:
 	print("UNICORN_ART_SMOKE_START")
-	var path := "res://assets/vfx/party_unicorn_dance_sheet.png"
-	assert(ResourceLoader.exists(path))
-	var tex: Texture2D = load(path)
-	print("TEX_SIZE=", tex.get_width(), "x", tex.get_height())
-	var cols := 6
-	var cell_w := int(tex.get_width() / cols)
-	var cell_h := tex.get_height()
-	print("CELL=", cell_w, "x", cell_h)
-	assert(cell_w > 0 and cell_h > 0)
+	for i in 6:
+		var path := "res://assets/vfx/party_unicorn_frame_%d.png" % i
+		assert(ResourceLoader.exists(path), path)
+		var tex: Texture2D = load(path)
+		assert(tex != null)
+		print("FRAME", i, " SIZE=", tex.get_width(), "x", tex.get_height())
 
 	var world_src := FileAccess.get_file_as_string("res://scripts/world/world.gd")
-	assert("_make_party_unicorn_sprite" in world_src)
+	assert("TRANSPARENCY_ALPHA_SCISSOR" in world_src)
 	assert("_set_party_unicorn_frame" in world_src)
-	assert("ALPHA_CUT_OPAQUE_PREPASS" in world_src)
-	assert("party_unicorn_dance_sheet.png" in world_src)
+	assert("party_unicorn_frame_%d.png" in world_src)
 
 	var root := Node3D.new()
 	get_root().add_child(root)
-	var atlas := AtlasTexture.new()
-	atlas.atlas = tex
-	atlas.region = Rect2(0, 0, cell_w, cell_h)
-	var spr := Sprite3D.new()
-	spr.texture = atlas
-	spr.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	spr.transparent = true
-	spr.alpha_cut = SpriteBase3D.ALPHA_CUT_OPAQUE_PREPASS
-	spr.alpha_scissor_threshold = 0.5
-	spr.modulate = Color(1, 1, 1, 1)
-	root.add_child(spr)
-	# Advance a couple frames like the dance loop does
-	atlas.region = Rect2(2 * cell_w, 0, cell_w, cell_h)
-	atlas.region = Rect2(4 * cell_w, 0, cell_w, cell_h)
-	print("SPRITE_READY alpha_cut=", spr.alpha_cut, " modulate_a=", spr.modulate.a)
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+	mat.alpha_scissor_threshold = 0.5
+	mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	mat.albedo_color = Color(1, 1, 1, 1)
+	mat.albedo_texture = load("res://assets/vfx/party_unicorn_frame_0.png")
+	var quad := QuadMesh.new()
+	quad.size = Vector2(1.4, 1.95)
+	var mi := MeshInstance3D.new()
+	mi.mesh = quad
+	mi.material_override = mat
+	root.add_child(mi)
+	mat.albedo_texture = load("res://assets/vfx/party_unicorn_frame_3.png")
+	print("MESH_READY transparency=", mat.transparency, " albedo_a=", mat.albedo_color.a)
 	print("UNICORN_ART_SMOKE_OK")
 	quit()
