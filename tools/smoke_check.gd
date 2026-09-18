@@ -953,7 +953,7 @@ func _initialize():
 	print("WEEK_ADVANCED_184", "signal week_advanced" in gs184 and "week_advanced.emit" in gs184 and "unicorns celebrate" in gs184)
 	print("QUEST_FIREWORKS_184", "_play_quest_mini_fireworks" in world184 and "_spawn_firework_burst" in world184 and "QuestFireworkBurst" in world184)
 	print("UNICORN_PARTY_184", "_play_week_unicorn_party" in world184 and "_dance_unicorn" in world184 and "WeekUnicornParty" in world184)
-	print("PARTY_UNICORN_MESH_184", "party_unicorn" in creature184 and "static func _build_party_unicorn" in creature184 and "colorize_party_unicorn" in creature184 and "Forelock" in creature184 and "Muzzle" in creature184)
+	print("PARTY_UNICORN_MESH_184", "party_unicorn" in creature184 and "static func _build_party_unicorn" in creature184 and "colorize_party_unicorn" in creature184 and "Forelock" in creature184 and "EyeWhiteL" in creature184 and "IrisL" in creature184)
 	print("CELEBRATE_SFX_184", "play_firework_pop" in audio184 and "play_unicorn_party" in audio184 and "_firework_pop_sfx" in audio184 and "_unicorn_party_jingle" in audio184)
 	print("PIN_STILL_1234_W184", "const DEFAULT_PIN := \"1234\"" in gs184 or 'DEFAULT_PIN := "1234"' in gs184)
 	print("MASTERY_80_W184", "MASTERY_PCT := 0.8" in gs184 or "0.8" in gs184)

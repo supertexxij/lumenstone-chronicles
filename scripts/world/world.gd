@@ -4972,12 +4972,13 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 	add_child(party)
 	party.global_position = anchor.global_position
 	var palette: Array = [
-		[Color("#f7a8c8"), Color("#ffe08a")],  # rose / honey
-		[Color("#7ec8ff"), Color("#b8f0ff")],  # sky / ice
-		[Color("#9be56a"), Color("#e8ff9a")],  # mint / lime
-		[Color("#c9a0ff"), Color("#ffe0ff")],  # lilac / blush
-		[Color("#ffb347"), Color("#fff0a8")],  # apricot / cream
-		[Color("#6ad4c8"), Color("#d0fff4")],  # teal / seafoam
+		# Soft MLP-ish coat + vivid contrasting mane
+		[Color("#ffb6d9"), Color("#ff4fa3")],  # pink pony / hot-pink mane
+		[Color("#b8e0ff"), Color("#4a7dff")],  # sky pony / blue mane
+		[Color("#d4b8ff"), Color("#7a3cff")],  # lilac pony / violet mane
+		[Color("#ffe29a"), Color("#ff8c2a")],  # buttercream / orange mane
+		[Color("#b8f5c8"), Color("#2db86a")],  # mint pony / green mane
+		[Color("#ffd0b8"), Color("#ff5c7a")],  # peach pony / coral mane
 	]
 	var count: int = palette.size()
 	var radius: float = 3.2
@@ -4988,7 +4989,7 @@ func _play_week_unicorn_party(_new_week: int = 1, _completed_week: int = 1) -> v
 		var ang: float = TAU * float(i) / float(count)
 		uni.position = Vector3(cos(ang) * radius, 0.0, sin(ang) * radius)
 		uni.rotation.y = ang + PI  # face roughly toward center
-		uni.scale = Vector3(1.05, 1.05, 1.05)
+		uni.scale = Vector3(1.15, 1.15, 1.15)
 		party.add_child(uni)
 		var bob: Node3D = CreatureBuilder.build("party_unicorn", uni)
 		CreatureBuilder.colorize_party_unicorn(bob, pair[0], pair[1])

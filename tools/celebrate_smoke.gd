@@ -21,6 +21,7 @@ func _run() -> void:
 	assert("play_firework_pop" in audio_src and "play_unicorn_party" in audio_src)
 	assert("party_unicorn" in creature_src and "_build_party_unicorn" in creature_src)
 	assert("Horn" in creature_src and "ManeA" in creature_src and "Forelock" in creature_src and "Muzzle" in creature_src)
+	assert("EyeWhiteL" in creature_src and "IrisL" in creature_src and "ShineL" in creature_src)
 	assert("colorize_party_unicorn" in creature_src)
 	print("SOURCE_OK")
 
