@@ -48,7 +48,7 @@ static func _load_png_tex(res_path: String) -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
-static func _make_alpha_card(parent: Node3D, name: String, tex: Texture2D, size: Vector2, pos: Vector3, rot_deg: Vector3, priority: int = 8) -> MeshInstance3D:
+static func _make_alpha_card(parent: Node3D, name: String, tex: Texture2D, size: Vector2, pos: Vector3, rot_deg: Vector3, priority: int = 8, overdraw: bool = true) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.name = name
 	var q := QuadMesh.new()
@@ -65,8 +65,14 @@ static func _make_alpha_card(parent: Node3D, name: String, tex: Texture2D, size:
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.roughness = 1.0
-	mat.no_depth_test = true
-	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	# Face/bangs overdraw so elevated cam stays readable; back hair keeps depth so it
+	# cannot paint over the chin/face when viewed from the front.
+	if overdraw:
+		mat.no_depth_test = true
+		mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	else:
+		mat.no_depth_test = false
+		mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_OPAQUE_ONLY
 	mat.render_priority = priority
 	mi.material_override = mat
 	HeadlessGuard.guard_mesh(mi)
@@ -78,7 +84,7 @@ static func _tint_card(mi: MeshInstance3D, c: Color) -> void:
 		return
 	var mat := mi.material_override as StandardMaterial3D
 	if mat:
-		# Texture is authored dark-brown; multiply toward wardrobe hair color.
+		# Texture is a light grayscale alpha silhouette — multiply by wardrobe hair color.
 		mat.albedo_color = c
 
 
@@ -158,55 +164,56 @@ static func build(root: Node3D) -> Dictionary:
 	var head := _mi(_sphere(0.32), Vector3(0, 1.78, 0.04), bob, "Head")
 	# Soft anime short-hair: fluffy crown volume + painted bangs/back cards
 	# (cute layered fringe — not geometric cone spikes).
-	var hair := _mi(_sphere(0.34, 0.30), Vector3(0, 1.92, -0.08), bob, "Hair")
-	hair.scale = Vector3(1.22, 0.95, 1.18)
-	# Soft top fluff tufts (gentle, not weapon spikes)
-	var hair_spike_c := _mi(_sphere(0.12, 0.18), Vector3(0.02, 2.14, -0.04), bob, "HairSpikeC")
-	hair_spike_c.scale = Vector3(1.1, 0.85, 0.9)
-	var hair_spike_l := _mi(_sphere(0.10, 0.16), Vector3(-0.16, 2.08, 0.0), bob, "HairSpikeL")
-	hair_spike_l.scale = Vector3(1.0, 0.8, 0.85)
-	var hair_spike_r := _mi(_sphere(0.10, 0.16), Vector3(0.16, 2.08, 0.0), bob, "HairSpikeR")
-	hair_spike_r.scale = Vector3(1.0, 0.8, 0.85)
-	var hair_spike_bl := _mi(_sphere(0.11, 0.16), Vector3(-0.12, 2.00, -0.18), bob, "HairSpikeBL")
-	var hair_spike_br := _mi(_sphere(0.11, 0.16), Vector3(0.12, 2.00, -0.18), bob, "HairSpikeBR")
-	# Soft side volume (hidden under painted cards / locks — kept for wardrobe API)
-	var hair_spike_wl := _mi(_sphere(0.09, 0.14), Vector3(-0.28, 1.90, -0.02), bob, "HairSpikeWL")
-	var hair_spike_wr := _mi(_sphere(0.09, 0.14), Vector3(0.28, 1.90, -0.02), bob, "HairSpikeWR")
-	# Painted bangs card — soft swept anime fringe
+	var hair := _mi(_sphere(0.30, 0.24), Vector3(0, 1.94, -0.10), bob, "Hair")
+	hair.scale = Vector3(1.18, 0.78, 1.12)
+	# Soft top fluff tufts (small, sit on crown — do not swallow the face)
+	var hair_spike_c := _mi(_sphere(0.08, 0.12), Vector3(0.02, 2.10, -0.04), bob, "HairSpikeC")
+	hair_spike_c.scale = Vector3(1.05, 0.75, 0.85)
+	var hair_spike_l := _mi(_sphere(0.07, 0.11), Vector3(-0.14, 2.05, 0.0), bob, "HairSpikeL")
+	hair_spike_l.scale = Vector3(0.95, 0.7, 0.8)
+	var hair_spike_r := _mi(_sphere(0.07, 0.11), Vector3(0.14, 2.05, 0.0), bob, "HairSpikeR")
+	hair_spike_r.scale = Vector3(0.95, 0.7, 0.8)
+	var hair_spike_bl := _mi(_sphere(0.075, 0.11), Vector3(-0.10, 1.98, -0.16), bob, "HairSpikeBL")
+	var hair_spike_br := _mi(_sphere(0.075, 0.11), Vector3(0.10, 1.98, -0.16), bob, "HairSpikeBR")
+	# Soft side volume (kept for wardrobe API)
+	var hair_spike_wl := _mi(_sphere(0.06, 0.10), Vector3(-0.26, 1.88, -0.02), bob, "HairSpikeWL")
+	var hair_spike_wr := _mi(_sphere(0.06, 0.10), Vector3(0.26, 1.88, -0.02), bob, "HairSpikeWR")
+	# Painted bangs card — soft curtain fringe above the eyes
 	var bangs := _make_alpha_card(
 		bob,
 		"Bangs",
 		_load_png_tex("res://assets/faces/apprentice_bangs.png"),
-		Vector2(0.72, 0.48),
-		Vector3(0.0, 1.98, 0.16),
-		Vector3(-42, 0, 0),
+		Vector2(0.58, 0.34),
+		Vector3(0.0, 2.02, 0.18),
+		Vector3(-38, 0, 0),
 		9
 	)
-	# Extra soft 3D bang accents under the card
-	var bang_l := _mi(_sphere(0.07, 0.14), Vector3(-0.14, 1.92, 0.18), bob, "BangL")
-	bang_l.scale = Vector3(0.9, 1.0, 0.55)
-	bang_l.rotation_degrees = Vector3(35, 10, -10)
-	var bang_r := _mi(_sphere(0.07, 0.14), Vector3(0.14, 1.92, 0.18), bob, "BangR")
-	bang_r.scale = Vector3(0.9, 1.0, 0.55)
-	bang_r.rotation_degrees = Vector3(35, -10, 10)
+	# Tiny soft 3D bang accents (subtle under the painted fringe)
+	var bang_l := _mi(_sphere(0.045, 0.09), Vector3(-0.12, 1.96, 0.20), bob, "BangL")
+	bang_l.scale = Vector3(0.85, 0.9, 0.45)
+	bang_l.rotation_degrees = Vector3(28, 8, -8)
+	var bang_r := _mi(_sphere(0.045, 0.09), Vector3(0.12, 1.96, 0.20), bob, "BangR")
+	bang_r.scale = Vector3(0.85, 0.9, 0.45)
+	bang_r.rotation_degrees = Vector3(28, -8, 8)
 	# Soft cheek-framing locks
-	var l_lock := _mi(_capsule(0.055, 0.28), Vector3(-0.27, 1.70, 0.10), bob, "LLock")
-	l_lock.rotation_degrees = Vector3(12, 5, 20)
-	var r_lock := _mi(_capsule(0.055, 0.28), Vector3(0.27, 1.70, 0.10), bob, "RLock")
-	r_lock.rotation_degrees = Vector3(12, -5, -20)
-	# Tiny soft tuft (cute, not a rigid ahoge spear)
-	var ahoge := _mi(_sphere(0.05, 0.12), Vector3(0.08, 2.20, 0.02), bob, "Ahoge")
-	ahoge.scale = Vector3(0.7, 1.0, 0.7)
-	ahoge.rotation_degrees = Vector3(10, 0, 25)
-	# Painted soft bob card on the back for layered anime silhouette
+	var l_lock := _mi(_capsule(0.045, 0.24), Vector3(-0.26, 1.72, 0.10), bob, "LLock")
+	l_lock.rotation_degrees = Vector3(10, 5, 18)
+	var r_lock := _mi(_capsule(0.045, 0.24), Vector3(0.26, 1.72, 0.10), bob, "RLock")
+	r_lock.rotation_degrees = Vector3(10, -5, -18)
+	# Tiny soft tuft
+	var ahoge := _mi(_sphere(0.04, 0.09), Vector3(0.07, 2.16, 0.02), bob, "Ahoge")
+	ahoge.scale = Vector3(0.65, 0.95, 0.65)
+	ahoge.rotation_degrees = Vector3(8, 0, 22)
+	# Painted soft bob card on the back — depth-tested so it stays behind the head.
 	var hair_back := _make_alpha_card(
 		bob,
 		"HairBack",
 		_load_png_tex("res://assets/faces/apprentice_hair_back.png"),
-		Vector2(0.78, 0.78),
-		Vector3(0.0, 1.88, -0.20),
-		Vector3(18, 180, 0),
-		7
+		Vector2(0.70, 0.70),
+		Vector3(0.0, 1.86, -0.22),
+		Vector3(16, 180, 0),
+		7,
+		false
 	)
 
 	var l_shoulder := _mi(_sphere(0.15), Vector3(-0.36, 1.32, 0), bob, "LShoulder")
