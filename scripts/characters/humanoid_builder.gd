@@ -209,9 +209,9 @@ static func build(root: Node3D) -> Dictionary:
 		bob,
 		"HairBack",
 		_load_png_tex("res://assets/faces/apprentice_hair_back.png"),
-		Vector2(0.70, 0.70),
-		Vector3(0.0, 1.86, -0.22),
-		Vector3(16, 180, 0),
+		Vector2(0.62, 0.62),
+		Vector3(0.0, 1.84, -0.30),
+		Vector3(12, 180, 0),
 		7,
 		false
 	)
