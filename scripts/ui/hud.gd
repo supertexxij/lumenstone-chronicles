@@ -420,7 +420,7 @@ func _ensure_year_chip() -> void:
 	_year_chip_panel.name = "YearChipPanel"
 	_year_chip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_year_chip_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_year_chip_panel.offset_left = -220.0
+	_year_chip_panel.offset_left = -290.0
 	_year_chip_panel.offset_top = 74.0
 	_year_chip_panel.offset_right = -12.0
 	_year_chip_panel.offset_bottom = 108.0
@@ -476,9 +476,11 @@ func _refresh_year_chip() -> void:
 		elif "rain" in mw:
 			wx_letter = "R"
 			wx_name = "Rain"
-	_year_chip.text = "Year · mastery %d%% · %s" % [pct, wx_letter]
+	# Wave 74: Year chip shows week N of 36 beside % (PIN stays 1234; mastery ≥80%)
+	var week_show: int = clampi(int(GameState.unlocked_week), 1, 36)
+	_year_chip.text = "Year · week %d of 36 · %d%% · %s" % [week_show, pct, wx_letter]
 	var ynote := GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else "Year progress"
-	_year_chip.tooltip_text = "%s · weather %s (%s)" % [ynote, wx_letter, wx_name]
+	_year_chip.tooltip_text = "%s · week %d of 36 · weather %s (%s)" % [ynote, week_show, wx_letter, wx_name]
 	# Wave 46: clearer Year chip when % changes — soft gold flash
 	if _year_chip_last_pct >= 0 and pct != _year_chip_last_pct:
 		_year_chip_flash_dur = 0.85

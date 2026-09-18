@@ -146,6 +146,9 @@ func _ready() -> void:
 		"blackberry_bear":
 			if label: label.position.y = 1.55
 			hp_bar.position.y = 1.3
+		"melon_moose":
+			if label: label.position.y = 2.2
+			hp_bar.position.y = 1.95
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -918,6 +921,32 @@ func _idle_anim(delta: float) -> void:
 			if bhead:
 				bhead.rotation.y = sin(t * 0.6) * 0.05
 				bhead.rotation.x = sin(t * 0.5) * 0.03
+		"melon_moose":
+			# Soft graze-bob — bulky breathe, palmate antlers nod, dewlap sway (Wave 74)
+			creature_bob.position.y = 0.01 + abs(sin(t * 0.72)) * 0.022
+			creature_bob.rotation.y = sin(t * 0.24) * 0.08
+			var mear_l := creature_bob.get_node_or_null("EarL")
+			var mear_r := creature_bob.get_node_or_null("EarR")
+			if mear_l:
+				mear_l.rotation.z = deg_to_rad(-18) + sin(t * 1.0) * 0.06
+			if mear_r:
+				mear_r.rotation.z = deg_to_rad(18) - sin(t * 1.0 + 0.2) * 0.06
+			var ant_l := creature_bob.get_node_or_null("AntlerL")
+			var ant_r := creature_bob.get_node_or_null("AntlerR")
+			if ant_l:
+				ant_l.rotation.z = deg_to_rad(-20) + sin(t * 0.55) * 0.04
+			if ant_r:
+				ant_r.rotation.z = deg_to_rad(20) - sin(t * 0.55 + 0.15) * 0.04
+			var neck_m := creature_bob.get_node_or_null("Neck")
+			if neck_m:
+				neck_m.rotation.x = deg_to_rad(22) + sin(t * 0.5) * 0.06
+			var mhead := creature_bob.get_node_or_null("Head")
+			if mhead:
+				mhead.rotation.y = sin(t * 0.55) * 0.05
+				mhead.rotation.x = sin(t * 0.45) * 0.03
+			var mtail := creature_bob.get_node_or_null("Tail")
+			if mtail:
+				mtail.rotation.y = sin(t * 0.85) * 0.1
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")
@@ -1058,12 +1087,66 @@ func _tick_hit_flash(delta: float) -> void:
 
 func _begin_kill_flash() -> void:
 	## Brief soft gold wash before dissolve — wholesome clear, not gore.
+	## Wave 74: clearer soft victory sparkle when foe falls (RuneScape-chunky, wholesome — no cheesy combat labels).
 	if HeadlessGuard.is_headless():
 		return
 	_kill_flash_t = 0.22
 	_kill_flash_base.clear()
 	_capture_mesh_colors(creature_bob)
 	_apply_kill_flash_color(Color(1.0, 0.95, 0.65, 1.0))
+	_play_foe_victory_sparkle()
+
+
+func _play_foe_victory_sparkle() -> void:
+	## Wave 74: clearer soft cream/gold victory sparkle when foe falls (RuneScape-chunky, wholesome — no cheesy combat labels).
+	if HeadlessGuard.is_headless():
+		return
+	var fx := CPUParticles3D.new()
+	fx.name = "FoeVictorySparkle"
+	fx.position = Vector3(0, 1.15, 0)
+	fx.emitting = true
+	fx.one_shot = true
+	fx.explosiveness = 0.88
+	fx.amount = 28
+	fx.lifetime = 0.95
+	fx.direction = Vector3(0, 1, 0)
+	fx.spread = 62.0
+	fx.initial_velocity_min = 0.85
+	fx.initial_velocity_max = 2.2
+	fx.gravity = Vector3(0, -1.0, 0)
+	fx.scale_amount_min = 0.10
+	fx.scale_amount_max = 0.28
+	fx.color = Color(1.0, 0.96, 0.68, 0.92)
+	var sm := SphereMesh.new()
+	sm.radius = 0.04
+	sm.height = 0.08
+	fx.mesh = sm
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(1.0, 0.96, 0.68, 0.9)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.92, 0.55)
+	mat.emission_energy_multiplier = 1.35
+	fx.material_override = mat
+	HeadlessGuard.guard_particles(fx)
+	add_child(fx)
+	var glow := OmniLight3D.new()
+	glow.name = "FoeVictoryGlow"
+	glow.position = Vector3(0, 1.2, 0)
+	glow.light_color = Color(1.0, 0.94, 0.68)
+	glow.light_energy = 1.85
+	glow.omni_range = 4.2
+	glow.shadow_enabled = false
+	add_child(glow)
+	var tw := create_tween()
+	tw.tween_property(glow, "light_energy", 0.05, 0.95).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(1.35).timeout.connect(func():
+		if is_instance_valid(fx):
+			fx.queue_free()
+		if is_instance_valid(glow):
+			glow.queue_free()
+	)
 
 func _capture_mesh_colors(n: Node) -> void:
 	if n == null:

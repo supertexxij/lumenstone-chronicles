@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 74 overnight (v1.74.0-overnight)
+- Soft **Cedar Hollow cedar-needle drift at dusk** — soft green-brown needles drift over the NE hollow (RuneScape-chunky, wholesome)
+- Soft **plaza dusk lantern sync polish** — hearth + village lamps share a warmer dusk breath (RuneScape-chunky, wholesome)
+- Clearer **soft victory sparkle when foe falls** — cream/gold motes + warm glow (no cheesy combat labels)
+- New wilds foe **Melon Moose** — bulky body, long snout, palmate antlers, dewlap, stubby legs, cheek blush, gentle “guided” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda / Coconut Crab / Lime Llama)
+- HUD/Travel QoL: **Year chip shows week N of 36 beside %**; **Travel nearest row soft mint pulse** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 73 overnight (v1.73.0-overnight)
 - Soft **Amber Knoll amber-glow polish at dusk** — warmer honey OmniLight + soft amber motes over the ENE knoll (RuneScape-chunky, wholesome)
 - Soft **brook murmur / puddle ripple polish** — richer water hush nearby + denser rain puddle rings

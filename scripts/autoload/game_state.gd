@@ -73,6 +73,7 @@ var seen_wave_70_toast: bool = false  # Wave 70: once-per-save polish tip toast 
 var seen_wave_71_toast: bool = false  # Wave 71: once-per-save polish tip toast on load
 var seen_wave_72_toast: bool = false  # Wave 72: once-per-save polish tip toast on load
 var seen_wave_73_toast: bool = false  # Wave 73: once-per-save polish tip toast on load
+var seen_wave_74_toast: bool = false  # Wave 74: once-per-save polish tip toast on load
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -173,6 +174,7 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	seen_wave_71_toast = false
 	seen_wave_72_toast = false
 	seen_wave_73_toast = false
+	seen_wave_74_toast = false
 	_low_hp_toast_armed = true
 	journal_open_only = false
 	festival_decades_seen = []
@@ -381,6 +383,7 @@ func save_game() -> void:
 		"seen_wave_71_toast": seen_wave_71_toast,
 		"seen_wave_72_toast": seen_wave_72_toast,
 		"seen_wave_73_toast": seen_wave_73_toast,
+		"seen_wave_74_toast": seen_wave_74_toast,
 		"journal_open_only": journal_open_only,
 		"festival_decades_seen": festival_decades_seen,
 		"greeted_landmarks": greeted_landmarks,
@@ -465,6 +468,7 @@ func load_game(slot: int = -1) -> bool:
 	seen_wave_71_toast = bool(data.get("seen_wave_71_toast", false))
 	seen_wave_72_toast = bool(data.get("seen_wave_72_toast", false))
 	seen_wave_73_toast = bool(data.get("seen_wave_73_toast", false))
+	seen_wave_74_toast = bool(data.get("seen_wave_74_toast", false))
 	_low_hp_toast_armed = true
 	journal_open_only = bool(data.get("journal_open_only", false))
 	var fd = data.get("festival_decades_seen", [])
@@ -983,6 +987,16 @@ func maybe_wave_73_toast() -> bool:
 		return false
 	seen_wave_73_toast = true
 	toast.emit("Wave 73 polish · Amber Knoll amber-glow at dusk + brook/puddle hush · clearer quest complete toast · Parent empty-week warmer · Lime Llama in the wilds.")
+	save_game()
+	return true
+
+
+func maybe_wave_74_toast() -> bool:
+	## Wave 74: once-per-save polish tip (PIN stays 1234; mastery ≥80%).
+	if seen_wave_74_toast:
+		return false
+	seen_wave_74_toast = true
+	toast.emit("Wave 74 polish · Cedar Hollow needle drift at dusk + plaza lantern sync · clearer foe-fall sparkle · Year chip week of 36 · Melon Moose in the wilds.")
 	save_game()
 	return true
 

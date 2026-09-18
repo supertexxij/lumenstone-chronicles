@@ -29,6 +29,7 @@ var _hit_pausing: bool = false
 var _travel_fading: bool = false
 var _travel_fade: ColorRect = null
 var _travel_fade_label: Label = null  # Wave 62: landmark name during soft-travel fade
+var _travel_near_idx: int = -1  # Wave 74: soft mint pulse on nearest Travel row
 
 func _ready() -> void:
 	GameState.toast.connect(_on_toast)
@@ -157,6 +158,8 @@ func _process(delta: float) -> void:
 		toast_timer -= delta
 		if toast_timer <= 0:
 			toast_label.visible = false
+	# Wave 74: Travel nearest row gets a soft mint pulse (PIN 1234; mastery ≥80%)
+	_tick_travel_near_pulse()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not GameState.in_world:
@@ -408,8 +411,24 @@ func _refresh_travel_list() -> void:
 		list.select(last_sel)  # last-visited stays sticky when no fav
 	elif first_sel >= 0:
 		list.select(first_sel)
+	_travel_near_idx = near_sel  # Wave 74: soft mint pulse target
 
 
+
+
+func _tick_travel_near_pulse() -> void:
+	## Wave 74: Travel nearest row gets a soft mint pulse (PIN 1234; mastery ≥80%).
+	if travel_panel == null or not travel_panel.visible:
+		return
+	if _travel_near_idx < 0:
+		return
+	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
+	if list == null or _travel_near_idx >= list.item_count:
+		return
+	var t_ms: float = float(Time.get_ticks_msec())
+	var u: float = 0.5 + 0.5 * sin(t_ms * 0.0048)
+	var mint := Color(0.45 + 0.18 * u, 0.88 + 0.08 * u, 0.68 + 0.12 * u)
+	list.set_item_custom_fg_color(_travel_near_idx, mint)
 
 func _travel_landmark_short(full: String) -> String:
 	## Wave 66: compact short name for landmark arrival toast (RuneScape-chunky, wholesome).
@@ -825,6 +844,9 @@ func _enter_world() -> void:
 	# Wave 73: once-per-save polish tip (PIN 1234; mastery ≥80%)
 	if GameState.has_method("maybe_wave_73_toast"):
 		GameState.maybe_wave_73_toast()
+	# Wave 74: once-per-save polish tip (PIN 1234; mastery ≥80%)
+	if GameState.has_method("maybe_wave_74_toast"):
+		GameState.maybe_wave_74_toast()
 	# Wave 38: quieter, clearer autosave toast (shows slot nickname when set)
 	var lab := str(GameState.slot_label).strip_edges()
 	if lab != "":

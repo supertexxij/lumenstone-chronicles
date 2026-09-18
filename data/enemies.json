@@ -636,6 +636,19 @@
       "combat_xp": 294,
       "respawn_sec": 114.0,
       "description": "A gentle llama of the lime wilds \u2014 lead it kindly with a careful step!"
+    },
+    "melon_moose": {
+      "kind": "melon_moose",
+      "name": "Melon Moose",
+      "defeat_verb": "guided",
+      "color": "#c8a848",
+      "accent": "#f0e8c0",
+      "max_hp": 314,
+      "damage": 52,
+      "accuracy": 0.16,
+      "combat_xp": 300,
+      "respawn_sec": 116.0,
+      "description": "A gentle moose of the melon wilds \u2014 guide it kindly with a careful step!"
     }
   },
   "spawns": [
@@ -2096,6 +2109,36 @@
       "kind": "lime_llama",
       "x": 190,
       "z": -40
+    },
+    {
+      "id": "e244",
+      "kind": "melon_moose",
+      "x": 160,
+      "z": -120
+    },
+    {
+      "id": "e245",
+      "kind": "melon_moose",
+      "x": -160,
+      "z": 110
+    },
+    {
+      "id": "e246",
+      "kind": "melon_moose",
+      "x": 110,
+      "z": 165
+    },
+    {
+      "id": "e247",
+      "kind": "melon_moose",
+      "x": -120,
+      "z": -170
+    },
+    {
+      "id": "e248",
+      "kind": "melon_moose",
+      "x": 185,
+      "z": 80
     }
   ],
   "base_combat": {

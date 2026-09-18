@@ -169,6 +169,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_crab(bob)
 		"lime_llama":
 			_build_llama(bob)
+		"melon_moose":
+			_build_moose(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1888,4 +1890,52 @@ static func _build_llama(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.03, 0.02, 0.10), Vector3(0, 0.44, -0.24), bob, "Tail")
 	tail.rotation_degrees = Vector3(-40, 0, 0)
 	_mi(_sphere(0.05, 0.055), Vector3(0, 0.50, -0.30), bob, "TailFluff")
+
+static func _build_moose(bob: Node3D) -> void:
+	## Soft melon-wilds moose — bulky body, long snout, palmate antlers, dewlap, stubby legs, cheek blush (distinct from Cedar Stag / Raspberry Ram / Guava Goat / Lime Llama / Blackberry Bear).
+	# Bulky body + soft cream belly
+	_mi(_sphere(0.26, 0.32), Vector3(0, 0.48, 0.0), bob, "Body")
+	_mi(_sphere(0.14, 0.18), Vector3(0, 0.36, 0.06), bob, "Belly")
+	# Thick neck + oval head + long soft snout
+	var neck := _mi(_cyl(0.08, 0.07, 0.22), Vector3(0, 0.72, 0.14), bob, "Neck")
+	neck.rotation_degrees = Vector3(22, 0, 0)
+	_mi(_sphere(0.13, 0.14), Vector3(0, 0.92, 0.28), bob, "Head")
+	_mi(_box(Vector3(0.09, 0.07, 0.16)), Vector3(0, 0.86, 0.42), bob, "Snout")
+	_mi(_sphere(0.028), Vector3(0, 0.86, 0.52), bob, "Nose")
+	_mi(_sphere(0.024), Vector3(-0.05, 0.96, 0.34), bob, "EyeL")
+	_mi(_sphere(0.024), Vector3(0.05, 0.96, 0.34), bob, "EyeR")
+	# Soft rounded ears
+	var ear_l := _mi(_sphere(0.05, 0.06), Vector3(-0.12, 1.02, 0.24), bob, "EarL")
+	ear_l.rotation_degrees = Vector3(0, 0, -18)
+	var ear_r := _mi(_sphere(0.05, 0.06), Vector3(0.12, 1.02, 0.24), bob, "EarR")
+	ear_r.rotation_degrees = Vector3(0, 0, 18)
+	# Soft melon cheek blush
+	_mi(_sphere(0.04, 0.032), Vector3(-0.12, 0.88, 0.26), bob, "BlushL")
+	_mi(_sphere(0.04, 0.032), Vector3(0.12, 0.88, 0.26), bob, "BlushR")
+	# Palmate antlers (moose signature — broader than Cedar Stag points)
+	var ant_l := _mi(_box(Vector3(0.18, 0.04, 0.10)), Vector3(-0.16, 1.10, 0.22), bob, "AntlerL")
+	ant_l.rotation_degrees = Vector3(8, 15, -20)
+	_mi(_box(Vector3(0.06, 0.03, 0.08)), Vector3(-0.24, 1.14, 0.18), bob, "PalmL")
+	var ant_r := _mi(_box(Vector3(0.18, 0.04, 0.10)), Vector3(0.16, 1.10, 0.22), bob, "AntlerR")
+	ant_r.rotation_degrees = Vector3(8, -15, 20)
+	_mi(_box(Vector3(0.06, 0.03, 0.08)), Vector3(0.24, 1.14, 0.18), bob, "PalmR")
+	# Soft dewlap under chin
+	_mi(_sphere(0.06, 0.08), Vector3(0, 0.72, 0.28), bob, "Dewlap")
+	# Four sturdy stubby legs
+	for info in [
+		["FL", Vector3(-0.12, 0.22, 0.14)],
+		["FR", Vector3(0.12, 0.22, 0.14)],
+		["BL", Vector3(-0.12, 0.22, -0.14)],
+		["BR", Vector3(0.12, 0.22, -0.14)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.032, 0.036, 0.18), Vector3(0, -0.02, 0), leg, "Shin")
+		_mi(_box(Vector3(0.06, 0.02, 0.08)), Vector3(0, -0.12, 0.01), leg, "Hoof")
+	# Soft little fluff tail
+	var tail := _mi(_cyl(0.035, 0.025, 0.10), Vector3(0, 0.50, -0.28), bob, "Tail")
+	tail.rotation_degrees = Vector3(-35, 0, 0)
+	_mi(_sphere(0.055, 0.06), Vector3(0, 0.56, -0.34), bob, "TailFluff")
 

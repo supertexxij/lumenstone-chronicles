@@ -52,6 +52,7 @@ var _heather_blooms: CPUParticles3D  # Wave 70: soft Heather Heath heather-bloom
 var _thistle_blooms: CPUParticles3D  # Wave 71: soft Thistle Rise thistle-bloom drift at dusk
 var _maple_dusk_leaves: CPUParticles3D  # Wave 72: soft Maple Copse maple-leaf drift at dusk
 var _amber_knoll_motes: CPUParticles3D  # Wave 73: soft Amber Knoll amber-glow motes at dusk
+var _cedar_needles: CPUParticles3D  # Wave 74: soft Cedar Hollow cedar-needle drift at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1217,14 +1218,15 @@ func _update_hall_wind_chime() -> void:
 func _update_plaza_campfire(dayness: float) -> void:
 	## Soft hearth stays lit by day; warms up a bit at dusk. Wave 33: near-hearth crackle.
 	## Wave 60: plaza dusk lantern flicker sync — hearth breathes with village lamp flicker.
+	## Wave 74: plaza dusk lantern sync polish — shared phase + warmer dusk breath with village lamps (RuneScape-chunky, wholesome).
 	if _plaza_campfire_light == null or not is_instance_valid(_plaza_campfire_light):
 		return
 	var dusk: float = clampf((0.62 - dayness) / 0.35, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.9 + 0.12 * abs(sin(t_ms * 0.0045))
-	# Sync soft irregular flicker with village dusk lamps (same phase recipe)
-	var flicker: float = 1.0 + 0.06 * sin(t_ms * 0.011) + 0.04 * sin(t_ms * 0.027 + 1.7)
-	_plaza_campfire_light.light_energy = (0.85 + dusk * 1.15) * pulse * clampf(flicker, 0.88, 1.12)
+	var pulse: float = 0.88 + 0.14 * abs(sin(t_ms * 0.0042))
+	# Sync soft irregular flicker with village dusk lamps (same phase recipe — Wave 74 polish)
+	var flicker: float = 1.0 + 0.07 * sin(t_ms * 0.011) + 0.045 * sin(t_ms * 0.027 + 1.7)
+	_plaza_campfire_light.light_energy = (0.88 + dusk * 1.28) * pulse * clampf(flicker, 0.86, 1.14)
 	# Soft crackle when outdoors and near the plaza hearth (respects mute via AudioBus)
 	if AudioBus.has_method("set_campfire_audio") and player:
 		var near: bool = _inside_hall == "" and player.global_position.distance_to(_plaza_campfire_pos) < 14.0
@@ -1233,14 +1235,15 @@ func _update_plaza_campfire(dayness: float) -> void:
 func _update_village_dusk_lamps(dayness: float) -> void:
 	## Wave 28: village lamp posts warm up as dusk falls (RuneScape-chunky, wholesome).
 	## Wave 35: soft dusk lamp flicker — gentle irregular glow, not a strobe.
+	## Wave 74: plaza dusk lantern sync polish — shared flicker phase with plaza hearth (RuneScape-chunky, wholesome).
 	if _village_lamp_lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
-	var pulse: float = 0.92 + 0.08 * abs(sin(t_ms * 0.0022))
-	# Soft irregular flicker layered on the slow pulse
-	var flicker: float = 1.0 + 0.06 * sin(t_ms * 0.011) + 0.04 * sin(t_ms * 0.027 + 1.7)
-	var energy: float = dusk * 1.55 * pulse * clampf(flicker, 0.88, 1.12)
+	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0022))
+	# Soft irregular flicker layered on the slow pulse (shared recipe with plaza hearth)
+	var flicker: float = 1.0 + 0.07 * sin(t_ms * 0.011) + 0.045 * sin(t_ms * 0.027 + 1.7)
+	var energy: float = dusk * 1.68 * pulse * clampf(flicker, 0.86, 1.14)
 	var i: int = 0
 	for light in _village_lamp_lights:
 		if light == null or not is_instance_valid(light):
@@ -1793,6 +1796,7 @@ func _setup_weather() -> void:
 	_setup_thistle_blooms()
 	_setup_maple_dusk_leaves()
 	_setup_amber_knoll_motes()
+	_setup_cedar_needles()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2050,6 +2054,10 @@ func _update_weather(delta: float) -> void:
 		var amber_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_amber_knoll_motes.emitting = amber_dusk
 		_amber_knoll_motes.visible = amber_dusk
+	if _cedar_needles:
+		var cedar_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_cedar_needles.emitting = cedar_dusk
+		_cedar_needles.visible = cedar_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -3979,6 +3987,47 @@ func _setup_amber_knoll_motes() -> void:
 	_amber_knoll_motes.position = Vector3(48.0, 2.2, -22.0)
 	add_child(_amber_knoll_motes)
 	HeadlessGuard.guard_particles(_amber_knoll_motes)
+
+
+
+func _setup_cedar_needles() -> void:
+	## Wave 74: soft Cedar Hollow cedar-needle drift at dusk — soft green-brown needles drift over the NE hollow (RuneScape-chunky, wholesome).
+	_cedar_needles = CPUParticles3D.new()
+	_cedar_needles.name = "CedarHollowNeedleDrift"
+	_cedar_needles.emitting = false
+	_cedar_needles.amount = 40
+	_cedar_needles.lifetime = 5.0
+	_cedar_needles.preprocess = 1.3
+	_cedar_needles.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_cedar_needles.emission_box_extents = Vector3(6.8, 2.5, 6.8)
+	_cedar_needles.direction = Vector3(0.22, -0.40, 0.12)
+	_cedar_needles.spread = 50.0
+	_cedar_needles.initial_velocity_min = 0.12
+	_cedar_needles.initial_velocity_max = 0.68
+	_cedar_needles.gravity = Vector3(0, -0.38, 0)
+	_cedar_needles.angular_velocity_min = -55.0
+	_cedar_needles.angular_velocity_max = 55.0
+	_cedar_needles.scale_amount_min = 0.28
+	_cedar_needles.scale_amount_max = 0.85
+	var nm := BoxMesh.new()
+	nm.size = Vector3(0.06, 0.02, 0.18)
+	_cedar_needles.mesh = nm
+	var nmat := StandardMaterial3D.new()
+	nmat.albedo_color = Color(0.32, 0.48, 0.28, 0.80)
+	nmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	nmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_cedar_needles.material_override = nmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(0.42, 0.55, 0.32, 0.0),
+		Color(0.32, 0.48, 0.28, 0.85),
+		Color(0.28, 0.38, 0.22, 0.0),
+	])
+	_cedar_needles.color_ramp = ramp
+	# Cedar Hollow landmark at (38, 0, -36)
+	_cedar_needles.position = Vector3(38.0, 3.2, -36.0)
+	add_child(_cedar_needles)
+	HeadlessGuard.guard_particles(_cedar_needles)
 
 
 func _setup_brook_sparkle() -> void:
