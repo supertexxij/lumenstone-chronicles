@@ -226,6 +226,10 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.84.4-smooth — stop freezes on family PCs
+
+Renderer switched to **GL Compatibility** (was Forward+). Removed Engine.time_scale hit-pause (felt like freezing). Dropped FogMist / edge-fog / snowdust particle banks (env fog still reads as Fog). Directional sun shadows off. Enemy and mentor NavigationObstacle RVO disabled. Much lighter rain/cloud/campfire/landmark particle budgets. Thinner foe wake batches. Keeps v1.84.3 RVO-off / weather budget cuts.
+
 ### v1.84.3-smooth — remaining hitch / freeze hardening
 
 Disable player NavigationAgent RVO (forced velocity + soft sidestep only). Cut rain/fog/edge/snow/canopy particle budgets further; edge fog emits only in Fog weather. Occlusion culling off. World polish / foe-wake staggered more. Combat defeat save deferred.

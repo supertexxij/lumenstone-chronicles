@@ -197,7 +197,9 @@ func _ensure_nav_obstacle() -> void:
 	obs.name = "NavObstacle"
 	obs.radius = 0.5
 	obs.height = 1.5
-	obs.avoidance_enabled = true
+	# v1.84.4: never feed NavigationServer RVO — player avoidance is off and
+	# hundreds of awake obstacles were still hitching click-move on family PCs.
+	obs.avoidance_enabled = false
 	add_child(obs)
 
 
@@ -210,7 +212,7 @@ func _set_lod_sleep(sleep: bool) -> void:
 		col.disabled = sleep or not alive
 	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
 	if obs:
-		obs.avoidance_enabled = (not sleep) and alive
+		obs.avoidance_enabled = false  # v1.84.4: keep RVO obstacles off even when awake
 	# Keep a physics tick while dissolving or waiting to respawn; otherwise sleep fully.
 	var need_tick := (not sleep) or _dissolve_t >= 0.0 or not alive
 	set_physics_process(need_tick)

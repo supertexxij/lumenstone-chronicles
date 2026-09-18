@@ -25,7 +25,6 @@ var _save_panel: Control
 var _pending_clear_slot: int = -1
 var _pending_overwrite_slot: int = -1
 var _reset_confirm_armed: bool = false
-var _hit_pausing: bool = false
 var _travel_fading: bool = false
 var _travel_fade: ColorRect = null
 var _travel_fade_label: Label = null  # Wave 62: landmark name during soft-travel fade
@@ -1083,24 +1082,10 @@ func _on_ui_open(panel: String) -> void:
 				return
 
 func _on_player_hurt(amount: int) -> void:
-	## Tiny hit pause for combat feel — wholesome, very short.
+	## v1.84.4: no Engine.time_scale hit-pause — that felt like the apprentice freezing.
+	## Hurt vignette / toasts still carry the soft combat cue.
 	if amount <= 0:
 		return
-	_play_hit_pause()
-
-
-func _play_hit_pause() -> void:
-	if _hit_pausing:
-		return
-	if HeadlessGuard.is_headless():
-		return
-	_hit_pausing = true
-	var prev: float = Engine.time_scale
-	# Soften hit-pause so combat does not feel like a freeze (v1.84.1)
-	Engine.time_scale = 0.55
-	await get_tree().create_timer(0.02, true, false, true).timeout
-	Engine.time_scale = prev if prev > 0.01 else 1.0
-	_hit_pausing = false
 
 
 func _on_toast(msg: String) -> void:
