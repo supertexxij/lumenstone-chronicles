@@ -1,6 +1,6 @@
 class_name CreatureBuilder
 extends RefCounted
-## Limb-aware creature meshes for wild enemies (chunky stylized).
+## Limb-aware creature meshes for wild enemies (soft cartoon, not blocky).
 
 static func _clear(root: Node3D) -> void:
 	for c in root.get_children():
@@ -53,7 +53,8 @@ static func colorize(root: Node3D, primary: Color, accent: Color) -> void:
 		if c is MeshInstance3D:
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = accent if (i % 3 == 1) else primary
-			mat.roughness = 0.7
+			mat.roughness = 0.55
+			mat.metallic = 0.0
 			(c as MeshInstance3D).material_override = mat
 			i += 1
 		elif c is Node3D:
@@ -61,7 +62,8 @@ static func colorize(root: Node3D, primary: Color, accent: Color) -> void:
 				if gc is MeshInstance3D:
 					var mat2 := StandardMaterial3D.new()
 					mat2.albedo_color = accent if (i % 3 == 1) else primary
-					mat2.roughness = 0.7
+					mat2.roughness = 0.55
+					mat2.metallic = 0.0
 					(gc as MeshInstance3D).material_override = mat2
 					i += 1
 

@@ -650,6 +650,10 @@ func _finish():
 	print("SCHOOL_DAY_SRC", "func get_school_day" in _src("res://scripts/autoload/game_state.gd") and "DailyLbl" in _src("res://scripts/ui/parent_panel.gd"))
 	print("NEEDS_HELP_SIT_SRC", "Sit with" in _src("res://scripts/autoload/game_state.gd"))
 	print("CURRICULUM_183_TOAST_SRC", "maybe_curriculum_183_toast" in _src("res://scripts/autoload/game_state.gd"))
+
+	print("VERSION_184_SRC", _ver_ge(84))
+	print("CARTOON_HUMANOID_SRC", "Soft cartoon humanoid" in _src("res://scripts/characters/humanoid_builder.gd") and "v1.84 cartoon" in _src("res://scripts/characters/humanoid_builder.gd"))
+	print("CARTOON_CREATURE_SRC", "soft cartoon, not blocky" in _src("res://scripts/characters/creature_builder.gd"))
 	if gs:
 		if gs.has_method("get_next_up"):
 			var nxt = gs.get_next_up()
