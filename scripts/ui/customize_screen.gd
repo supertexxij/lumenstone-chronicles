@@ -88,7 +88,10 @@ func open_new() -> void:
 	name_edit.text = ""
 	name_edit.editable = true
 	ok_btn.text = "Begin"
-	_select(gender_opt, "boy")
+	var demo_gender := str(OS.get_environment("LUMEN_DEMO_GENDER")).to_lower()
+	if demo_gender != "boy" and demo_gender != "girl":
+		demo_gender = "boy"
+	_select(gender_opt, demo_gender)
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
 	_select(cape_opt, "crimson")

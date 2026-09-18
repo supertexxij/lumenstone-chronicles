@@ -73,7 +73,7 @@ static func build(root: Node3D) -> Dictionary:
 	var pelvis := _mi(_box(Vector3(0.50, 0.20, 0.30)), Vector3(0, 0.80, 0), bob, "Pelvis")
 	var hem := _mi(_box(Vector3(0.64, 0.18, 0.38)), Vector3(0, 0.74, 0.02), bob, "Hem")
 	# Soft skirt overlay for girl silhouette — hidden until apply_gender("girl").
-	var skirt := _mi(_cyl(0.28, 0.42, 0.36), Vector3(0, 0.58, 0.02), bob, "Skirt")
+	var skirt := _mi(_cyl(0.22, 0.48, 0.46), Vector3(0, 0.52, 0.02), bob, "Skirt")
 	skirt.visible = false
 	var neck := _mi(_cyl(0.09, 0.11, 0.14), Vector3(0, 1.52, 0), bob, "Neck")
 	var collar := _mi(_cyl(0.16, 0.18, 0.08), Vector3(0, 1.46, 0.02), bob, "Collar")
@@ -82,13 +82,13 @@ static func build(root: Node3D) -> Dictionary:
 	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
 	var bangs := _mi(_box(Vector3(0.30, 0.10, 0.08)), Vector3(0, 1.88, 0.14), bob, "Bangs")
 	# Gender hair extras (toggled by apply_gender) — longer back + side locks for girl look.
-	var hair_long := _mi(_sphere(0.22, 0.48), Vector3(0, 1.62, -0.14), bob, "HairLong")
+	var hair_long := _mi(_sphere(0.24, 0.62), Vector3(0, 1.48, -0.16), bob, "HairLong")
 	hair_long.visible = false
-	var hair_l_lock := _mi(_capsule(0.05, 0.28), Vector3(-0.18, 1.58, 0.06), bob, "HairLLock")
-	hair_l_lock.rotation_degrees = Vector3(12, 0, 18)
+	var hair_l_lock := _mi(_capsule(0.055, 0.38), Vector3(-0.20, 1.52, 0.08), bob, "HairLLock")
+	hair_l_lock.rotation_degrees = Vector3(18, 0, 22)
 	hair_l_lock.visible = false
-	var hair_r_lock := _mi(_capsule(0.05, 0.28), Vector3(0.18, 1.58, 0.06), bob, "HairRLock")
-	hair_r_lock.rotation_degrees = Vector3(12, 0, -18)
+	var hair_r_lock := _mi(_capsule(0.055, 0.38), Vector3(0.20, 1.52, 0.08), bob, "HairRLock")
+	hair_r_lock.rotation_degrees = Vector3(18, 0, -22)
 	hair_r_lock.visible = false
 	var l_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(-0.34, 1.38, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(0.34, 1.38, 0), bob, "RShoulder")
@@ -365,18 +365,17 @@ static func apply_gender(parts: Dictionary, gender: String) -> void:
 	var r_sh: MeshInstance3D = parts.get("r_shoulder")
 	if is_girl:
 		if hair_n:
-			hair_n.scale = Vector3(1.08, 1.12, 1.1)
-			hair_n.position = Vector3(0, 1.88, -0.05)
+			hair_n.scale = Vector3(1.12, 1.18, 1.14)
+			hair_n.position = Vector3(0, 1.90, -0.04)
 		if bangs_n:
-			bangs_n.scale = Vector3(1.15, 1.0, 1.0)
-			bangs_n.position = Vector3(0, 1.88, 0.15)
+			bangs_n.scale = Vector3(1.25, 1.15, 1.1)
+			bangs_n.position = Vector3(0, 1.89, 0.16)
 		if hem_n:
-			hem_n.scale = Vector3(1.12, 1.35, 1.15)
-			hem_n.position = Vector3(0, 0.68, 0.02)
+			hem_n.visible = false  # skirt replaces tunic hem for a clear girl read
 		if l_sh:
-			l_sh.scale = Vector3(0.92, 0.95, 0.95)
+			l_sh.scale = Vector3(0.90, 0.92, 0.92)
 		if r_sh:
-			r_sh.scale = Vector3(0.92, 0.95, 0.95)
+			r_sh.scale = Vector3(0.90, 0.92, 0.92)
 	else:
 		if hair_n:
 			hair_n.scale = Vector3.ONE
@@ -385,6 +384,7 @@ static func apply_gender(parts: Dictionary, gender: String) -> void:
 			bangs_n.scale = Vector3.ONE
 			bangs_n.position = Vector3(0, 1.88, 0.14)
 		if hem_n:
+			hem_n.visible = true
 			hem_n.scale = Vector3.ONE
 			hem_n.position = Vector3(0, 0.74, 0.02)
 		if l_sh:

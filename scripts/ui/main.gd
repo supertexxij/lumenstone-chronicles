@@ -91,6 +91,9 @@ func _ready() -> void:
 	_setup_save_panel()
 	if hud.has_signal("saves_pressed"):
 		hud.saves_pressed.connect(_open_save_panel)
+	# Optional Cloud/dev hook: skip title and open Look for UI demos.
+	if OS.get_environment("LUMEN_OPEN_CUSTOMIZE") == "1":
+		call_deferred("_start_new_in_slot", 1)
 
 func _setup_travel_panel() -> void:
 	if travel_panel == null:
