@@ -15,6 +15,10 @@ var _open_only: bool = false  # Wave 52: Open-only toggle (unlocked & not master
 var _open_only_btn: CheckButton = null
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
+	var title_n: Label = get_node_or_null("Panel/VBox/Title")
+	if title_n:
+		title_n.text = "Journal"
 	close_btn.pressed.connect(func():
 		AudioBus.play_ui()
 		closed.emit()
@@ -98,13 +102,15 @@ func refresh() -> void:
 	var camp_stars: int = _count_campaign_mastered(uw)
 	# Wave 52: show locked week count (PIN 1234; mastery ≥80% unchanged)
 	var locked_weeks: int = maxi(0, 36 - uw)
-	var locked_tag := (" · 🔒 %d weeks locked" % locked_weeks) if locked_weeks > 0 else " · Full year open"
+	var locked_tag := (" · %d weeks locked" % locked_weeks) if locked_weeks > 0 else " · Full year open"
 	# Wave 69: Mastered ★ filter shows count in header (PIN 1234; mastery ≥80% unchanged)
 	if _filter == "completed":
 		var mastered_total: int = GameState.completed_quests.size()
-		week_lbl.text = "Mastered ★ · %d · %s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [mastered_total, _campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
+		week_lbl.text = "Mastered ★ · %d · Week %d of 36 · %s" % [mastered_total, uw, camp_frac]
 	else:
-		week_lbl.text = "%s · Week %d/36 · %s · Campaign ★ %d · Week ★ %d%s" % [_campaign_name(uw), uw, camp_frac, camp_stars, week_mastered, locked_tag]
+		week_lbl.text = "Week %d of 36 · %s · This week ★ %d%s" % [uw, _campaign_name(uw), week_mastered, locked_tag]
+	# Compact header: campaign name is already in week_lbl for current; keep camp stars in tooltip
+	week_lbl.tooltip_text = "%s · Campaign ★ %d · Week ★ %d" % [_campaign_name(uw), camp_stars, week_mastered]
 	# Wave 57: show Open only count in toggle label (PIN 1234; mastery ≥80% unchanged)
 	_ensure_open_only_toggle()
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):
@@ -117,7 +123,7 @@ func refresh() -> void:
 			_open_only_btn.text = "Open only · %d" % open_n
 	progress_lbl.text = _unlock_progress_text(uw)
 	list.clear()
-	detail.text = "Select a quest for details."
+	detail.text = "Select a quest."
 	var quests: Array = _collect_quests()
 	quests.sort_custom(func(a, b):
 		# Wave 36: when browsing all, group Available → Mastered → Locked for section headers
@@ -244,46 +250,36 @@ func _unlock_progress_text(uw: int) -> String:
 					raid_done = true
 	var soft_need: int = 4
 	var lines: PackedStringArray = []
-	# Wave 31: clearer mastered count for the current week
-	var of_week := (" / %d" % total_week) if total_week > 0 else ""
-	lines.append("Mastered this week: %d%s ★" % [mastered, of_week])
-	lines.append("Week %d · need ≥80%% mastery (or 4+ quests / Friday Raid)" % next_w)
-	var sticky_raid := ""
-	if raid_id != "":
-		var rtitle: String = QuestDB.get_quest(raid_id).get("title", raid_id)
-		if raid_done:
-			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
-			sticky_raid = "📌 Next raid: mastered — Week %d unlocks soon." % mini(36, next_w + 1)
-		else:
-			# Wave 42: highlight next Friday Raid more in the progress header
-			lines.append("→ NEXT ★ Friday Raid: “%s” — master ≥80%% (or 4+ quests this week: %d/4)." % [rtitle, mastered])
-			# Wave 47: sticky next-raid reminder line (PIN 1234; mastery ≥80% unchanged)
-			sticky_raid = "📌 Next raid: “%s” · Week %d ★" % [rtitle, next_w]
-	else:
-		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
-	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
-	if year_line != "":
-		lines.insert(0, year_line)
-	if sticky_raid != "":
-		lines.insert(0, sticky_raid)
-	# Wave 57: ★ mastered this week in sticky line (PIN 1234; mastery ≥80% unchanged)
-	var of_week_sticky := (" / %d" % total_week) if total_week > 0 else ""
-	lines.insert(0, "★ Mastered this week sticky · %d%s" % [mastered, of_week_sticky])  # Wave 75: sticky shows count (PIN 1234; mastery ≥80%)
 	# Wave 60: total mastered ★ in sticky header (PIN 1234; mastery ≥80% unchanged)
 	var total_stars: int = GameState.completed_quests.size()
 	var year_total: int = QuestDB.quests.size() if QuestDB != null else 0
 	if year_total <= 0:
 		year_total = maxi(1, total_stars)
-	lines.insert(0, "★ Total mastered: %d / %d" % [total_stars, year_total])
+	lines.append("★ Total mastered: %d / %d" % [total_stars, year_total])
+	# Wave 31/57/75: clearer mastered count for the current week (sticky shows count)
+	var of_week := (" / %d" % total_week) if total_week > 0 else ""
+	lines.append("★ Mastered this week sticky · %d%s" % [mastered, of_week])
+	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
+	if year_line != "":
+		lines.append(year_line)
+	if raid_id != "":
+		var rtitle: String = QuestDB.get_quest(raid_id).get("title", raid_id)
+		if raid_done:
+			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
+		else:
+			# Wave 42: highlight next Friday Raid more in the progress header
+			lines.append("Next ★ Friday Raid: “%s”  (or 4+ quests this week: %d/4)" % [rtitle, mastered])
+	else:
+		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
 	# Wave 66: Open-only sticky shows count when toggled (PIN 1234; mastery ≥80% unchanged)
 	# Wave 72: Open-only sticky also shows week numbers of open quests (PIN 1234; mastery ≥80% unchanged)
 	if _open_only:
 		var open_n: int = _count_open_quests()
 		var wk_txt: String = _format_open_quest_weeks()
 		if wk_txt != "":
-			lines.insert(0, "Open only · %d open · Wk %s" % [open_n, wk_txt])
+			lines.append("Open only · %d open · Wk %s" % [open_n, wk_txt])
 		else:
-			lines.insert(0, "Open only · %d quests still open" % open_n)
+			lines.append("Open only · %d quests still open" % open_n)
 	return "\n".join(lines)
 
 
@@ -375,11 +371,11 @@ func _all_raw() -> Array:
 
 func _on_select(idx: int) -> void:
 	if idx < 0 or list.is_item_disabled(idx):
-		detail.text = "Select a quest for details."
+		detail.text = "Select a quest."
 		return
 	var qid: String = str(list.get_item_metadata(idx))
 	if qid == "" or qid == "null":
-		detail.text = "Select a quest for details."
+		detail.text = "Select a quest."
 		return
 	var q: Dictionary = QuestDB.get_quest(qid)
 	var done: bool = qid in GameState.completed_quests
@@ -394,14 +390,13 @@ func _on_select(idx: int) -> void:
 	var raid_note := ""
 	if _is_friday_raid(qid, str(q.get("title", ""))):
 		raid_note = "\n\n[color=#e8c44a]★ Friday Raid Review[/color] — master at ≥80% to unlock the next week (or master 4+ quests this week)."
-	detail.text = "[b]%s[/b]\nWeek %d · %s\n%s\n\n%s\n\nStatus: %s%s" % [
+	detail.text = "[b]%s[/b]\nWeek %d · %s\nStatus: %s%s\n\n%s" % [
 		q.get("title", qid),
 		int(q.get("week", 1)),
-		q.get("subject_label", gfull),
 		gfull,
-		q.get("hook", q.get("description", "")),
 		status,
 		raid_note,
+		q.get("hook", q.get("description", "")),
 	]
 
 

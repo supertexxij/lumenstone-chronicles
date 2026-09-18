@@ -23,6 +23,16 @@ var _pin_change_open: bool = false
 var _campaign_tabs: TabContainer
 var _campaign_week_roots: Array = []  # VBoxContainer per campaign tab
 var _expanded_weeks: Dictionary = {}  # week int -> bool
+var _lock_blurb: Label
+var _hero_row: HBoxContainer
+var _hero_year: Label
+var _hero_mastery: Label
+var _hero_help: Label
+var _copy_row: HBoxContainer
+var _copy_edit: LineEdit
+var _copy_btn: Button
+var _next_lbl: Label
+var _lumen_lbl: Label
 
 const CAMPAIGN_RANGES := [
 	{"title": "I · Kindling (1–9)", "lo": 1, "hi": 9},
@@ -32,15 +42,27 @@ const CAMPAIGN_RANGES := [
 ]
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
+	var title_n: Label = get_node_or_null("Panel/VBox/Title")
+	if title_n:
+		title_n.text = "Parent Dashboard"
+		PanelChrome.style_title(title_n, 24)
 	content.visible = false
 	unlock_btn.pressed.connect(_try_pin)
 	pin_edit.text_submitted.connect(func(_t): _try_pin())
 	close_btn.pressed.connect(func(): closed.emit())
 	if change_pin_btn:
 		change_pin_btn.pressed.connect(_change_pin)
+	if unlock_btn:
+		PanelChrome.style_button(unlock_btn, true)
+		unlock_btn.text = "Unlock"
+	if close_btn:
+		PanelChrome.style_button(close_btn)
+	_ensure_lock_blurb()
 	_ensure_recovery_ui()
 	_ensure_pin_error()
 	_ensure_pin_change_toggle()
+	_ensure_hero_row()
 	_ensure_campaign_tabs()
 
 func open() -> void:
@@ -48,6 +70,8 @@ func open() -> void:
 	content.visible = false
 	pin_edit.visible = true
 	unlock_btn.visible = true
+	if _lock_blurb:
+		_lock_blurb.visible = true
 	if _pin_error:
 		_pin_error.visible = false
 		_pin_error.text = ""
@@ -86,6 +110,8 @@ func _try_pin() -> void:
 	content.visible = true
 	pin_edit.visible = false
 	unlock_btn.visible = false
+	if _lock_blurb:
+		_lock_blurb.visible = false
 	if _pin_error:
 		_pin_error.visible = false
 	if _hint_lbl:
@@ -153,15 +179,29 @@ func _refresh() -> void:
 	var lumen_bits: PackedStringArray = []
 	for g in ["math","la","science","history","bible"]:
 		lumen_bits.append("%s %d" % [GameState.GUILDS[g]["lumen"], int(GameState.lumens.get(g, 0))])
-	var lines: String = "[b]Parent Dashboard[/b] · %s\n[b]%s[/b] · Slot %d · %s\nXP %d · Level %d · Combat Lv %d\n\n[b]Copy line[/b]\n[code]%s[/code]\n\n[b]Week unlock[/b]  Week [b]%d[/b] / 36 · %s\n%s\nNext: %s\n\n[b]Quest mastery[/b]  [b]%d[/b] / %d ([b]%d%%[/b] · [b]%d★[/b])\n%s\n%s\n\nLumens: %s\nUse the campaign tabs — click a week to expand (✓ mastered · open · – locked)." % [
-		help_bit, child_line, GameState.active_slot + 1, last_sess,
-		GameState.xp, GameState.level, GameState.combat_level,
-		export_line,
-		uw, camp, week_bar, next_gate,
-		mastered, total_q, mastery_pct, mastered, mastery_bar, year_note,
-		" · ".join(lumen_bits)
+	_ensure_hero_row()
+	if _hero_year:
+		_hero_year.text = "YEAR\nWeek %d of 36\n%s" % [uw, camp.replace("Campaign ", "")]
+	if _hero_mastery:
+		_hero_mastery.text = "QUEST MASTERY\n%d%%  ·  %d★\n%d / %d mastered" % [mastery_pct, mastered, mastered, total_q]
+	if _hero_help:
+		if help_n > 0:
+			_hero_help.text = "NEEDS HELP\n%d\nOldest attempt first" % help_n
+			_hero_help.add_theme_color_override("font_color", Color(0.95, 0.72, 0.32, 1.0))
+		else:
+			_hero_help.text = "NEEDS HELP\nAll clear ★\nWonderful work together"
+			_hero_help.add_theme_color_override("font_color", Color(0.78, 0.90, 0.62, 1.0))
+	if _copy_edit:
+		_copy_edit.text = export_line
+	if _next_lbl:
+		_next_lbl.text = "Next: %s" % next_gate
+	if _lumen_lbl:
+		_lumen_lbl.text = "Lumens  %s" % " · ".join(lumen_bits)
+	# Keep a short skim in Summary so existing smoke strings still live here.
+	summary.text = "[b]%s[/b] · Slot %d · %s\n%s\n%s · %s\n%s" % [
+		child_line, GameState.active_slot + 1, last_sess,
+		help_bit, year_note, week_bar, mastery_bar
 	]
-	summary.text = lines
 	_refresh_campaign_tabs(uw)
 	help_list.clear()
 	var help: Array = GameState.needs_help_quests()
@@ -178,7 +218,7 @@ func _refresh() -> void:
 		# Wave 35: warmer empty-state encouragement (PIN stays 1234; mastery ≥80%)
 		# Wave 58: needs-help empty state with week tip
 		var tip_week: int = clampi(GameState.unlocked_week, 1, 36)
-		help_list.add_item("All clear — wonderful work together! Tip: Week %d is open — a short review keeps mastery humming." % tip_week)
+		help_list.add_item("All clear — wonderful work together! Tip: Week %d is open. A short review keeps mastery humming." % tip_week)
 	else:
 		help.sort_custom(func(a, b): return int(a.get("timestamp", 0)) < int(b.get("timestamp", 0)))  # Wave 75: oldest attempt first (PIN stays 1234; mastery ≥80%)
 		for h in help:
@@ -189,7 +229,7 @@ func _refresh() -> void:
 			var pct: int = int(float(h.get("percent", 0)) * 100)
 			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
 			var age: String = _days_since_attempt(int(h.get("timestamp", 0)))
-			var line: String = "▶ WEEK %d · %s  ·  %s — %d/%d (%d%%) — needs practice · %s" % [
+			var line: String = "Wk %d · %s · %s  %d/%d (%d%%)  ·  %s" % [
 				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct, age
 			]  # Wave 67: days-since last attempt (PIN stays 1234; mastery ≥80%)
@@ -206,16 +246,18 @@ func _ensure_campaign_tabs() -> void:
 		return
 	var title := Label.new()
 	title.name = "CampaignTabsTitle"
-	title.text = "Skills / quests by campaign — click a week to expand"
+	title.text = "Weeks — click to expand  (★ mastered · open · locked)"
+	PanelChrome.style_muted(title, 13)
 	content.add_child(title)
 	content.move_child(title, summary.get_index() + 1)
 	_campaign_tabs = TabContainer.new()
 	_campaign_tabs.name = "CampaignTabs"
-	_campaign_tabs.custom_minimum_size = Vector2(0, 260)
+	_campaign_tabs.custom_minimum_size = Vector2(0, 280)
 	_campaign_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	content.add_child(_campaign_tabs)
 	content.move_child(_campaign_tabs, title.get_index() + 1)
-	summary.custom_minimum_size = Vector2(0, 96)
+	summary.custom_minimum_size = Vector2(0, 72)
+	summary.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_campaign_week_roots.clear()
 	for camp in CAMPAIGN_RANGES:
 		var scroll := ScrollContainer.new()
@@ -295,14 +337,17 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 		if qid in GameState.completed_quests:
 			done_n += 1
 		titles.append("%s %s" % [mark, q.get("title", qid)])
-	var lock: String = "" if w <= uw else " [locked]"
+	var lock: String = "" if w <= uw else " · locked"
 	var expanded: bool = bool(_expanded_weeks.get(w, false))
 	var arrow: String = "▾" if expanded else "▸"
-	var head: String = "%s Week %d (%d/%d)%s" % [arrow, w, done_n, total_n, lock]
+	var status := ""
+	if done_n > 0 and done_n == total_n and total_n > 0:
+		status = " ★"
+	var head: String = "%s  Week %d   %d/%d%s%s" % [arrow, w, done_n, total_n, status, lock]
 	if w == uw:
-		head += "  ← current"
+		head += "   ← now"
 	var row := VBoxContainer.new()
-	row.add_theme_constant_override("separation", 2)
+	row.add_theme_constant_override("separation", 3)
 	var btn := Button.new()
 	btn.toggle_mode = true
 	btn.button_pressed = expanded
@@ -314,6 +359,10 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 		btn.add_theme_color_override("font_color", Color(0.95, 0.82, 0.28))
 		btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.45))
 		btn.add_theme_color_override("font_pressed_color", Color(0.9, 0.75, 0.2))
+	elif w > uw:
+		btn.add_theme_color_override("font_color", Color(0.62, 0.60, 0.55, 0.95))
+	elif done_n == total_n and total_n > 0:
+		btn.add_theme_color_override("font_color", Color(0.62, 0.82, 0.50))
 	var detail := RichTextLabel.new()
 	detail.bbcode_enabled = true
 	detail.fit_content = true
@@ -331,9 +380,9 @@ func _add_week_row(parent: VBoxContainer, w: int, uw: int) -> void:
 		_expanded_weeks[week_num] = on
 		detail.visible = on
 		var a2: String = "▾" if on else "▸"
-		var h2: String = "%s Week %d (%d/%d)%s" % [a2, week_num, done_n, total_n, lock]
+		var h2: String = "%s  Week %d   %d/%d%s%s" % [a2, week_num, done_n, total_n, status, lock]
 		if week_num == uw:
-			h2 += "  ← current"
+			h2 += "   ← now"
 		btn.text = h2
 		if GameState.has_method("set_parent_expanded_weeks"):
 			GameState.set_parent_expanded_weeks(_expanded_weeks)
@@ -459,6 +508,105 @@ func _next_week_gate(uw: int) -> String:
 		return "Week %d raid done — week unlock should advance soon." % uw
 	return "Master Week %d Friday raid: %s (or 4+ quests that week)." % [uw, title]
 
+func _ensure_lock_blurb() -> void:
+	var vbox: VBoxContainer = $Panel/VBox
+	if vbox.get_node_or_null("LockBlurb") != null:
+		_lock_blurb = vbox.get_node("LockBlurb")
+		return
+	_lock_blurb = Label.new()
+	_lock_blurb.name = "LockBlurb"
+	_lock_blurb.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_lock_blurb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_lock_blurb.text = "For grown-ups. Enter the PIN to see year, mastery, and what needs practice."
+	PanelChrome.style_muted(_lock_blurb, 14)
+	vbox.add_child(_lock_blurb)
+	vbox.move_child(_lock_blurb, pin_edit.get_index())
+
+
+func _ensure_hero_row() -> void:
+	if content.get_node_or_null("HeroRow") != null:
+		_hero_row = content.get_node("HeroRow")
+		_hero_year = _hero_row.get_node_or_null("YearCard/YearLbl")
+		_hero_mastery = _hero_row.get_node_or_null("MasteryCard/MasteryLbl")
+		_hero_help = _hero_row.get_node_or_null("HelpCard/HelpLbl")
+		_copy_row = content.get_node_or_null("CopyRow")
+		_copy_edit = _copy_row.get_node_or_null("CopyEdit") if _copy_row else null
+		_copy_btn = _copy_row.get_node_or_null("CopyBtn") if _copy_row else null
+		_next_lbl = content.get_node_or_null("NextLbl")
+		_lumen_lbl = content.get_node_or_null("LumenLbl")
+		return
+	_hero_row = HBoxContainer.new()
+	_hero_row.name = "HeroRow"
+	_hero_row.add_theme_constant_override("separation", 10)
+	_hero_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_hero_year = _make_hero_card(_hero_row, "YearCard", "YearLbl", "YEAR")
+	_hero_mastery = _make_hero_card(_hero_row, "MasteryCard", "MasteryLbl", "QUEST MASTERY")
+	_hero_help = _make_hero_card(_hero_row, "HelpCard", "HelpLbl", "NEEDS HELP")
+	content.add_child(_hero_row)
+	content.move_child(_hero_row, 0)
+	_copy_row = HBoxContainer.new()
+	_copy_row.name = "CopyRow"
+	_copy_row.add_theme_constant_override("separation", 8)
+	var copy_lab := Label.new()
+	copy_lab.text = "Copy"
+	PanelChrome.style_muted(copy_lab, 13)
+	_copy_row.add_child(copy_lab)
+	_copy_edit = LineEdit.new()
+	_copy_edit.name = "CopyEdit"
+	_copy_edit.editable = false
+	_copy_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_copy_edit.placeholder_text = "Week unlock · Year mastery · Needs help"
+	_copy_row.add_child(_copy_edit)
+	_copy_btn = Button.new()
+	_copy_btn.name = "CopyBtn"
+	_copy_btn.text = "Copy line"
+	PanelChrome.style_button(_copy_btn, true)
+	_copy_btn.pressed.connect(_copy_export_line)
+	_copy_row.add_child(_copy_btn)
+	content.add_child(_copy_row)
+	content.move_child(_copy_row, _hero_row.get_index() + 1)
+	_next_lbl = Label.new()
+	_next_lbl.name = "NextLbl"
+	_next_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	PanelChrome.style_body(_next_lbl, 14)
+	content.add_child(_next_lbl)
+	content.move_child(_next_lbl, _copy_row.get_index() + 1)
+	_lumen_lbl = Label.new()
+	_lumen_lbl.name = "LumenLbl"
+	_lumen_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	PanelChrome.style_muted(_lumen_lbl, 13)
+	content.add_child(_lumen_lbl)
+	content.move_child(_lumen_lbl, _next_lbl.get_index() + 1)
+
+
+func _make_hero_card(host: HBoxContainer, panel_name: String, label_name: String, fallback: String) -> Label:
+	var card := PanelContainer.new()
+	card.name = panel_name
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	PanelChrome.apply_card(card)
+	var lab := Label.new()
+	lab.name = label_name
+	lab.text = fallback
+	lab.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lab.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	PanelChrome.style_body(lab, 14)
+	card.add_child(lab)
+	host.add_child(card)
+	return lab
+
+
+func _copy_export_line() -> void:
+	var line: String = GameState.get_parent_export_line() if GameState.has_method("get_parent_export_line") else ""
+	if _copy_edit:
+		line = _copy_edit.text.strip_edges()
+	if line == "":
+		return
+	DisplayServer.clipboard_set(line)
+	GameState.toast.emit("Copied parent line — week, mastery, needs-help.")
+	AudioBus.play_ui()
+
+
 func _ensure_pin_error() -> void:
 	## v1.78 refine: wrong-PIN message lives outside Content so the dashboard stays locked.
 	var vbox: VBoxContainer = $Panel/VBox
@@ -519,7 +667,7 @@ func _ensure_recovery_ui() -> void:
 	_hint_lbl = Label.new()
 	_hint_lbl.name = "ResetHint"
 	_hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_hint_lbl.text = "Forgot PIN? Type RESET below, press Reset PIN, then type RESET again to confirm. Restores default 1234. Save slots stay."
+	_hint_lbl.text = "Forgot PIN? Type RESET twice to restore 1234. Save slots stay."
 	vbox.add_child(_hint_lbl)
 	vbox.move_child(_hint_lbl, unlock_btn.get_index() + 1)
 	_reset_edit = LineEdit.new()

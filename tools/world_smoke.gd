@@ -628,5 +628,11 @@ func _finish():
 	print("LANDMARK_PLAZA_SRC", "LandmarkPlazaGlade" in _src("res://scripts/world/world.gd") and "_dress_world_finish" in _src("res://scripts/world/world.gd") and "_dress_landmark_ring" in _src("res://scripts/world/world.gd"))
 	print("DAY_FILL_SRC", "DayFill" in _src("res://scripts/world/world.gd"))
 	print("HUMANOID_CLOTHES_SRC", "Collar" in _src("res://scripts/characters/humanoid_builder.gd") and "Hem" in _src("res://scripts/characters/humanoid_builder.gd") and "Buckle" in _src("res://scripts/characters/humanoid_builder.gd"))
+
+	print("VERSION_181_SRC", _ver_ge(81))
+	print("PANEL_CHROME_SRC", "class_name PanelChrome" in _src("res://scripts/ui/panel_chrome.gd"))
+	print("HUD_COMPACT_SRC", "Pantry · Ready · V" in _src("res://scripts/ui/hud.gd") and "Year · Wk %d · %d%%" in _src("res://scripts/ui/hud.gd"))
+	print("PARENT_HERO_SRC", "_ensure_hero_row" in _src("res://scripts/ui/parent_panel.gd") and "Copy line" in _src("res://scripts/ui/parent_panel.gd"))
+	print("TITLE_START_SRC", "How to start" in _src("res://scripts/ui/title_screen.gd"))
 	print("WORLD_SMOKE_OK")
 	quit(0)

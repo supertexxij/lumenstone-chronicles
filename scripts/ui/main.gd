@@ -95,6 +95,13 @@ func _ready() -> void:
 func _setup_travel_panel() -> void:
 	if travel_panel == null:
 		return
+	PanelChrome.apply_overlay(travel_panel)
+	var title_n: Label = travel_panel.get_node_or_null("Panel/VBox/Title")
+	if title_n:
+		title_n.text = "Travel"
+	var hint_n: Label = travel_panel.get_node_or_null("Panel/VBox/Hint")
+	if hint_n:
+		hint_n.text = "Pick a place, then Travel. H Fountain · K Mill · 1–5 halls outdoors."
 	var go: Button = travel_panel.get_node_or_null("Panel/VBox/GoBtn")
 	var close: Button = travel_panel.get_node_or_null("Panel/VBox/CloseBtn")
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
@@ -104,12 +111,12 @@ func _setup_travel_panel() -> void:
 		var row := HBoxContainer.new()
 		row.name = "SearchRow"
 		var lbl := Label.new()
-		lbl.text = "Find:"
+		lbl.text = "Find"
 		lbl.custom_minimum_size = Vector2(40, 0)
 		row.add_child(lbl)
 		_travel_search = LineEdit.new()
 		_travel_search.name = "TravelSearch"
-		_travel_search.placeholder_text = "Filter landmarks by name…"
+		_travel_search.placeholder_text = "Find a place…"
 		_travel_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_travel_search.text_changed.connect(_on_travel_filter_changed)
 		row.add_child(_travel_search)
@@ -120,6 +127,7 @@ func _setup_travel_panel() -> void:
 		_travel_search = vbox.get_node_or_null("SearchRow/TravelSearch")
 	if go:
 		go.pressed.connect(_travel_go_selected)
+		PanelChrome.style_button(go, true)
 	# Wave 51: Pin ★ fav button (one landmark favorite; PIN 1234; mastery ≥80%)
 	if vbox and vbox.get_node_or_null("PinFavBtn") == null and go != null:
 		var pin_btn := Button.new()
@@ -793,7 +801,7 @@ func _play_load_toasts() -> void:
 		"maybe_wave_68_toast", "maybe_wave_69_toast", "maybe_wave_70_toast",
 		"maybe_wave_71_toast", "maybe_wave_72_toast", "maybe_wave_73_toast",
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
-		"maybe_wave_77_toast", "maybe_refine_178_toast",
+		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
 	])
 	for m in methods:
 		if not GameState.has_method(m):
@@ -906,17 +914,20 @@ func _setup_save_panel() -> void:
 	panel.offset_right = 260
 	panel.offset_bottom = 280
 	_save_panel.add_child(panel)
+	PanelChrome.apply_panel(panel)
 	var vbox := VBoxContainer.new()
 	vbox.name = "VBox"
 	panel.add_child(vbox)
 	var title := Label.new()
-	title.text = "Save Slots"
+	title.text = "Saves"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	PanelChrome.style_title(title, 22)
 	vbox.add_child(title)
 	var hint := Label.new()
 	hint.name = "Hint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint.text = "Switch slots in-game. Clearing a slot never resets the parent PIN."
+	hint.text = "Switch slots here. Clearing a slot never resets the parent PIN."
+	PanelChrome.style_muted(hint, 13)
 	vbox.add_child(hint)
 	var list := ItemList.new()
 	list.name = "SlotList"

@@ -226,6 +226,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.81.0-ui — menus / HUD / Parent
+
+UI pass so a Grade 3 player and a glancing parent can read the screen. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save/load unchanged.
+
+- **HUD:** quieter top bar (HP / pantry / year first); pantry shows next food only; Year chip is `Year · Wk N · %`; shorter bag/looks/travel buttons; weather no longer duplicated on the button
+- **Menus:** shared parchment panel chrome on Inventory, Journal, Travel, NPC, Parent, Title; shorter journal header and bag detail; Travel hint trimmed
+- **Parent dashboard:** lock screen explains the PIN; year / mastery / needs-help cards; copy-line button; campaign weeks easier to scan (now / locked / complete); warmer empty states
+- **Title:** “How to start” plus in-game Parent PIN note; nicknames stay collapsed until asked
+- Re-export Linux + Windows when shipping a build
+
 ### v1.80.0-world — looks / world refine
 
 Presentation pass so the village and wilds feel finished (RuneScape-chunky Christian fantasy, not AAA). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save/load unchanged.
@@ -234,7 +244,7 @@ Presentation pass so the village and wilds feel finished (RuneScape-chunky Chris
 - **Wilds / landmarks:** multi-lobe tree canopies, landmark cobble yards + foliage rings (visual only) so places read from the path
 - **Humanoids:** collar, flared hem, leather belt, darker pants, cuffs, boots, and bangs; clearer opposite-limb walk from the oblique camera
 - **Lighting / materials:** warmer day sun + fill light, sandstone/terracotta palette instead of muddy gray
-- Large HUD / Parent redesign is still the next priority — this pass stays in the world
+- HUD / Parent / menus follow in **v1.81.0-ui**
 
 ### v1.79.0-cleanup — maintainability pass
 

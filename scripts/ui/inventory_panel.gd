@@ -55,6 +55,10 @@ var _icon_gear: Texture2D
 var _icon_food: Texture2D
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
+	var title_n: Label = get_node_or_null("Panel/VBox/Title")
+	if title_n:
+		title_n.text = "Bag & Gear"
 	_ensure_slot_icons()
 	_ensure_loadout_nodes()
 	list.fixed_icon_size = Vector2(16, 16)
@@ -195,7 +199,7 @@ func refresh() -> void:
 	# Wave 43: show nearby locked gear with unlock-quest hint (PIN 1234; mastery ≥80% unchanged)
 	_append_locked_gear_hints()
 	_update_loadout()
-	detail.text = "Select gear to see armor & defense, or food to Use. Locked rows show unlock quests."
+	detail.text = "Pick gear to wear, or food to Use."
 
 func _slot_label(slot: String) -> String:
 	return str(SLOT_LABELS.get(slot, slot.capitalize()))
@@ -236,9 +240,9 @@ func _update_loadout() -> void:
 		if GameState.has_method("get_defense"):
 			total_def = int(GameState.get_defense())
 		if total_def > 0:
-			loadout_title.text = "— Worn gear · Def %d —" % total_def
+			loadout_title.text = "Worn · Def %d" % total_def
 		else:
-			loadout_title.text = "— Worn gear (slot labels) —"  # Wave 37: clearer equipped slots
+			loadout_title.text = "Worn gear"
 	var by_slot: Dictionary = {}
 	if GameState.has_method("get_defense_breakdown"):
 		by_slot = GameState.get_defense_breakdown().get("by_slot", {})
@@ -294,18 +298,16 @@ func _update_loadout() -> void:
 	var soft_parts: PackedStringArray = []
 	if GameState.has_method("get_defense_breakdown"):
 		var bd: Dictionary = GameState.get_defense_breakdown()
-		soft_parts.append("— Soft armor —")
-		soft_parts.append("From combat level: +%d" % int(bd.get("level", 0)))
-		soft_parts.append("From worn gear: +%d" % int(bd.get("gear", 0)))
 		var total_d: int = int(bd.get("total", 0))
 		var raw_d: int = int(bd.get("raw", total_d))
 		var cap_d: int = int(bd.get("cap", 7))
+		soft_parts.append("Soft armor · total Def %d / %d  (level +%d · gear +%d)" % [
+			total_d, cap_d, int(bd.get("level", 0)), int(bd.get("gear", 0))
+		])
 		if raw_d > total_d:
-			soft_parts.append("Total defense: %d of soft max %d (extra gear counted; hits still tick)" % [total_d, cap_d])
+			soft_parts.append("Extra gear counted; hits still tick.")
 		elif total_d >= cap_d:
-			soft_parts.append("Total defense: %d — at soft max %d (late cloaks & crowns can fill this; hits still tick)" % [total_d, cap_d])
-		else:
-			soft_parts.append("Total defense: %d / soft max %d — mid & late cloaks raise this; hits still tick" % [total_d, cap_d])
+			soft_parts.append("At soft max — hits still tick.")
 	elif GameState.has_method("get_defense"):
 		soft_parts.append("Defense: %d" % GameState.get_defense())
 	if loadout_soft:
@@ -352,7 +354,7 @@ func _refresh_detail_only() -> void:
 			else:
 				extra += "\nReady"
 	var slot_txt := _slot_label(slot) if SLOT_LABELS.has(slot) else slot
-	detail.text = "%s\n%s\nSlot: %s%s" % [item.get("name", ""), item.get("description", ""), slot_txt, extra]
+	detail.text = "%s  ·  %s%s" % [item.get("name", ""), slot_txt, extra]
 
 func _on_select(idx: int) -> void:
 	var meta: String = str(list.get_item_metadata(idx))

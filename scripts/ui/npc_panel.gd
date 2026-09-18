@@ -42,8 +42,11 @@ const GREETINGS := {
 
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
 	close_btn.pressed.connect(func(): AudioBus.play_ui(); closed.emit())
 	start_btn.pressed.connect(_on_start)
+	if start_btn:
+		PanelChrome.style_button(start_btn, true)
 	list.item_selected.connect(_on_select)
 	list.item_activated.connect(func(i): _on_select(i); _on_start())
 
@@ -52,7 +55,7 @@ func _greeting_for(npc: Node) -> String:
 	var lines: Array = GREETINGS.get(guild, ["Peace to you. Choose a lesson-quest when you are ready."])
 	var idx: int = abs(hash(str(npc.npc_id) + str(GameState.unlocked_week))) % lines.size()
 	var line: String = str(lines[idx])
-	return "%s\n\nMastery (≥80%%) unlocks gear and XP. Weeks unlock after each Friday Raid Review." % line
+	return "%s\nMastery (≥80%%) unlocks the next lesson." % line
 
 func open(npc: Node) -> void:
 	current_npc = npc

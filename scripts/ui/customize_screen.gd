@@ -48,6 +48,7 @@ const OUTFIT_COLORS := {
 }
 
 func _ready() -> void:
+	PanelChrome.apply_overlay(self)
 	_fill(skin_opt, ["fair","light","medium","tan","deep"])
 	_fill(hair_opt, ["brown","black","blonde","auburn","gray"])
 	_fill(cape_opt, ["crimson","azure","emerald","gold","violet"])
