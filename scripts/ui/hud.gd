@@ -592,11 +592,17 @@ func _refresh_foe_count() -> void:
 	var foes = _map_data.get("foes", [])
 	if typeof(foes) == TYPE_ARRAY:
 		n = foes.size()
-	# Wave 67: soft pulse when foe count rises (PIN stays 1234; mastery ≥80%)
+	# Wave 67/76: soft pulse + ↑ when foe count rises (PIN stays 1234; mastery ≥80%)
+	var rose := false
 	if _foe_count_prev >= 0 and n > _foe_count_prev:
 		_foe_pulse_t = 0.9
+		rose = true
 	_foe_count_prev = n
-	_foe_count_lbl.text = "Foes · %d" % n
+	# Wave 76: Foes · N chip shows ↑ when count rises
+	if _foe_pulse_t > 0.0 or rose:
+		_foe_count_lbl.text = "Foes · %d ↑" % n
+	elif n >= 0:
+		_foe_count_lbl.text = "Foes · %d" % n
 	_foe_count_lbl.tooltip_text = "Alive wilds foes on the map (soft count near minimap)"
 
 
@@ -611,10 +617,17 @@ func _update_foe_pulse(delta: float) -> void:
 		_foe_count_panel.modulate = Color(1.0, 0.92 + 0.08 * breath, 0.78 + 0.12 * u, 1.0).lerp(Color(1, 1, 1, 1), 1.0 - u)
 		if _foe_count_lbl:
 			_foe_count_lbl.modulate = Color(1.0, 0.95, 0.82, 1.0).lerp(Color(0.98, 0.88, 0.78, 1.0), 1.0 - u)
+			# Wave 76: keep ↑ visible while pulse is active
+			var txt := str(_foe_count_lbl.text)
+			if "↑" not in txt and txt.begins_with("Foes ·"):
+				_foe_count_lbl.text = txt + " ↑"
 	else:
 		_foe_count_panel.modulate = Color(1, 1, 1, 1)
 		if _foe_count_lbl:
 			_foe_count_lbl.modulate = Color(0.98, 0.88, 0.78, 1.0)
+			# Wave 76: drop ↑ when pulse ends
+			var base := str(_foe_count_lbl.text).replace(" ↑", "")
+			_foe_count_lbl.text = base
 
 
 func _pulse_mute_plate() -> void:

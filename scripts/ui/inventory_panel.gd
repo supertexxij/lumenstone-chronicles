@@ -18,6 +18,9 @@ var unequip_all_btn: Button = null
 var _unequip_all_armed: bool = false
 var _unequip_all_arm_t: float = 0.0
 var _cd_label_was: float = -1.0
+var _def_equip_flash_id: String = ""  # Wave 76: Def +N flash when newly equipped
+var _def_equip_flash_t: float = 0.0
+var _def_flash_labels: Array = []  # Labels showing Def on worn rows during flash
 
 const SLOT_LABELS := {
 	"head": "Head",
@@ -94,6 +97,23 @@ func _process(_delta: float) -> void:
 			_unequip_all_armed = false
 			if unequip_all_btn:
 				unequip_all_btn.text = "Unequip all"
+	# Wave 76: Def +N on armor rows flashes when newly equipped (PIN 1234; mastery ≥80%)
+	if _def_equip_flash_t > 0.0:
+		_def_equip_flash_t = maxf(0.0, _def_equip_flash_t - _delta)
+		var u: float = clampf(_def_equip_flash_t / 1.1, 0.0, 1.0)
+		var breath: float = 0.55 + 0.45 * abs(sin(Time.get_ticks_msec() * 0.01))
+		var flash_col := Color(0.55 + 0.35 * breath, 0.95, 0.62 + 0.2 * u, 1.0)
+		for lbl in _def_flash_labels:
+			if lbl != null and is_instance_valid(lbl):
+				lbl.modulate = flash_col.lerp(Color(1, 1, 1, 1), 1.0 - u)
+		# Also tint matching bag ItemList rows that show Def
+		if list and _def_equip_flash_id != "":
+			for i in list.item_count:
+				if str(list.get_item_metadata(i)) == _def_equip_flash_id:
+					list.set_item_custom_fg_color(i, flash_col.lerp(Color(0.85, 0.92, 0.55, 1.0), 1.0 - u))
+		if _def_equip_flash_t <= 0.0:
+			_def_equip_flash_id = ""
+			_def_flash_labels.clear()
 	if not visible:
 		return
 	if selected_id == "":
@@ -207,6 +227,7 @@ func _ensure_loadout_nodes() -> void:
 		loadout.add_child(loadout_soft)
 
 func _update_loadout() -> void:
+	_def_flash_labels.clear()  # Wave 76: rebuild Def flash targets
 	_ensure_slot_icons()
 	_ensure_loadout_nodes()
 	if loadout_title:
@@ -262,6 +283,10 @@ func _update_loadout() -> void:
 		var tag: String = str(SLOT_TAGS.get(slot, _slot_label(slot)))
 		lbl.text = "%s  %s%s" % [tag, name, def_bit]
 		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Wave 76: mark Def rows for soft mint flash when newly equipped
+		if _def_equip_flash_t > 0.0 and id != null and str(id) == _def_equip_flash_id and def_bit != "":
+			_def_flash_labels.append(lbl)
+			lbl.modulate = Color(0.7, 1.0, 0.75, 1.0)
 		row.add_child(tex)
 		row.add_child(lbl)
 		if loadout_slots:
@@ -356,7 +381,13 @@ func _on_select(idx: int) -> void:
 func _on_equip() -> void:
 	if selected_id != "":
 		AudioBus.play_ui()
+		var before_id := selected_id
+		var def_n: int = int(ItemDB.get_item(before_id).get("defense", 0))
 		GameState.equip_item(selected_id)
+		# Wave 76: Def +N on armor rows flashes when newly equipped
+		if def_n > 0 and str(GameState.equipped.get(str(ItemDB.get_item(before_id).get("slot", "")), "")) == before_id:
+			_def_equip_flash_id = before_id
+			_def_equip_flash_t = 1.1
 		refresh()
 
 func _on_unequip() -> void:

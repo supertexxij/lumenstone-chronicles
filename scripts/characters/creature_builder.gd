@@ -173,6 +173,8 @@ static func build(kind: String, root: Node3D) -> Node3D:
 			_build_moose(bob)
 		"quince_quokka":
 			_build_quokka(bob)
+		"watermelon_wallaby":
+			_build_wallaby(bob)
 		_:
 			_build_wisp(bob)
 	return bob
@@ -1975,4 +1977,51 @@ static func _build_quokka(bob: Node3D) -> void:
 	var tail := _mi(_cyl(0.04, 0.03, 0.12), Vector3(0, 0.32, -0.22), bob, "Tail")
 	tail.rotation_degrees = Vector3(25, 0, 0)
 	_mi(_sphere(0.05, 0.055), Vector3(0, 0.34, -0.30), bob, "TailTip")
+
+static func _build_wallaby(bob: Node3D) -> void:
+	## Soft watermelon-wilds wallaby — upright oval body, long powerful hind legs, short forepaws, pointed upright ears, long tapering tail, cheek blush (distinct from Quince Quokka / Kiwi Koala / Palm Pika / Blueberry Bunny / Lemon Lemming / Melon Moose).
+	# Upright oval body + soft pink-cream belly (watermelon flesh hint)
+	_mi(_sphere(0.16, 0.28), Vector3(0, 0.42, 0.0), bob, "Body")
+	_mi(_sphere(0.09, 0.14), Vector3(0, 0.34, 0.06), bob, "Belly")
+	# Round head + pointed upright ears (wallaby signature — taller than quokka)
+	_mi(_sphere(0.11, 0.12), Vector3(0, 0.68, 0.10), bob, "Head")
+	var ear_l := _mi(_cyl(0.025, 0.018, 0.12), Vector3(-0.08, 0.82, 0.08), bob, "EarL")
+	ear_l.rotation_degrees = Vector3(12, 0, -18)
+	var ear_r := _mi(_cyl(0.025, 0.018, 0.12), Vector3(0.08, 0.82, 0.08), bob, "EarR")
+	ear_r.rotation_degrees = Vector3(12, 0, 18)
+	# Soft blunt snout
+	_mi(_sphere(0.05, 0.055), Vector3(0, 0.64, 0.22), bob, "Snout")
+	_mi(_sphere(0.02, 0.016), Vector3(0, 0.64, 0.28), bob, "Nose")
+	_mi(_sphere(0.018), Vector3(-0.035, 0.72, 0.18), bob, "EyeL")
+	_mi(_sphere(0.018), Vector3(0.035, 0.72, 0.18), bob, "EyeR")
+	# Soft watermelon cheek blush
+	_mi(_sphere(0.032, 0.026), Vector3(-0.09, 0.62, 0.14), bob, "BlushL")
+	_mi(_sphere(0.032, 0.026), Vector3(0.09, 0.62, 0.14), bob, "BlushR")
+	# Short forepaws
+	for info in [
+		["FL", Vector3(-0.08, 0.36, 0.10)],
+		["FR", Vector3(0.08, 0.36, 0.10)],
+	]:
+		var paw := Node3D.new()
+		paw.name = "Leg" + str(info[0])
+		paw.position = info[1]
+		bob.add_child(paw)
+		_mi(_cyl(0.022, 0.026, 0.10), Vector3(0, -0.02, 0), paw, "Shin")
+		_mi(_box(Vector3(0.045, 0.014, 0.05)), Vector3(0, -0.08, 0.01), paw, "Foot")
+	# Long powerful hind legs (wallaby signature hoppers)
+	for info in [
+		["BL", Vector3(-0.09, 0.28, -0.06)],
+		["BR", Vector3(0.09, 0.28, -0.06)],
+	]:
+		var leg := Node3D.new()
+		leg.name = "Leg" + str(info[0])
+		leg.position = info[1]
+		bob.add_child(leg)
+		_mi(_cyl(0.035, 0.04, 0.22), Vector3(0, -0.06, 0.02), leg, "Thigh")
+		_mi(_cyl(0.028, 0.032, 0.16), Vector3(0, -0.20, 0.04), leg, "Shin")
+		_mi(_box(Vector3(0.07, 0.02, 0.10)), Vector3(0, -0.30, 0.06), leg, "Foot")
+	# Long tapering wallaby tail (signature — not short quokka stub)
+	var tail := _mi(_cyl(0.045, 0.02, 0.36), Vector3(0, 0.30, -0.28), bob, "Tail")
+	tail.rotation_degrees = Vector3(40, 0, 0)
+	_mi(_sphere(0.03, 0.035), Vector3(0, 0.18, -0.48), bob, "TailTip")
 

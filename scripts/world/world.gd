@@ -54,6 +54,7 @@ var _maple_dusk_leaves: CPUParticles3D  # Wave 72: soft Maple Copse maple-leaf d
 var _amber_knoll_motes: CPUParticles3D  # Wave 73: soft Amber Knoll amber-glow motes at dusk
 var _cedar_needles: CPUParticles3D  # Wave 74: soft Cedar Hollow cedar-needle drift at dusk
 var _stone_arch_dust: CPUParticles3D  # Wave 75: soft Stone Arch limestone dust motes at dusk
+var _cross_lantern_moths: CPUParticles3D  # Wave 76: soft Quiet Cross lantern moths at dusk
 var _landmark_dist: float = 9999.0  # Wave 69: distance to current landmark for ✦ chip paces
 var _brook_sparkle: CPUParticles3D  # Wave 54: soft brook sparkle near water
 var _brook_sparkle_check_t: float = 0.0
@@ -1799,6 +1800,7 @@ func _setup_weather() -> void:
 	_setup_amber_knoll_motes()
 	_setup_cedar_needles()
 	_setup_stone_arch_dust()
+	_setup_cross_lantern_moths()
 	_setup_brook_sparkle()
 	_setup_snowdust()
 	_setup_canopy_drip()
@@ -2064,6 +2066,10 @@ func _update_weather(delta: float) -> void:
 		var arch_dusk := _inside_hall == "" and _is_dusk_firefly_time()
 		_stone_arch_dust.emitting = arch_dusk
 		_stone_arch_dust.visible = arch_dusk
+	if _cross_lantern_moths:
+		var cross_dusk := _inside_hall == "" and _is_dusk_firefly_time()
+		_cross_lantern_moths.emitting = cross_dusk
+		_cross_lantern_moths.visible = cross_dusk
 	# Wave 47: soft snowdust in cold Fog outdoors (off indoors / clear / rain)
 	if player and _snowdust:
 		if _inside_hall == "" and _weather_mode == 1:
@@ -4086,6 +4092,52 @@ func _setup_stone_arch_dust() -> void:
 	_stone_arch_dust.position = Vector3(-48.0, 2.8, 8.0)
 	add_child(_stone_arch_dust)
 	HeadlessGuard.guard_particles(_stone_arch_dust)
+
+
+
+
+func _setup_cross_lantern_moths() -> void:
+	## Wave 76: soft Quiet Cross lantern moths at dusk — warm cream moths flutter around the knoll lanterns (RuneScape-chunky, wholesome).
+	_cross_lantern_moths = CPUParticles3D.new()
+	_cross_lantern_moths.name = "QuietCrossLanternMoths"
+	_cross_lantern_moths.emitting = false
+	_cross_lantern_moths.amount = 18
+	_cross_lantern_moths.lifetime = 3.6
+	_cross_lantern_moths.preprocess = 1.0
+	_cross_lantern_moths.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	_cross_lantern_moths.emission_box_extents = Vector3(6.5, 2.8, 5.5)
+	_cross_lantern_moths.direction = Vector3(0.05, 0.35, 0.05)
+	_cross_lantern_moths.spread = 70.0
+	_cross_lantern_moths.initial_velocity_min = 0.08
+	_cross_lantern_moths.initial_velocity_max = 0.42
+	_cross_lantern_moths.gravity = Vector3(0, 0.02, 0)
+	_cross_lantern_moths.angular_velocity_min = -40.0
+	_cross_lantern_moths.angular_velocity_max = 40.0
+	_cross_lantern_moths.scale_amount_min = 0.22
+	_cross_lantern_moths.scale_amount_max = 0.55
+	var mm := SphereMesh.new()
+	mm.radius = 0.04
+	mm.height = 0.08
+	_cross_lantern_moths.mesh = mm
+	var mmat := StandardMaterial3D.new()
+	mmat.albedo_color = Color(1.0, 0.92, 0.72, 0.82)
+	mmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mmat.emission_enabled = true
+	mmat.emission = Color(1.0, 0.88, 0.55)
+	mmat.emission_energy_multiplier = 0.95
+	_cross_lantern_moths.material_override = mmat
+	var ramp := Gradient.new()
+	ramp.colors = PackedColorArray([
+		Color(1.0, 0.95, 0.78, 0.0),
+		Color(1.0, 0.90, 0.62, 0.88),
+		Color(0.95, 0.78, 0.45, 0.0),
+	])
+	_cross_lantern_moths.color_ramp = ramp
+	# Quiet Cross landmark at (48, 0, 8) — moths drift near lantern posts + knoll
+	_cross_lantern_moths.position = Vector3(48.0, 2.4, 8.0)
+	add_child(_cross_lantern_moths)
+	HeadlessGuard.guard_particles(_cross_lantern_moths)
 
 
 func _setup_brook_sparkle() -> void:

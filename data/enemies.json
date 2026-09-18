@@ -662,6 +662,19 @@
       "combat_xp": 306,
       "respawn_sec": 118.0,
       "description": "A gentle quokka of the quince wilds \u2014 cheer it kindly with a careful step!"
+    },
+    "watermelon_wallaby": {
+      "kind": "watermelon_wallaby",
+      "name": "Watermelon Wallaby",
+      "defeat_verb": "bounded",
+      "color": "#5a9a5a",
+      "accent": "#f0a8b0",
+      "max_hp": 326,
+      "damage": 54,
+      "accuracy": 0.16,
+      "combat_xp": 312,
+      "respawn_sec": 120.0,
+      "description": "A gentle wallaby of the watermelon wilds \u2014 bound with it kindly on a careful hop!"
     }
   },
   "spawns": [
@@ -2182,6 +2195,36 @@
       "kind": "quince_quokka",
       "x": 195,
       "z": 25
+    },
+    {
+      "id": "e254",
+      "kind": "watermelon_wallaby",
+      "x": 155,
+      "z": -160
+    },
+    {
+      "id": "e255",
+      "kind": "watermelon_wallaby",
+      "x": -160,
+      "z": 145
+    },
+    {
+      "id": "e256",
+      "kind": "watermelon_wallaby",
+      "x": 140,
+      "z": 165
+    },
+    {
+      "id": "e257",
+      "kind": "watermelon_wallaby",
+      "x": -150,
+      "z": -165
+    },
+    {
+      "id": "e258",
+      "kind": "watermelon_wallaby",
+      "x": 200,
+      "z": -40
     }
   ],
   "base_combat": {

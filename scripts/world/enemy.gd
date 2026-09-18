@@ -152,6 +152,9 @@ func _ready() -> void:
 		"quince_quokka":
 			if label: label.position.y = 1.4
 			hp_bar.position.y = 1.15
+		"watermelon_wallaby":
+			if label: label.position.y = 1.55
+			hp_bar.position.y = 1.3
 		_:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
@@ -967,6 +970,30 @@ func _idle_anim(delta: float) -> void:
 			if qhead:
 				qhead.rotation.y = sin(t * 0.65) * 0.06
 				qhead.rotation.x = sin(t * 0.5) * 0.04
+		"watermelon_wallaby":
+			# Soft hop-breathe — upright bounce, ear twitch, long tail sway (Wave 76)
+			creature_bob.position.y = 0.02 + abs(sin(t * 1.05)) * 0.04
+			creature_bob.rotation.y = sin(t * 0.28) * 0.07
+			var wear_l := creature_bob.get_node_or_null("EarL")
+			var wear_r := creature_bob.get_node_or_null("EarR")
+			if wear_l:
+				wear_l.rotation.z = deg_to_rad(-18) + sin(t * 1.2) * 0.06
+			if wear_r:
+				wear_r.rotation.z = deg_to_rad(18) - sin(t * 1.2 + 0.2) * 0.06
+			var wtail := creature_bob.get_node_or_null("Tail")
+			if wtail:
+				wtail.rotation.y = sin(t * 0.9) * 0.1
+				wtail.rotation.x = deg_to_rad(40) + sin(t * 0.7) * 0.05
+			var whead := creature_bob.get_node_or_null("Head")
+			if whead:
+				whead.rotation.y = sin(t * 0.6) * 0.05
+				whead.rotation.x = sin(t * 0.45) * 0.035
+			var wleg_bl := creature_bob.get_node_or_null("LegBL")
+			var wleg_br := creature_bob.get_node_or_null("LegBR")
+			if wleg_bl:
+				wleg_bl.rotation.x = sin(t * 1.05) * 0.08
+			if wleg_br:
+				wleg_br.rotation.x = -sin(t * 1.05) * 0.08
 		"dust_golem":
 			creature_bob.position.y = sin(t * 0.6) * 0.03
 			var la := creature_bob.get_node_or_null("LArm")

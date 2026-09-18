@@ -258,6 +258,14 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 
 
+### Wave 76 overnight (v1.76.0-overnight)
+- Soft **Quiet Cross lantern moths at dusk** — warm cream moths flutter around the knoll lanterns (RuneScape-chunky, wholesome)
+- Soft **night cricket hush polish** — warmer outdoor night bed + slightly richer sparse chirps (RuneScape-chunky, wholesome)
+- Clearer **low-HP toast with V/H hints** — `HP low · press V to eat · H for Fountain rest` (no cheesy combat labels)
+- New wilds foe **Watermelon Wallaby** — upright oval body, long powerful hind legs, short forepaws, pointed upright ears, long tapering tail, cheek blush, gentle “bounded” defeat language, five wilds spawns (distinct from Moss Badger / Cedar Stag / Pine Fox / Oak Hare / Birch Squirrel / Aspen Otter / Elm Raccoon / Hazel Hedgehog / Willow Wren / Maple Mouse / Spruce Mole / Beech Chipmunk / Alder Duck / Fir Frog / Cypress Turtle / Poplar Dove / Rowan Robin / Ash Sparrow / Hickory Quail / Juniper Jay / Sycamore Skink / Chestnut Toad / Walnut Weasel / Pecan Possum / Magnolia Beaver / Olive Owl / Palm Pika / Lemon Lemming / Cherry Chinchilla / Plum Porcupine / Peach Puffin / Fig Finch / Grape Gecko / Apricot Armadillo / Blueberry Bunny / Cranberry Capybara / Raspberry Ram / Strawberry Stoat / Blackberry Bear / Guava Goat / Kiwi Koala / Mango Mongoose / Papaya Panda / Coconut Crab / Lime Llama / Melon Moose / Quince Quokka)
+- Inventory/HUD QoL: **Def +N on armor rows flashes when newly equipped**; **Foes · N chip shows ↑ when count rises** — PIN stays **1234**; mastery still ≥80%
+- Re-export Linux + Windows
+
 ### Wave 75 overnight (v1.75.0-overnight)
 - Soft **Stone Arch limestone dust motes at dusk** — cool pale limestone motes drift through the western gateway (RuneScape-chunky, wholesome)
 - Soft **wind leaf particles polish** — a few more outdoor flakes + soft color fade (RuneScape-chunky, wholesome)
