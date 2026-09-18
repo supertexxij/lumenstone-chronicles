@@ -112,6 +112,22 @@ static func _capsule(r: float, h: float) -> CapsuleMesh:
 	return m
 
 
+static func _prism(size: Vector3) -> PrismMesh:
+	var m := PrismMesh.new()
+	m.size = size
+	return m
+
+
+static func _cone(bot_r: float, h: float) -> CylinderMesh:
+	## Pointy anime hair clump (fat base → thin tip).
+	var m := CylinderMesh.new()
+	m.top_radius = 0.008
+	m.bottom_radius = bot_r
+	m.height = h
+	m.radial_segments = 18
+	return m
+
+
 ## Clears visual children of root and builds a full humanoid.
 ## Returns named part refs for coloring / equipment / animation.
 static func build(root: Node3D) -> Dictionary:
@@ -135,11 +151,42 @@ static func build(root: Node3D) -> Dictionary:
 	var collar := _mi(_sphere(0.20, 0.12), Vector3(0, 1.36, 0.03), bob, "Collar")
 	# Big storybook head — face features sit on the front surface (not buried inside).
 	var head := _mi(_sphere(0.32), Vector3(0, 1.78, 0.04), bob, "Head")
-	# Hair: soft back/top volume only (no forehead pancake — that looked like a beanie/blob).
-	var hair := _mi(_sphere(0.33, 0.36), Vector3(0, 1.98, -0.18), bob, "Hair")
-	hair.scale = Vector3(1.05, 0.9, 1.15)
-	# Keep bangs for wardrobe coloring, tucked into the hair crown (not on the face).
-	var bangs := _mi(_sphere(0.14, 0.10), Vector3(0, 2.05, -0.06), bob, "Bangs")
+	# Anime-inspired hair: crown + smooth cone spikes + fringe + side locks + ahoge.
+	# Pointed volumetric clumps (high-segment cones, no ink-grow) read as anime tufts.
+	var hair := _mi(_sphere(0.30, 0.24), Vector3(0, 1.93, -0.12), bob, "Hair")
+	hair.scale = Vector3(1.16, 0.82, 1.08)
+	# Top / back spikes
+	var hair_spike_c := _mi(_cone(0.10, 0.38), Vector3(0.0, 2.18, -0.02), bob, "HairSpikeC")
+	hair_spike_c.rotation_degrees = Vector3(25, 0, 0)
+	var hair_spike_l := _mi(_cone(0.085, 0.34), Vector3(-0.15, 2.14, 0.04), bob, "HairSpikeL")
+	hair_spike_l.rotation_degrees = Vector3(12, -5, -36)
+	var hair_spike_r := _mi(_cone(0.085, 0.34), Vector3(0.15, 2.14, 0.04), bob, "HairSpikeR")
+	hair_spike_r.rotation_degrees = Vector3(12, 5, 36)
+	var hair_spike_bl := _mi(_cone(0.08, 0.32), Vector3(-0.10, 2.06, -0.18), bob, "HairSpikeBL")
+	hair_spike_bl.rotation_degrees = Vector3(40, -18, -10)
+	var hair_spike_br := _mi(_cone(0.08, 0.32), Vector3(0.10, 2.06, -0.18), bob, "HairSpikeBR")
+	hair_spike_br.rotation_degrees = Vector3(40, 18, 10)
+	# Side wing spikes
+	var hair_spike_wl := _mi(_cone(0.075, 0.30), Vector3(-0.28, 1.96, 0.04), bob, "HairSpikeWL")
+	hair_spike_wl.rotation_degrees = Vector3(5, 10, -78)
+	var hair_spike_wr := _mi(_cone(0.075, 0.30), Vector3(0.28, 1.96, 0.04), bob, "HairSpikeWR")
+	hair_spike_wr.rotation_degrees = Vector3(5, -10, 78)
+	# Forehead fringe — tip toward face, base at hairline
+	var bangs := _mi(_cone(0.075, 0.24), Vector3(0.0, 1.98, 0.18), bob, "Bangs")
+	bangs.rotation_degrees = Vector3(118, 0, 0)
+	var bang_l := _mi(_cone(0.06, 0.22), Vector3(-0.11, 1.96, 0.16), bob, "BangL")
+	bang_l.rotation_degrees = Vector3(112, 18, -18)
+	var bang_r := _mi(_cone(0.06, 0.22), Vector3(0.11, 1.96, 0.16), bob, "BangR")
+	bang_r.rotation_degrees = Vector3(112, -18, 18)
+	# Side locks
+	var l_lock := _mi(_capsule(0.048, 0.34), Vector3(-0.28, 1.66, 0.10), bob, "LLock")
+	l_lock.rotation_degrees = Vector3(18, 8, 28)
+	var r_lock := _mi(_capsule(0.048, 0.34), Vector3(0.28, 1.66, 0.10), bob, "RLock")
+	r_lock.rotation_degrees = Vector3(18, -8, -28)
+	# Ahoge
+	var ahoge := _mi(_cone(0.03, 0.20), Vector3(0.05, 2.30, 0.0), bob, "Ahoge")
+	ahoge.rotation_degrees = Vector3(8, 0, 40)
+
 	var l_shoulder := _mi(_sphere(0.15), Vector3(-0.36, 1.32, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_sphere(0.15), Vector3(0.36, 1.32, 0), bob, "RShoulder")
 	# Face — big friendly eyes on the head surface + warm iris + curved smile.
@@ -171,11 +218,11 @@ static func build(root: Node3D) -> Dictionary:
 	# Soft blush — subtle, close to skin.
 	var l_cheek := _mi(_sphere(0.038, 0.022), Vector3(-0.175, 1.725, 0.308), bob, "LCheek")
 	var r_cheek := _mi(_sphere(0.038, 0.022), Vector3(0.175, 1.725, 0.308), bob, "RCheek")
-	# Side locks stay behind the ears so ears read as skin, not brown lumps.
-	var l_lock := _mi(_sphere(0.075, 0.20), Vector3(-0.30, 1.74, -0.04), bob, "LLock")
-	var r_lock := _mi(_sphere(0.075, 0.20), Vector3(0.30, 1.74, -0.04), bob, "RLock")
-	var l_ear := _mi(_sphere(0.065, 0.085), Vector3(-0.305, 1.78, 0.04), bob, "LEar")
-	var r_ear := _mi(_sphere(0.065, 0.085), Vector3(0.305, 1.78, 0.04), bob, "REar")
+	var l_ear := _mi(_sphere(0.055, 0.07), Vector3(-0.30, 1.78, -0.02), bob, "LEar")
+	var r_ear := _mi(_sphere(0.055, 0.07), Vector3(0.30, 1.78, -0.02), bob, "REar")
+	# Ears tuck under side locks for a cleaner anime silhouette.
+	l_ear.visible = false
+	r_ear.visible = false
 	# Painted face card (visible). Keep primitive face parts for API/smoke but hide the ugly blobs.
 	var face_decal := _make_face_decal(bob)
 	for n in [l_eye, r_eye, l_iris, r_iris, l_pupil, r_pupil, l_shine, r_shine, l_brow, r_brow, nose, mouth, mouth_l, mouth_r, l_cheek, r_cheek]:
@@ -185,7 +232,7 @@ static func build(root: Node3D) -> Dictionary:
 	var hat := Node3D.new()
 	hat.name = "Hat"
 	hat.visible = false
-	hat.position = Vector3(0, 2.10, 0)
+	hat.position = Vector3(0, 2.28, 0)
 	bob.add_child(hat)
 	var hat_crown := _mi(_sphere(0.22, 0.26), Vector3(0, 0.10, 0), hat, "HatCrown")
 	var hat_brim := _mi(_cyl(0.40, 0.40, 0.045), Vector3(0, -0.02, 0), hat, "HatBrim")
@@ -305,6 +352,16 @@ static func build(root: Node3D) -> Dictionary:
 		"head": head,
 		"hair": hair,
 		"bangs": bangs,
+		"bang_l": bang_l,
+		"bang_r": bang_r,
+		"hair_spike_c": hair_spike_c,
+		"hair_spike_l": hair_spike_l,
+		"hair_spike_r": hair_spike_r,
+		"hair_spike_bl": hair_spike_bl,
+		"hair_spike_br": hair_spike_br,
+		"hair_spike_wl": hair_spike_wl,
+		"hair_spike_wr": hair_spike_wr,
+		"ahoge": ahoge,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -381,11 +438,21 @@ static func build(root: Node3D) -> Dictionary:
 static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outfit: Color, cape_col: Color, shoe: Color = Color("#3b2f2f")) -> void:
 	set_color(parts.get("head"), skin)
 	set_color(parts.get("neck"), skin)
-	set_color(parts.get("hair"), hair)
-	# Bangs / locks skip ink grow so forehead doesn't get a dark halo bar.
-	set_color(parts.get("bangs"), hair.lightened(0.04), 0.72, false)
-	set_color(parts.get("l_lock"), hair.darkened(0.04), 0.72, false)
-	set_color(parts.get("r_lock"), hair.darkened(0.04), 0.72, false)
+	# Anime hair layers — no ink-grow on strands (grow outlines make cones look like slabs).
+	set_color(parts.get("hair"), hair, 0.7, false)
+	set_color(parts.get("bangs"), hair.lightened(0.07), 0.65, false)
+	set_color(parts.get("bang_l"), hair.lightened(0.04), 0.65, false)
+	set_color(parts.get("bang_r"), hair.lightened(0.04), 0.65, false)
+	set_color(parts.get("hair_spike_c"), hair.darkened(0.02), 0.68, false)
+	set_color(parts.get("hair_spike_l"), hair.darkened(0.05), 0.68, false)
+	set_color(parts.get("hair_spike_r"), hair.darkened(0.05), 0.68, false)
+	set_color(parts.get("hair_spike_bl"), hair.darkened(0.08), 0.7, false)
+	set_color(parts.get("hair_spike_br"), hair.darkened(0.08), 0.7, false)
+	set_color(parts.get("hair_spike_wl"), hair.darkened(0.06), 0.68, false)
+	set_color(parts.get("hair_spike_wr"), hair.darkened(0.06), 0.68, false)
+	set_color(parts.get("l_lock"), hair.darkened(0.04), 0.68, false)
+	set_color(parts.get("r_lock"), hair.darkened(0.04), 0.68, false)
+	set_color(parts.get("ahoge"), hair.lightened(0.10), 0.62, false)
 	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
 	set_color(parts.get("pelvis"), pants)

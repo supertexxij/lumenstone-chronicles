@@ -230,7 +230,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 Characters read as **storybook cartoon** instead of blocky Roblox-style boxes. PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON, navmesh, tick combat, and save keys unchanged.
 
-- **Humanoids:** rounded bodies + **painted storybook face card** (clean eyes/smile, not primitive face blobs), toon shading + ink outlines on the body
+- **Humanoids:** rounded bodies + painted face card + **anime-style layered hair** (spikes, fringe bangs, side locks, ahoge)
 - **Gear:** weapons and armor overlays use cylinders/spheres so equipped looks stay soft
 - **Creatures:** matching toon materials so wild foes fit the cartoon look
 - Re-export Linux + Windows when shipping a build
