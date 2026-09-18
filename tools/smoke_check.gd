@@ -228,6 +228,7 @@ func _initialize():
 	print("NO_FOG_MIST_FX_1844", "skip FogMist particles entirely" in _src("res://scripts/world/world.gd"))
 	print("NO_ENEMY_RVO_OBS_1844", "never feed NavigationServer RVO" in _src("res://scripts/world/enemy.gd") and "keep RVO obstacles off even when awake" in _src("res://scripts/world/enemy.gd"))
 	print("NO_SUN_SHADOW_1844", "directional shadows off" in _src("res://scripts/world/world.gd") and "shadow_enabled = false" in _src("res://scenes/world/world.tscn"))
+	print("CHASE_THROTTLE_1845", "_combat_chase_toward" in _src("res://scripts/player/player.gd") and "throttle combat chase repath" in _src("res://scripts/player/player.gd"))
 	print("HITCH_1843", "avoidance_enabled = false" in _src("res://scripts/player/player.gd") and "occlusion_culling/use_occlusion_culling=false" in _src("res://project.godot") and "call_deferred(\"save_game\")" in _src("res://scripts/world/enemy.gd") and "_rain.amount = 32" in _src("res://scripts/world/world.gd"))
 	print("AGGRO_NAME_TOAST", "always name the foe" in _src("res://scripts/world/enemy.gd") or "soft yellow ring means step back" in _src("res://scripts/world/enemy.gd"))
 	print("HP_BAR_LOW_TIER", "Wave 29" in _src("res://scripts/world/enemy.gd") and "0.55" in _src("res://scripts/world/enemy.gd"))
