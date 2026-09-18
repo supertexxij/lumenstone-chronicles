@@ -229,7 +229,7 @@ func _refresh() -> void:
 			var pct: int = int(float(h.get("percent", 0)) * 100)
 			# Wave 35: week + guild read more boldly (ItemList has no BBCode)
 			var age: String = _days_since_attempt(int(h.get("timestamp", 0)))
-			var line: String = "Wk %d · %s · %s  %d/%d (%d%%)  ·  %s" % [
+			var line: String = "WEEK %d · %s · %s  %d/%d (%d%%)  ·  %s" % [
 				week_n, guild_short, h.get("title", h.get("quest_id", "?")),
 				int(h.get("correct", 0)), int(h.get("total", 0)), pct, age
 			]  # Wave 67: days-since last attempt (PIN stays 1234; mastery ≥80%)

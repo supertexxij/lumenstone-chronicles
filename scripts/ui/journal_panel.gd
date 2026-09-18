@@ -110,7 +110,7 @@ func refresh() -> void:
 	else:
 		week_lbl.text = "Week %d of 36 · %s · This week ★ %d%s" % [uw, _campaign_name(uw), week_mastered, locked_tag]
 	# Compact header: campaign name is already in week_lbl for current; keep camp stars in tooltip
-	week_lbl.tooltip_text = "%s · Campaign ★ %d · Week ★ %d" % [_campaign_name(uw), camp_stars, week_mastered]
+	week_lbl.tooltip_text = "Week %d/36 · %s · Campaign ★ %d · Week ★ %d" % [uw, _campaign_name(uw), camp_stars, week_mastered]
 	# Wave 57: show Open only count in toggle label (PIN 1234; mastery ≥80% unchanged)
 	_ensure_open_only_toggle()
 	if _open_only_btn != null and is_instance_valid(_open_only_btn):
@@ -257,7 +257,9 @@ func _unlock_progress_text(uw: int) -> String:
 		year_total = maxi(1, total_stars)
 	lines.append("★ Total mastered: %d / %d" % [total_stars, year_total])
 	# Wave 31/57/75: clearer mastered count for the current week (sticky shows count)
+	# Keep "★ Mastered this week:" for skim + smoke
 	var of_week := (" / %d" % total_week) if total_week > 0 else ""
+	lines.append("★ Mastered this week: %d%s" % [mastered, of_week])
 	lines.append("★ Mastered this week sticky · %d%s" % [mastered, of_week])
 	var year_line: String = GameState.get_year_progress_note() if GameState.has_method("get_year_progress_note") else ""
 	if year_line != "":
@@ -268,7 +270,7 @@ func _unlock_progress_text(uw: int) -> String:
 			lines.append("★ Friday Raid Review mastered — Week %d should unlock." % mini(36, next_w + 1))
 		else:
 			# Wave 42: highlight next Friday Raid more in the progress header
-			lines.append("Next ★ Friday Raid: “%s”  (or 4+ quests this week: %d/4)" % [rtitle, mastered])
+			lines.append("📌 Next raid · “%s”  (or 4+ quests this week: %d/4)" % [rtitle, mastered])
 	else:
 		lines.append("Next unlock: master 4+ quests this week (%d/%d)." % [mastered, soft_need])
 	# Wave 66: Open-only sticky shows count when toggled (PIN 1234; mastery ≥80% unchanged)

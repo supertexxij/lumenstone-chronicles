@@ -64,6 +64,7 @@ func refresh_slots() -> void:
 		var summary: Dictionary = GameState.slot_summary(i)
 		var info: Label = widgets["info"]
 		var cont: Button = widgets["continue"]
+		var neu: Button = widgets["new"]
 		var clr: Button = widgets["clear"]
 		if summary.get("empty", true):
 			info.text = "Slot %d — empty  ·  press Start" % (i + 1)

@@ -101,7 +101,7 @@ func _setup_travel_panel() -> void:
 		title_n.text = "Travel"
 	var hint_n: Label = travel_panel.get_node_or_null("Panel/VBox/Hint")
 	if hint_n:
-		hint_n.text = "Pick a place, then Travel. H Fountain · K Mill · 1–5 halls outdoors."
+		hint_n.text = "Pick a place, then Travel. H Fountain · O Hollow · K Mill · 1–5 halls outdoors."
 	var go: Button = travel_panel.get_node_or_null("Panel/VBox/GoBtn")
 	var close: Button = travel_panel.get_node_or_null("Panel/VBox/CloseBtn")
 	var list: ItemList = travel_panel.get_node_or_null("Panel/VBox/DestList")
@@ -116,7 +116,7 @@ func _setup_travel_panel() -> void:
 		row.add_child(lbl)
 		_travel_search = LineEdit.new()
 		_travel_search.name = "TravelSearch"
-		_travel_search.placeholder_text = "Find a place…"
+		_travel_search.placeholder_text = "Find a place…"  # Wave 39: Filter landmarks by name
 		_travel_search.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_travel_search.text_changed.connect(_on_travel_filter_changed)
 		row.add_child(_travel_search)

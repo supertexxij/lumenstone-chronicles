@@ -203,9 +203,11 @@ func set_hp(cur: int, mx: int) -> void:
 	hp_bar.value = cur
 	var hp_txt: Label = hp_bar.get_node("HpText")
 	_ensure_clear_hp_text(hp_txt)
-	# v1.81 UI: HP digits only — combat level lives on the quieter combat line
+	# Wave 35: clearer combat HP number — bold "HP N / M" on the bar
+	# Wave 41: combat level shown near HP
+	# v1.81 UI: HP digits on the bar; combat level on the quieter combat line
 	hp_txt.text = "HP %d / %d" % [cur, mx]
-	hp_txt.tooltip_text = "Hit points · Combat Lv %d" % GameState.combat_level
+	hp_txt.tooltip_text = "HP %d / %d · Lv %d" % [cur, mx, GameState.combat_level]
 	_update_hurt_vignette(cur, mx)
 
 func _ensure_clear_hp_text(hp_txt: Label) -> void:

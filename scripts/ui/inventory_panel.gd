@@ -240,7 +240,7 @@ func _update_loadout() -> void:
 		if GameState.has_method("get_defense"):
 			total_def = int(GameState.get_defense())
 		if total_def > 0:
-			loadout_title.text = "Worn · Def %d" % total_def
+			loadout_title.text = "Worn gear · Def %d" % total_def
 		else:
 			loadout_title.text = "Worn gear"
 	var by_slot: Dictionary = {}
