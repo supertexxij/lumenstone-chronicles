@@ -18,6 +18,8 @@ var _idle_style: int = 0
 var _phase: float = 0.0
 var _wave_t: float = -1.0
 var _talk_near: bool = false  # Wave 31: clearer Talk (F) prompt
+var _process_tick: int = 0  # v1.86: stagger idle / talk prompt
+var _cached_player: Node = null
 
 func _ready() -> void:
 	add_to_group("npcs")
@@ -40,6 +42,10 @@ func _ready() -> void:
 	mesh_root.rotation.y = atan2(to_center.x, to_center.z)
 
 func _process(delta: float) -> void:
+	# v1.86: mentors idle on alternate frames — cuts village process cost
+	_process_tick = (_process_tick + 1) % 2
+	if _process_tick != 0:
+		return
 	var bob: Node3D = parts.get("bob")
 	var l_arm: Node3D = parts.get("l_arm")
 	var r_arm: Node3D = parts.get("r_arm")
@@ -109,7 +115,9 @@ func _update_talk_prompt() -> void:
 	## Wave 31: when the player is nearby, show a clearer Talk (F) line (RuneScape-chunky, wholesome).
 	if label == null or HeadlessGuard.is_headless():
 		return
-	var player: Node = get_tree().get_first_node_in_group("player")
+	if _cached_player == null or not is_instance_valid(_cached_player):
+		_cached_player = get_tree().get_first_node_in_group("player")
+	var player: Node = _cached_player
 	var near := false
 	if player != null and not bool(player.get("ui_blocking")):
 		near = global_position.distance_to(player.global_position) <= 3.6
@@ -131,11 +139,10 @@ func request_talk() -> void:
 
 func _ensure_nav_obstacle() -> void:
 	## Soft bubble kept for future path awareness; RVO off while player avoidance is disabled.
+	## v1.86: skip creating mentor NavObstacle nodes (avoidance_enabled stays false).
 	if get_node_or_null("NavObstacle") != null:
+		var existing := get_node_or_null("NavObstacle") as NavigationObstacle3D
+		if existing:
+			existing.avoidance_enabled = false
 		return
-	var obs := NavigationObstacle3D.new()
-	obs.name = "NavObstacle"
-	obs.radius = 0.55
-	obs.height = 1.8
-	obs.avoidance_enabled = false  # v1.84.4: no mentor RVO cost
-	add_child(obs)
+	# Intentionally do not add NavigationObstacle3D — avoidance stays off.

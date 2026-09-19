@@ -36,6 +36,9 @@ static func _sphere(r: float, h: float = -1.0) -> SphereMesh:
 	var m := SphereMesh.new()
 	m.radius = r
 	m.height = h if h > 0.0 else r * 2.0
+	# v1.86: low-poly humanoids for Compatibility / family PCs
+	m.radial_segments = 8
+	m.rings = 4
 	return m
 
 
@@ -44,6 +47,8 @@ static func _cyl(top_r: float, bot_r: float, h: float) -> CylinderMesh:
 	m.top_radius = top_r
 	m.bottom_radius = bot_r
 	m.height = h
+	m.radial_segments = 8
+	m.rings = 1
 	return m
 
 
@@ -51,6 +56,8 @@ static func _capsule(r: float, h: float) -> CapsuleMesh:
 	var m := CapsuleMesh.new()
 	m.radius = r
 	m.height = h
+	m.radial_segments = 8
+	m.rings = 2
 	return m
 
 

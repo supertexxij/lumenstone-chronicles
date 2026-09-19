@@ -281,12 +281,14 @@ func _process(delta: float) -> void:
 			refresh()
 	if not visible or _world == null:
 		return
-	# v1.84 smooth: rebuild full minimap payload every other frame; keep yaw live
-	_hud_tick = (_hud_tick + 1) % 2
+	# v1.84 smooth / v1.86: rebuild full minimap every 4 frames; live yaw/pos on frame 2
+	_hud_tick = (_hud_tick + 1) % 4
 	if _hud_tick == 0 or _map_data.is_empty():
 		if _world.has_method("get_minimap_markers"):
 			_map_data = _world.get_minimap_markers()
-	else:
+		if minimap and minimap.has_method("set_data"):
+			minimap.set_data(_map_data)
+	elif _hud_tick == 2:
 		var p = _world.get("player")
 		if p != null and not _map_data.is_empty():
 			var pl: Dictionary = _map_data.get("player", {})
@@ -295,15 +297,16 @@ func _process(delta: float) -> void:
 			pl["x"] = p.global_position.x
 			pl["z"] = p.global_position.z
 			_map_data["player"] = pl
+		if minimap and minimap.has_method("set_data"):
+			minimap.set_data(_map_data)
 	_update_compass()
-	_update_day_label()
-	_refresh_landmark_chip()
-	if minimap and minimap.has_method("set_data"):
-		minimap.set_data(_map_data)
-	_refresh_foe_count()
+	if _hud_tick == 0:
+		_update_day_label()
+		_refresh_landmark_chip()
+		_refresh_foe_count()
+		_refresh_fav_paces()
+		_refresh_food_lbl()
 	_update_foe_pulse(delta)
-	_refresh_fav_paces()
-	_refresh_food_lbl()
 
 func _update_compass() -> void:
 	if compass_needle == null:

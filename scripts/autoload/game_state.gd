@@ -56,6 +56,7 @@ const ONCE_TOAST_FLAGS := [
 	"seen_curriculum_183_toast",
 	"seen_minigames_184_toast",
 	"seen_smooth_184_toast",
+	"seen_perf_186_toast",
 ]
 
 
@@ -142,6 +143,7 @@ var minigame_xp_date: String = ""
 var minigame_xp_today: int = 0
 const MINIGAME_XP_DAILY_CAP := 6
 var seen_smooth_184_toast: bool = false  # v1.84 smooth: once-per-save snappier-village tip
+var seen_perf_186_toast: bool = false  # v1.86 perf: once-per-save lighter-village tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
 var festival_decades_seen: Array = []  # Wave 50: year-% decade marks already celebrated (10/20/…)
@@ -1013,10 +1015,15 @@ func maybe_smooth_184_toast() -> bool:
 	return _maybe_once_toast("seen_smooth_184_toast", "Village feels snappier — quicker walk, faster combat ticks, lighter wilds load.")
 
 
+func maybe_perf_186_toast() -> bool:
+	## v1.86 perf: once-per-save tip (PIN stays 1234; mastery ≥80%).
+	return _maybe_once_toast("seen_perf_186_toast", "Village runs lighter — far wilds rest until you walk near, so walking feels smoother.")
+
+
 func quiet_legacy_polish_toasts() -> void:
 	## New / early saves should not replay Wave 50–77 polish tips (first session stays about lessons).
 	for f in ONCE_TOAST_FLAGS:
-		if str(f) in ["seen_curriculum_183_toast", "seen_minigames_184_toast", "seen_smooth_184_toast"]:
+		if str(f) in ["seen_curriculum_183_toast", "seen_minigames_184_toast", "seen_smooth_184_toast", "seen_perf_186_toast"]:
 			continue
 		set(f, true)
 
