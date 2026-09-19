@@ -83,6 +83,7 @@ var _weather_label_cache: String = "Clear"
 var _landmark_here: String = ""  # current approach zone id (hysteresis)
 var _landmark_toast_cd: float = 0.0
 var _ambient_critters: Array = []  # {node, base: Vector3, phase, kind}
+var _ambient_fx: Array = []  # v1.86: {node: CPUParticles3D, base: Vector3} — distance-gated birds/bugs
 var _fountain_root: Node3D = null  # Wave 24 soft-defeat fountain FX anchor
 var _fountain_mist: CPUParticles3D = null  # Wave 50: soft plaza fountain mist polish
 
@@ -235,12 +236,18 @@ func _cyl(tr: float, br: float, h: float) -> CylinderMesh:
 	m.top_radius = tr
 	m.bottom_radius = br
 	m.height = h
+	# v1.86: chunky low-poly — default 64 sides thrash llvmpipe fill rate
+	m.radial_segments = 8
+	m.rings = 1
 	return m
 
 func _sphere(r: float, h: float = -1.0) -> SphereMesh:
 	var m := SphereMesh.new()
 	m.radius = r
 	m.height = h if h > 0.0 else r * 2.0
+	# v1.86: low-poly foliage/rocks (default 64×32 is far too dense for Compatibility)
+	m.radial_segments = 8
+	m.rings = 4
 	return m
 
 func _build_ground() -> void:
@@ -503,7 +510,7 @@ func _build_wilds() -> void:
 	rng.seed = 42
 	var placed := 0
 	var attempts := 0
-	while placed < 36 and attempts < 120:
+	while placed < 22 and attempts < 90:  # v1.86: thinner wilds prop ring
 		attempts += 1
 		var ang := rng.randf() * TAU
 		var rad := rng.randf_range(30.0, 44.0)
@@ -647,19 +654,15 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 		_mi(_sphere(1.15, 1.5), Vector3(0, trunk_h + 0.55, 0), canopy, _mats["leaf_willow"], "Leaves")
 		_mi(_sphere(0.55, 1.1), Vector3(-0.55, trunk_h + 0.05, 0.15), canopy, _mats["leaf_willow"], "WeepL")
 		_mi(_sphere(0.55, 1.1), Vector3(0.55, trunk_h + 0.05, -0.1), canopy, _mats["leaf_willow"], "WeepR")
-		_mi(_sphere(0.45, 0.95), Vector3(0.1, trunk_h - 0.15, 0.55), canopy, _mats["leaf_willow"], "WeepF")
-		_mi(_sphere(0.4, 0.85), Vector3(-0.05, trunk_h - 0.1, -0.5), canopy, _mats["leaf_alt"], "WeepB")
+		# v1.86: drop WeepF/WeepB lobes for Compatibility
 		canopy.set_meta("sway_phase", float(hash(str(pos)) % 1000) * 0.006283)
 		canopy.set_meta("sway_amp", 0.028)
 		_willow_sway_nodes.append(canopy)
 	else:
 		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
 		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
-		# v1.80 world: extra canopy lobes so trees read as foliage, not one green blob
+		# v1.86: one side lobe + shade (was 5 canopy pieces — heavy on Compatibility)
 		_mi(_sphere(0.62, 1.15), Vector3(-0.42, trunk_h + 0.28, 0.18), body, _mats["leaf_alt"], "LeavesL")
-		_mi(_sphere(0.58, 1.05), Vector3(0.38, trunk_h + 0.22, -0.16), body, leaf_mat, "LeavesR")
-		_mi(_sphere(0.48, 0.82), Vector3(0.08, trunk_h + 1.05, 0.22), body, _mats["leaf_alt"], "LeavesTop")
-		_mi(_sphere(0.72, 0.70), Vector3(0.0, trunk_h + 0.08, 0.0), body, _mats["grass_dark"], "LeavesUnder")
 		_mi(_cyl(1.15, 1.15, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
 		if style == 1:
 			_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
@@ -1091,7 +1094,7 @@ func _update_foe_lod_wake(delta: float) -> void:
 	if foes.is_empty():
 		return
 	var n: int = foes.size()
-	var batch: int = mini(12, n)
+	var batch: int = mini(6, n)  # v1.86: thinner wake — mesh rebuild costs more than sleep toggle
 	var px: float = player.global_position.x
 	var pz: float = player.global_position.z
 	var wake_r2: float = 26.0 * 26.0
@@ -2761,8 +2764,10 @@ func get_minimap_markers() -> Dictionary:
 	var foes: Array = []
 	var px0 := player.global_position.x if player else 0.0
 	var pz0 := player.global_position.z if player else 0.0
-	# v1.84 smooth: only plot foes near the player (minimap world radius is local)
+	# v1.84 / v1.86: only plot visible nearby foes (skip LOD-hidden early)
 	for e in get_tree().get_nodes_in_group("enemies"):
+		if bool(e.get("_lod_hidden")):
+			continue
 		if not (e.has_method("is_alive") and e.is_alive() and e.visible):
 			continue
 		var ex: float = e.global_position.x
@@ -4861,91 +4866,44 @@ func _play_quest_victory_sparkle(_quest_id: String = "") -> void:
 
 func _build_ambient_life() -> void:
 	## Wholesome birds / bugs / idle critters at wilds landmarks (headless-safe).
+	## v1.86: thinner site list + distance-gated particle emit (was 100 systems always on).
 	var root := Node3D.new()
 	root.name = "AmbientLife"
 	static_world.add_child(root)
 	_ambient_critters.clear()
+	_ambient_fx.clear()
 	if HeadlessGuard.is_headless():
 		return
 	var sites := [
 		# Village green / fountain plaza — denser ambient variety (Wave 18)
 		{"pos": Vector3(0.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(4.5, 0, 11.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-4.8, 0, 11.2), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(0.0, 0, 3.5), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(2.5, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		# Wave 24 denser plaza ambient
-		{"pos": Vector3(-2.2, 0, 14.8), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(6.8, 0, 9.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(-6.5, 0, 9.2), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
+		{"pos": Vector3(4.5, 0, 11.5), "birds": true, "bugs": false, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(-4.8, 0, 11.2), "birds": false, "bugs": true, "critter": "dragonfly", "dense": false},
+		{"pos": Vector3(9.0, 0, 7.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(-9.0, 0, 7.5), "birds": true, "bugs": false, "critter": "sparrow", "dense": false},
 		# Guild hall doorsteps — closer to plaza density (Wave 19)
-		{"pos": Vector3(22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-22.0, 0, 1.2), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(0.0, 0, -18.8), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(0.0, 0, 27.2), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(0.0, 0, -2.6), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		# Indoor hall dust-motes / soft moths (Interiors at x≈120+)
-		{"pos": Vector3(120.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(148.0, 0, 0.0), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(176.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(204.0, 0, 0.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(232.0, 0, 0.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		# Wilds spurs — denser ambient (Wave 19, plaza parity)
-		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(3.5, 0, -45.0), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-27.0, 0, -51.0), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(33.0, 0, 15.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(40.0, 0, 34.0), "birds": true, "bugs": false, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(37.0, 0, 31.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(-33.0, 0, 33.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		# Cedar Hollow (Wave 20)
-		{"pos": Vector3(38.0, 0, -36.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(41.0, 0, -33.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		# Willow Bend (Wave 21)
-		{"pos": Vector3(-38.0, 0, -34.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(-35.0, 0, -31.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		# Reed Pool (Wave 22)
-		{"pos": Vector3(-20.0, 0, 48.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(-17.0, 0, 45.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-23.0, 0, 50.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-41.0, 0, -36.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		# Quiet Cross (Wave 23)
-		{"pos": Vector3(48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		# Stone Arch (Wave 24)
-		{"pos": Vector3(-48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-45.0, 0, 10.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-51.0, 0, 5.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Amber Knoll (Wave 25)
-		{"pos": Vector3(48.0, 0, -22.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(45.0, 0, -19.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(51.0, 0, -24.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Birch Rest (Wave 26)
-		{"pos": Vector3(-42.0, 0, -20.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-39.0, 0, -17.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-45.0, 0, -22.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Fern Dell (Wave 27)
-		{"pos": Vector3(22.0, 0, 48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(19.0, 0, 45.5), "birds": false, "bugs": true, "critter": "dragonfly", "dense": true},
-		{"pos": Vector3(25.0, 0, 50.5), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		# Heather Heath (Wave 28)
-		{"pos": Vector3(-48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Thistle Rise (Wave 29)
-		{"pos": Vector3(48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(45.0, 0, 39.5), "birds": false, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(51.0, 0, 44.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Maple Copse (Wave 30)
-		{"pos": Vector3(-48.0, 0, -48.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": true},
-		{"pos": Vector3(-45.0, 0, -45.5), "birds": false, "bugs": true, "critter": "butterfly", "dense": true},
-		{"pos": Vector3(-51.0, 0, -50.5), "birds": true, "bugs": true, "critter": "dragonfly", "dense": true},
-		# Village yard animals — hens and lambs near the fountain (Wave 20)
+		{"pos": Vector3(22.0, 0, 1.2), "birds": true, "bugs": false, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(-22.0, 0, 1.2), "birds": false, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(0.0, 0, -18.8), "birds": false, "bugs": true, "critter": "dragonfly", "dense": false},
+		{"pos": Vector3(0.0, 0, 27.2), "birds": true, "bugs": false, "critter": "sparrow", "dense": false},
+		# Wilds spurs — one ambient site per landmark (v1.86 lighter; Wave 19 parity)
+		{"pos": Vector3(0.5, 0, -48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(-24.0, 0, -54.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(30.0, 0, 18.0), "birds": false, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(40.0, 0, 34.0), "birds": true, "bugs": false, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(-36.0, 0, 30.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": false},
+		{"pos": Vector3(38.0, 0, -36.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(-38.0, 0, -34.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": false},
+		{"pos": Vector3(-20.0, 0, 48.0), "birds": true, "bugs": true, "critter": "dragonfly", "dense": false},
+		{"pos": Vector3(48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(-48.0, 0, 8.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(48.0, 0, -22.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(-42.0, 0, -20.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(22.0, 0, 48.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(-48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "butterfly", "dense": false},
+		{"pos": Vector3(48.0, 0, 42.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		{"pos": Vector3(-48.0, 0, -48.0), "birds": true, "bugs": true, "critter": "sparrow", "dense": false},
+		# Village yard animals — hens and lambs near the fountain
 		{"pos": Vector3(6.5, 0, 5.0), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(-6.2, 0, 4.8), "birds": false, "bugs": false, "critter": "hen"},
 		{"pos": Vector3(8.0, 0, 12.5), "birds": false, "bugs": false, "critter": "lamb"},
@@ -4966,9 +4924,10 @@ func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = 
 	var p := CPUParticles3D.new()
 	p.name = "Birds_%d" % seed_n
 	p.position = pos
-	p.amount = 10 if dense else 6
+	p.amount = 4 if dense else 2  # v1.86: light bird budget
 	p.lifetime = 5.5
-	p.preprocess = 2.0
+	p.preprocess = 0.5
+	p.emitting = false  # distance-gated in _update_ambient_critters
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 	p.emission_box_extents = Vector3(5.5, 1.2, 5.5)
 	p.direction = Vector3(1, 0.05, 0.35)
@@ -4989,15 +4948,17 @@ func _add_bird_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = 
 	p.material_override = mat
 	parent.add_child(p)
 	HeadlessGuard.guard_particles(p)
+	_ambient_fx.append({"node": p, "base": pos})
 
 
 func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = false) -> void:
 	var p := CPUParticles3D.new()
 	p.name = "Bugs_%d" % seed_n
 	p.position = pos
-	p.amount = 16 if dense else 10
+	p.amount = 5 if dense else 3  # v1.86: light bug budget
 	p.lifetime = 3.2
-	p.preprocess = 1.5
+	p.preprocess = 0.4
+	p.emitting = false  # distance-gated in _update_ambient_critters
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
 	p.emission_sphere_radius = 2.4
 	p.direction = Vector3(0, 1, 0)
@@ -5019,6 +4980,7 @@ func _add_bug_particles(parent: Node, pos: Vector3, seed_n: int, dense: bool = f
 	p.material_override = mat
 	parent.add_child(p)
 	HeadlessGuard.guard_particles(p)
+	_ambient_fx.append({"node": p, "base": pos})
 
 
 func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) -> void:
@@ -5151,10 +5113,21 @@ func _add_idle_critter(parent: Node, pos: Vector3, kind: String, phase0: float) 
 
 
 func _update_ambient_critters(delta: float) -> void:
-	if _ambient_critters.is_empty():
-		return
 	var ppx := player.global_position.x if player else 0.0
 	var ppz := player.global_position.z if player else 0.0
+	# v1.86: only emit bird/bug particles near the apprentice (was always-on map-wide)
+	for fx in _ambient_fx:
+		var pn: CPUParticles3D = fx.get("node")
+		if pn == null or not is_instance_valid(pn):
+			continue
+		var fbase: Vector3 = fx.get("base", pn.position)
+		var fdx: float = fbase.x - ppx
+		var fdz: float = fbase.z - ppz
+		var near_fx: bool = fdx * fdx + fdz * fdz <= 22.0 * 22.0
+		pn.emitting = near_fx
+		pn.visible = near_fx
+	if _ambient_critters.is_empty():
+		return
 	for c in _ambient_critters:
 		var n: Node3D = c.get("node")
 		if n == null or not is_instance_valid(n):

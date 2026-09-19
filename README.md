@@ -6,6 +6,23 @@ Built with **Godot 4.3** + **GDScript**. **Weeks 1–36** (Campaigns I–IV, ful
 
 Reference quest/item data also lives in `/workspace/lumenstone-game/` (browser prototype) and curriculum notes in `/workspace/lumenstone-curriculum/` — this Godot project is the native desktop build.
 
+## Changelog highlights
+
+### v1.86.0-perf — runs lighter (less lag)
+
+Performance pass so the village and wilds feel smoother on family PCs (and software GL). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON and save keys unchanged.
+
+- **Far-foe mesh LOD** — wild creatures past ~42 paces stay mesh-free until you walk near (was ~11k MeshInstances always loaded)
+- **Ambient birds/bugs distance gate** — particle systems only emit near the apprentice (was ~100 always-on)
+- **Leaner polish** — thinner landmark FX budgets, staggered mentor idle, lighter minimap rebuild, soft-avoid skips sleeping foes
+- **Snappier feel** — fewer nodes ticking while you walk the green
+
+### v1.85.0 — live character customize
+
+Gender, hair styles, and a live character preview on the customize screen.
+
+### v1.84.6-minigames — Village Games recess
+
 ## Godot binary
 
 Official Godot **4.3.stable** Linux x86_64 (standard / GDScript):
@@ -226,6 +243,16 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.86.0-perf — runs lighter (less lag)
+
+Performance pass so the village and wilds feel smoother on family PCs (and software GL). PIN stays **1234**; mastery still ≥80%; no Day Cash; no new foes; quest JSON and save keys unchanged.
+
+- **Far-foe mesh LOD** — wild creatures past ~42 paces stay mesh-free until you walk near (was ~11k MeshInstances always loaded)
+- **Ambient birds/bugs distance gate** — particle systems only emit near the apprentice (was ~100 always-on)
+- **Low-poly Compatibility meshes** — spheres/cylinders use 8 radial segments (defaults were 64×32 and thrashed software GL)
+- **Leaner polish** — thinner landmark FX budgets, simpler tree canopies, staggered mentor idle, lighter minimap rebuild, soft-avoid skips sleeping foes
+- Re-export Linux + Windows when shipping a build
 
 ### v1.85.0-customize — live character wardrobe
 

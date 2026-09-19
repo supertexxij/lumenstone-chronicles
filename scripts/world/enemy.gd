@@ -27,10 +27,12 @@ var _was_warning: bool = false
 var _countdown_nudge: bool = false  # Wave 37: mid-telegraph countdown toast
 var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
 ## v1.84 smooth: distance LOD so 200+ wild foes do not burn CPU when off-screen
+## v1.86 perf: strip creature meshes while hidden — ~11k MeshInstances → village-local only
 const LOD_ANIM_DIST2 := 28.0 * 28.0
 const LOD_HIDE_DIST2 := 42.0 * 42.0
 var _cached_player: Node3D = null
 var _lod_hidden: bool = false
+var _mesh_built: bool = false
 
 @onready var mesh_root: Node3D = $MeshRoot
 var label: Label3D
@@ -55,11 +57,8 @@ func _ready() -> void:
 		hp_bar.mesh = box
 	if hp_bar:
 		HeadlessGuard.guard_mesh(hp_bar)
-	creature_bob = CreatureBuilder.build(kind, mesh_root)
-	var primary := Color(def.get("color", "#888888"))
-	var accent := Color(def.get("accent", "#aaaaaa"))
-	CreatureBuilder.colorize(creature_bob, primary, accent)
-	_base_scale = mesh_root.scale
+	# Defer CreatureBuilder until wake — far wilds stay mesh-free (v1.86 perf)
+	_base_scale = mesh_root.scale if mesh_root else Vector3.ONE
 	match kind:
 		"dust_golem":
 			if label: label.position.y = 2.4
@@ -167,9 +166,7 @@ func _ready() -> void:
 			if label: label.position.y = 1.8
 			hp_bar.position.y = 1.5
 	_update_hp_bar()
-	_ensure_telegraph()
-	_ensure_target_reticle()
-	_ensure_nav_obstacle()
+	# Telegraph / reticle / nav deferred until wake — far foes stay nearly empty (v1.86)
 	if GameState.has_signal("soft_combat_cleared") and not GameState.soft_combat_cleared.is_connected(clear_soft_aggro):
 		GameState.soft_combat_cleared.connect(clear_soft_aggro)
 	call_deferred("_try_initial_lod_sleep")
@@ -177,8 +174,36 @@ func _ready() -> void:
 
 func _try_initial_lod_sleep() -> void:
 	## Sleep immediately after spawn if the apprentice is far (cuts RVO load on boot).
+	## v1.86: far foes never build meshes until the player walks near.
 	if alive and not _player_near(LOD_HIDE_DIST2):
 		_set_lod_sleep(true)
+	else:
+		_ensure_creature_mesh()
+
+
+func _ensure_creature_mesh() -> void:
+	## Build limb mesh on first wake / near spawn (v1.86 perf).
+	if _mesh_built or mesh_root == null:
+		return
+	creature_bob = CreatureBuilder.build(kind, mesh_root)
+	var primary := Color(def.get("color", "#888888"))
+	var accent := Color(def.get("accent", "#aaaaaa"))
+	CreatureBuilder.colorize(creature_bob, primary, accent)
+	_base_scale = mesh_root.scale
+	_mesh_built = true
+
+
+func _strip_creature_mesh() -> void:
+	## Free far-foe meshes so 263 spawns do not keep ~8k MeshInstances alive (v1.86 perf).
+	if not _mesh_built or mesh_root == null:
+		return
+	for c in mesh_root.get_children():
+		mesh_root.remove_child(c)
+		c.free()
+	creature_bob = null
+	_kill_flash_base.clear()
+	_mesh_built = false
+
 
 func is_alive() -> bool:
 	return alive
@@ -191,20 +216,20 @@ func clear_soft_aggro() -> void:
 	_set_warning(false)
 
 func _ensure_nav_obstacle() -> void:
+	## v1.84.4: never feed NavigationServer RVO — player avoidance is off and
+	## hundreds of awake obstacles were still hitching click-move on family PCs.
+	## v1.86: skip creating NavObstacle nodes entirely (keep RVO obstacles off even when awake).
 	if get_node_or_null("NavObstacle") != null:
+		var existing := get_node_or_null("NavObstacle") as NavigationObstacle3D
+		if existing:
+			existing.avoidance_enabled = false
 		return
-	var obs := NavigationObstacle3D.new()
-	obs.name = "NavObstacle"
-	obs.radius = 0.5
-	obs.height = 1.5
-	# v1.84.4: never feed NavigationServer RVO — player avoidance is off and
-	# hundreds of awake obstacles were still hitching click-move on family PCs.
-	obs.avoidance_enabled = false
-	add_child(obs)
+	# Intentionally do not add NavigationObstacle3D — avoidance stays off.
 
 
 func _set_lod_sleep(sleep: bool) -> void:
 	## Fully sleep far foes so they do not stall player RVO / physics (v1.84.1).
+	## v1.86: also strip/rebuild creature meshes so hidden wilds cost almost no draw nodes.
 	_lod_hidden = sleep
 	visible = (not sleep) and alive
 	var col := get_node_or_null("CollisionShape3D") as CollisionShape3D
@@ -213,6 +238,21 @@ func _set_lod_sleep(sleep: bool) -> void:
 	var obs := get_node_or_null("NavObstacle") as NavigationObstacle3D
 	if obs:
 		obs.avoidance_enabled = false  # v1.84.4: keep RVO obstacles off even when awake
+	if sleep:
+		_strip_creature_mesh()
+		if hp_bar:
+			hp_bar.visible = false
+		if label:
+			label.visible = false
+	else:
+		_ensure_creature_mesh()
+		_ensure_telegraph()
+		_ensure_target_reticle()
+		_ensure_nav_obstacle()
+		if hp_bar:
+			hp_bar.visible = alive
+		if label:
+			label.visible = true
 	# Keep a physics tick while dissolving or waiting to respawn; otherwise sleep fully.
 	var need_tick := (not sleep) or _dissolve_t >= 0.0 or not alive
 	set_physics_process(need_tick)
