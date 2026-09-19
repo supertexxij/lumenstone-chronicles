@@ -89,6 +89,43 @@ func _ready() -> void:
 	# Cloud / agent demo: skip title when LUMEN_AUTO_CONTINUE=1 and a save exists
 	if str(OS.get_environment("LUMEN_AUTO_CONTINUE")).strip_edges() in ["1", "true", "yes"]:
 		call_deferred("_auto_continue_demo")
+	# Cloud / agent demo: open create-apprentice wardrobe (live 3D preview)
+	elif str(OS.get_environment("LUMEN_AUTO_CUSTOMIZE")).strip_edges() in ["1", "true", "yes"]:
+		call_deferred("_auto_customize_demo")
+	# Cycle gender/hair/colors for walkthrough recording
+	elif str(OS.get_environment("LUMEN_AUTO_CUSTOMIZE_DEMO")).strip_edges() in ["1", "true", "yes"]:
+		call_deferred("_auto_customize_walkthrough_demo")
+
+
+func _auto_customize_demo() -> void:
+	## Soft-open the create screen so agents can verify gender / hair / live preview.
+	if GameState.in_world:
+		return
+	title_screen.visible = false
+	_pending_new_slot = 2
+	customize_screen.open_new()
+	customize_screen.visible = true
+
+
+func _auto_customize_walkthrough_demo() -> void:
+	## Auto-cycle wardrobe options so a screen recording captures live preview updates.
+	_auto_customize_demo()
+	await get_tree().create_timer(1.2).timeout
+	if customize_screen.has_method("_cycle_gender"):
+		customize_screen.call("_cycle_gender", 1)  # Girl
+	await get_tree().create_timer(1.0).timeout
+	for _i in 5:
+		if customize_screen.has_method("_cycle_hair_style"):
+			customize_screen.call("_cycle_hair_style", 1)
+		await get_tree().create_timer(0.85).timeout
+	if customize_screen.hair_opt:
+		customize_screen.hair_opt.select(2)  # blonde
+		customize_screen.call("_refresh_preview")
+	await get_tree().create_timer(0.8).timeout
+	if customize_screen.outfit_opt:
+		customize_screen.outfit_opt.select(1)  # sky
+		customize_screen.call("_refresh_preview")
+	await get_tree().create_timer(1.2).timeout
 
 
 func _auto_continue_demo() -> void:
@@ -1051,6 +1088,7 @@ func _on_customize_done(p_name: String, appearance: Dictionary) -> void:
 		var nm := p_name.strip_edges()
 		GameState.child_name = nm if nm != "" else GameState.child_name
 		GameState.appearance = appearance
+		GameState.normalize_appearance()
 		GameState.save_game()
 		GameState.state_changed.emit()
 		_sync_ui_blocking()

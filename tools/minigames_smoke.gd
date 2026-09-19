@@ -40,7 +40,7 @@ func _initialize() -> void:
 	if "games_pressed" not in hud_src or "GamesBtn" not in hud_src:
 		print("FAIL_HUD")
 		ok = false
-	if 'config/version="1.84.6"' not in proj and 'config/version="1.84.0"' not in proj:
+	if 'config/version="1.85.0"' not in proj and 'config/version="1.84.6"' not in proj and 'config/version="1.84.0"' not in proj:
 		print("FAIL_VERSION")
 		ok = false
 

@@ -83,7 +83,14 @@ const CAPE_HEX := {"crimson":"#c1121f","azure":"#1d7a9c","emerald":"#2d6a4f","go
 const OUTFIT_HEX := {"cream":"#f4e4bc","sky":"#87b8d4","forest":"#4a7c59","sand":"#c2b280","rose":"#d4a0a0"}
 
 var child_name: String = "Apprentice"
-var appearance: Dictionary = {"hair":"brown","skin":"medium","cape_color":"crimson","outfit":"cream"}
+var appearance: Dictionary = {
+	"hair": "brown",
+	"skin": "medium",
+	"cape_color": "crimson",
+	"outfit": "cream",
+	"gender": "boy",
+	"hair_style": "short",
+}
 var xp: int = 0
 var level: int = 1
 var lumens: Dictionary = {"math":0,"la":0,"science":0,"history":0,"bible":0}
@@ -186,11 +193,35 @@ func _apply_starters() -> void:
 	if equipped.get("cape") == null:
 		equipped["cape"] = "default_cape"
 
+## Fill missing appearance keys for older saves (gender / hair style).
+func normalize_appearance() -> void:
+	if typeof(appearance) != TYPE_DICTIONARY:
+		appearance = {}
+	if not appearance.has("skin"):
+		appearance["skin"] = "medium"
+	if not appearance.has("hair"):
+		appearance["hair"] = "brown"
+	if not appearance.has("cape_color"):
+		appearance["cape_color"] = "crimson"
+	if not appearance.has("outfit"):
+		appearance["outfit"] = "cream"
+	var g := str(appearance.get("gender", "boy")).to_lower()
+	if g in ["girl", "female", "f"]:
+		appearance["gender"] = "girl"
+	else:
+		appearance["gender"] = "boy"
+	var hs := str(appearance.get("hair_style", "short")).to_lower()
+	var allowed := ["short", "tidy", "long", "bun", "pony", "spiky"]
+	if hs not in allowed:
+		hs = "short"
+	appearance["hair_style"] = hs
+
 func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void:
 	if slot >= 0:
 		active_slot = clampi(slot, 0, SLOT_COUNT - 1)
 	child_name = p_name if p_name.strip_edges() != "" else "Apprentice"
 	appearance = appearance_in.duplicate()
+	normalize_appearance()
 	slot_label = ""
 	consumable_charges = {}
 	consumable_cd = 0.0
@@ -472,6 +503,16 @@ func load_game(slot: int = -1) -> bool:
 	if child_name == "":
 		child_name = "Apprentice"
 	appearance = data.get("appearance", appearance)
+	if typeof(appearance) != TYPE_DICTIONARY:
+		appearance = {
+			"hair": "brown",
+			"skin": "medium",
+			"cape_color": "crimson",
+			"outfit": "cream",
+			"gender": "boy",
+			"hair_style": "short",
+		}
+	normalize_appearance()
 	xp = int(data.get("xp", 0))
 	level = int(data.get("level", 1))
 	lumens = data.get("lumens", lumens)

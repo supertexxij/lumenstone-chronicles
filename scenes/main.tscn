@@ -103,58 +103,113 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -240.0
-offset_right = 200.0
-offset_bottom = 240.0
+offset_left = -440.0
+offset_top = -340.0
+offset_right = 440.0
+offset_bottom = 340.0
 
-[node name="VBox" type="VBoxContainer" parent="UI/CustomizeScreen/Panel"]
+[node name="RootHBox" type="HBoxContainer" parent="UI/CustomizeScreen/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 18
 
-[node name="Title" type="Label" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="OptionsScroll" type="ScrollContainer" parent="UI/CustomizeScreen/Panel/RootHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBox" type="VBoxContainer" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Title" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "Create Your Apprentice"
 horizontal_alignment = 1
 
-[node name="NameEdit" type="LineEdit" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="NameEdit" type="LineEdit" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 placeholder_text = "Apprentice name"
 
-[node name="SkinLbl" type="Label" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="GenderLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
+layout_mode = 2
+text = "Boy or Girl"
+
+[node name="GenderRow" type="HBoxContainer" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GenderPrev" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/GenderRow"]
+layout_mode = 2
+text = "<"
+
+[node name="GenderValue" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/GenderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Boy"
+horizontal_alignment = 1
+
+[node name="GenderNext" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/GenderRow"]
+layout_mode = 2
+text = ">"
+
+[node name="HairStyleLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
+layout_mode = 2
+text = "Hair style"
+
+[node name="HairStyleRow" type="HBoxContainer" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HairStylePrev" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/HairStyleRow"]
+layout_mode = 2
+text = "<"
+
+[node name="HairStyleValue" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/HairStyleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Short"
+horizontal_alignment = 1
+
+[node name="HairStyleNext" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox/HairStyleRow"]
+layout_mode = 2
+text = ">"
+
+[node name="SkinLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 text = "Skin"
 
-[node name="SkinOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="SkinOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 
-[node name="HairLbl" type="Label" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="HairLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
-text = "Hair"
+text = "Hair color"
 
-[node name="HairOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="HairOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 
-[node name="CapeLbl" type="Label" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="CapeLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 text = "Cape color"
 
-[node name="CapeOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="CapeOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 
-[node name="OutfitLbl" type="Label" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="OutfitLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 text = "Outfit"
 
-[node name="OutfitOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="OutfitOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 
-[node name="OkBtn" type="Button" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="OkBtn" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 text = "Begin"
 
-[node name="CancelBtn" type="Button" parent="UI/CustomizeScreen/Panel/VBox"]
+[node name="CancelBtn" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/OptionsScroll/VBox"]
 layout_mode = 2
 text = "Cancel"
 
