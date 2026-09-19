@@ -170,7 +170,7 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 
 - Dense village green: fountain, path spokes/trim, trees, rocks/bushes, **barrels / fences / lanterns / benches / crates / flowers**, richer **5 guild halls** (porch, pillars, banners, chimneys)
 - NPCs for all five guilds with **Weeks 1–36** quests (curriculum-aligned, Campaigns I–IV / full year complete) + idle variety (sway / wave / look / shift)
-- Character customize (skin / hair / cape / outfit) with **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
+- Character customize (gender / hair style / skin / hair / cape / outfit) with **live 3D preview** and **humanoid** player mesh (face, elbows/knees, wider stance, visible equipped gear)
 - Inventory + equip slots (head, cape, accessory, weapon, belt) — **3D accessory + held weapon + cloak/armor overlays** when equipped
 - **Quest journal (J)** — **Next up** lesson, today’s school-day checkpoint, available/completed by week + progress toward next unlock
 - Quest unlock gear (plain names only)
@@ -226,6 +226,15 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Fountain **rest** clears soft combat / yellow pull and shows brief green HP regen ticks
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
+
+### v1.85.0-customize — live character wardrobe
+
+Better apprentice create / wardrobe: pick **Boy or Girl**, choose a **hair style**, and see a **live spinning 3D preview** while you adjust colors. Older saves default to boy + short hair. PIN stays **1234**; mastery still ≥80%.
+
+- Gender silhouette (shoulders / tunic hem) + hair styles: Short, Tidy, Long, Bun, Ponytail, Spiky
+- Live SubViewport preview beside the option list (create + in-world wardrobe)
+- Appearance keys `gender` / `hair_style` saved with the slot; `normalize_appearance()` fills older saves
+- Re-export Linux + Windows when shipping a build
 
 ### v1.84.6-minigames — Village Games recess
 

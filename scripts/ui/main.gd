@@ -1051,6 +1051,7 @@ func _on_customize_done(p_name: String, appearance: Dictionary) -> void:
 		var nm := p_name.strip_edges()
 		GameState.child_name = nm if nm != "" else GameState.child_name
 		GameState.appearance = appearance
+		GameState.normalize_appearance()
 		GameState.save_game()
 		GameState.state_changed.emit()
 		_sync_ui_blocking()

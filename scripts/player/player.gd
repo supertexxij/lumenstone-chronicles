@@ -232,11 +232,14 @@ func _on_nav_velocity_computed(safe_velocity: Vector3) -> void:
 func _apply_appearance() -> void:
 	if parts.is_empty():
 		return
-	var skin: Color = Color(str(GameState.SKIN_HEX.get(GameState.appearance.get("skin", "medium"), "#c68642")))
-	var hair: Color = Color(str(GameState.HAIR_HEX.get(GameState.appearance.get("hair", "brown"), "#5c4033")))
-	var outfit: Color = Color(str(GameState.OUTFIT_HEX.get(GameState.appearance.get("outfit", "cream"), "#f4e4bc")))
-	var cape_col: Color = Color(str(GameState.CAPE_HEX.get(GameState.appearance.get("cape_color", "crimson"), "#c1121f")))
+	var app: Dictionary = GameState.appearance
+	var skin: Color = Color(str(GameState.SKIN_HEX.get(app.get("skin", "medium"), "#c68642")))
+	var hair: Color = Color(str(GameState.HAIR_HEX.get(app.get("hair", "brown"), "#5c4033")))
+	var outfit: Color = Color(str(GameState.OUTFIT_HEX.get(app.get("outfit", "cream"), "#f4e4bc")))
+	var cape_col: Color = Color(str(GameState.CAPE_HEX.get(app.get("cape_color", "crimson"), "#c1121f")))
 	HumanoidBuilder.apply_human_colors(parts, skin, hair, outfit, cape_col)
+	HumanoidBuilder.apply_gender(parts, str(app.get("gender", "boy")))
+	HumanoidBuilder.apply_hair_style(parts, str(app.get("hair_style", "short")))
 
 	var cape_id = GameState.equipped.get("cape")
 	if cape_id != null:

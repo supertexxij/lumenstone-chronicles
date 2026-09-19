@@ -78,6 +78,18 @@ static func build(root: Node3D) -> Dictionary:
 	# Hair sits back so the face stays visible from the RuneScape camera.
 	var hair := _mi(_sphere(0.25, 0.34), Vector3(0, 1.86, -0.06), bob, "Hair")
 	var bangs := _mi(_box(Vector3(0.30, 0.10, 0.08)), Vector3(0, 1.88, 0.14), bob, "Bangs")
+	# Extra hair pieces for styles (toggled by apply_hair_style).
+	var hair_side_l := _mi(_sphere(0.11, 0.30), Vector3(-0.20, 1.68, -0.02), bob, "HairSideL")
+	var hair_side_r := _mi(_sphere(0.11, 0.30), Vector3(0.20, 1.68, -0.02), bob, "HairSideR")
+	var hair_bun := _mi(_sphere(0.11), Vector3(0, 2.02, -0.08), bob, "HairBun")
+	var hair_pony := _mi(_cyl(0.07, 0.045, 0.38), Vector3(0, 1.70, -0.30), bob, "HairPony")
+	hair_pony.rotation_degrees.x = 68.0
+	var hair_fringe := _mi(_box(Vector3(0.34, 0.12, 0.09)), Vector3(0, 1.90, 0.16), bob, "HairFringe")
+	hair_side_l.visible = false
+	hair_side_r.visible = false
+	hair_bun.visible = false
+	hair_pony.visible = false
+	hair_fringe.visible = false
 	var l_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(-0.34, 1.38, 0), bob, "LShoulder")
 	var r_shoulder := _mi(_box(Vector3(0.20, 0.17, 0.26)), Vector3(0.34, 1.38, 0), bob, "RShoulder")
 	# Face (eyes / brows / nose / mouth) — kid-readable, not a blank sphere.
@@ -211,6 +223,11 @@ static func build(root: Node3D) -> Dictionary:
 		"head": head,
 		"hair": hair,
 		"bangs": bangs,
+		"hair_side_l": hair_side_l,
+		"hair_side_r": hair_side_r,
+		"hair_bun": hair_bun,
+		"hair_pony": hair_pony,
+		"hair_fringe": hair_fringe,
 		"l_shoulder": l_shoulder,
 		"r_shoulder": r_shoulder,
 		"hat": hat,
@@ -278,6 +295,11 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("neck"), skin)
 	set_color(parts.get("hair"), hair)
 	set_color(parts.get("bangs"), hair.darkened(0.06))
+	set_color(parts.get("hair_side_l"), hair)
+	set_color(parts.get("hair_side_r"), hair)
+	set_color(parts.get("hair_bun"), hair.lightened(0.04))
+	set_color(parts.get("hair_pony"), hair.darkened(0.05))
+	set_color(parts.get("hair_fringe"), hair.darkened(0.04))
 	var pants := Color("#4a3a32")
 	set_color(parts.get("torso"), outfit)
 	set_color(parts.get("pelvis"), pants)
@@ -327,6 +349,112 @@ static func apply_human_colors(parts: Dictionary, skin: Color, hair: Color, outf
 	set_color(parts.get("chest_plate"), outfit.darkened(0.12))
 	set_color(parts.get("l_pad"), outfit.darkened(0.18))
 	set_color(parts.get("r_pad"), outfit.darkened(0.18))
+
+
+## Soft boy / girl silhouette: shoulders, torso, and tunic hem (skirt read for girl).
+static func apply_gender(parts: Dictionary, gender: String) -> void:
+	var is_girl: bool = str(gender).to_lower() in ["girl", "female", "f"]
+	var shoulder_scale := Vector3(0.90, 1.0, 0.95) if is_girl else Vector3(1.08, 1.02, 1.04)
+	var torso_scale := Vector3(0.95, 1.0, 0.97) if is_girl else Vector3(1.05, 1.0, 1.03)
+	for key in ["l_shoulder", "r_shoulder"]:
+		var s: MeshInstance3D = parts.get(key)
+		if s:
+			s.scale = shoulder_scale
+	var torso: MeshInstance3D = parts.get("torso")
+	if torso:
+		torso.scale = torso_scale
+	var collar: MeshInstance3D = parts.get("collar")
+	if collar:
+		collar.scale = Vector3(0.96, 1.0, 0.96) if is_girl else Vector3(1.04, 1.0, 1.04)
+	var hem: MeshInstance3D = parts.get("hem")
+	if hem:
+		if is_girl:
+			hem.scale = Vector3(1.22, 1.65, 1.25)
+			hem.position = Vector3(0, 0.66, 0.02)
+		else:
+			hem.scale = Vector3.ONE
+			hem.position = Vector3(0, 0.74, 0.02)
+	var pelvis: MeshInstance3D = parts.get("pelvis")
+	if pelvis:
+		pelvis.scale = Vector3(1.06, 1.0, 1.04) if is_girl else Vector3.ONE
+	# Store rest shoulder X so walk anim can lean without fighting gender.
+	var l_arm: Node3D = parts.get("l_arm")
+	var r_arm: Node3D = parts.get("r_arm")
+	if l_arm:
+		l_arm.position.x = -0.40 if is_girl else -0.44
+	if r_arm:
+		r_arm.position.x = 0.40 if is_girl else 0.44
+
+
+## Toggle hair mesh pieces into short / tidy / long / bun / pony / spiky styles.
+static func apply_hair_style(parts: Dictionary, style: String) -> void:
+	var hair: MeshInstance3D = parts.get("hair")
+	var bangs: MeshInstance3D = parts.get("bangs")
+	var side_l: MeshInstance3D = parts.get("hair_side_l")
+	var side_r: MeshInstance3D = parts.get("hair_side_r")
+	var bun: MeshInstance3D = parts.get("hair_bun")
+	var pony: MeshInstance3D = parts.get("hair_pony")
+	var fringe: MeshInstance3D = parts.get("hair_fringe")
+	for n in [side_l, side_r, bun, pony, fringe]:
+		if n:
+			n.visible = false
+			n.scale = Vector3.ONE
+	if hair:
+		hair.visible = true
+		hair.scale = Vector3.ONE
+		hair.position = Vector3(0, 1.86, -0.06)
+	if bangs:
+		bangs.visible = true
+		bangs.scale = Vector3.ONE
+		bangs.position = Vector3(0, 1.88, 0.14)
+	var key := str(style).to_lower()
+	match key:
+		"tidy":
+			if bangs:
+				bangs.visible = false
+			if hair:
+				hair.scale = Vector3(0.94, 0.88, 0.94)
+		"long":
+			if hair:
+				hair.scale = Vector3(1.18, 1.42, 1.22)
+				hair.position = Vector3(0, 1.76, -0.04)
+			if side_l:
+				side_l.visible = true
+				side_l.scale = Vector3(1.05, 1.25, 1.05)
+			if side_r:
+				side_r.visible = true
+				side_r.scale = Vector3(1.05, 1.25, 1.05)
+		"bun":
+			if bangs:
+				bangs.visible = false
+			if hair:
+				hair.scale = Vector3(0.90, 0.82, 0.90)
+			if bun:
+				bun.visible = true
+				bun.scale = Vector3(1.1, 1.1, 1.1)
+		"pony":
+			if hair:
+				hair.scale = Vector3(1.02, 1.08, 1.1)
+				hair.position = Vector3(0, 1.84, -0.08)
+			if bangs:
+				bangs.visible = true
+			if pony:
+				pony.visible = true
+		"spiky":
+			if bangs:
+				bangs.visible = true
+				bangs.scale = Vector3(0.65, 2.0, 0.65)
+				bangs.position = Vector3(0, 1.98, 0.04)
+			if fringe:
+				fringe.visible = true
+				fringe.scale = Vector3(0.55, 1.7, 0.55)
+				fringe.position = Vector3(0, 1.98, 0.10)
+			if hair:
+				hair.scale = Vector3(1.08, 1.2, 0.88)
+				hair.position = Vector3(0, 1.90, -0.04)
+		_:
+			# "short" and unknown → default sphere + bangs
+			pass
 
 
 static func apply_npc_colors(parts: Dictionary, accent: Color, skin: Color = Color("#c68642")) -> void:

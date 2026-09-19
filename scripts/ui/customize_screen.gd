@@ -3,20 +3,30 @@ extends Control
 signal confirmed(p_name: String, appearance: Dictionary)
 signal cancelled
 
-@onready var name_edit: LineEdit = $Panel/VBox/NameEdit
-@onready var skin_opt: OptionButton = $Panel/VBox/SkinOpt
-@onready var hair_opt: OptionButton = $Panel/VBox/HairOpt
-@onready var cape_opt: OptionButton = $Panel/VBox/CapeOpt
-@onready var outfit_opt: OptionButton = $Panel/VBox/OutfitOpt
-@onready var title_lbl: Label = $Panel/VBox/Title
-@onready var ok_btn: Button = $Panel/VBox/OkBtn
-@onready var cancel_btn: Button = $Panel/VBox/CancelBtn
+@onready var name_edit: LineEdit = $Panel/RootHBox/VBox/NameEdit
+@onready var gender_opt: OptionButton = $Panel/RootHBox/VBox/GenderOpt
+@onready var hair_style_opt: OptionButton = $Panel/RootHBox/VBox/HairStyleOpt
+@onready var skin_opt: OptionButton = $Panel/RootHBox/VBox/SkinOpt
+@onready var hair_opt: OptionButton = $Panel/RootHBox/VBox/HairOpt
+@onready var cape_opt: OptionButton = $Panel/RootHBox/VBox/CapeOpt
+@onready var outfit_opt: OptionButton = $Panel/RootHBox/VBox/OutfitOpt
+@onready var title_lbl: Label = $Panel/RootHBox/VBox/Title
+@onready var ok_btn: Button = $Panel/RootHBox/VBox/OkBtn
+@onready var cancel_btn: Button = $Panel/RootHBox/VBox/CancelBtn
 
 var wardrobe_mode: bool = false
 var _preview_row: HBoxContainer = null
 var _preview_pulse_tw: Tween = null  # Wave 52: wardrobe color preview pulse
 
 var _swatches: Dictionary = {}  # key -> ColorRect
+
+## Live 3D apprentice preview (SubViewport).
+var _preview_host: PanelContainer = null
+var _preview_viewport: SubViewport = null
+var _preview_root: Node3D = null
+var _preview_bob: Node3D = null
+var _preview_parts: Dictionary = {}
+var _preview_yaw: float = 0.0
 
 const SKIN_COLORS := {
 	"fair": Color("#f3d5b5"),
@@ -47,20 +57,58 @@ const OUTFIT_COLORS := {
 	"rose": Color("#e8b4b8"),
 }
 
+const GENDER_KEYS := ["boy", "girl"]
+const HAIR_STYLE_KEYS := ["short", "tidy", "long", "bun", "pony", "spiky"]
+const HAIR_STYLE_LABELS := {
+	"short": "Short",
+	"tidy": "Tidy",
+	"long": "Long",
+	"bun": "Bun",
+	"pony": "Ponytail",
+	"spiky": "Spiky",
+}
+
+
 func _ready() -> void:
 	PanelChrome.apply_overlay(self)
-	_fill(skin_opt, ["fair","light","medium","tan","deep"])
-	_fill(hair_opt, ["brown","black","blonde","auburn","gray"])
-	_fill(cape_opt, ["crimson","azure","emerald","gold","violet"])
-	_fill(outfit_opt, ["cream","sky","forest","sand","rose"])
+	_ensure_preview_host()
+	_fill(gender_opt, GENDER_KEYS)
+	_fill_labeled(hair_style_opt, HAIR_STYLE_KEYS, HAIR_STYLE_LABELS)
+	_fill(skin_opt, ["fair", "light", "medium", "tan", "deep"])
+	_fill(hair_opt, ["brown", "black", "blonde", "auburn", "gray"])
+	_fill(cape_opt, ["crimson", "azure", "emerald", "gold", "violet"])
+	_fill(outfit_opt, ["cream", "sky", "forest", "sand", "rose"])
 	ok_btn.pressed.connect(_on_ok)
 	cancel_btn.pressed.connect(_on_cancel)
+	gender_opt.item_selected.connect(func(_i): _refresh_preview())
+	hair_style_opt.item_selected.connect(func(_i): _refresh_preview())
 	skin_opt.item_selected.connect(func(_i): _refresh_preview())
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
 	outfit_opt.item_selected.connect(func(_i): _refresh_preview())
 	_ensure_preview_row()
 	_ensure_first_hint()
+	_build_character_preview()
+	_refresh_preview()
+	set_process(false)
+
+
+func _process(delta: float) -> void:
+	## Gentle turntable so gender / hair styles read from more than one angle.
+	if not visible or _preview_bob == null or not is_instance_valid(_preview_bob):
+		return
+	_preview_yaw += delta * 0.55
+	_preview_bob.rotation.y = _preview_yaw
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_VISIBILITY_CHANGED:
+		set_process(visible)
+		if visible and _preview_viewport:
+			_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+		elif _preview_viewport:
+			_preview_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+
 
 func _fill(opt: OptionButton, keys: Array) -> void:
 	opt.clear()
@@ -68,35 +116,52 @@ func _fill(opt: OptionButton, keys: Array) -> void:
 		opt.add_item(str(k).capitalize())
 		opt.set_item_metadata(opt.item_count - 1, k)
 
+
+func _fill_labeled(opt: OptionButton, keys: Array, labels: Dictionary) -> void:
+	opt.clear()
+	for k in keys:
+		opt.add_item(str(labels.get(k, str(k).capitalize())))
+		opt.set_item_metadata(opt.item_count - 1, k)
+
+
 func open_new() -> void:
 	wardrobe_mode = false
 	title_lbl.text = "Create Your Apprentice"
 	name_edit.text = ""
 	name_edit.editable = true
+	_select(gender_opt, "boy")
+	_select(hair_style_opt, "short")
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
 	_select(cape_opt, "crimson")
 	_select(outfit_opt, "cream")
+	_preview_yaw = 0.0
 	_refresh_preview()
 	_ensure_first_hint()
-	var hint: Label = get_node_or_null("Panel/VBox/FirstHint")
+	var hint: Label = get_node_or_null("Panel/RootHBox/VBox/FirstHint")
 	if hint:
 		hint.visible = true
+
 
 func open_wardrobe() -> void:
 	wardrobe_mode = true
 	title_lbl.text = "Wardrobe"
 	name_edit.text = GameState.child_name
 	name_edit.editable = true
+	GameState.normalize_appearance()
+	_select(gender_opt, GameState.appearance.get("gender", "boy"))
+	_select(hair_style_opt, GameState.appearance.get("hair_style", "short"))
 	_select(skin_opt, GameState.appearance.get("skin", "medium"))
 	_select(hair_opt, GameState.appearance.get("hair", "brown"))
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
 	_select(outfit_opt, GameState.appearance.get("outfit", "cream"))
+	_preview_yaw = 0.0
 	_refresh_preview()
 	_play_wardrobe_flourish()  # Wave 34: soft open flourish
-	var hint: Label = get_node_or_null("Panel/VBox/FirstHint")
+	var hint: Label = get_node_or_null("Panel/RootHBox/VBox/FirstHint")
 	if hint:
 		hint.visible = false
+
 
 func _select(opt: OptionButton, key: String) -> void:
 	for i in opt.item_count:
@@ -104,17 +169,115 @@ func _select(opt: OptionButton, key: String) -> void:
 			opt.select(i)
 			return
 
+
+func _ensure_preview_host() -> void:
+	var panel: PanelContainer = $Panel
+	var root: HBoxContainer = panel.get_node_or_null("RootHBox")
+	if root == null:
+		return
+	_preview_host = root.get_node_or_null("PreviewHost") as PanelContainer
+	if _preview_host != null:
+		return
+	_preview_host = PanelContainer.new()
+	_preview_host.name = "PreviewHost"
+	_preview_host.custom_minimum_size = Vector2(260, 360)
+	PanelChrome.apply_card(_preview_host)
+	root.add_child(_preview_host)
+	root.move_child(_preview_host, 0)
+
+
+func _build_character_preview() -> void:
+	_ensure_preview_host()
+	if _preview_host == null:
+		return
+	# Clear prior preview children (rebuild-safe).
+	for c in _preview_host.get_children():
+		_preview_host.remove_child(c)
+		c.free()
+	_preview_parts = {}
+	_preview_bob = null
+	_preview_root = null
+	_preview_viewport = null
+
+	var caption := Label.new()
+	caption.text = "Your apprentice"
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	PanelChrome.style_muted(caption, 12)
+
+	var svc := SubViewportContainer.new()
+	svc.name = "PreviewViewportContainer"
+	svc.stretch = true
+	svc.custom_minimum_size = Vector2(240, 320)
+	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_preview_viewport = SubViewport.new()
+	_preview_viewport.name = "CharacterPreview"
+	_preview_viewport.size = Vector2i(240, 320)
+	_preview_viewport.transparent_bg = true
+	_preview_viewport.handle_input_locally = false
+	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	svc.add_child(_preview_viewport)
+
+	var world := Node3D.new()
+	world.name = "PreviewWorld"
+	_preview_viewport.add_child(world)
+
+	var light := DirectionalLight3D.new()
+	light.rotation_degrees = Vector3(-42, 28, 0)
+	light.light_energy = 1.15
+	light.shadow_enabled = false
+	world.add_child(light)
+
+	var fill := OmniLight3D.new()
+	fill.position = Vector3(-1.2, 2.0, 1.6)
+	fill.light_color = Color(1.0, 0.95, 0.85)
+	fill.light_energy = 0.55
+	fill.omni_range = 6.0
+	world.add_child(fill)
+
+	var cam := Camera3D.new()
+	cam.fov = 32.0
+	cam.current = true
+	world.add_child(cam)
+	# Viewport is not in the tree yet — use look_at_from_position.
+	cam.look_at_from_position(Vector3(0.35, 1.45, 3.05), Vector3(0, 1.15, 0), Vector3.UP)
+
+	_preview_root = Node3D.new()
+	_preview_root.name = "PreviewMesh"
+	_preview_root.position = Vector3(0, 0, 0)
+	world.add_child(_preview_root)
+	_preview_parts = HumanoidBuilder.build(_preview_root)
+	_preview_bob = _preview_parts.get("bob") as Node3D
+
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 6)
+	col.add_child(caption)
+	col.add_child(svc)
+	_preview_host.add_child(col)
+
+
+func _current_appearance() -> Dictionary:
+	return {
+		"gender": gender_opt.get_selected_metadata(),
+		"hair_style": hair_style_opt.get_selected_metadata(),
+		"skin": skin_opt.get_selected_metadata(),
+		"hair": hair_opt.get_selected_metadata(),
+		"cape_color": cape_opt.get_selected_metadata(),
+		"outfit": outfit_opt.get_selected_metadata(),
+	}
+
+
 func _ensure_preview_row() -> void:
 	## Wave 25: chunky color swatches so wardrobe picks read before you confirm.
 	if _preview_row != null and is_instance_valid(_preview_row):
 		return
-	var vbox: VBoxContainer = $Panel/VBox
+	var vbox: VBoxContainer = $Panel/RootHBox/VBox
 	_preview_row = HBoxContainer.new()
 	_preview_row.name = "PreviewRow"
 	_preview_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_preview_row.add_theme_constant_override("separation", 10)
 	var note := Label.new()
-	note.text = "Preview"
+	note.text = "Colors"
 	note.modulate = Color(0.85, 0.88, 0.75, 1)
 	_preview_row.add_child(note)
 	for key in ["skin", "hair", "cape", "outfit"]:
@@ -145,19 +308,38 @@ func _ensure_preview_row() -> void:
 	vbox.add_child(_preview_row)
 	vbox.move_child(_preview_row, ok_i)
 
+
 func _refresh_preview() -> void:
 	_ensure_preview_row()
 	if _swatches.is_empty():
 		return
-	var skin_k: String = str(skin_opt.get_selected_metadata())
-	var hair_k: String = str(hair_opt.get_selected_metadata())
-	var cape_k: String = str(cape_opt.get_selected_metadata())
-	var outfit_k: String = str(outfit_opt.get_selected_metadata())
+	var app := _current_appearance()
+	var skin_k: String = str(app.get("skin", "medium"))
+	var hair_k: String = str(app.get("hair", "brown"))
+	var cape_k: String = str(app.get("cape_color", "crimson"))
+	var outfit_k: String = str(app.get("outfit", "cream"))
 	_swatches["skin"].color = SKIN_COLORS.get(skin_k, Color.WHITE)
 	_swatches["hair"].color = HAIR_COLORS.get(hair_k, Color.WHITE)
 	_swatches["cape"].color = CAPE_COLORS.get(cape_k, Color.WHITE)
 	_swatches["outfit"].color = OUTFIT_COLORS.get(outfit_k, Color.WHITE)
+	_apply_preview_mesh(app)
 	_play_wardrobe_preview_pulse()  # Wave 52: color preview pulse
+
+
+func _apply_preview_mesh(app: Dictionary) -> void:
+	if _preview_parts.is_empty():
+		return
+	var skin: Color = SKIN_COLORS.get(str(app.get("skin", "medium")), Color("#c68642"))
+	var hair: Color = HAIR_COLORS.get(str(app.get("hair", "brown")), Color("#5c4033"))
+	var outfit: Color = OUTFIT_COLORS.get(str(app.get("outfit", "cream")), Color("#f5f0e1"))
+	var cape_col: Color = CAPE_COLORS.get(str(app.get("cape_color", "crimson")), Color("#c1121f"))
+	HumanoidBuilder.apply_human_colors(_preview_parts, skin, hair, outfit, cape_col)
+	HumanoidBuilder.apply_gender(_preview_parts, str(app.get("gender", "boy")))
+	HumanoidBuilder.apply_hair_style(_preview_parts, str(app.get("hair_style", "short")))
+	var cape_mesh: MeshInstance3D = _preview_parts.get("cape")
+	if cape_mesh:
+		cape_mesh.visible = true
+
 
 func _play_wardrobe_preview_pulse() -> void:
 	## Wave 52: soft wardrobe color preview pulse — gentle cream scale bloom on swatches (RuneScape-chunky, wholesome).
@@ -173,13 +355,9 @@ func _play_wardrobe_preview_pulse() -> void:
 	_preview_pulse_tw.tween_property(_preview_row, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_preview_pulse_tw.tween_property(_preview_row, "modulate", Color(1, 1, 1, 1), 0.28)
 
+
 func _on_ok() -> void:
-	var app := {
-		"skin": skin_opt.get_selected_metadata(),
-		"hair": hair_opt.get_selected_metadata(),
-		"cape_color": cape_opt.get_selected_metadata(),
-		"outfit": outfit_opt.get_selected_metadata(),
-	}
+	var app := _current_appearance()
 	if wardrobe_mode:
 		_play_wardrobe_equip_sparkle()  # Wave 42: soft equip sparkle
 		_play_wardrobe_close_flourish(func():
@@ -208,6 +386,7 @@ func _play_wardrobe_flourish() -> void:
 	tw.set_parallel(true)
 	tw.tween_property(panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(panel, "modulate", Color(1, 1, 1, 1), 0.18)
+
 
 func _play_wardrobe_equip_sparkle() -> void:
 	## Wave 42: soft cream/gold wardrobe equip sparkle over the panel (RuneScape-chunky, wholesome).
@@ -255,8 +434,9 @@ func _play_wardrobe_equip_sparkle() -> void:
 			host.queue_free()
 	)
 
+
 func _ensure_first_hint() -> void:
-	var vbox: VBoxContainer = get_node_or_null("Panel/VBox")
+	var vbox: VBoxContainer = get_node_or_null("Panel/RootHBox/VBox")
 	if vbox == null:
 		return
 	if vbox.get_node_or_null("FirstHint") != null:
@@ -289,4 +469,3 @@ func _play_wardrobe_close_flourish(done: Callable) -> void:
 		panel.modulate = Color(1, 1, 1, 1)
 		done.call()
 	)
-
