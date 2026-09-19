@@ -991,7 +991,7 @@ func _initialize():
 	var main_tscn185 = _src("res://scenes/main.tscn")
 	print("CUSTOMIZE_GENDER_185", "GenderRow" in cust185 and "Boy or Girl" in main_tscn185 and '"gender"' in gs185)
 	print("CUSTOMIZE_HAIR_STYLE_185", "HairStyleRow" in cust185 and "apply_hair_style" in hum185 and "hair_style" in gs185 and "pony" in cust185 and "_cycle_hair_style" in cust185)
-	print("CUSTOMIZE_LIVE_PREVIEW_185", "_build_character_preview" in cust185 and "CharacterPreview" in cust185 and "PreviewHost" in cust185 and "SubViewport" in cust185)
+	print("CUSTOMIZE_LIVE_PREVIEW_185", "_build_character_preview" in cust185 and "CharacterPreview" in cust185 and "PreviewHost" in cust185 and "PreviewTexture" in cust185)
 	print("CUSTOMIZE_APPLY_185", "apply_gender" in hum185 and "apply_hair_style" in player185 and "normalize_appearance" in gs185)
 	print("PIN_STILL_1234_W185", "const DEFAULT_PIN := \"1234\"" in gs185 or 'DEFAULT_PIN := "1234"' in gs185)
 	print("MASTERY_80_W185", "MASTERY_PCT := 0.8" in gs185 or "0.8" in gs185)

@@ -50,7 +50,7 @@ func _initialize() -> void:
 		print("NORMALIZE_STYLE ", false)
 
 	var cust := _src("res://scripts/ui/customize_screen.gd")
-	print("PREVIEW_SRC ", "_build_character_preview" in cust and "look_at_from_position" in cust)
+	print("PREVIEW_SRC ", "_build_character_preview" in cust and "PreviewTexture" in cust and "PROJECTION_ORTHOGONAL" in cust)
 	print("GENDER_OPT_SRC ", "GenderRow" in cust and "HairStyleRow" in cust and "_cycle_hair_style" in cust)
 	mesh_root.queue_free()
 	print("CUSTOMIZE_SMOKE_OK")

@@ -23,6 +23,7 @@ func _initialize() -> void:
 	customize.visible = true
 	await process_frame
 	await process_frame
+	await create_timer(0.2).timeout
 	_shot("customize_01_boy_short.png")
 	print("SHOT_01")
 
@@ -70,3 +71,20 @@ func _shot(name: String) -> void:
 	var path := "%s/%s" % [OUT_DIR, name]
 	var err := img.save_png(path)
 	print("SAVE ", path, " ", err)
+	# Also dump the raw SubViewport so framing bugs are easy to spot.
+	var customize: Control = root.get_node_or_null("Main/UI/CustomizeScreen")
+	if customize == null:
+		# Main may be direct child depending on tree
+		for c in root.get_children():
+			var found = c.get_node_or_null("UI/CustomizeScreen")
+			if found:
+				customize = found
+				break
+	if customize and customize.get("_preview_viewport"):
+		var sv: SubViewport = customize.get("_preview_viewport")
+		if sv:
+			var vp_img: Image = sv.get_texture().get_image()
+			if vp_img:
+				var vp_path := "%s/vp_%s" % [OUT_DIR, name]
+				vp_img.save_png(vp_path)
+				print("SAVE_VP ", vp_path)

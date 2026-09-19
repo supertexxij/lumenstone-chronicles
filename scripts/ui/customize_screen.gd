@@ -3,20 +3,20 @@ extends Control
 signal confirmed(p_name: String, appearance: Dictionary)
 signal cancelled
 
-@onready var name_edit: LineEdit = $Panel/RootHBox/VBox/NameEdit
-@onready var gender_prev: Button = $Panel/RootHBox/VBox/GenderRow/GenderPrev
-@onready var gender_next: Button = $Panel/RootHBox/VBox/GenderRow/GenderNext
-@onready var gender_value: Label = $Panel/RootHBox/VBox/GenderRow/GenderValue
-@onready var hair_style_prev: Button = $Panel/RootHBox/VBox/HairStyleRow/HairStylePrev
-@onready var hair_style_next: Button = $Panel/RootHBox/VBox/HairStyleRow/HairStyleNext
-@onready var hair_style_value: Label = $Panel/RootHBox/VBox/HairStyleRow/HairStyleValue
-@onready var skin_opt: OptionButton = $Panel/RootHBox/VBox/SkinOpt
-@onready var hair_opt: OptionButton = $Panel/RootHBox/VBox/HairOpt
-@onready var cape_opt: OptionButton = $Panel/RootHBox/VBox/CapeOpt
-@onready var outfit_opt: OptionButton = $Panel/RootHBox/VBox/OutfitOpt
-@onready var title_lbl: Label = $Panel/RootHBox/VBox/Title
-@onready var ok_btn: Button = $Panel/RootHBox/VBox/OkBtn
-@onready var cancel_btn: Button = $Panel/RootHBox/VBox/CancelBtn
+@onready var name_edit: LineEdit = $Panel/RootHBox/OptionsScroll/VBox/NameEdit
+@onready var gender_prev: Button = $Panel/RootHBox/OptionsScroll/VBox/GenderRow/GenderPrev
+@onready var gender_next: Button = $Panel/RootHBox/OptionsScroll/VBox/GenderRow/GenderNext
+@onready var gender_value: Label = $Panel/RootHBox/OptionsScroll/VBox/GenderRow/GenderValue
+@onready var hair_style_prev: Button = $Panel/RootHBox/OptionsScroll/VBox/HairStyleRow/HairStylePrev
+@onready var hair_style_next: Button = $Panel/RootHBox/OptionsScroll/VBox/HairStyleRow/HairStyleNext
+@onready var hair_style_value: Label = $Panel/RootHBox/OptionsScroll/VBox/HairStyleRow/HairStyleValue
+@onready var skin_opt: OptionButton = $Panel/RootHBox/OptionsScroll/VBox/SkinOpt
+@onready var hair_opt: OptionButton = $Panel/RootHBox/OptionsScroll/VBox/HairOpt
+@onready var cape_opt: OptionButton = $Panel/RootHBox/OptionsScroll/VBox/CapeOpt
+@onready var outfit_opt: OptionButton = $Panel/RootHBox/OptionsScroll/VBox/OutfitOpt
+@onready var title_lbl: Label = $Panel/RootHBox/OptionsScroll/VBox/Title
+@onready var ok_btn: Button = $Panel/RootHBox/OptionsScroll/VBox/OkBtn
+@onready var cancel_btn: Button = $Panel/RootHBox/OptionsScroll/VBox/CancelBtn
 
 var wardrobe_mode: bool = false
 var _preview_row: HBoxContainer = null
@@ -184,7 +184,7 @@ func open_new() -> void:
 	_preview_yaw = 0.0
 	_refresh_preview()
 	_ensure_first_hint()
-	var hint: Label = get_node_or_null("Panel/RootHBox/VBox/FirstHint")
+	var hint: Label = get_node_or_null("Panel/RootHBox/OptionsScroll/VBox/FirstHint")
 	if hint:
 		hint.visible = true
 
@@ -204,7 +204,7 @@ func open_wardrobe() -> void:
 	_preview_yaw = 0.0
 	_refresh_preview()
 	_play_wardrobe_flourish()  # Wave 34: soft open flourish
-	var hint: Label = get_node_or_null("Panel/RootHBox/VBox/FirstHint")
+	var hint: Label = get_node_or_null("Panel/RootHBox/OptionsScroll/VBox/FirstHint")
 	if hint:
 		hint.visible = false
 
@@ -226,7 +226,10 @@ func _ensure_preview_host() -> void:
 		return
 	_preview_host = PanelContainer.new()
 	_preview_host.name = "PreviewHost"
-	_preview_host.custom_minimum_size = Vector2(260, 360)
+	# Fixed portrait card — do not stretch to the tall options column.
+	_preview_host.custom_minimum_size = Vector2(230, 380)
+	_preview_host.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_preview_host.clip_contents = false
 	PanelChrome.apply_card(_preview_host)
 	root.add_child(_preview_host)
 	root.move_child(_preview_host, 0)
@@ -250,19 +253,15 @@ func _build_character_preview() -> void:
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	PanelChrome.style_muted(caption, 12)
 
-	var svc := SubViewportContainer.new()
-	svc.name = "PreviewViewportContainer"
-	svc.stretch = true
-	svc.custom_minimum_size = Vector2(240, 320)
-	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
+	# Keep the SubViewport off the Control layout tree so a TextureRect can
+	# show the full portrait without SubViewportContainer clipping the boots.
 	_preview_viewport = SubViewport.new()
 	_preview_viewport.name = "CharacterPreview"
-	_preview_viewport.size = Vector2i(240, 320)
+	_preview_viewport.size = Vector2i(200, 320)
 	_preview_viewport.transparent_bg = true
 	_preview_viewport.handle_input_locally = false
 	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	svc.add_child(_preview_viewport)
+	add_child(_preview_viewport)
 
 	var world := Node3D.new()
 	world.name = "PreviewWorld"
@@ -282,24 +281,72 @@ func _build_character_preview() -> void:
 	world.add_child(fill)
 
 	var cam := Camera3D.new()
-	cam.fov = 32.0
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.keep_aspect = Camera3D.KEEP_HEIGHT
+	cam.size = 2.95
+	cam.near = 0.05
+	cam.far = 40.0
 	cam.current = true
 	world.add_child(cam)
-	# Viewport is not in the tree yet — use look_at_from_position.
-	cam.look_at_from_position(Vector3(0.35, 1.45, 3.05), Vector3(0, 1.15, 0), Vector3.UP)
+	cam.position = Vector3(0.0, 1.05, 6.0)
+	cam.rotation_degrees = Vector3(0.0, 0.0, 0.0)
 
 	_preview_root = Node3D.new()
 	_preview_root.name = "PreviewMesh"
-	_preview_root.position = Vector3(0, 0, 0)
+	# Raise into the portrait center so boots clear the card border.
+	_preview_root.position = Vector3(0, 0.85, 0)
+	_preview_root.scale = Vector3(0.42, 0.42, 0.42)
 	world.add_child(_preview_root)
 	_preview_parts = HumanoidBuilder.build(_preview_root)
 	_preview_bob = _preview_parts.get("bob") as Node3D
 
+	var ground := MeshInstance3D.new()
+	ground.name = "PreviewGround"
+	var disc := CylinderMesh.new()
+	disc.top_radius = 0.65
+	disc.bottom_radius = 0.65
+	disc.height = 0.04
+	ground.mesh = disc
+	ground.position = Vector3(0, -0.20, 0)  # below boot soles (~-0.10) so feet sit on top
+	var gmat := StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.48, 0.42, 0.30, 1.0)
+	gmat.roughness = 0.95
+	ground.material_override = gmat
+	HeadlessGuard.guard_mesh(ground)
+	_preview_root.add_child(ground)
+
+	var tr := TextureRect.new()
+	tr.name = "PreviewTexture"
+	tr.custom_minimum_size = Vector2(200, 320)
+	tr.expand_mode = TextureRect.EXPAND_KEEP_SIZE
+	tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	tr.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	tr.texture = _preview_viewport.get_texture()
+	tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	var col := VBoxContainer.new()
-	col.add_theme_constant_override("separation", 6)
+	col.add_theme_constant_override("separation", 4)
 	col.add_child(caption)
-	col.add_child(svc)
+	col.add_child(tr)
+	_preview_host.clip_contents = false
 	_preview_host.add_child(col)
+	call_deferred("_finalize_preview_camera", cam)
+
+
+func _finalize_preview_camera(cam: Camera3D) -> void:
+	## Re-assert ortho framing after SubViewport enters the scene tree.
+	if cam == null or not is_instance_valid(cam):
+		return
+	cam.projection = Camera3D.PROJECTION_ORTHOGONAL
+	cam.keep_aspect = Camera3D.KEEP_HEIGHT
+	cam.size = 2.95
+	cam.position = Vector3(0.0, 1.05, 6.0)
+	cam.rotation_degrees = Vector3(0.0, 0.0, 0.0)
+	cam.current = true
+	if _preview_viewport:
+		_preview_viewport.size = Vector2i(200, 320)
+		_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 
 
 func _current_appearance() -> Dictionary:
@@ -317,7 +364,7 @@ func _ensure_preview_row() -> void:
 	## Wave 25: chunky color swatches so wardrobe picks read before you confirm.
 	if _preview_row != null and is_instance_valid(_preview_row):
 		return
-	var vbox: VBoxContainer = $Panel/RootHBox/VBox
+	var vbox: VBoxContainer = $Panel/RootHBox/OptionsScroll/VBox
 	_preview_row = HBoxContainer.new()
 	_preview_row.name = "PreviewRow"
 	_preview_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -482,7 +529,7 @@ func _play_wardrobe_equip_sparkle() -> void:
 
 
 func _ensure_first_hint() -> void:
-	var vbox: VBoxContainer = get_node_or_null("Panel/RootHBox/VBox")
+	var vbox: VBoxContainer = get_node_or_null("Panel/RootHBox/OptionsScroll/VBox")
 	if vbox == null:
 		return
 	if vbox.get_node_or_null("FirstHint") != null:
@@ -491,8 +538,8 @@ func _ensure_first_hint() -> void:
 	hint.name = "FirstHint"
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.text = "After this you’ll stand by the fountain. Press J for Journal — it shows your next lesson. Talk to Steward Guide (gold hall) and press F."
-	PanelChrome.style_muted(hint, 13)
+	hint.text = "Next: stand by the fountain, press J for Journal, then talk to Steward Guide (gold hall) with F."
+	PanelChrome.style_muted(hint, 12)
 	vbox.add_child(hint)
 	var ok_n: Node = vbox.get_node_or_null("OkBtn")
 	if ok_n:

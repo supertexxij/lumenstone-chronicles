@@ -115,10 +115,14 @@ static func apply_overlay(root: Control) -> void:
 	var vbox: VBoxContainer = root.get_node_or_null("Panel/VBox")
 	if vbox == null:
 		vbox = root.get_node_or_null("Panel/RootHBox/VBox")
+	if vbox == null:
+		vbox = root.get_node_or_null("Panel/RootHBox/OptionsScroll/VBox")
 	if vbox:
 		pad_vbox(vbox, 10)
 	var title: Label = root.get_node_or_null("Panel/VBox/Title")
 	if title == null:
 		title = root.get_node_or_null("Panel/RootHBox/VBox/Title")
+	if title == null:
+		title = root.get_node_or_null("Panel/RootHBox/OptionsScroll/VBox/Title")
 	if title:
 		style_title(title)
