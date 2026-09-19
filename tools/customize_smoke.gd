@@ -51,7 +51,7 @@ func _initialize() -> void:
 
 	var cust := _src("res://scripts/ui/customize_screen.gd")
 	print("PREVIEW_SRC ", "_build_character_preview" in cust and "look_at_from_position" in cust)
-	print("GENDER_OPT_SRC ", "GenderOpt" in cust and "HairStyleOpt" in cust)
+	print("GENDER_OPT_SRC ", "GenderRow" in cust and "HairStyleRow" in cust and "_cycle_hair_style" in cust)
 	mesh_root.queue_free()
 	print("CUSTOMIZE_SMOKE_OK")
 	quit(0)

@@ -4,8 +4,12 @@ signal confirmed(p_name: String, appearance: Dictionary)
 signal cancelled
 
 @onready var name_edit: LineEdit = $Panel/RootHBox/VBox/NameEdit
-@onready var gender_opt: OptionButton = $Panel/RootHBox/VBox/GenderOpt
-@onready var hair_style_opt: OptionButton = $Panel/RootHBox/VBox/HairStyleOpt
+@onready var gender_prev: Button = $Panel/RootHBox/VBox/GenderRow/GenderPrev
+@onready var gender_next: Button = $Panel/RootHBox/VBox/GenderRow/GenderNext
+@onready var gender_value: Label = $Panel/RootHBox/VBox/GenderRow/GenderValue
+@onready var hair_style_prev: Button = $Panel/RootHBox/VBox/HairStyleRow/HairStylePrev
+@onready var hair_style_next: Button = $Panel/RootHBox/VBox/HairStyleRow/HairStyleNext
+@onready var hair_style_value: Label = $Panel/RootHBox/VBox/HairStyleRow/HairStyleValue
 @onready var skin_opt: OptionButton = $Panel/RootHBox/VBox/SkinOpt
 @onready var hair_opt: OptionButton = $Panel/RootHBox/VBox/HairOpt
 @onready var cape_opt: OptionButton = $Panel/RootHBox/VBox/CapeOpt
@@ -19,6 +23,8 @@ var _preview_row: HBoxContainer = null
 var _preview_pulse_tw: Tween = null  # Wave 52: wardrobe color preview pulse
 
 var _swatches: Dictionary = {}  # key -> ColorRect
+var _gender_idx: int = 0
+var _hair_style_idx: int = 0
 
 ## Live 3D apprentice preview (SubViewport).
 var _preview_host: PanelContainer = null
@@ -58,6 +64,7 @@ const OUTFIT_COLORS := {
 }
 
 const GENDER_KEYS := ["boy", "girl"]
+const GENDER_LABELS := {"boy": "Boy", "girl": "Girl"}
 const HAIR_STYLE_KEYS := ["short", "tidy", "long", "bun", "pony", "spiky"]
 const HAIR_STYLE_LABELS := {
 	"short": "Short",
@@ -70,18 +77,24 @@ const HAIR_STYLE_LABELS := {
 
 
 func _ready() -> void:
+	z_index = 40  # Draw above HUD so wardrobe is not covered
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	PanelChrome.apply_overlay(self)
 	_ensure_preview_host()
-	_fill(gender_opt, GENDER_KEYS)
-	_fill_labeled(hair_style_opt, HAIR_STYLE_KEYS, HAIR_STYLE_LABELS)
 	_fill(skin_opt, ["fair", "light", "medium", "tan", "deep"])
 	_fill(hair_opt, ["brown", "black", "blonde", "auburn", "gray"])
 	_fill(cape_opt, ["crimson", "azure", "emerald", "gold", "violet"])
 	_fill(outfit_opt, ["cream", "sky", "forest", "sand", "rose"])
 	ok_btn.pressed.connect(_on_ok)
 	cancel_btn.pressed.connect(_on_cancel)
-	gender_opt.item_selected.connect(func(_i): _refresh_preview())
-	hair_style_opt.item_selected.connect(func(_i): _refresh_preview())
+	gender_prev.pressed.connect(func(): _cycle_gender(-1))
+	gender_next.pressed.connect(func(): _cycle_gender(1))
+	hair_style_prev.pressed.connect(func(): _cycle_hair_style(-1))
+	hair_style_next.pressed.connect(func(): _cycle_hair_style(1))
+	PanelChrome.style_button(gender_prev, false)
+	PanelChrome.style_button(gender_next, false)
+	PanelChrome.style_button(hair_style_prev, false)
+	PanelChrome.style_button(hair_style_next, false)
 	skin_opt.item_selected.connect(func(_i): _refresh_preview())
 	hair_opt.item_selected.connect(func(_i): _refresh_preview())
 	cape_opt.item_selected.connect(func(_i): _refresh_preview())
@@ -89,6 +102,7 @@ func _ready() -> void:
 	_ensure_preview_row()
 	_ensure_first_hint()
 	_build_character_preview()
+	_sync_cycle_labels()
 	_refresh_preview()
 	set_process(false)
 
@@ -117,11 +131,43 @@ func _fill(opt: OptionButton, keys: Array) -> void:
 		opt.set_item_metadata(opt.item_count - 1, k)
 
 
-func _fill_labeled(opt: OptionButton, keys: Array, labels: Dictionary) -> void:
-	opt.clear()
-	for k in keys:
-		opt.add_item(str(labels.get(k, str(k).capitalize())))
-		opt.set_item_metadata(opt.item_count - 1, k)
+func _cycle_gender(dir: int) -> void:
+	AudioBus.play_ui()
+	_gender_idx = (_gender_idx + dir) % GENDER_KEYS.size()
+	if _gender_idx < 0:
+		_gender_idx = GENDER_KEYS.size() - 1
+	_sync_cycle_labels()
+	_refresh_preview()
+
+
+func _cycle_hair_style(dir: int) -> void:
+	AudioBus.play_ui()
+	_hair_style_idx = (_hair_style_idx + dir) % HAIR_STYLE_KEYS.size()
+	if _hair_style_idx < 0:
+		_hair_style_idx = HAIR_STYLE_KEYS.size() - 1
+	_sync_cycle_labels()
+	_refresh_preview()
+
+
+func _sync_cycle_labels() -> void:
+	var gkey: String = str(GENDER_KEYS[_gender_idx])
+	gender_value.text = str(GENDER_LABELS.get(gkey, gkey.capitalize()))
+	var hkey: String = str(HAIR_STYLE_KEYS[_hair_style_idx])
+	hair_style_value.text = str(HAIR_STYLE_LABELS.get(hkey, hkey.capitalize()))
+
+
+func _set_gender_key(key: String) -> void:
+	var k := str(key).to_lower()
+	var idx := GENDER_KEYS.find(k)
+	_gender_idx = idx if idx >= 0 else 0
+	_sync_cycle_labels()
+
+
+func _set_hair_style_key(key: String) -> void:
+	var k := str(key).to_lower()
+	var idx := HAIR_STYLE_KEYS.find(k)
+	_hair_style_idx = idx if idx >= 0 else 0
+	_sync_cycle_labels()
 
 
 func open_new() -> void:
@@ -129,8 +175,8 @@ func open_new() -> void:
 	title_lbl.text = "Create Your Apprentice"
 	name_edit.text = ""
 	name_edit.editable = true
-	_select(gender_opt, "boy")
-	_select(hair_style_opt, "short")
+	_set_gender_key("boy")
+	_set_hair_style_key("short")
 	_select(skin_opt, "medium")
 	_select(hair_opt, "brown")
 	_select(cape_opt, "crimson")
@@ -149,8 +195,8 @@ func open_wardrobe() -> void:
 	name_edit.text = GameState.child_name
 	name_edit.editable = true
 	GameState.normalize_appearance()
-	_select(gender_opt, GameState.appearance.get("gender", "boy"))
-	_select(hair_style_opt, GameState.appearance.get("hair_style", "short"))
+	_set_gender_key(str(GameState.appearance.get("gender", "boy")))
+	_set_hair_style_key(str(GameState.appearance.get("hair_style", "short")))
 	_select(skin_opt, GameState.appearance.get("skin", "medium"))
 	_select(hair_opt, GameState.appearance.get("hair", "brown"))
 	_select(cape_opt, GameState.appearance.get("cape_color", "crimson"))
@@ -258,8 +304,8 @@ func _build_character_preview() -> void:
 
 func _current_appearance() -> Dictionary:
 	return {
-		"gender": gender_opt.get_selected_metadata(),
-		"hair_style": hair_style_opt.get_selected_metadata(),
+		"gender": GENDER_KEYS[_gender_idx],
+		"hair_style": HAIR_STYLE_KEYS[_hair_style_idx],
 		"skin": skin_opt.get_selected_metadata(),
 		"hair": hair_opt.get_selected_metadata(),
 		"cape_color": cape_opt.get_selected_metadata(),

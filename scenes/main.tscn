@@ -131,15 +131,45 @@ placeholder_text = "Apprentice name"
 layout_mode = 2
 text = "Boy or Girl"
 
-[node name="GenderOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
+[node name="GenderRow" type="HBoxContainer" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GenderPrev" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/GenderRow"]
+layout_mode = 2
+text = "<"
+
+[node name="GenderValue" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/GenderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Boy"
+horizontal_alignment = 1
+
+[node name="GenderNext" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/GenderRow"]
+layout_mode = 2
+text = ">"
 
 [node name="HairStyleLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
 layout_mode = 2
 text = "Hair style"
 
-[node name="HairStyleOpt" type="OptionButton" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
+[node name="HairStyleRow" type="HBoxContainer" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HairStylePrev" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/HairStyleRow"]
+layout_mode = 2
+text = "<"
+
+[node name="HairStyleValue" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/HairStyleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Short"
+horizontal_alignment = 1
+
+[node name="HairStyleNext" type="Button" parent="UI/CustomizeScreen/Panel/RootHBox/VBox/HairStyleRow"]
+layout_mode = 2
+text = ">"
 
 [node name="SkinLbl" type="Label" parent="UI/CustomizeScreen/Panel/RootHBox/VBox"]
 layout_mode = 2
