@@ -54,6 +54,7 @@ const ONCE_TOAST_FLAGS := [
 	"seen_refine_181_toast",
 	"seen_bugs_182_toast",
 	"seen_curriculum_183_toast",
+	"seen_minigames_184_toast",
 	"seen_smooth_184_toast",
 ]
 
@@ -128,6 +129,11 @@ var seen_refine_178_toast: bool = false  # v1.78 refine: once-per-save look/HUD/
 var seen_refine_181_toast: bool = false  # v1.81 UI: once-per-save menus/HUD/Parent tip
 var seen_bugs_182_toast: bool = false  # v1.82 bugs: once-per-save Esc/one-menu tip
 var seen_curriculum_183_toast: bool = false  # v1.83 curriculum: first-session / next-lesson tip
+var seen_minigames_184_toast: bool = false  # v1.84 minigames: Village Games tip
+var minigame_scores: Dictionary = {"lantern": 0, "wisp": 0, "facts": 0}
+var minigame_xp_date: String = ""
+var minigame_xp_today: int = 0
+const MINIGAME_XP_DAILY_CAP := 6
 var seen_smooth_184_toast: bool = false  # v1.84 smooth: once-per-save snappier-village tip
 var _low_hp_toast_armed: bool = true  # Wave 67: clearer low-HP toast (re-arm when HP recovers)
 var journal_open_only: bool = false  # Wave 62: persist journal Open-only toggle
@@ -215,6 +221,9 @@ func new_game(p_name: String, appearance_in: Dictionary, slot: int = -1) -> void
 	discovered_landmarks = []
 	last_travel_label = ""
 	favorite_landmark = ""
+	minigame_scores = {"lantern": 0, "wisp": 0, "facts": 0}
+	minigame_xp_date = ""
+	minigame_xp_today = 0
 	hp = 40
 	max_hp = 40
 	_apply_starters()
@@ -424,6 +433,9 @@ func save_game() -> void:
 		"slot_label": slot_label,
 		"consumable_charges": consumable_charges,
 		"hp": hp,
+		"minigame_scores": minigame_scores,
+		"minigame_xp_date": minigame_xp_date,
+		"minigame_xp_today": minigame_xp_today,
 		"save_version": 3,
 	}
 	_write_once_toasts(data)
@@ -507,6 +519,7 @@ func load_game(slot: int = -1) -> bool:
 	consumable_charges = data.get("consumable_charges", {})
 	if typeof(consumable_charges) != TYPE_DICTIONARY:
 		consumable_charges = {}
+	_load_minigame_scores(data)
 	consumable_cd = 0.0
 	_ensure_pantry_defaults()
 	_recalc_unlocked_week()
@@ -949,6 +962,11 @@ func maybe_curriculum_183_toast() -> bool:
 	return _maybe_once_toast("seen_curriculum_183_toast", msg)
 
 
+func maybe_minigames_184_toast() -> bool:
+	## v1.84 minigames: Village Games tip (PIN stays 1234; mastery ≥80%).
+	return _maybe_once_toast("seen_minigames_184_toast", "Village Games are open — Lantern Catch, Wisp Pop, and Fact Dash. Tap Games for a colorful recess.")
+
+
 func maybe_smooth_184_toast() -> bool:
 	## v1.84 smooth: once-per-save tip (PIN stays 1234; mastery ≥80%).
 	return _maybe_once_toast("seen_smooth_184_toast", "Village feels snappier — quicker walk, faster combat ticks, lighter wilds load.")
@@ -957,9 +975,67 @@ func maybe_smooth_184_toast() -> bool:
 func quiet_legacy_polish_toasts() -> void:
 	## New / early saves should not replay Wave 50–77 polish tips (first session stays about lessons).
 	for f in ONCE_TOAST_FLAGS:
-		if str(f) in ["seen_curriculum_183_toast", "seen_smooth_184_toast"]:
+		if str(f) in ["seen_curriculum_183_toast", "seen_minigames_184_toast", "seen_smooth_184_toast"]:
 			continue
 		set(f, true)
+
+
+func _today_key() -> String:
+	var dt := Time.get_datetime_dict_from_system()
+	return "%04d-%02d-%02d" % [int(dt.get("year", 0)), int(dt.get("month", 0)), int(dt.get("day", 0))]
+
+
+func _load_minigame_scores(data: Dictionary) -> void:
+	minigame_scores = {"lantern": 0, "wisp": 0, "facts": 0}
+	var raw = data.get("minigame_scores", {})
+	if typeof(raw) == TYPE_DICTIONARY:
+		for k in ["lantern", "wisp", "facts"]:
+			minigame_scores[k] = int(raw.get(k, 0))
+		# Legacy saves that stored Virtue Match as "match"
+		if int(raw.get("match", 0)) > int(minigame_scores.get("wisp", 0)) and int(raw.get("wisp", 0)) == 0:
+			minigame_scores["wisp"] = int(raw.get("match", 0))
+	minigame_xp_date = str(data.get("minigame_xp_date", ""))
+	minigame_xp_today = int(data.get("minigame_xp_today", 0))
+
+
+func get_minigame_best(game_id: String) -> int:
+	return int(minigame_scores.get(game_id, 0))
+
+
+func record_minigame_score(game_id: String, score: int) -> Dictionary:
+	## Persist best score; award tiny XP only on a new personal best (daily cap).
+	## PIN stays 1234; mastery still ≥80%; no Day Cash.
+	var id := str(game_id)
+	if id not in minigame_scores:
+		minigame_scores[id] = 0
+	var prev: int = int(minigame_scores.get(id, 0))
+	var new_best: bool = score > prev
+	if new_best:
+		minigame_scores[id] = score
+	var xp_awarded := 0
+	if new_best and score > 0:
+		var today := _today_key()
+		if minigame_xp_date != today:
+			minigame_xp_date = today
+			minigame_xp_today = 0
+		var room: int = maxi(0, MINIGAME_XP_DAILY_CAP - minigame_xp_today)
+		xp_awarded = mini(2, room)
+		if xp_awarded > 0:
+			add_xp(xp_awarded)
+			minigame_xp_today += xp_awarded
+			toast.emit("New Village Games best · +%d XP" % xp_awarded)
+		else:
+			toast.emit("New Village Games best ★")
+	elif new_best:
+		toast.emit("New Village Games best ★")
+	state_changed.emit()
+	save_game()
+	return {
+		"best": int(minigame_scores.get(id, score)),
+		"new_best": new_best,
+		"xp_awarded": xp_awarded,
+		"score": score,
+	}
 
 
 func is_early_curriculum_save() -> bool:

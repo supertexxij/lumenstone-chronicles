@@ -8,6 +8,7 @@ signal mute_pressed
 signal weather_pressed
 signal travel_pressed
 signal saves_pressed
+signal games_pressed
 
 @onready var name_lbl: Label = $TopBar/NameLbl
 @onready var xp_lbl: Label = $TopBar/XpLbl
@@ -26,6 +27,7 @@ var _food_bread_low: bool = false  # Wave 71: pantry Bread N/M flashes when low
 @onready var travel_btn: Button = $BottomBar/TravelBtn
 @onready var parent_btn: Button = $BottomBar/ParentBtn
 @onready var saves_btn: Button = $BottomBar/SavesBtn
+var games_btn: Button
 @onready var hint_lbl: Label = $Hint
 @onready var compass: Control = $Compass
 @onready var compass_needle: Label = $Compass/Needle
@@ -75,6 +77,7 @@ func _ready() -> void:
 	if travel_btn:
 		travel_btn.pressed.connect(func(): AudioBus.play_ui(); travel_pressed.emit())
 	parent_btn.pressed.connect(func(): AudioBus.play_ui(); parent_pressed.emit())
+	_ensure_games_btn()
 	if saves_btn == null:
 		saves_btn = Button.new()
 		saves_btn.name = "SavesBtn"
@@ -89,7 +92,7 @@ func _ready() -> void:
 	_ensure_foe_count()
 	_ensure_fav_paces()
 	# Full travel-key list (shown in Travel, not on the HUD): n glade · b ridge · g garden · l lookout · k mill · o hollow · p willow · y reed · u cross · x arch · z knoll · 6 birch · 7 fern · 8 heather · 9 thistle · 0 maple · 1–5 halls
-	hint_lbl.text = "I bag · J journal (next lesson) · T travel · V eat · Esc closes · Parent for grown-ups"
+	hint_lbl.text = "I bag · J journal · T travel · ; Games · V eat · Esc closes · Parent for grown-ups"
 	_style_compact_hud()
 	if minimap:
 		minimap.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -144,6 +147,31 @@ func _refresh_mute_label() -> void:
 		mute_btn.remove_theme_color_override("font_color")
 		mute_btn.tooltip_text = "Mute sound (M)"
 
+
+func _ensure_games_btn() -> void:
+	## v1.84: Village Games recess hub on the bottom bar.
+	if games_btn != null and is_instance_valid(games_btn):
+		return
+	var existing: Button = $BottomBar.get_node_or_null("GamesBtn")
+	if existing:
+		games_btn = existing
+	else:
+		games_btn = Button.new()
+		games_btn.name = "GamesBtn"
+		games_btn.text = "Games"
+		$BottomBar.add_child(games_btn)
+		var insert_at: int = travel_btn.get_index() + 1 if travel_btn else 0
+		$BottomBar.move_child(games_btn, insert_at)
+	games_btn.tooltip_text = "Village Games — Lantern Catch, Wisp Pop, Fact Dash"
+	if not games_btn.pressed.is_connected(_on_games_pressed):
+		games_btn.pressed.connect(_on_games_pressed)
+
+
+func _on_games_pressed() -> void:
+	AudioBus.play_ui()
+	games_pressed.emit()
+
+
 func _style_compact_hud() -> void:
 	## v1.81 UI: quieter top bar so HP / food / year read first.
 	if name_lbl:
@@ -166,6 +194,9 @@ func _style_compact_hud() -> void:
 	if travel_btn:
 		travel_btn.text = "Travel (T)"
 		travel_btn.tooltip_text = "Open Travel. Letter keys (H Fountain, P Willow) work after this menu is closed — or from the list."
+	if games_btn:
+		games_btn.text = "Games (;)"
+		games_btn.tooltip_text = "Village Games — fun recess between lessons (; or ')"
 	if weather_btn:
 		weather_btn.text = "Weather (R)"
 	if parent_btn:

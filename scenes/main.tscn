@@ -247,6 +247,10 @@ text = "Weather (R)"
 layout_mode = 2
 text = "Travel (T)"
 
+[node name="GamesBtn" type="Button" parent="UI/HUD/BottomBar"]
+layout_mode = 2
+text = "Games"
+
 [node name="SavesBtn" type="Button" parent="UI/HUD/BottomBar"]
 layout_mode = 2
 text = "Saves"
