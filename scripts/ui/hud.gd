@@ -281,8 +281,8 @@ func _process(delta: float) -> void:
 			refresh()
 	if not visible or _world == null:
 		return
-	# v1.84 smooth: rebuild full minimap payload every other frame; keep yaw live
-	_hud_tick = (_hud_tick + 1) % 2
+	# v1.86: rebuild minimap payload every 4 frames; keep yaw/pos live
+	_hud_tick = (_hud_tick + 1) % 4
 	if _hud_tick == 0 or _map_data.is_empty():
 		if _world.has_method("get_minimap_markers"):
 			_map_data = _world.get_minimap_markers()
@@ -296,14 +296,16 @@ func _process(delta: float) -> void:
 			pl["z"] = p.global_position.z
 			_map_data["player"] = pl
 	_update_compass()
-	_update_day_label()
-	_refresh_landmark_chip()
-	if minimap and minimap.has_method("set_data"):
+	if _hud_tick == 0:
+		_update_day_label()
+		_refresh_landmark_chip()
+		_refresh_foe_count()
+		_refresh_fav_paces()
+	if minimap and minimap.has_method("set_data") and (_hud_tick % 2 == 0):
 		minimap.set_data(_map_data)
-	_refresh_foe_count()
 	_update_foe_pulse(delta)
-	_refresh_fav_paces()
-	_refresh_food_lbl()
+	if _hud_tick % 2 == 0 or _food_ready_flash_t > 0.0:
+		_refresh_food_lbl()
 
 func _update_compass() -> void:
 	if compass_needle == null:

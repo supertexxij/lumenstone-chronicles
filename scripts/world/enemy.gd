@@ -26,9 +26,9 @@ var _telegraph: MeshInstance3D = null
 var _was_warning: bool = false
 var _countdown_nudge: bool = false  # Wave 37: mid-telegraph countdown toast
 var _target_reticle: MeshInstance3D = null  # Wave 31: soft cream combat target ring
-## v1.84 smooth: distance LOD so 200+ wild foes do not burn CPU when off-screen
-const LOD_ANIM_DIST2 := 28.0 * 28.0
-const LOD_HIDE_DIST2 := 42.0 * 42.0
+## v1.84 / v1.86: distance LOD so wild foes do not burn CPU when off-screen
+const LOD_ANIM_DIST2 := 22.0 * 22.0
+const LOD_HIDE_DIST2 := 32.0 * 32.0
 var _cached_player: Node3D = null
 var _lod_hidden: bool = false
 

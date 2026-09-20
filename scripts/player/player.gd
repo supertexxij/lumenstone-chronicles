@@ -730,30 +730,34 @@ func _tick_click_marker(delta: float) -> void:
 		_click_marker_t = -1.0
 
 func _soft_avoid_entities(wish: Vector3) -> Vector3:
-	## Light sidestep around mentors / foes so click-move feels RuneScape-aware.
+	## Light sidestep around mentors / nearby awake foes (skip sleeping LOD).
 	if wish.length() < 0.01:
 		return wish
 	var push := Vector3.ZERO
+	var px: float = global_position.x
+	var pz: float = global_position.z
 	for n in get_tree().get_nodes_in_group("npcs"):
 		if not is_instance_valid(n):
 			continue
-		var d: float = global_position.distance_to(n.global_position)
-		if d < 1.55 and d > 0.05:
-			var away: Vector3 = global_position - n.global_position
-			away.y = 0.0
-			if away.length() > 0.01:
-				push += away.normalized() * ((1.55 - d) / 1.55) * 1.15
+		var dx: float = px - n.global_position.x
+		var dz: float = pz - n.global_position.z
+		var d2: float = dx * dx + dz * dz
+		if d2 < 1.55 * 1.55 and d2 > 0.0025:
+			var d: float = sqrt(d2)
+			push += Vector3(dx, 0.0, dz) * (((1.55 - d) / 1.55) * 1.15 / d)
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(e):
 			continue
+		if bool(e.get("_lod_hidden")):
+			continue
 		if e.has_method("is_alive") and not e.is_alive():
 			continue
-		var d2: float = global_position.distance_to(e.global_position)
-		if d2 < 1.25 and d2 > 0.05:
-			var away2: Vector3 = global_position - e.global_position
-			away2.y = 0.0
-			if away2.length() > 0.01:
-				push += away2.normalized() * ((1.25 - d2) / 1.25) * 0.55
+		var ex: float = px - e.global_position.x
+		var ez: float = pz - e.global_position.z
+		var e2: float = ex * ex + ez * ez
+		if e2 < 1.25 * 1.25 and e2 > 0.0025:
+			var d: float = sqrt(e2)
+			push += Vector3(ex, 0.0, ez) * (((1.25 - d) / 1.25) * 0.55 / d)
 	if push.length() > 0.01:
 		wish = (wish + push * 1.05).normalized()
 	return wish

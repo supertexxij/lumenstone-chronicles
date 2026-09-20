@@ -685,5 +685,19 @@ func _finish():
 	print("SMOOTH_184_TOAST_SRC", "maybe_smooth_184_toast" in _src("res://scripts/autoload/game_state.gd"))
 	if gs and gs.has_method("maybe_smooth_184_toast"):
 		print("SMOOTH_184_TOAST_RT", gs.has_method("maybe_smooth_184_toast"))
+
+	print("VERSION_186_SRC", _ver_ge(86))
+	print("PLAYABLE_SPAWN_FILTER_SRC", "spawn_in_playable" in _src("res://scripts/autoload/enemy_db.gd") and "PLAYABLE_X_MIN" in _src("res://scripts/autoload/enemy_db.gd"))
+	print("PLAZA_MM_SRC", "_mm_boxes" in _src("res://scripts/world/world.gd"))
+	print("INDOOR_LIGHTS_SRC", "_set_indoor_lights" in _src("res://scripts/world/world.gd"))
+	print("PERF_186_TOAST_SRC", "maybe_perf_186_toast" in _src("res://scripts/autoload/game_state.gd"))
+	var edb = root.get_node_or_null("EnemyDB")
+	if edb:
+		print("RAW_SPAWNS", int(edb.get("raw_spawn_count")))
+		print("PLAYABLE_SPAWNS", edb.spawns.size() if edb.spawns else 0)
+		print("PLAYABLE_SPAWN_DROP", int(edb.get("raw_spawn_count")) > 200 and edb.spawns.size() < 80)
+	# v1.86 expected live foe count after playable-rim cull (~56). JSON still has e263.
+	print("ENEMIES_EXPECTED_NOTE", "playable rim ~56 (was 263); JSON defs/spawns unchanged")
+	print("PIN_STILL_1234_W186_RT", gs.verify_pin("1234") if gs else false)
 	print("WORLD_SMOKE_OK")
 	quit(0)

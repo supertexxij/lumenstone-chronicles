@@ -1134,7 +1134,7 @@ func _play_load_toasts() -> void:
 		"maybe_wave_74_toast", "maybe_wave_75_toast", "maybe_wave_76_toast",
 		"maybe_wave_77_toast", "maybe_refine_178_toast", "maybe_refine_181_toast",
 		"maybe_bugs_182_toast", "maybe_curriculum_183_toast",
-		"maybe_minigames_184_toast", "maybe_smooth_184_toast",
+		"maybe_minigames_184_toast", "maybe_smooth_184_toast", "maybe_perf_186_toast",
 	])
 	var early: bool = GameState.has_method("is_early_curriculum_save") and GameState.is_early_curriculum_save()
 	if early and GameState.has_method("quiet_legacy_polish_toasts"):
@@ -1145,6 +1145,8 @@ func _play_load_toasts() -> void:
 			GameState.maybe_minigames_184_toast()
 		if GameState.has_method("maybe_smooth_184_toast"):
 			GameState.maybe_smooth_184_toast()
+		if GameState.has_method("maybe_perf_186_toast"):
+			GameState.maybe_perf_186_toast()
 		return
 	for m in methods:
 		if not GameState.has_method(m):

@@ -227,6 +227,26 @@ Camera is elevated oblique (RuneScape-like) with zoom. Minimap (corner) + compas
 - Inventory Use button respects empty pantry stacks (v1.8 bugfix)
 - Indoor attendant shifted clear of quest-desk approach
 
+### v1.86.0-perf — faster & hitch-free on modest PCs
+
+Joshua’s Ubuntu playtest needed more FPS and fewer hitches. This pass keeps curriculum, PIN **1234**, mastery ≥80%, quest JSON, save/load, navmesh, and tick combat. No Day Cash. No new foes.
+
+**What was slow → what changed**
+
+| Cost | Before | After |
+|------|--------|--------|
+| Wild foes | **263** `CharacterBody3D` meshes (203 past the walk clamp — never reachable) | **~56** playable-rim spawns; JSON still lists e1–e263 / all defs |
+| Foe AI / RVO scans | Hide at 42 paces; click-move scanned every sleeping foe | Hide at **32**, animate at **22**; sidestep skips `_lod_hidden` |
+| OmniLights | 25 indoor hall lights always on + 13 dusk lamps + distant landmark glow | Indoor lights **only in the entered hall**; 5 nearest dusk lamps; landmark glow only when near |
+| Plaza draw calls | ~200 curb/flag/tile `MeshInstance3D` | **8 MultiMesh** batches (`_mm_boxes`) |
+| Trees / flowers | Extra canopy lobes + 3–5 blooms | One extra lobe; 2–3 blooms |
+| HUD / minimap | Full marker rebuild + canvas redraw every frame | Payload every 4 frames; minimap redraw every 2 or when the apprentice moves |
+| Project defaults | Vsync on, anisotropic 1, 1024 shadow atlas | **Adaptive vsync**, `max_fps=60`, anisotropic 0, 512 shadow atlas, physics interpolation |
+
+Expected smoke counts: `ENEMIES` ≈ **56** (was 263). Per-kind live counts drop for far-only polish kinds (chipmunk / hamster / etc. stay in JSON, not instantiated). `CHECK_OK` / `WORLD_SMOKE_OK` / `PERF_SMOKE_OK` still required.
+
+- Re-export Linux + Windows when shipping a build
+
 ### v1.85.0-customize — live character wardrobe
 
 Better apprentice create / wardrobe: pick **Boy or Girl**, choose a **hair style**, and see a **live spinning 3D preview** while you adjust colors. Older saves default to boy + short hair. PIN stays **1234**; mastery still ≥80%.

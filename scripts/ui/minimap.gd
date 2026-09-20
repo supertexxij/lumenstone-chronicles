@@ -3,9 +3,28 @@ extends Control
 ## Wave 25: chunky landmark icons (shapes by kind) — RuneScape-feel, wholesome.
 
 var map_data: Dictionary = {}
+var _last_px: float = 9999.0
+var _last_pz: float = 9999.0
+var _last_yaw: float = 9999.0
+var _last_foe_n: int = -1
 
 func set_data(data: Dictionary) -> void:
 	map_data = data
+	var pl: Dictionary = data.get("player", {})
+	var px: float = float(pl.get("x", 0.0))
+	var pz: float = float(pl.get("z", 0.0))
+	var yaw: float = float(pl.get("yaw", 0.0))
+	var foes_n: int = 0
+	var foes = data.get("foes", [])
+	if typeof(foes) == TYPE_ARRAY:
+		foes_n = foes.size()
+	# Skip redraw when the apprentice barely turned in place (v1.86).
+	if absf(px - _last_px) < 0.12 and absf(pz - _last_pz) < 0.12 and absf(yaw - _last_yaw) < 0.04 and foes_n == _last_foe_n:
+		return
+	_last_px = px
+	_last_pz = pz
+	_last_yaw = yaw
+	_last_foe_n = foes_n
 	queue_redraw()
 
 func _draw() -> void:

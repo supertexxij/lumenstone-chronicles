@@ -18,6 +18,8 @@ var _idle_style: int = 0
 var _phase: float = 0.0
 var _wave_t: float = -1.0
 var _talk_near: bool = false  # Wave 31: clearer Talk (F) prompt
+var _cached_player: Node = null
+var _talk_tick: int = 0
 
 func _ready() -> void:
 	add_to_group("npcs")
@@ -103,13 +105,18 @@ func _process(delta: float) -> void:
 				r_leg2.rotation.x = abs(sin(t * 2.2 + 1.2)) * 0.05
 			bob.position.y = sin(t * 2.0) * 0.02 + abs(sin(t * 1.1)) * 0.01
 
-	_update_talk_prompt()
+	_talk_tick = (_talk_tick + 1) % 3
+	if _talk_tick == 0:
+		_update_talk_prompt()
 
 func _update_talk_prompt() -> void:
 	## Wave 31: when the player is nearby, show a clearer Talk (F) line (RuneScape-chunky, wholesome).
 	if label == null or HeadlessGuard.is_headless():
 		return
-	var player: Node = get_tree().get_first_node_in_group("player")
+	var player: Node = _cached_player
+	if player == null or not is_instance_valid(player):
+		player = get_tree().get_first_node_in_group("player")
+		_cached_player = player
 	var near := false
 	if player != null and not bool(player.get("ui_blocking")):
 		near = global_position.distance_to(player.global_position) <= 3.6
