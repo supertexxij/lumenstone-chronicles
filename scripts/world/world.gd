@@ -208,6 +208,26 @@ func _mi(mesh: Mesh, pos: Vector3, parent: Node, mat: Material, name: String = "
 	HeadlessGuard.guard_mesh(n)
 	return n
 
+func _mm_boxes(parent: Node, mat: Material, name: String, xforms: Array, size: Vector3) -> MultiMeshInstance3D:
+	## v1.86: one draw call for many identical plaza / prop boxes.
+	if xforms.is_empty():
+		return null
+	var box := BoxMesh.new()
+	box.size = size
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = box
+	mm.instance_count = xforms.size()
+	for i in xforms.size():
+		mm.set_instance_transform(i, xforms[i])
+	var inst := MultiMeshInstance3D.new()
+	inst.name = name
+	inst.multimesh = mm
+	inst.material_override = mat
+	parent.add_child(inst)
+	HeadlessGuard.guard_multimesh(inst)
+	return inst
+
 func _make_label3d() -> Label3D:
 	return HeadlessGuard.make_label3d()
 
@@ -349,31 +369,52 @@ func _build_paths() -> void:
 	cobble_in.position = Vector3(0, 0.036, 6)
 	static_world.add_child(cobble_in)
 	HeadlessGuard.guard_mesh(cobble_in)
+	# v1.86: plaza curb / flag / tile rings as MultiMesh (was ~200 MeshInstance3D)
+	var curb_xf: Array = []
 	for i in 20:
 		var ang := i * TAU / 20.0
-		var curb := _mi(_box(Vector3(0.70, 0.20, 0.32)), Vector3(cos(ang) * 15.05, 0.11, 6.0 + sin(ang) * 15.05), static_world, _mats["stone"], "PlazaCurb%d" % i)
-		curb.rotation.y = -ang
+		curb_xf.append(Transform3D(Basis.from_euler(Vector3(0, -ang, 0)), Vector3(cos(ang) * 15.05, 0.11, 6.0 + sin(ang) * 15.05)))
+	_mm_boxes(static_world, _mats["stone"], "PlazaCurb", curb_xf, Vector3(0.70, 0.20, 0.32))
 	# v1.80 world: flagstone tiles so the plaza reads as cobble, not two flat discs
+	var flag_light_xf: Array = []
+	var flag_stone_xf: Array = []
 	for i in 24:
 		var fang := i * TAU / 24.0 + 0.07
 		var fr := 6.15 if i % 2 == 0 else 6.95
-		var flag := _mi(_box(Vector3(0.88, 0.045, 0.56)), Vector3(cos(fang) * fr, 0.052, 6.0 + sin(fang) * fr), static_world, _mats["cobble_light"] if i % 3 else _mats["stone"], "PlazaFlag%d" % i)
-		flag.rotation.y = -fang
+		var fxf := Transform3D(Basis.from_euler(Vector3(0, -fang, 0)), Vector3(cos(fang) * fr, 0.052, 6.0 + sin(fang) * fr))
+		if i % 3:
+			flag_light_xf.append(fxf)
+		else:
+			flag_stone_xf.append(fxf)
+	_mm_boxes(static_world, _mats["cobble_light"], "PlazaFlag", flag_light_xf, Vector3(0.88, 0.045, 0.56))
+	_mm_boxes(static_world, _mats["stone"], "PlazaFlagStone", flag_stone_xf, Vector3(0.88, 0.045, 0.56))
+	var inner_stone_xf: Array = []
+	var inner_cobble_xf: Array = []
 	for i in 12:
 		var iang := i * TAU / 12.0 + 0.2
-		var inner := _mi(_box(Vector3(0.62, 0.04, 0.42)), Vector3(cos(iang) * 4.55, 0.05, 6.0 + sin(iang) * 4.55), static_world, _mats["stone"] if i % 2 else _mats["cobble"], "PlazaFlagIn%d" % i)
-		inner.rotation.y = -iang
+		var ixf := Transform3D(Basis.from_euler(Vector3(0, -iang, 0)), Vector3(cos(iang) * 4.55, 0.05, 6.0 + sin(iang) * 4.55))
+		if i % 2:
+			inner_stone_xf.append(ixf)
+		else:
+			inner_cobble_xf.append(ixf)
+	_mm_boxes(static_world, _mats["stone"], "PlazaFlagIn", inner_stone_xf, Vector3(0.62, 0.04, 0.42))
+	_mm_boxes(static_world, _mats["cobble"], "PlazaFlagInCobble", inner_cobble_xf, Vector3(0.62, 0.04, 0.42))
 	# v1.80 world: checker flagstones across the whole disc so the plaza is not a flat sand plate
-	var tile_i := 0
+	var tile_light_xf: Array = []
+	var tile_dark_xf: Array = []
 	for ix in range(-7, 8):
 		for iz in range(-7, 8):
 			var px := float(ix) * 1.02
 			var pz := 6.0 + float(iz) * 1.02
 			if Vector2(px, pz - 6.0).length() > 7.15:
 				continue
-			var tmat: Material = _mats["cobble_light"] if (ix + iz) % 2 == 0 else _mats["cobble_dark"]
-			_mi(_box(Vector3(0.94, 0.028, 0.94)), Vector3(px, 0.054, pz), static_world, tmat, "PlazaTile%d" % tile_i)
-			tile_i += 1
+			var txf := Transform3D(Basis.IDENTITY, Vector3(px, 0.054, pz))
+			if (ix + iz) % 2 == 0:
+				tile_light_xf.append(txf)
+			else:
+				tile_dark_xf.append(txf)
+	_mm_boxes(static_world, _mats["cobble_light"], "PlazaTile", tile_light_xf, Vector3(0.94, 0.028, 0.94))
+	_mm_boxes(static_world, _mats["cobble_dark"], "PlazaTileDark", tile_dark_xf, Vector3(0.94, 0.028, 0.94))
 	# Spokes toward guild halls
 	var spokes := [
 		Vector3(18, 0, 2), Vector3(-18, 0, 2), Vector3(0, 0, -14),
@@ -655,14 +696,9 @@ func _add_tree(pos: Vector3, style: int = 0) -> void:
 	else:
 		var leaf_mat: Material = _mats["leaf"] if style == 0 else _mats["leaf_autumn"]
 		_mi(_sphere(1.05 if style == 0 else 0.95, 2.0), Vector3(0, trunk_h + 0.55, 0), body, leaf_mat, "Leaves")
-		# v1.80 world: extra canopy lobes so trees read as foliage, not one green blob
+		# v1.86: one extra lobe + shade (dropped LeavesR/Top/Under draw calls)
 		_mi(_sphere(0.62, 1.15), Vector3(-0.42, trunk_h + 0.28, 0.18), body, _mats["leaf_alt"], "LeavesL")
-		_mi(_sphere(0.58, 1.05), Vector3(0.38, trunk_h + 0.22, -0.16), body, leaf_mat, "LeavesR")
-		_mi(_sphere(0.48, 0.82), Vector3(0.08, trunk_h + 1.05, 0.22), body, _mats["leaf_alt"], "LeavesTop")
-		_mi(_sphere(0.72, 0.70), Vector3(0.0, trunk_h + 0.08, 0.0), body, _mats["grass_dark"], "LeavesUnder")
 		_mi(_cyl(1.15, 1.15, 0.02), Vector3(0, 0.012, 0), body, _mats["grass_dark"], "Shade")
-		if style == 1:
-			_mi(_sphere(0.7, 1.3), Vector3(0.35, trunk_h + 0.2, 0.1), body, _mats["leaf_alt"], "Leaves2")
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
 	shape.radius = 0.32
@@ -727,7 +763,7 @@ func _build_fountain() -> void:
 	_fountain_mist.name = "FountainPlazaMist"
 	_fountain_mist.position = Vector3(0, 0.55, 0)
 	_fountain_mist.emitting = true
-	_fountain_mist.amount = 18
+	_fountain_mist.amount = 8
 	_fountain_mist.lifetime = 2.4
 	_fountain_mist.preprocess = 1.0
 	_fountain_mist.emission_shape = CPUParticles3D.EMISSION_SHAPE_SPHERE
@@ -869,8 +905,8 @@ func _add_lantern_post(pos: Vector3, village_dusk: bool = false) -> void:
 		light.name = "DuskLamp"
 		light.light_color = Color(1.0, 0.82, 0.48)
 		light.light_energy = 0.0
-		light.omni_range = 6.5
-		light.omni_attenuation = 1.35
+		light.omni_range = 5.2
+		light.omni_attenuation = 1.55
 		light.shadow_enabled = false
 		light.position = Vector3(0.25, 2.0, 0)
 		root.add_child(light)
@@ -887,16 +923,16 @@ func _add_lantern(parent: Node, pos: Vector3, with_light: bool = false) -> void:
 	if with_light:
 		var light := OmniLight3D.new()
 		light.light_color = Color(1.0, 0.88, 0.62)
-		light.light_energy = 1.35
-		light.omni_range = 7.5
-		light.omni_attenuation = 1.2
+		light.light_energy = 1.15
+		light.omni_range = 6.2
+		light.omni_attenuation = 1.35
 		light.shadow_enabled = false
 		holder.add_child(light)
 
 func _add_flowers(pos: Vector3, rng: RandomNumberGenerator) -> void:
 	var root := Node3D.new()
 	root.position = pos
-	for i in rng.randi_range(3, 5):
+	for i in rng.randi_range(2, 3):
 		var mat: Material = _mats["flower"] if i % 2 == 0 else _mats["flower_y"]
 		_mi(_sphere(0.08, 0.12), Vector3(rng.randf_range(-0.4, 0.4), 0.15, rng.randf_range(-0.4, 0.4)), root, mat, "Fl")
 	static_world.add_child(root)
@@ -1034,6 +1070,7 @@ func _spawn_npcs() -> void:
 		entities.add_child(npc)
 
 func _spawn_enemies() -> void:
+	## EnemyDB already drops unreachable far-wilds rows (v1.86 playable rim).
 	for s in EnemyDB.spawns:
 		var e: Node = EnemyScene.instantiate()
 		e.kind = s["kind"]
@@ -1052,7 +1089,7 @@ func _process(delta: float) -> void:
 		_door_cooldown -= delta
 	if _landmark_toast_cd > 0.0:
 		_landmark_toast_cd -= delta
-	# v1.84.3: stagger more aggressively — day/night + weather follow on alternate frames
+	# v1.84.3 / v1.86: stagger more — day/night + weather + polish on a 6-frame wheel
 	_process_frame = (_process_frame + 1) % 6
 	if _process_frame % 2 == 0:
 		_update_day_night(delta * 2.0)
@@ -1080,21 +1117,21 @@ func _process(delta: float) -> void:
 
 func _update_foe_lod_wake(delta: float) -> void:
 	## v1.84.1: wake sleeping foes near the player in small batches (avoids hitch + frozen click-move).
-	## v1.84.4: thinner wake — fewer physics wakes per pass on family PCs.
+	## v1.86: thinner wake + tighter radius after playable-rim spawn cull.
 	_foe_wake_timer -= delta
 	if _foe_wake_timer > 0.0:
 		return
-	_foe_wake_timer = 0.5
+	_foe_wake_timer = 0.45
 	if player == null:
 		return
 	var foes: Array = get_tree().get_nodes_in_group("enemies")
 	if foes.is_empty():
 		return
 	var n: int = foes.size()
-	var batch: int = mini(12, n)
+	var batch: int = mini(10, n)
 	var px: float = player.global_position.x
 	var pz: float = player.global_position.z
-	var wake_r2: float = 26.0 * 26.0
+	var wake_r2: float = 20.0 * 20.0
 	for i in batch:
 		var idx: int = (_foe_wake_cursor + i) % n
 		var e: Node = foes[idx]
@@ -1303,6 +1340,7 @@ func _setup_day_night() -> void:
 		fill.shadow_enabled = false
 		fill.rotation_degrees = Vector3(-28, 210, 0)
 		add_child(fill)
+	_set_indoor_lights("")
 	_update_day_night(0.0)
 
 func _update_day_night(delta: float) -> void:
@@ -1384,9 +1422,9 @@ func _build_plaza_campfire() -> void:
 	var light := OmniLight3D.new()
 	light.name = "CampfireGlow"
 	light.light_color = Color(1.0, 0.74, 0.40)  # Wave 77: soft campfire glow polish
-	light.light_energy = 1.22
-	light.omni_range = 8.2
-	light.omni_attenuation = 1.1
+	light.light_energy = 1.05
+	light.omni_range = 6.4
+	light.omni_attenuation = 1.25
 	light.shadow_enabled = false
 	light.position = Vector3(0, 0.55, 0)
 	root.add_child(light)
@@ -1553,7 +1591,18 @@ func _update_plaza_campfire(dayness: float) -> void:
 	var pulse: float = 0.88 + 0.14 * abs(sin(t_ms * 0.0042))
 	# Sync soft irregular flicker with village dusk lamps (same phase recipe — Wave 74 polish)
 	var flicker: float = 1.0 + 0.07 * sin(t_ms * 0.011) + 0.045 * sin(t_ms * 0.027 + 1.7)
-	_plaza_campfire_light.light_energy = (0.88 + dusk * 1.28) * pulse * clampf(flicker, 0.86, 1.14)
+	var near_hearth := _inside_hall == "" and _player_near_xz(_plaza_campfire_pos, 22.0)
+	if near_hearth:
+		_plaza_campfire_light.visible = true
+		_plaza_campfire_light.light_energy = (0.88 + dusk * 1.28) * pulse * clampf(flicker, 0.86, 1.14)
+	else:
+		_plaza_campfire_light.visible = false
+		_plaza_campfire_light.light_energy = 0.0
+	var camp_root := static_world.get_node_or_null("PlazaCampfire")
+	if camp_root:
+		for fx_name in ["CampfireEmbers", "CampfireSparks", "CampfireSmoke"]:
+			var fx := camp_root.get_node_or_null(fx_name) as CPUParticles3D
+			_set_landmark_fx(fx, near_hearth)
 	# Soft crackle when outdoors and near the plaza hearth (respects mute via AudioBus)
 	if AudioBus.has_method("set_campfire_audio") and player:
 		var near: bool = _inside_hall == "" and player.global_position.distance_to(_plaza_campfire_pos) < 14.0
@@ -1566,24 +1615,52 @@ func _update_village_dusk_lamps(dayness: float) -> void:
 	if _village_lamp_lights.is_empty():
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
+	if dusk < 0.02 or _inside_hall != "":
+		for light in _village_lamp_lights:
+			if light == null or not is_instance_valid(light):
+				continue
+			light.light_energy = 0.0
+			light.visible = false
+		return
 	var t_ms: float = float(Time.get_ticks_msec())
 	var pulse: float = 0.90 + 0.10 * abs(sin(t_ms * 0.0022))
 	# Soft irregular flicker layered on the slow pulse (shared recipe with plaza hearth)
 	var flicker: float = 1.0 + 0.07 * sin(t_ms * 0.011) + 0.045 * sin(t_ms * 0.027 + 1.7)
 	var energy: float = dusk * 1.68 * pulse * clampf(flicker, 0.86, 1.14)
-	var i: int = 0
+	# v1.86: only the nearest dusk lamps stay on (Compatibility fill-rate).
+	var scored: Array = []
+	var px: float = player.global_position.x if player else 0.0
+	var pz: float = player.global_position.z if player else 0.0
 	for light in _village_lamp_lights:
 		if light == null or not is_instance_valid(light):
 			continue
-		# Tiny per-lamp phase so posts don't blink in lockstep
-		var phase: float = 1.0 + 0.035 * sin(t_ms * 0.019 + float(i) * 1.3)
-		var e: float = energy * clampf(phase, 0.9, 1.1)
-		light.light_energy = e
-		light.visible = e > 0.04
+		var dx: float = light.global_position.x - px
+		var dz: float = light.global_position.z - pz
+		scored.append({"l": light, "d2": dx * dx + dz * dz})
+	scored.sort_custom(func(a, b): return float(a["d2"]) < float(b["d2"]))
+	var i: int = 0
+	for row in scored:
+		var light: OmniLight3D = row["l"]
+		var near_enough: bool = i < 5 and float(row["d2"]) <= 28.0 * 28.0
+		if near_enough:
+			var phase: float = 1.0 + 0.035 * sin(t_ms * 0.019 + float(i) * 1.3)
+			var e: float = energy * clampf(phase, 0.9, 1.1)
+			light.light_energy = e
+			light.visible = e > 0.04
+		else:
+			light.light_energy = 0.0
+			light.visible = false
 		i += 1
 
-func _apply_dusk_glow_lights(lights: Array, dayness: float, pulse_a: float, pulse_b: float, pulse_speed: float, energy_scale: float, phase_speed: float, phase_spread: float) -> void:
+func _apply_dusk_glow_lights(lights: Array, dayness: float, pulse_a: float, pulse_b: float, pulse_speed: float, energy_scale: float, phase_speed: float, phase_spread: float, anchor: Vector3 = Vector3.ZERO, near_r: float = 0.0) -> void:
 	if lights.is_empty():
+		return
+	if near_r > 0.0 and (not _player_near_xz(anchor, near_r) or _inside_hall != ""):
+		for light in lights:
+			if light == null or not is_instance_valid(light):
+				continue
+			light.light_energy = 0.0
+			light.visible = false
 		return
 	var dusk: float = clampf((0.58 - dayness) / 0.30, 0.0, 1.0)
 	var t_ms: float = float(Time.get_ticks_msec())
@@ -1606,17 +1683,17 @@ func _apply_dusk_glow_lights(lights: Array, dayness: float, pulse_a: float, puls
 func _update_knoll_dusk_glow(dayness: float) -> void:
 	## Wave 59: soft amber knoll glow at dusk — warm honey light on Amber Knoll crest (RuneScape-chunky, wholesome).
 	## Wave 73: soft Amber Knoll amber-glow polish at dusk — warmer honey energy + gentler pulse (RuneScape-chunky, wholesome).
-	_apply_dusk_glow_lights(_knoll_dusk_lights, dayness, 0.88, 0.12, 0.0017, 2.35, 0.017, 1.1)
+	_apply_dusk_glow_lights(_knoll_dusk_lights, dayness, 0.88, 0.12, 0.0017, 2.35, 0.017, 1.1, Vector3(48, 0, -22), 26.0)
 
 
 func _update_arch_dusk_glow(dayness: float) -> void:
 	## Wave 64: soft stone arch glow at dusk — cool limestone OmniLight on Stone Arch gateway (RuneScape-chunky, wholesome).
-	_apply_dusk_glow_lights(_arch_dusk_lights, dayness, 0.90, 0.10, 0.0018, 1.70, 0.015, 1.2)
+	_apply_dusk_glow_lights(_arch_dusk_lights, dayness, 0.90, 0.10, 0.0018, 1.70, 0.015, 1.2, Vector3(-48, 0, 8), 26.0)
 
 
 func _update_cross_dusk_glow(dayness: float) -> void:
 	## Wave 65: soft quiet cross lantern at dusk — warm honey OmniLight on Quiet Cross knoll (RuneScape-chunky, wholesome).
-	_apply_dusk_glow_lights(_cross_dusk_lights, dayness, 0.90, 0.10, 0.0021, 1.80, 0.016, 1.15)
+	_apply_dusk_glow_lights(_cross_dusk_lights, dayness, 0.90, 0.10, 0.0021, 1.80, 0.016, 1.15, Vector3(48, 0, 8), 26.0)
 
 
 func _build_interiors() -> void:
@@ -1630,6 +1707,26 @@ func _build_interiors() -> void:
 		var b: Dictionary = halls[i]
 		_add_door_volume(b)
 		_add_interior_room(b, i)
+	_set_indoor_lights("")
+
+func _set_indoor_lights(hall_id: String) -> void:
+	## v1.86: 5 halls × 5 OmniLights were always on outdoors. Only the entered hall stays lit.
+	if _interior_root == null:
+		return
+	for room in _interior_root.get_children():
+		var on := hall_id != "" and str(room.get_meta("hall_id", "")) == hall_id
+		_set_omni_in_tree(room, on)
+
+func _set_omni_in_tree(n: Node, on: bool) -> void:
+	if n is OmniLight3D:
+		var light := n as OmniLight3D
+		light.visible = on
+		if on and light.light_energy < 0.05:
+			light.light_energy = 1.15
+		elif not on:
+			light.light_energy = 0.0
+	for c in n.get_children():
+		_set_omni_in_tree(c, on)
 
 func _add_door_volume(b: Dictionary) -> void:
 	var area := Area3D.new()
@@ -1945,6 +2042,7 @@ func _enter_hall(hall_id: String, label: String, body: Node) -> void:
 				body.has_click_target = false
 			GameState.toast.emit("Entered %s Hall — desk for quests, blue glow to leave." % label)
 			GameState.position_xz = Vector2(body.global_position.x, body.global_position.z)
+			_set_indoor_lights(hall_id)
 			_begin_hall_light_dip()  # Wave 63: soft hall enter light dip
 			_apply_weather_visuals(false)
 			return
@@ -1953,6 +2051,7 @@ func _exit_hall(body: Node) -> void:
 	if _inside_hall == "":
 		return
 	_inside_hall = ""
+	_set_indoor_lights("")
 	if AudioBus.has_method("set_hall_reverb"):
 		AudioBus.set_hall_reverb(false)
 	if AudioBus.has_method("set_hall_chatter"):
@@ -2035,7 +2134,7 @@ func _setup_weather() -> void:
 	_rain = CPUParticles3D.new()
 	_rain.name = "Rain"
 	_rain.emitting = false
-	_rain.amount = 32  # v1.84.4: lighter rain for Compatibility / family PCs
+	_rain.amount = 20  # v1.86: lighter rain for Compatibility / family PCs
 	_rain.lifetime = 1.0
 	_rain.preprocess = 0.15
 	_rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
@@ -2763,13 +2862,15 @@ func get_minimap_markers() -> Dictionary:
 	var pz0 := player.global_position.z if player else 0.0
 	# v1.84 smooth: only plot foes near the player (minimap world radius is local)
 	for e in get_tree().get_nodes_in_group("enemies"):
+		if bool(e.get("_lod_hidden")):
+			continue
 		if not (e.has_method("is_alive") and e.is_alive() and e.visible):
 			continue
 		var ex: float = e.global_position.x
 		var ez: float = e.global_position.z
 		var dx: float = ex - px0
 		var dz: float = ez - pz0
-		if dx * dx + dz * dz > 55.0 * 55.0:
+		if dx * dx + dz * dz > 40.0 * 40.0:
 			continue
 		foes.append({"x": ex, "z": ez})
 	var px := 0.0

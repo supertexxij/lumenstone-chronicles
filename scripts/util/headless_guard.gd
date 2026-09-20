@@ -19,6 +19,17 @@ static func guard_mesh(mi: MeshInstance3D) -> MeshInstance3D:
 	return mi
 
 
+static func guard_multimesh(mi: MultiMeshInstance3D) -> MultiMeshInstance3D:
+	if mi == null or not is_headless():
+		return mi
+	mi.tree_exiting.connect(func () -> void:
+		if is_instance_valid(mi):
+			mi.multimesh = null
+			mi.material_override = null
+	)
+	return mi
+
+
 static func guard_particles(p: CPUParticles3D) -> void:
 	if p == null or not is_headless():
 		return

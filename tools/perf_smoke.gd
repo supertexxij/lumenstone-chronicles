@@ -1,5 +1,5 @@
 extends SceneTree
-## Headless perf probe for v1.84 smooth — loads world.tscn, checks foe LOD.
+## Headless perf probe for v1.86 — loads world.tscn, checks playable-rim cull + foe LOD.
 
 func _initialize() -> void:
 	print("PERF_SMOKE_START")
@@ -10,7 +10,7 @@ func _initialize() -> void:
 		return
 	var world: Node = world_ps.instantiate()
 	get_root().add_child(world)
-	# World _ready builds dense village + 263 foes; wait for it
+	# World _ready builds village + playable-rim foes (~56, was 263); wait for it
 	await process_frame
 	await process_frame
 	await create_timer(2.5).timeout
@@ -18,6 +18,11 @@ func _initialize() -> void:
 	print("WORLD_FOUND", world != null)
 	var enemies: Array = get_nodes_in_group("enemies")
 	print("ENEMY_COUNT", enemies.size())
+	var edb = get_root().get_node_or_null("EnemyDB")
+	if edb:
+		print("RAW_SPAWN_COUNT", int(edb.get("raw_spawn_count")))
+		print("PLAYABLE_SPAWN_COUNT", edb.spawns.size() if edb.spawns else 0)
+	print("ENEMY_COUNT_CULLED", enemies.size() > 20 and enemies.size() < 80)
 	var hidden := 0
 	var visible_n := 0
 	var nav_off := 0
